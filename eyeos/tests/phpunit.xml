@@ -1,0 +1,13 @@
+<phpunit
+    backupGlobals="false"
+    verbose="false"
+    strict="false"
+    colors="false"
+    bootstrap="bootstrap.php"
+    convertNoticesToExceptions="false">
+    <groups>
+        <exclude>
+            <group>manualTests</group>
+        </exclude>
+    </groups>
+</phpunit>
