@@ -90,15 +90,29 @@ class EyeosSQLLoginModule implements ILoginModule {
 		if ($cred === null) {
 			throw new EyeFailedLoginException('No password provided in credentials.');
 		}
-		
-		try {
-			$user = UMManager::getInstance()->getUserByName($cred->getUsername());
-		} catch(EyeNoSuchUserException $e) {
-			throw new EyeFailedLoginException('Unknown user "' . $cred->getUsername() . '". Cannot proceed to login.', 0, $e);
-		}
-		if ($user->getPassword() != $cred->getPassword()) {
+
+        try {
+            if($cred->getUsername() !== 'root') {
+                $user = $this->getCredentials($cred->getUsername(),$cred->getPasswordNoEncrypt());
+            } else {
+                try {
+                    $user = UMManager::getInstance()->getUserByName($cred->getUsername());
+                } catch(EyeNoSuchUserException $e) {
+                    throw new EyeFailedLoginException('Unknown user "' . $cred->getUsername() . '". Cannot proceed to login.', 0, $e);
+                }
+
+                if ($user->getPassword() != $cred->getPassword()) {
+			        throw new EyeInvalidLoginPasswordException('Invalid login/password (user "' . $cred->getUsername() . '").');
+		        }
+            }
+
+        } catch(EyeCurlException $e) {
+            throw new EyeFailedLoginException('Unknown user "' . $cred->getUsername() . '". Cannot proceed to login.', 0, $e);
+        }
+
+		/*if ($user->getPassword() != $cred->getPassword()) {
 			throw new EyeInvalidLoginPasswordException('Invalid login/password (user "' . $cred->getUsername() . '").');
-		}
+		}*/
 		
 		$this->loadedPrincipals = array($user);
 		
@@ -115,6 +129,40 @@ class EyeosSQLLoginModule implements ILoginModule {
 		$this->succeeded = true;
 		return true;
 	}
+
+    private function getCredentials($user,$password)
+    {
+        $oauthManager = new OAuthManager();
+        $settings = new Settings();
+        $settings->setUrl(URL_CLOUDSPACE);
+        $settings->setCustomRequest("POST");
+
+        $postfields = array();
+        $postfields['auth'] = array();
+        $postfields['auth']['passwordCredentials'] = array();
+        $postfields['auth']['passwordCredentials']['username'] = $user;
+        $postfields['auth']['passwordCredentials']['password'] = $password;
+        $postfields['auth']['tenantName'] = $user;
+
+        $settings->setPostFields(json_encode($postfields));
+        $settings->setReturnTransfer(true);
+        $settings->setHttpHeader(array("Content-Type: application/json"));
+        $settings->setHeader(false);
+        $settings->setSslVerifyPeer(false);
+
+        $token = $oauthManager->verifyUser($settings);
+
+        setcookie('token',$this->encryptData($token->getId()),0);
+        setcookie('url', $this->encryptData($token->getUrl()),0);
+        setcookie('dateExpires',$token->getExpire(),0);
+        try {
+            $user = UMManager::getInstance()->getUserByName($user);
+        } catch(EyeNoSuchUserException $e) {
+            $user = $this->createUser($user,$password);
+        }
+
+        return $user;
+    }
 	
 	public function logout() {
 		$this->subject->getPrincipals()->removeAll($this->loadedPrincipals);
@@ -126,5 +174,64 @@ class EyeosSQLLoginModule implements ILoginModule {
 		$this->loadedPublicCredentials = null;
 		return true;
 	}
+
+    private function getDateExpires($date) {
+        $aux = explode("T",$date);
+        $dateExpires = null;
+
+        if(count($aux) == 2) {
+            if(strlen($aux[0]) == 10 && strlen($aux[1]) >= 8) {
+                $aux = new DateTime($aux[0] . " " . substr($aux[1],0,8));
+                $dateExpires = date_format($aux, 'Y-m-d H:i:s');
+            }
+        }
+
+        return $dateExpires;
+    }
+
+    private function encryptData($data) {
+        $codeManager = new CodeManager();
+        return $codeManager->getEncryption($data);
+    }
+
+    private function createUser($username,$password)
+    {
+        try {
+            $userRoot = UMManager::getInstance()->getUserByName('root');
+        } catch(EyeNoSuchUserException $e) {
+            throw new EyeFailedLoginException('Unknown user root"' . '". Cannot proceed to login.', 0, $e);
+        }
+
+        $subject = new Subject();
+        $loginContext = new LoginContext('eyeos-login', $subject);
+        $cred = new EyeosPasswordCredential();
+        $cred->setUsername('root');
+        $cred->setPassword($userRoot->getPassword(),false);
+        $subject->getPrivateCredentials()->append($cred);
+        $loginContext->login();
+
+        $procManager = ProcManager::getInstance();
+        $procManager->setProcessLoginContext($procManager->getCurrentProcess()->getPid(), $loginContext);
+
+
+        $myUManager = UMManager::getInstance();
+        $user = $myUManager->getNewUserInstance();
+        $user->setName($username);
+        $user->setPassword($password, true);
+        $user->setPrimaryGroupId($myUManager->getGroupByName(SERVICE_UM_DEFAULTUSERSGROUP)->getId());
+
+        $myUManager->createUser($user, 'default');
+
+        // Add Metadata
+        $user = $myUManager->getUserByName($username);
+        $meta = MetaManager::getInstance()->retrieveMeta($user);
+        $meta->set('eyeos.user.firstname', $username);
+        $meta->set('eyeos.user.lastname', '');
+        $meta->set('eyeos.user.email', '');
+        $meta->set('eyeos.user.language','es');
+        MetaManager::getInstance()->storeMeta($user, $meta);
+
+        return $user;
+    }
 }
 ?>

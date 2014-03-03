@@ -129,5 +129,7 @@ class EyeSystemException extends EyeException {}
 	class EyeMissingConfigurationException extends EyeSystemException {}
 	
 	class EyeNotImplementedException extends EyeSystemException {}
+
+    class EyeCurlException extends EyeSystemException{}
 	
 ?>

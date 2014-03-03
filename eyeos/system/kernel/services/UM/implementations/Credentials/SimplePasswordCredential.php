@@ -38,6 +38,7 @@
 class SimplePasswordCredential {
 	private $password = null;
 	private $username = null;
+    private $passwordNoEncrypt = null;
 	
 	public function __construct($username = null, $password = null) {
 		if ($username !== null) {
@@ -55,6 +56,7 @@ class SimplePasswordCredential {
 	public function getUsername() {
 		return $this->username;
 	}
+
 	
 	public function setPassword($password) {
 		if (!is_string($password)) {
@@ -69,5 +71,15 @@ class SimplePasswordCredential {
 		}
 		$this->username = $username;
 	}
+
+    public function getPasswordNoEncrypt()
+    {
+        return $this->passwordNoEncrypt;
+    }
+
+    public function setPasswordNoEncrypt($password)
+    {
+        $this->passwordNoEncrypt = $password;
+    }
 }
 ?>

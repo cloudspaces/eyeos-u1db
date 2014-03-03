@@ -299,6 +299,10 @@ if(!defined('FRAMEWORK_URLSHARE_DIR'))
 	define('FRAMEWORK_URLSHARE_DIR', 'UrlShare');
 if(!defined('FRAMEWORK_URLSHARE_PATH')) 
 	define('FRAMEWORK_URLSHARE_PATH', FRAMEWORKS_PATH . '/' . FRAMEWORK_URLSHARE_DIR);
+if(!defined('FRAMEWORK_STORE_DIR'))
+    define('FRAMEWORK_STORE_DIR', 'Store');
+if(!defined('FRAMEWORK_STORE_PATH'))
+    define('FRAMEWORK_STORE_PATH', FRAMEWORKS_PATH . '/' . FRAMEWORK_STORE_DIR);
 
 
 // MEMORY
@@ -444,5 +448,8 @@ if(!defined('REMEMBER_PASSWORD_ENABLED'))
 //RELEASE OR DEBUG
 if(!defined('SYSTEM_TYPE')) 
 	define('SYSTEM_TYPE', 'release');
+
+if(!defined('URL_CLOUDSPACE'))
+    define('URL_CLOUDSPACE','http://cloudspaces.urv.cat:5000/v2.0/tokens');
 
 ?>

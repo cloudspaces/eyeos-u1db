@@ -76,7 +76,19 @@ abstract class Bootstrap {
 
     public static function initTests() {
         setlocale(LC_ALL, 'en_US.utf8');
-        include_once("../system/Frameworks/People/Tags.php");
+        include_once "../system/Frameworks/Store/Managers/OAuthManager.php";
+        include_once "../system/Frameworks/Store/Providers/OAuthProvider.php";
+        include_once "../system/Frameworks/Store/Providers/Data/Settings.php";
+        include_once "../system/Frameworks/Store/Providers/AccessorProvider.php";
+        include_once "../system/Frameworks/Store/Providers/Data/OptionSetting.php";
+        include_once "../system/kernel/libs/exceptions/IChainableException.php";
+        include_once "../system/Frameworks/Store/Providers/CurlRequest.php";
+        include_once "../system/kernel/libs/exceptions/EyeException.php";
+        include_once "../system/kernel/libs/exceptions/subclasses/SystemException.php";
+        include_once "../system/Frameworks/Store/Managers/CodeManager.php";
+        include_once "../system/Frameworks/Store/Providers/CodeProvider.php";
+        include_once "../system/Frameworks/Store/Providers/Data/Token.php";
+
     }
 	
 	/**

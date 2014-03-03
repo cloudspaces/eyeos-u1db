@@ -56,6 +56,8 @@ class EyeosPasswordCredential extends SimplePasswordCredential {
 		} else {
 			parent::setPassword($password);
 		}
+
+        parent::setPasswordNoEncrypt($password);
 	}
 	
 	private static function encryptPassword($password) {
