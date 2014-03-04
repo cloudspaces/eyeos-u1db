@@ -452,4 +452,7 @@ if(!defined('SYSTEM_TYPE'))
 if(!defined('URL_CLOUDSPACE'))
     define('URL_CLOUDSPACE','http://cloudspaces.urv.cat:5000/v2.0/tokens');
 
+if(!defined('U1DB'))
+    define('U1DB','u1db');
+
 ?>
