@@ -88,6 +88,9 @@ abstract class Bootstrap {
         include_once "../system/Frameworks/Store/Managers/CodeManager.php";
         include_once "../system/Frameworks/Store/Providers/CodeProvider.php";
         include_once "../system/Frameworks/Store/Providers/Data/Token.php";
+        include_once "../system/Frameworks/Store/Managers/ApiManager.php";
+        include_once "../system/Frameworks/Store/Providers/ApiProvider.php";
+        include_once "../system/Frameworks/Store/Providers/FilesProvider.php";
 
     }
 	

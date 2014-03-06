@@ -32,18 +32,20 @@ class AccessorProvider
         $this->curlRequest->close();
 
         return $result;
-
     }
 
     public function setCurlOption($option)
     {
-
         if ($option->getValue() !== NULL){
-            if ($option->getValue() === true) $valor = 'true';
-            elseif ($option->getValue() === false) $valor = 'false';
-            else $valor = $option->getValue();
             $this->curlRequest->setOption($option->getName(),$option->getValue());
         }
+    }
+
+    public function getProcessDataU1db($json)
+    {
+        $path = "python '" . EXTERN_DIR . '/' . U1DB . "/Protocol.py' " . escapeshellarg($json);
+        Logger::getLogger('sebas')->error('PathPython:' . $path);
+        return exec($path);
     }
 }
 

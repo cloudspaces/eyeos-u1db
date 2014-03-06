@@ -41,7 +41,7 @@ class ProtocolTest (unittest.TestCase):
     should: returnArray
     """
     def test_protocol_called_typeSelectAndList_returnArray(self):
-        params = '{"type":"select","lista":[{"id":"124568"}]}'
+        params = '{"type":"select","lista":[{"file_id":"124568"}]}'
         protocol = Protocol(self.db)
         protocol.select = Mock()
         protocol.select.return_value = []

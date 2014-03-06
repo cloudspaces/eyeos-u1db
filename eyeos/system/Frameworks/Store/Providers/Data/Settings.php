@@ -15,6 +15,11 @@ class Settings
     private $httpHeader;
     private $header;
     private $sslVerifyPeer;
+    private $put;
+    private $inFile;
+    private $inFilesize;
+    private $binaryTransfer;
+    private $sslVerifyHost;
 
     public function __construct()
     {
@@ -24,6 +29,12 @@ class Settings
         $this->httpHeader = new OptionSetting(CURLOPT_HTTPHEADER);
         $this->header = new OptionSetting(CURLOPT_HEADER);
         $this->sslVerifyPeer = new OptionSetting(CURLOPT_SSL_VERIFYPEER);
+        $this->put = new OptionSetting(CURLOPT_PUT);
+        $this->inFile =  new OptionSetting(CURLOPT_INFILE);
+        $this->inFilesize = new OptionSetting(CURLOPT_INFILESIZE);
+        $this->binaryTransfer = new OptionSetting(CURLOPT_BINARYTRANSFER);
+        $this->sslVerifyHost = new OptionSetting(CURLOPT_SSL_VERIFYHOST);
+        $this->sslVerifyHost->setValue(0);
     }
 
     /**
@@ -137,6 +148,87 @@ class Settings
     {
         return $this->sslVerifyPeer;
     }
+
+    /**
+     * @param \OptionSetting $put
+     */
+    public function setPut($put)
+    {
+        $this->put->setValue($put);
+    }
+
+    /**
+     * @return \OptionSetting
+     */
+    public function getPut()
+    {
+        return $this->put;
+    }
+
+    /**
+     * @param \OptionSetting $inFilesize
+     */
+    public function setInFilesize($inFilesize)
+    {
+        $this->inFilesize->setValue($inFilesize);
+    }
+
+    /**
+     * @return \OptionSetting
+     */
+    public function getInFilesize()
+    {
+        return $this->inFilesize;
+    }
+
+    /**
+     * @param \OptionSetting $inFile
+     */
+    public function setInFile($inFile)
+    {
+        $this->inFile->setValue($inFile);
+    }
+
+    /**
+     * @return \OptionSetting
+     */
+    public function getInFile()
+    {
+        return $this->inFile;
+    }
+
+    /**
+     * @param \OptionSetting $binaryTransfer
+     */
+    public function setBinaryTransfer($binaryTransfer)
+    {
+        $this->binaryTransfer->setValue($binaryTransfer);
+    }
+
+    /**
+     * @return \OptionSetting
+     */
+    public function getBinaryTransfer()
+    {
+        return $this->binaryTransfer;
+    }
+
+    /**
+     * @param mixed $sslVerifyHost
+     */
+    public function setSslVerifyHost($sslVerifyHost)
+    {
+        $this->sslVerifyHost->setValue($sslVerifyHost);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSslVerifyHost()
+    {
+        return $this->sslVerifyHost;
+    }
+
 
 
 }

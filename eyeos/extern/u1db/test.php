@@ -49,11 +49,31 @@ $json = json_encode($params);
 $mystring =exec("python Protocol.py " . escapeshellarg($json));
 if(!$mystring){
 
-    echo "python exec failed:" . $mystring;
+    echo "python exec failed:" . $mystring . "\n";
 }
 else{
     echo $mystring;
-    echo "successfully executed!";
+    echo "successfully executed!\n";
+
+    $params = array();
+    $params['type'] = 'select';
+    $params['lista'] = array();
+    $file = array();
+    $file['file_id'] = -7755273878059615652;
+
+    array_push($params['lista'],$file);
+
+    $json = json_encode($params);
+
+    $mystring =exec("python Protocol.py " . escapeshellarg($json));
+    if(!$mystring){
+
+        echo "python exec failed:" . $mystring . "\n";
+    }
+    else{
+        echo $mystring . "\n";
+    }
+
 }
 
 ?>

@@ -519,6 +519,41 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 		return $arrayTree;
 	}
 
+    public static function getMetadata($params) {
+
+        $oauthManager = new OAuthManager();
+        $codeManager = new CodeManager();
+        $settings = new Settings();
+        $settings->setUrl(URL_CLOUDSPACE);
+        $settings->setCustomRequest("POST");
+        $postfields = array();
+        $postfields['auth'] = array();
+        $postfields['auth']['passwordCredentials'] = array();
+        $postfields['auth']['passwordCredentials']['username'] = $codeManager->getDecryption($_SESSION['user']);
+        $postfields['auth']['passwordCredentials']['password'] = $codeManager->getDecryption($_SESSION['password']);
+        $postfields['auth']['tenantName'] = $codeManager->getDecryption($_COOKIE['user']);
+        $settings->setPostFields(json_encode($postfields));
+        $settings->setReturnTransfer(true);
+        $settings->setHttpHeader(array("Content-Type: application/json"));
+        $settings->setHeader(false);
+        $settings->setSslVerifyPeer(false);
+        $date = new DateTime();
+
+        $token = $oauthManager->verifyDateExpireToken($_COOKIE['dateExpires'],date_format($date, 'Y-m-d H:i:s'),$settings);
+
+        if($token !== false) {
+            $_SESSION['token'] = $codeManager->getEncryption($token->getId());
+            $_SESSION['url'] = $codeManager->getEncryption($token->getUrl());
+            $_SESSION['dateExpires'] = $token->getExpire();
+        }
+
+        $path = $params['path'];
+        $fileId = isset($params['fileId'])?$params['fileId']:null;
+        $apiManager = new ApiManager();
+        $result = $apiManager->getMetadata($path,$fileId);
+        return $result;
+    }
+
 	/**
 	 * SimplifyStruct flat array data struct to just 2 level and remove all not
 	 * javascript file

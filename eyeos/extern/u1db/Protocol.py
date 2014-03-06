@@ -17,7 +17,7 @@ class Protocol:
         if type == "insert":
             result = self.insert(lista)
         elif type == "select":
-            result = self.select(lista[0]["id"])
+            result = self.select(lista[0]["file_id"])
         elif type == "update":
             result = self.update(lista)
         elif type == "delete":

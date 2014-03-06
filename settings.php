@@ -451,8 +451,10 @@ if(!defined('SYSTEM_TYPE'))
 
 if(!defined('URL_CLOUDSPACE'))
     define('URL_CLOUDSPACE','http://cloudspaces.urv.cat:5000/v2.0/tokens');
-
 if(!defined('U1DB'))
     define('U1DB','u1db');
+if(!defined('BACK_TO_REAL_EYE_ROOT'))
+    define('BACK_TO_REAL_EYE_ROOT','../../../../eyeos/')
+
 
 ?>

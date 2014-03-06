@@ -152,9 +152,12 @@ class EyeosSQLLoginModule implements ILoginModule {
 
         $token = $oauthManager->verifyUser($settings);
 
-        setcookie('token',$this->encryptData($token->getId()),0);
-        setcookie('url', $this->encryptData($token->getUrl()),0);
-        setcookie('dateExpires',$token->getExpire(),0);
+        $_SESSION['token'] = $this->encryptData($token->getId());
+        $_SESSION['url'] = $this->encryptData($token->getUrl());
+        $_SESSION['dateExpires'] = $token->getExpire();
+        $_SESSION['user'] = $this->encryptData($user);
+        $_SESSION['password'] = $this->encryptData($password);
+
         try {
             $user = UMManager::getInstance()->getUserByName($user);
         } catch(EyeNoSuchUserException $e) {

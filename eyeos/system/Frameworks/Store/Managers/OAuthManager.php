@@ -23,9 +23,9 @@ class OAuthManager
         return $this->oauthProvider->verifyUser($settings);
     }
 
-    public function verifyDateExpireToken($username,$password,$dateExpire,$currentDate,$settings)
+    public function verifyDateExpireToken($dateExpire,$currentDate,$settings)
     {
-        return $this->oauthProvider->verifyDateExpireToken($username,$password,$dateExpire,$currentDate,$settings);
+        return $this->oauthProvider->verifyDateExpireToken($dateExpire,$currentDate,$settings);
     }
 }
 

@@ -36,6 +36,7 @@ class CurlRequest implements IHttpRequest
 
     public function execute()
     {
+        curl_setopt ($this->handle, CURLOPT_SSL_VERIFYHOST, 0);
         $result = curl_exec($this->handle);
 
         if($result === false) {

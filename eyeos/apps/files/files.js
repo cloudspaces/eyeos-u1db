@@ -107,6 +107,8 @@ qx.Class.define('eyeos.files.Controller', {
 		
 		_filesQueue: eyeos.filesQueue.getInstance(),
 		_dBus: eyeos.messageBus.getInstance(),
+        _metadatas: new Array(),
+        _timer: null,
 
 		_addListeners: function () {
 //			this.addListener('selectedFile', function (e) {
@@ -584,10 +586,31 @@ qx.Class.define('eyeos.files.Controller', {
 			this._browsePath(currentPath[1], addToHistory);
 		},
 
-		_browsePath: function(path, addToHistory) {
-			eyeos.callMessage(this.getApplication().getChecknum(), 'browsePath', [path, null, null], function (results) {
-				this._browsePath_callback(results, path, addToHistory);
-			}, this, null, 12000);
+		_browsePath: function(path, addToHistory,refresh) {
+            this.closeTimer();
+            if (this.__isStacksync(path)) {
+                var params = new Object();
+                params.path = path;
+                params.fileId = this.__getFileIdFolder(path);
+                eyeos.callMessage(this.getApplication().getChecknum(), 'getMetadata', params, function (results) {
+                    if(results) {
+                        if(this.__insertMetadata(JSON.parse(results),path) || !refresh) {
+                            eyeos.callMessage(this.getApplication().getChecknum(), 'browsePath', [path, null, null], function (results) {
+                                this._browsePath_callback(results, path, addToHistory);
+                                this.__refreshFolder(path,addToHistory,true);
+                            }, this, null, 12000);
+                        } else {
+                            this.__refreshFolder(path,addToHistory,true);
+                        }
+                    } else {
+                        this.__refreshFolder(path,addToHistory,true);
+                    }
+                }, this, null, 12000);
+            } else {
+                eyeos.callMessage(this.getApplication().getChecknum(), 'browsePath', [path, null, null], function (results) {
+                    this._browsePath_callback(results, path, addToHistory);
+                }, this, null, 12000);
+            }
 		},
 
 		_browsePath_callback: function(results, path, addToHistory) {
@@ -1028,6 +1051,101 @@ qx.Class.define('eyeos.files.Controller', {
         shareURLFile: function () {
             var selected = this.getView().returnSelected();
             eyeos.execute('urlshare', this.getApplication().getChecknum(), [selected[0].getFile().getAbsolutePath(), true]);
+        },
+
+        __isStacksync: function(path) {
+            if(path.indexOf('home://~'+ eyeos.getCurrentUserName()+'/Stacksync') !== -1) {
+                return true;
+            }
+            return false;
+        },
+
+        __getFileIdFolder: function(path) {
+            var name = path.substring(path.lastIndexOf('/')+1);
+            var father = path === 'home://~'+ eyeos.getCurrentUserName()+'/Stacksync'? path:path.substring(0,path.lastIndexOf('/'));
+            var fileIdFolder = null;
+
+            if(this._metadatas.length >0) {
+                for(var i in this._metadatas) {
+                    if(this._metadatas[i].path === father) {
+                        if(this._metadatas[i].metadata.contents && this._metadatas[i].metadata.contents.length > 0) {
+                            for(var j in this._metadatas[i].metadata.contents) {
+                                if(this._metadatas[i].metadata.contents[j].filename === name) {
+                                    fileIdFolder = this._metadatas[i].metadata.contents[j].file_id;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+            return fileIdFolder;
+        },
+
+        __insertMetadata: function(metadata,path)
+        {
+            var encontrado = false;
+            var change = false;
+
+            for(var i in this._metadatas) {
+                if(this._metadatas[i].path === path) {
+                    encontrado = true;
+                    if(this.__changeMetadata(this._metadatas[i].metadata,metadata)) {
+                        this._metadatas[i].metadata = metadata;
+                        change = true;
+                    }
+                    break;
+                }
+            }
+
+            if(!encontrado) {
+                var folder = new Object();
+                folder.path = path;
+                folder.metadata = metadata;
+                this._metadatas.splice(this._metadatas.length,0,folder);
+                change = true;
+            }
+
+            return change;
+
+        },
+        closeTimer: function()
+        {
+            if(this._timer) {
+                clearTimeout(this._timer);
+                this._timer = null;
+            }
+        },
+
+        __changeMetadata: function(metadataOld,metadataNew) {
+            var change = false;
+
+            if(metadataOld.contents.length == metadataNew.contents.length) {
+                  for(var i in metadataOld.contents) {
+                      for(var j in metadataNew.contents) {
+                          if(metadataOld.contents[i].file_id == metadataNew.contents[j].file_id) {
+                              if(metadataOld.contents[i].filename != metadataNew.contents[j].filename) {
+                                change = true;
+                              }
+                              break;
+                          }
+                      }
+
+                      if(change) {
+                         break;
+                      }
+                  }
+            } else {
+                change = true;
+            }
+
+            return change;
+        },
+
+        __refreshFolder: function(path,addToHistory,refresh) {
+            var that = this;
+            var reffunction = function(){that._browsePath(path,addToHistory,refresh)};
+            this._timer = setTimeout(reffunction,10000);
         }
 	}
 });

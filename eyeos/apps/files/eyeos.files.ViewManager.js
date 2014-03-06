@@ -148,6 +148,10 @@ qx.Class.define('eyeos.files.ViewManager', {
 			this._mainWindow.add(this._content, {flex: 1});
 			this.add(this._mainWindow, {flex: 1})
 			this.add(this._socialBar);
+
+            this.addListener('beforeClose',function() {
+                this.getController().closeTimer();
+            },this);
 		},
 
 		_buildDynamicBar: function (which, buttons, menus) {
@@ -450,6 +454,10 @@ qx.Class.define('eyeos.files.ViewManager', {
 				icon: 'index.php?extern=images/16x16/places/user-desktop.png',
 				path: 'home://~'+eyeos.getCurrentUserName()+'/Desktop'
 			}, {
+                label: 'Stacksync',
+                icon: 'index.php?extern=images/16x16/places/folder-txt.png',
+                path: 'home://~'+eyeos.getCurrentUserName()+'/Stacksync'
+            }, {
 				label: 'Documents',
 				icon: 'index.php?extern=images/16x16/places/folder-txt.png',
 				path: 'home://~'+eyeos.getCurrentUserName()+'/Documents'
