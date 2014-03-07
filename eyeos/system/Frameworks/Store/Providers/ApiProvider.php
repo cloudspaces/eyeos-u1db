@@ -20,25 +20,14 @@ class ApiProvider
     {
         $url = $url . '/stacksync/metadata';
         if($fileId) $url .= '?file_id=' . $fileId . '&list=true';
-        $settings = new Settings();
-        $settings->setUrl($url);
-        $header = array();
-        $header[0] = "X-Auth-Token: " . $tokenId;
-        $header[1] = "StackSync-api: true";
-        $settings->setSslVerifyPeer(false);
-        $settings->setHeader(false);
-        $settings->setReturnTransfer(true);
-        $settings->setHttpHeader($header);
-
-        $result = json_decode($this->accessorProvider->sendMessage($settings));
-        if($result) {
-            $result = $this->replaceNull($result);
-        }
-        return $result;
+        return $this->executeAccessor($url,$tokenId);
     }
 
-    private function getValue($value) {
-        return $value?'true':'false';
+    public function createFile($url,$tokenId,$filename,$file,$filesize,$parent = NULL)
+    {
+        $url = $url . '/stacksync/files?file_name=' . urlencode($filename);
+        if($parent) $url .= '&parent=' . $parent;
+        return $this->executeAccessor($url,$tokenId,$file,$filesize);
     }
 
     public function replaceNull($json) {
@@ -77,6 +66,32 @@ class ApiProvider
         }
 
         return $json;
+    }
+
+    public function executeAccessor($url,$tokenId,$file = NULL,$filesize = NULL)
+    {
+        $settings = new Settings();
+        $settings->setUrl($url);
+        $header = array();
+        $header[0] = "X-Auth-Token: " . $tokenId;
+        $header[1] = "StackSync-api: true";
+        $settings->setSslVerifyPeer(false);
+        $settings->setHeader(false);
+        $settings->setReturnTransfer(true);
+        $settings->setHttpHeader($header);
+
+        if($file) {
+            $settings->setPut(true);
+            $settings->setInFile($file);
+            $settings->setInFilesize($filesize);
+            $settings->setBinaryTransfer(true);
+        }
+
+        $result = json_decode($this->accessorProvider->sendMessage($settings));
+        if($result) {
+            $result = $this->replaceNull($result);
+        }
+        return $result;
     }
 }
 

@@ -50,3 +50,16 @@ class Metadata:
             files = self.db.get_from_index("by-fileid",id)
             if len(files) > 0:
                 self.db.delete_doc(files[0])
+
+    def getParent(self,path,folderParent):
+        results = []
+        self.db.create_index("by-path", "path")
+        files = self.db.get_from_index("by-path",path)
+        for file in files:
+            if file.content['filename'] == folderParent:
+                results.append(file.content)
+                break
+        return results
+
+
+

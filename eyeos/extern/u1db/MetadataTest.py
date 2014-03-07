@@ -78,6 +78,20 @@ class MetadataTest (unittest.TestCase):
         files = self.db.get_from_index("by-fileid",'*')
         self.assertEquals(0,len(files))
 
+
+    """
+    method: getParent
+    when: called
+    with: path
+    should: returnArray
+      """
+    def test_getParent_called_path_returnArray(self):
+        array = self.getArrayParent()
+        self.sut.insert(array)
+        data = self.sut.getParent('/Documents/prueba/',"hola")
+        data.sort()
+        self.assertEquals(array[2],data[0])
+
     def getArrayInsert(self):
         array = [{u'status': None, u'mimetype': None, u'parent_file_id': u'null', u'checksum': None, u'filename': u'Root', u'is_root': True, u'version': None, u'file_id': u'null', u'is_folder': True, u'path': None, u'size': None, u'user': None},
                  {u'status': u'NEW', u'mimetype': u'inode/directory', u'parent_file_id': u'null', u'server_modified': u'2013-11-11 15:40:45.784', u'checksum': 0, u'client_modified': u'2013-11-11 15:40:45.784', u'filename': u'helpFolder', u'is_root': False, u'version': 1, u'file_id': -7755273878059615652, u'is_folder': True, u'path': u'/', u'size': 0, u'user': u'web'}]
@@ -94,6 +108,13 @@ class MetadataTest (unittest.TestCase):
         array = [{u'file_id': u'null'},
                  {u'file_id': -7755273878059615652}]
         array.sort()
+        return array
+
+    def getArrayParent(self):
+        array = [{u'status': None, u'mimetype': None, u'parent_file_id': u'null', u'checksum': None, u'filename': u'Documents', u'is_root': True, u'version': None, u'file_id': u'754050', u'is_folder': True, u'path': u'/', u'size': None, u'user': None},
+                 {u'status': None, u'mimetype': None, u'parent_file_id': u'754050', u'checksum': None, u'filename': u'prueba', u'is_root': True, u'version': None, u'file_id': u'123456', u'is_folder': True, u'path': u'/Documents/', u'size': None, u'user': None},
+                 {u'status': None, u'mimetype': None, u'parent_file_id': u'123456', u'checksum': None, u'filename': u'hola', u'is_root': True, u'version': None, u'file_id': u'77777', u'is_folder': True, u'path': u'/Documents/prueba/', u'size': None, u'user': None},
+                 {u'status': None, u'mimetype': None, u'parent_file_id': u'123456', u'checksum': None, u'filename': u'pepe', u'is_root': True, u'version': None, u'file_id': u'88888', u'is_folder': True, u'path': u'/Documents/prueba/', u'size': None, u'user': None}]
         return array
 
 

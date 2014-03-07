@@ -81,3 +81,18 @@ class ProtocolTest (unittest.TestCase):
         protocol.delete.assert_called_once_with(aux['lista'])
         self.assertEquals('true',result)
 
+
+    """
+    method: protocol
+    when: called
+    with: typeGetParentAndPath
+    should: returnArray
+    """
+    def test_protocol_called_typeSelectAndList_returnArray(self):
+        params = '{"type":"parent","lista":[{"path":"/Documents/prueba/","folder":"hola"}]}'
+        protocol = Protocol(self.db)
+        protocol.getParent = Mock()
+        protocol.getParent.return_value = []
+        result = protocol.protocol(params)
+        protocol.getParent.assert_called_once_with("/Documents/prueba/","hola")
+        self.assertEquals('[]',result)

@@ -22,6 +22,8 @@ class Protocol:
             result = self.update(lista)
         elif type == "delete":
             result = self.delete(lista)
+        elif type == "parent":
+            result = self.getParent(lista[0]['path'],lista[0]["folder"])
 
         return json.dumps(result)
 
@@ -39,6 +41,9 @@ class Protocol:
     def delete(self,lista):
         self.metadata.delete(lista)
         return True
+
+    def getParent(self,path,folder):
+        return self.metadata.getParent(path,folder)
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:

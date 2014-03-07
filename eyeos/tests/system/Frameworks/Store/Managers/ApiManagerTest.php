@@ -179,7 +179,16 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
     }
 
-
+    /**
+     *method: createFile
+     * when: called
+     * with:filenameAndFileAndFilesizeAndPathParent
+     */
+    public function test_createFile_called_filenameAndFileAndFilesize_calledU1dbUpdate()
+    {
+        $metadata = '{"status": "NEW", "mimetype": "application/x-empty", "parent_file_version": null, "parent_file_id": "null", "root_id": "stacksync", "server_modified": "Fri Mar 07 11:55:32 CET 2014", "checksum": 694355124, "client_modified": "Fri Mar 07 11:55:32 CET 2014", "filename": "pruebas.txt", "version": 7, "file_id": -7705621709365758847, "is_folder": false, "chunks": ["A6960EF3C0B501B4C338DE32A6C8E9A5004FE350"], "path": "/hola", "size": 15, "user": "web"}';
+        $this->exerciseCreateFile($metadata);
+    }
 
     private function exerciseGetMetadataWithoutData($path,$metadata, $fileId = NULL)
     {
@@ -200,6 +209,28 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->will($this->returnValue('true'));
 
         $this->sut->getMetadata($path,$fileId);
+    }
+
+    private function exerciseCreateFile($metadata)
+    {
+        $path = "resources/pruebas.txt";
+        $file = fopen($path, "r");
+        $filename = "pruebas.txt";
+        $pathParent = "/Documents/prueba/";
+        $folderParent = "hola";
+        $this->apiProviderMock->expects($this->once())
+            ->method('createFile')
+            ->will($this->returnValue(json_decode($metadata)));
+
+        $this->accessorProviderMock->expects($this->at(0))
+            ->method('getProcessDataU1db')
+            ->will($this->returnValue('[{"status": "NEW", "mimetype": "inode/directory", "parent_file_id": "null", "checksum": 0, "client_modified": "2013-12-10 22:53:21.052", "filename": "Cloudspaces_trial", "is_root": false, "version": 1, "file_id": "-1478707423980200270", "server_modified": "2013-12-10 22:53:21.052", "path": "/", "user": "web", "is_folder": true, "size": 0}]'));
+
+        $this->accessorProviderMock->expects($this->at(1))
+            ->method('getProcessDataU1db')
+            ->will($this->returnValue('true'));
+        $this->sut->createFile($filename,$file,filesize($path),$pathParent,$folderParent);
+        fclose($file);
     }
 
 }

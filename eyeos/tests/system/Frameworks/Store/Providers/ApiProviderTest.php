@@ -10,11 +10,15 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
 {
     private $accessorProviderMock;
     private $sut;
+    private $url;
+    private $token;
 
     public function setUp()
     {
         $this->accessorProviderMock = $this->getMock('AccessorProvider');
         $this->sut = new ApiProvider($this->accessorProviderMock);
+        $this->url = "https://cloudspaces.urv.cat:8080/v1/AUTH_6d3b65697d5048d5aaffbb430c9dbe6a";
+        $this->token = '555555';
     }
 
     public function tearDown()
@@ -43,17 +47,56 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->exerciseMetadata($metadataIn,$metadataOut,$fileId);
     }
 
+    /**
+     *method: createFile
+     * when: called
+     * with: urlAndTokenAndFilenameAndFileAndFilesize
+     * should: returnCorrect
+     */
+    public function test_createFile_called_urlAndTokenAndFilenameAndFileAndFilesize_returnCorrect()
+    {
+        $metadata = '{"status": "CHANGED", "mimetype": "application/x-empty", "parent_file_version": null, "parent_file_id": "null", "root_id": "stacksync", "server_modified": "Fri Mar 07 11:55:32 CET 2014", "checksum": 694355124, "client_modified": "Fri Mar 07 11:55:32 CET 2014", "filename": "pruebas.txt", "version": 7, "file_id": -7705621709365758847, "is_folder": false, "chunks": ["A6960EF3C0B501B4C338DE32A6C8E9A5004FE350"], "path": "/hola", "size": 15, "user": "web"}';
+        $this->exerciseCreateFile($metadata);
+    }
+
+    /**
+     *method: createFile
+     * when: called
+     * with: urlAndTokenAndFilenameAndFileAndFilesizeAndParent
+     * should: returnCorrect
+     */
+    public function test_createFile_called_urlAndTokenAdnFilenameAndFileAndFilesizeAndParent_returnCorrect()
+    {
+        $parent = '3894030578176289733';
+        $metadata = '{"status": "CHANGED", "mimetype": "application/x-empty", "parent_file_version": null, "parent_file_id": 3894030578176289733, "root_id": "stacksync", "server_modified": "Fri Mar 07 11:55:32 CET 2014", "checksum": 694355124, "client_modified": "Fri Mar 07 11:55:32 CET 2014", "filename": "pruebas.txt", "version": 7, "file_id": -7705621709365758847, "is_folder": false, "chunks": ["A6960EF3C0B501B4C338DE32A6C8E9A5004FE350"], "path": "/hola", "size": 15, "user": "web"}';
+        $this->exerciseCreateFile($metadata,$parent);
+    }
+
     private function exerciseMetadata($metadataIn,$metadatOut,$fileId = NULL)
     {
-        $url = "https://cloudspaces.urv.cat:8080/v1/AUTH_6d3b65697d5048d5aaffbb430c9dbe6a";
-        $tokenId = '555555';
+        $url = $this->url . "/metadata";
 
         $this->accessorProviderMock->expects($this->once())
             ->method('sendMessage')
             ->will($this->returnValue($metadataIn));
 
-        $result = $this->sut->getMetadata($url,$tokenId,$fileId);
+        $result = $this->sut->getMetadata($url,$this->token,$fileId);
         $this->assertEquals(json_decode($metadatOut),$result);
+    }
+
+    private function exerciseCreateFile($metadata,$parent = NULL)
+    {
+        $path = "resources/pruebas.txt";
+        $file = fopen($path, "r");
+        $filename = "pruebas.txt";
+
+        $this->accessorProviderMock->expects($this->once())
+            ->method('sendMessage')
+            ->will($this->returnValue($metadata));
+
+        $result = $this->sut->createFile($this->url,$this->token,$filename,$file,filesize($path),$parent);
+        $this->assertEquals(json_decode($metadata),$result);
+        fclose($file);
     }
 
 

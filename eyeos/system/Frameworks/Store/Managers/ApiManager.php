@@ -88,6 +88,33 @@ class ApiManager
         return $respuesta;
     }
 
+    public function createFile($filename,$file,$filesize,$pathParent,$folderParent = NULL)
+    {
+        $url = $this->getDecryption($_SESSION['url']);
+        $token = $this->getDecryption($_SESSION['token']);
+        $respuesta = '';
+        $parentId = -1;
+        if($folderParent !== NULL) {
+            $lista = array();
+            $lista['path'] = $pathParent;
+            $lista['folder'] = $folderParent;
+            $u1db = json_decode($this->callProcessU1db('parent',$lista));
+            if($u1db !== NULL) {
+                $parentId = $u1db[0]->file_id === "null"?NULL:$u1db[0]->file_id;
+            }
+        } else {
+            $parentId = NULL;
+        }
+        if($parentId !== -1) {
+            Logger::getLogger('sebas')->error('PathStore:' . $parentId);
+            $metadata = $this->apiProvider->createFile($url,$token,$filename,$file,$filesize,$parentId);
+            $this->callProcessU1db('insert',$metadata);
+            $respuesta = json_encode($metadata);
+        }
+
+        return $respuesta;
+    }
+
     public function search($array, $key, $value)
     {
         if (is_array($array)) {
