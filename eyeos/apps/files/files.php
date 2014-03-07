@@ -531,7 +531,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         $postfields['auth']['passwordCredentials'] = array();
         $postfields['auth']['passwordCredentials']['username'] = $codeManager->getDecryption($_SESSION['user']);
         $postfields['auth']['passwordCredentials']['password'] = $codeManager->getDecryption($_SESSION['password']);
-        $postfields['auth']['tenantName'] = $codeManager->getDecryption($_COOKIE['user']);
+        $postfields['auth']['tenantName'] = $codeManager->getDecryption($_SESSION['user']);
         $settings->setPostFields(json_encode($postfields));
         $settings->setReturnTransfer(true);
         $settings->setHttpHeader(array("Content-Type: application/json"));
@@ -539,7 +539,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         $settings->setSslVerifyPeer(false);
         $date = new DateTime();
 
-        $token = $oauthManager->verifyDateExpireToken($_COOKIE['dateExpires'],date_format($date, 'Y-m-d H:i:s'),$settings);
+        $token = $oauthManager->verifyDateExpireToken($_SESSION['dateExpires'],date_format($date, 'Y-m-d H:i:s'),$settings);
 
         if($token !== false) {
             $_SESSION['token'] = $codeManager->getEncryption($token->getId());
