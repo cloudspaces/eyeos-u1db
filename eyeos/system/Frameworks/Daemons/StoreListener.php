@@ -48,6 +48,12 @@ class StoreListener extends AbstractFileAdapter implements ISharingListener {
                 Logger::getLogger('sebas')->error('PathStore:' . $folder);
 
                 $apiManager->createFile($e->getSource()->getName(),$file,filesize($pathAbsolute),$pathParent,$folder);
+
+
+                $params = array($e->getSource()->getParentPath());
+                $message = new ClientBusMessage('file', 'refreshStackSync',$params);
+                ClientMessageBusController::getInstance()->queueMessage($message);
+
                 fclose($file);
             }
         }

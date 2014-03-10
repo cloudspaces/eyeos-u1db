@@ -353,11 +353,16 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 		$currentUser = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
 		$settings = MetaManager::getInstance()->retrieveMeta($currentUser);
 		$filesInfo = array();
+        $apiManager = new ApiManager();
 		foreach ($params as $param) {
-			$fileToRemove = FSI::getFile($param);
+			$fileToRemove = FSI::getFile($param['file']);
 			$filesInfo[] = $fileToRemove->getAbsolutePath();
-			$fileToRemove->delete(true);
-			self::removeUrlShareInfo($param);
+			if($fileToRemove->delete(true)) {
+			    self::removeUrlShareInfo($param['file']);
+                if(isset($param['id'])) {
+                    $apiManager->deleteComponent($param['id']);
+                }
+            }
 		}
 		return $filesInfo;
 	}

@@ -552,6 +552,14 @@ qx.Class.define('eyeos.files.Controller', {
 				}
 			}
 			, this));
+
+
+            this._dBusListeners.push(this._dBus.addListener('eyeos_file_refreshStackSync',function(e) {
+                if(e.getData().length > 0) {
+                    this._browsePath(e.getData()[0]);
+                }
+            },this));
+
 		},
 
 		_addSocialBarUpdaterListeners: function () {
@@ -943,15 +951,30 @@ qx.Class.define('eyeos.files.Controller', {
 				var files = new Array();
 				for (var i = 0; i < filesToDelete.length; ++i) {
 					if(filesToDelete[i].getFile().getAbsolutePath() != 'home://~' + eyeos.getCurrentUserName() + '/Desktop') {
-						files.push(filesToDelete[i].getFile().getAbsolutePath());
+                        var params = new Object();
+                        params.file = filesToDelete[i].getFile().getAbsolutePath();
+                        if (this.__isStacksync(currentPath)) {
+                            var id = this.__getFileId(currentPath,filesToDelete[i].getFile().getName());
+                            if (id !== null) {
+                                params.id =  id;
+                            }
+                        }
+						files.push(params);
 					}
 				}
 				if(files.length == 0) {
 					alert('You can not deleted this folder');
 					return;
 				}
+
+                this.closeTimer();
+
 				eyeos.callMessage(this.getApplication().getChecknum(), 'delete', files, function (results) {
-					this._dBus.send('files', 'delete', [currentPath, results]);
+                    if(this.__isStacksync(currentPath)) {
+                        this._browsePath(currentPath);
+                    } else {
+					    this._dBus.send('files', 'delete', [currentPath, results]);
+                    }
 				}, this);
 			}
 		},
@@ -1176,6 +1199,28 @@ qx.Class.define('eyeos.files.Controller', {
             var that = this;
             var reffunction = function(){that._browsePath(path,addToHistory,refresh)};
             this._timer = setTimeout(reffunction,10000);
+        },
+
+        __getFileId: function(path,filename) {
+            var fileId = null;
+
+            if(this._metadatas.length >0) {
+                for(var i in this._metadatas) {
+                    if(this._metadatas[i].path === path) {
+                        if(this._metadatas[i].metadata.contents && this._metadatas[i].metadata.contents.length > 0) {
+                            for(var j in this._metadatas[i].metadata.contents) {
+                                if(this._metadatas[i].metadata.contents[j].filename === filename) {
+                                    fileId = this._metadatas[i].metadata.contents[j].file_id;
+                                    break;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+
+            return fileId;
         }
 	}
 });

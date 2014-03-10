@@ -97,15 +97,34 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->exerciseCreateFolder($metadata,$parent);
     }
 
+
+    /**
+     *method: deleteComponent
+     * when: called
+     * with: idFile
+     * should: returnCorrect
+     */
+    public function test_deleteComponent_called_idFile_returnCorrect()
+    {
+        $fileId = "-5763789518128894388";
+        $metadata = '{"status": "DELETED", "mimetype": "application/x-empty", "parent_file_version": "", "parent_file_id": "null", "root_id": "stacksync", "server_modified": "Mon Mar 10 14:10:12 CET 2014", "checksum": 701498804, "client_modified": "Mon Mar 10 14:10:12 CET 2014", "filename": "New File 1.txt", "version": 12, "file_id": "-5763789518128894388", "is_folder": false, "chunks": [], "path": "/", "size": 14, "user": "web"}';
+
+        $this->accessorProviderMock->expects($this->once())
+            ->method('sendMessage')
+            ->will($this->returnValue($metadata));
+
+        $result = $this->sut->deleteComponent($this->url,$this->token,$fileId);
+        $this->assertEquals(true,$result);
+
+    }
+
     private function exerciseMetadata($metadataIn,$metadatOut,$fileId = NULL)
     {
-        $url = $this->url . "/metadata";
-
         $this->accessorProviderMock->expects($this->once())
             ->method('sendMessage')
             ->will($this->returnValue($metadataIn));
 
-        $result = $this->sut->getMetadata($url,$this->token,$fileId);
+        $result = $this->sut->getMetadata($this->url,$this->token,$fileId);
         $this->assertEquals(json_decode($metadatOut),$result);
     }
 

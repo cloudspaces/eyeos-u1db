@@ -123,6 +123,19 @@ class ApiManager
         return json_encode($metadata);
     }
 
+    public function deleteComponent($idComponent)
+    {
+        $url = $this->getDecryption($_SESSION['url']);
+        $token = $this->getDecryption($_SESSION['token']);
+        $result = false;
+        if($this->apiProvider->deleteComponent($url,$token,$idComponent)) {
+            $file = array();
+            $file['file_id'] = $idComponent;
+            $result = $this->callProcessU1db('delete',$file) === 'true'?true:false;
+        }
+        return $result;
+    }
+
     public function search($array, $key, $value)
     {
         if (is_array($array)) {

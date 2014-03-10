@@ -233,6 +233,27 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->exerciseCreateFolder($metadataProvider);
     }
 
+    /**
+     *method: deleteComponent
+     * when: called
+     * with: idFile
+     * should: calledU1dbDelete
+     */
+    public function test_deleteComponent_called_idFile_calledU1dbDelete()
+    {
+        $fileId = "546556566";
+        $this->apiProviderMock->expects($this->once())
+            ->method('deleteComponent')
+            ->will($this->returnValue(true));
+
+        $this->accessorProviderMock->expects($this->once())
+            ->method('getProcessDataU1db')
+            ->will($this->returnValue('true'));
+
+        $this->sut->deleteComponent($fileId);
+
+    }
+
 
     private function exerciseGetMetadataWithoutData($path,$metadata, $fileId = NULL)
     {

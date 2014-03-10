@@ -34,7 +34,19 @@ class ApiProvider
     {
         $url = $url .'/stacksync/files?folder_name=' . urlencode($foldername);
         if($parent) $url .= '&parent=' . $parent;
-        return $this->executeAccessor($url,$tokenId,null,null,true);
+        return $this->executeAccessor($url,$tokenId,null,null,'POST');
+    }
+
+    public function deleteComponent($url,$tokenId,$idComponent) {
+        $result = false;
+        $url .= '/stacksync/files?file_id=' . $idComponent;
+        $metadata = $this->executeAccessor($url,$tokenId,null,null,'DELETE');
+
+        if(array_key_exists("status",$metadata) && $metadata->status === 'DELETED') {
+            $result = true;
+        }
+
+        return $result;
     }
 
     public function replaceNull($json) {
@@ -86,7 +98,7 @@ class ApiProvider
         return $json;
     }
 
-    public function executeAccessor($url,$tokenId,$file = NULL,$filesize = NULL,$isFolder = false)
+    public function executeAccessor($url,$tokenId,$file = NULL,$filesize = NULL,$request = NULL)
     {
         $settings = new Settings();
         $settings->setUrl($url);
@@ -97,9 +109,9 @@ class ApiProvider
         $settings->setHeader(false);
         $settings->setReturnTransfer(true);
         $settings->setHttpHeader($header);
-        if($isFolder === true)
+        if(isset($request))
         {
-            $settings->setCustomRequest('POST');
+            $settings->setCustomRequest($request);
         }
 
         if($file) {
