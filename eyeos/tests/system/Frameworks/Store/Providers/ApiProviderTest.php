@@ -108,14 +108,20 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     {
         $fileId = "-5763789518128894388";
         $metadata = '{"status": "DELETED", "mimetype": "application/x-empty", "parent_file_version": "", "parent_file_id": "null", "root_id": "stacksync", "server_modified": "Mon Mar 10 14:10:12 CET 2014", "checksum": 701498804, "client_modified": "Mon Mar 10 14:10:12 CET 2014", "filename": "New File 1.txt", "version": 12, "file_id": "-5763789518128894388", "is_folder": false, "chunks": [], "path": "/", "size": 14, "user": "web"}';
+        $this->exerciseDeleteComponent($fileId,$metadata);
+    }
 
-        $this->accessorProviderMock->expects($this->once())
-            ->method('sendMessage')
-            ->will($this->returnValue($metadata));
-
-        $result = $this->sut->deleteComponent($this->url,$this->token,$fileId);
-        $this->assertEquals(true,$result);
-
+    /**
+     *method: deleteComponent
+     * when: called
+     * with: idFolder
+     * should: returnCorrect
+     */
+    public function test_deleteComponent_called_idFolder_returnCorrect()
+    {
+        $folderId = "-5763789518128894388";
+        $metadata = '{"status": "DELETED", "mimetype": "application/x-empty", "parent_file_version": "", "parent_file_id": "null", "root_id": "stacksync", "server_modified": "Mon Mar 10 14:10:12 CET 2014", "checksum": 701498804, "client_modified": "Mon Mar 10 14:10:12 CET 2014", "filename": "New File 1.txt", "version": 12, "file_id": "-5763789518128894388", "is_folder": true, "chunks": [], "path": "/", "size": 14, "user": "web"}';
+        $this->exerciseDeleteComponent($folderId,$metadata);
     }
 
     private function exerciseMetadata($metadataIn,$metadatOut,$fileId = NULL)
@@ -152,6 +158,16 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
 
         $result = $this->sut->createFolder($this->url,$this->token,$folderName,$parent);
         $this->assertEquals(json_decode($metadata),$result);
+    }
+
+    private function exerciseDeleteComponent($idComponent,$metadata)
+    {
+        $this->accessorProviderMock->expects($this->once())
+            ->method('sendMessage')
+            ->will($this->returnValue($metadata));
+
+        $result = $this->sut->deleteComponent($this->url,$this->token,$idComponent);
+        $this->assertEquals(true,$result);
     }
 }
 

@@ -242,16 +242,19 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     public function test_deleteComponent_called_idFile_calledU1dbDelete()
     {
         $fileId = "546556566";
-        $this->apiProviderMock->expects($this->once())
-            ->method('deleteComponent')
-            ->will($this->returnValue(true));
+        $this->exerciseDeleteComponent($fileId);
+    }
 
-        $this->accessorProviderMock->expects($this->once())
-            ->method('getProcessDataU1db')
-            ->will($this->returnValue('true'));
-
-        $this->sut->deleteComponent($fileId);
-
+    /**
+     *method: deleteComponent
+     * when: called
+     * with: idFolder
+     * should: calledU1dbDelete
+     */
+    public function test_deleteComponent_called_idFolder_calledU1dbDelete()
+    {
+        $folderId = "546556566";
+        $this->exerciseDeleteComponent($folderId);
     }
 
 
@@ -312,6 +315,19 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->method('getProcessDataU1db')
             ->will($this->returnValue('true'));
         $this->sut->createFolder($foldername,$idParent);
+    }
+
+    private function exerciseDeleteComponent($idComponent)
+    {
+        $this->apiProviderMock->expects($this->once())
+            ->method('deleteComponent')
+            ->will($this->returnValue(true));
+
+        $this->accessorProviderMock->expects($this->once())
+            ->method('getProcessDataU1db')
+            ->will($this->returnValue('true'));
+
+        $this->sut->deleteComponent($idComponent);
     }
 
 }
