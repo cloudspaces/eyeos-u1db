@@ -257,6 +257,61 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->exerciseDeleteComponent($folderId);
     }
 
+    /**
+     *method: renameFile
+     * when: called
+     * with: idFileAndFilenameAndFileAndFilesize
+     * should: calledU1dbDeleteAndInsert
+     */
+    public function test_renameFile_called_idFileAndFilename_calledU1dbDeleteAndInsert()
+    {
+        $idFile = "5454455445";
+        $metadataProvider = '{"status": "NEW", "mimetype": "application/x-empty", "parent_file_version": null, "parent_file_id": "null", "root_id": "stacksync", "server_modified": "Fri Mar 07 11:55:32 CET 2014", "checksum": 694355124, "client_modified": "Fri Mar 07 11:55:32 CET 2014", "filename": "pruebas.txt", "version": 7, "file_id": -7705621709365758847, "is_folder": false, "chunks": ["A6960EF3C0B501B4C338DE32A6C8E9A5004FE350"], "path": "/hola", "size": 15, "user": "web"}';
+
+        $path = "resources/pruebas.txt";
+        $file = fopen($path, "r");
+        $fileName = "pruebas.txt";
+
+
+        $this->apiProviderMock->expects($this->at(0))
+            ->method('deleteComponent')
+            ->will($this->returnValue(true));
+
+
+        $this->accessorProviderMock->expects($this->at(0))
+            ->method('getProcessDataU1db')
+            ->will($this->returnValue('true'));
+
+        $this->apiProviderMock->expects($this->at(1))
+            ->method('createFile')
+            ->will($this->returnValue($metadataProvider));
+
+        $this->accessorProviderMock->expects($this->at(1))
+            ->method('getProcessDataU1db')
+            ->will($this->returnValue('true'));
+
+        $this->sut->renameFile($idFile,$fileName,$file,filesize($path));
+
+        fclose($file);
+    }
+
+    /**
+     *method: donwloadFile
+     * when: called
+     * with: idFile
+     * should: calledDownloadFile
+     */
+    public function test_downloadFile_called_idFile_calledDownloadFile()
+    {
+        $idFile = "5454455445";
+        $content = "Es una prueba";
+
+        $this->apiProviderMock->expects($this->at(0))
+            ->method('downloadFile')
+            ->will($this->returnValue($content));
+
+        $this->sut->downloadFile($idFile);
+    }
 
     private function exerciseGetMetadataWithoutData($path,$metadata, $fileId = NULL)
     {

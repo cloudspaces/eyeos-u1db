@@ -49,6 +49,12 @@ class ApiProvider
         return $result;
     }
 
+    public function downloadFile($url,$tokenId,$idFile)
+    {
+        $url .= '/stacksync/files?file_id=' . $idFile;
+        return $this->executeAccessor($url,$tokenId,null,null,null,true);
+    }
+
     public function replaceNull($json) {
         if(array_key_exists("file_id",$json)) {
             if($json->file_id === NULL || strlen($json->file_id) == 0) {
@@ -98,7 +104,7 @@ class ApiProvider
         return $json;
     }
 
-    public function executeAccessor($url,$tokenId,$file = NULL,$filesize = NULL,$request = NULL)
+    public function executeAccessor($url,$tokenId,$file = NULL,$filesize = NULL,$request = NULL,$isDownload = false)
     {
         $settings = new Settings();
         $settings->setUrl($url);
@@ -121,9 +127,12 @@ class ApiProvider
             $settings->setBinaryTransfer(true);
         }
 
-        $result = json_decode($this->accessorProvider->sendMessage($settings));
-        if($result) {
-            $result = $this->replaceNull($result);
+        $result = $this->accessorProvider->sendMessage($settings);
+        if(!$isDownload) {
+            $result = json_decode($result);
+            if ($result) {
+                $result = $this->replaceNull($result);
+            }
         }
         return $result;
     }

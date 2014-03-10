@@ -124,6 +124,24 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->exerciseDeleteComponent($folderId,$metadata);
     }
 
+    /**
+     *method: downloadFile
+     * when: called
+     * with: idFile
+     * should: returnContent
+     */
+    public function test_downloadFile_called_idFile_returnContent()
+    {
+        $fileId = "5665565566";
+        $content = "Es una prueba";
+        $this->accessorProviderMock->expects($this->once())
+            ->method('sendMessage')
+            ->will($this->returnValue($content));
+
+        $result = $this->sut->downloadFile($this->url,$this->token,$fileId);
+        $this->assertEquals($content,$result);
+    }
+
     private function exerciseMetadata($metadataIn,$metadatOut,$fileId = NULL)
     {
         $this->accessorProviderMock->expects($this->once())

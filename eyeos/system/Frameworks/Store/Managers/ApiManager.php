@@ -136,6 +136,25 @@ class ApiManager
         return $result;
     }
 
+    public function renameFile($idFile,$fileName,$file,$filesize,$idParent=NULL)
+    {
+        $result = '';
+        if($this->deleteComponent($idFile)) {
+            $url = $this->getDecryption($_SESSION['url']);
+            $token = $this->getDecryption($_SESSION['token']);
+            $metadata = $this->apiProvider->createFile($url,$token,$fileName,$file,$filesize,$idParent);
+            $this->callProcessU1db('insert',$metadata);
+            $result = json_encode($metadata);
+        }
+        return $result;
+    }
+
+    public function downloadFile($idFile) {
+        $url = $this->getDecryption($_SESSION['url']);
+        $token = $this->getDecryption($_SESSION['token']);
+        return $this->apiProvider->downloadFile($url,$token,$idFile);
+    }
+
     public function search($array, $key, $value)
     {
         if (is_array($array)) {

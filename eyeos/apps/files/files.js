@@ -1056,9 +1056,27 @@ qx.Class.define('eyeos.files.Controller', {
 			var absPath = selected.getFile().getAbsolutePath();
 			var currentPath = this.getModel().getCurrentPath()[1];
 			if (selected.getFile().getName() != rename) {
-				eyeos.callMessage(this.getApplication().getChecknum(), 'rename', [absPath, currentPath, rename], function (results) {
-					object.setValue(rename);
-					this._dBus.send('files', 'rename', [absPath, currentPath, results]);
+
+                var params =  [absPath, currentPath, rename];
+
+                if(this.__isStacksync(currentPath)) {
+                    var idFile = this.__getFileId(currentPath,selected.getFile().getName());
+                    var idParent = this.__getFileIdFolder(currentPath);
+                    if(idFile !== null && idParent !== null) {
+                       params.splice(params.length,0,idFile);
+                       params.splice(params.length,0,idParent);
+                    }
+                }
+
+                this.closeTimer();
+
+				eyeos.callMessage(this.getApplication().getChecknum(), 'rename',params, function (results) {
+                    if(this.__isStacksync(currentPath)) {
+                        this._browsePath(currentPath);
+                    } else {
+                        object.setValue(rename);
+                        this._dBus.send('files', 'rename', [absPath, currentPath, results]);
+                    }
 				}, this);
 			}
 		},
@@ -1172,11 +1190,14 @@ qx.Class.define('eyeos.files.Controller', {
 
         __changeMetadata: function(metadataOld,metadataNew) {
             var change = false;
+            var encontrado = false;
 
             if(metadataOld.contents.length == metadataNew.contents.length) {
                   for(var i in metadataOld.contents) {
+                      encontrado = false;
                       for(var j in metadataNew.contents) {
                           if(metadataOld.contents[i].file_id == metadataNew.contents[j].file_id) {
+                              encontrado =  true;
                               if(metadataOld.contents[i].filename != metadataNew.contents[j].filename) {
                                 change = true;
                               }
@@ -1184,6 +1205,10 @@ qx.Class.define('eyeos.files.Controller', {
                           }
                       }
 
+                      if (!encontrado) {
+                          change = true;
+                          break;
+                      }
                       if(change) {
                          break;
                       }

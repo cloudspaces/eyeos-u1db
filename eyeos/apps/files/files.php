@@ -493,27 +493,70 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 		$currentUser = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
 		$settings = MetaManager::getInstance()->retrieveMeta($currentUser);
 		$fileToRename = FSI::getFile($params[0]);
+        $apiManager = new ApiManager();
+        $stacksync = count($params) == 5?true:false;
 
-		$i = 1;
-		$nameForCheck = $params[2];
-		$renamed = FSI::getFile($params[1] . '/' . $params[2]);
-		while ($renamed->exists()) {
-			$name = explode(".", $params[2]);
-			$extension = (string) $name[count($name) - 1];
-			$futureName = Array($name[0], $i);
-			$nameForCheck = implode(' ', $futureName);
-			
-			if (!$fileToRename->isDirectory()) {
-				$nameForCheck .= '.' . $extension;
-			}
-			$i++;
-			$renamed = FSI::getFile($params[1] . '/' . $nameForCheck);
-		}
-		
-		$fileToRename->renameTo($nameForCheck);
-		self::updateUrlShare($params[0], $renamed->getPath());
-		$return = self::getFileInfo($fileToRename, $settings);
-		return $return;
+        if($stacksync) {
+            if(!$fileToRename->isDirectory()) {
+                $content = $apiManager->downloadFile($params[3]);
+                if(strlen($content) > 0) {
+                    $fileToRename->getRealFile()->putContents($content);
+                }
+
+                $i = 1;
+                $nameForCheck = $params[2];
+                $renamed = FSI::getFile($params[1] . '/' . $params[2]);
+                while ($renamed->exists()) {
+                    $name = explode(".", $params[2]);
+                    $extension = (string) $name[count($name) - 1];
+                    $futureName = Array($name[0], $i);
+                    $nameForCheck = implode(' ', $futureName);
+
+                    if (!$fileToRename->isDirectory()) {
+                        $nameForCheck .= '.' . $extension;
+                    }
+                    $i++;
+                    $renamed = FSI::getFile($params[1] . '/' . $nameForCheck);
+                }
+
+
+
+                if($fileToRename->renameTo($nameForCheck)) {
+                    $pathReal =  AdvancedPathLib::parse_url($renamed->getRealFile()->getPath());
+                    $file = fopen($pathReal['path'],"r");
+                    if($file !== false) {
+                       $apiManager->renameFile($params[3],$nameForCheck,$file,filesize($pathReal['path']),$params[4]);
+                       fclose($file);
+                    }
+                }
+
+                self::updateUrlShare($params[0], $renamed->getPath());
+                $return = self::getFileInfo($fileToRename, $settings);
+                return $return;
+
+            }
+        } else {
+            $i = 1;
+            $nameForCheck = $params[2];
+            $renamed = FSI::getFile($params[1] . '/' . $params[2]);
+            while ($renamed->exists()) {
+                $name = explode(".", $params[2]);
+                $extension = (string) $name[count($name) - 1];
+                $futureName = Array($name[0], $i);
+                $nameForCheck = implode(' ', $futureName);
+
+                if (!$fileToRename->isDirectory()) {
+                    $nameForCheck .= '.' . $extension;
+                }
+                $i++;
+                $renamed = FSI::getFile($params[1] . '/' . $nameForCheck);
+            }
+
+            $fileToRename->renameTo($nameForCheck);
+            self::updateUrlShare($params[0], $renamed->getPath());
+            $return = self::getFileInfo($fileToRename, $settings);
+            return $return;
+        }
 	}
 
 	

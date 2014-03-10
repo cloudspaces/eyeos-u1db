@@ -26,6 +26,7 @@ class StoreListener extends AbstractFileAdapter implements ISharingListener {
 
     public function fileWritten(FileEvent $e)
     {
+        Logger::getLogger('sebas')->error('fileWritten:' . $e->getSource()->getPath());
         $path = $e->getSource()->getPath();
         $userName = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
         if(strpos($path,"home://~" . $userName . "/Stacksync") !== false) {
@@ -57,30 +58,6 @@ class StoreListener extends AbstractFileAdapter implements ISharingListener {
                 fclose($file);
             }
         }
-    }
-
-    public function directoryCreated(FileEvent $e) {
-        /*$path = $e->getSource()->getPath();
-        $userName = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
-        if(strpos($path,"home://~" . $userName . "/Stacksync") !== false) {
-            $apiManager = new ApiManager();
-            $len = strlen("home://~" . $userName . "/Stacksync");
-            $pathU1db = substr($path,$len);
-            $lenfinal = strrpos($pathU1db,$e->getSource()->getName());
-            $posfinal = $lenfinal > 1?$lenfinal-strlen($pathU1db)-1:$lenfinal-strlen($pathU1db);
-            $pathParent = substr($pathU1db,0,$posfinal);
-            $folder = NULL;
-            if ($lenfinal > 1) {
-                $pos=strrpos($pathParent,'/');
-                $folder = substr($pathParent,$pos+1);
-                $pathParent = substr($pathParent,0,$pos+1);
-            }
-
-            Logger::getLogger('sebas')->error('PathStore:' . $pathParent);
-            Logger::getLogger('sebas')->error('PathStore:' . $folder);
-
-            $apiManager->createFolder($e->getSource()->getName(),$pathParent,$folder);
-        }*/
     }
 }
 
