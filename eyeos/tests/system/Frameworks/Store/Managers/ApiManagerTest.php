@@ -182,13 +182,57 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     /**
      *method: createFile
      * when: called
+     * with:filenameAndFileAndFilesizeAndPathParentAndFolderParent
+     * should: calledU1dbUpdate
+     */
+    public function test_createFile_called_filenameAndFileAndFilesizeAndFolderParent_calledU1dbUpdate()
+    {
+        $pathParent = "/Documents/prueba/";
+        $folderParent = "hola";
+        $metadataProvider = '{"status": "NEW", "mimetype": "application/x-empty", "parent_file_version": null, "parent_file_id": "null", "root_id": "stacksync", "server_modified": "Fri Mar 07 11:55:32 CET 2014", "checksum": 694355124, "client_modified": "Fri Mar 07 11:55:32 CET 2014", "filename": "pruebas.txt", "version": 7, "file_id": -7705621709365758847, "is_folder": false, "chunks": ["A6960EF3C0B501B4C338DE32A6C8E9A5004FE350"], "path": "/hola", "size": 15, "user": "web"}';
+        $metadataU1db = '[{"status": "NEW", "mimetype": "inode/directory", "parent_file_id": "null", "checksum": 0, "client_modified": "2013-12-10 22:53:21.052", "filename": "Cloudspaces_trial", "is_root": false, "version": 1, "file_id": "-1478707423980200270", "server_modified": "2013-12-10 22:53:21.052", "path": "/", "user": "web", "is_folder": true, "size": 0}]';
+        $this->exerciseCreateFile($metadataU1db,$metadataProvider,$pathParent,$folderParent);
+    }
+
+    /**
+     *method: createFile
+     * when: called
      * with:filenameAndFileAndFilesizeAndPathParent
+     * should: calledU1dbUpdate
      */
     public function test_createFile_called_filenameAndFileAndFilesize_calledU1dbUpdate()
     {
-        $metadata = '{"status": "NEW", "mimetype": "application/x-empty", "parent_file_version": null, "parent_file_id": "null", "root_id": "stacksync", "server_modified": "Fri Mar 07 11:55:32 CET 2014", "checksum": 694355124, "client_modified": "Fri Mar 07 11:55:32 CET 2014", "filename": "pruebas.txt", "version": 7, "file_id": -7705621709365758847, "is_folder": false, "chunks": ["A6960EF3C0B501B4C338DE32A6C8E9A5004FE350"], "path": "/hola", "size": 15, "user": "web"}';
-        $this->exerciseCreateFile($metadata);
+        $metadataProvider = '{"status": "NEW", "mimetype": "application/x-empty", "parent_file_version": null, "parent_file_id": "null", "root_id": "stacksync", "server_modified": "Fri Mar 07 11:55:32 CET 2014", "checksum": 694355124, "client_modified": "Fri Mar 07 11:55:32 CET 2014", "filename": "pruebas.txt", "version": 7, "file_id": -7705621709365758847, "is_folder": false, "chunks": ["A6960EF3C0B501B4C338DE32A6C8E9A5004FE350"], "path": "/hola", "size": 15, "user": "web"}';
+        $metadataU1db = '';
+        $pathParent = '/';
+        $this->exerciseCreateFile($metadataU1db,$metadataProvider,$pathParent);
     }
+
+    /**
+     *method: createFolder
+     * when: called
+     * with:folderNameAndIdParent
+     * should: calledU1dbUpdate
+     */
+    public function test_createFolder_called_folderNameAndIdParent_calledU1dbUpdate()
+    {
+        $metadataProvider = '{"status": "NEW", "mimetype": "inode/directory", "parent_file_version": "", "parent_file_id": "-1478707423980200270", "root_id": "stacksync", "server_modified": "Fri Mar 07 17:22:51 CET 2014", "checksum": 0, "client_modified": "Fri Mar 07 17:22:51 CET 2014", "filename": "TestFolder", "version": 1, "file_id": -3243347967282172526, "is_folder": true, "path": "/Documents/prueba/hola/", "size": 0, "user": "web"}';
+        $idParent = "12345";
+        $this->exerciseCreateFolder($metadataProvider,$idParent);
+    }
+
+    /**
+     *method: createFolder
+     * when: called
+     * with:folderName
+     * should: calledU1dbUpdate
+     */
+    public function test_createFolder_called_folderName_calledU1dbUpdate()
+    {
+        $metadataProvider = '{"status": "NEW", "mimetype": "inode/directory", "parent_file_version": "", "parent_file_id": "null", "root_id": "stacksync", "server_modified": "Fri Mar 07 17:22:51 CET 2014", "checksum": 0, "client_modified": "Fri Mar 07 17:22:51 CET 2014", "filename": "TestFolder", "version": 1, "file_id": -3243347967282172526, "is_folder": true, "path": "/", "size": 0, "user": "web"}';
+        $this->exerciseCreateFolder($metadataProvider);
+    }
+
 
     private function exerciseGetMetadataWithoutData($path,$metadata, $fileId = NULL)
     {
@@ -211,26 +255,42 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->sut->getMetadata($path,$fileId);
     }
 
-    private function exerciseCreateFile($metadata)
+    private function exerciseCreateFile($metadataU1db,$metadataProvider,$pathParent,$folderParent=NULL)
     {
         $path = "resources/pruebas.txt";
         $file = fopen($path, "r");
         $filename = "pruebas.txt";
-        $pathParent = "/Documents/prueba/";
-        $folderParent = "hola";
+
         $this->apiProviderMock->expects($this->once())
             ->method('createFile')
-            ->will($this->returnValue(json_decode($metadata)));
+            ->will($this->returnValue(json_decode($metadataProvider)));
 
-        $this->accessorProviderMock->expects($this->at(0))
-            ->method('getProcessDataU1db')
-            ->will($this->returnValue('[{"status": "NEW", "mimetype": "inode/directory", "parent_file_id": "null", "checksum": 0, "client_modified": "2013-12-10 22:53:21.052", "filename": "Cloudspaces_trial", "is_root": false, "version": 1, "file_id": "-1478707423980200270", "server_modified": "2013-12-10 22:53:21.052", "path": "/", "user": "web", "is_folder": true, "size": 0}]'));
+        $sequence = 0;
+        if (strlen($metadataU1db) > 0) {
+            $this->accessorProviderMock->expects($this->at($sequence))
+                ->method('getProcessDataU1db')
+                ->will($this->returnValue($metadataU1db));
+            $sequence++;
+        }
 
-        $this->accessorProviderMock->expects($this->at(1))
+        $this->accessorProviderMock->expects($this->at($sequence))
             ->method('getProcessDataU1db')
             ->will($this->returnValue('true'));
         $this->sut->createFile($filename,$file,filesize($path),$pathParent,$folderParent);
         fclose($file);
+    }
+
+    private function exerciseCreateFolder($metadataProvider,$idParent = NULL)
+    {
+        $foldername = "TestPrueba";
+        $this->apiProviderMock->expects($this->once())
+            ->method('createFolder')
+            ->will($this->returnValue(json_decode($metadataProvider)));
+
+        $this->accessorProviderMock->expects($this->once())
+            ->method('getProcessDataU1db')
+            ->will($this->returnValue('true'));
+        $this->sut->createFolder($foldername,$idParent);
     }
 
 }

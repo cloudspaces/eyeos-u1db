@@ -55,7 +55,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_createFile_called_urlAndTokenAndFilenameAndFileAndFilesize_returnCorrect()
     {
-        $metadata = '{"status": "CHANGED", "mimetype": "application/x-empty", "parent_file_version": null, "parent_file_id": "null", "root_id": "stacksync", "server_modified": "Fri Mar 07 11:55:32 CET 2014", "checksum": 694355124, "client_modified": "Fri Mar 07 11:55:32 CET 2014", "filename": "pruebas.txt", "version": 7, "file_id": -7705621709365758847, "is_folder": false, "chunks": ["A6960EF3C0B501B4C338DE32A6C8E9A5004FE350"], "path": "/hola", "size": 15, "user": "web"}';
+        $metadata = '{"status": "CHANGED", "mimetype": "application/x-empty", "parent_file_version": null, "parent_file_id": "null", "root_id": "stacksync", "server_modified": "Fri Mar 07 11:55:32 CET 2014", "checksum": 694355124, "client_modified": "Fri Mar 07 11:55:32 CET 2014", "filename": "pruebas.txt", "version": 7, "file_id": -7705621709365758847, "is_folder": false, "chunks": ["A6960EF3C0B501B4C338DE32A6C8E9A5004FE350"], "path": "/hola/", "size": 15, "user": "web"}';
         $this->exerciseCreateFile($metadata);
     }
 
@@ -68,8 +68,33 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     public function test_createFile_called_urlAndTokenAdnFilenameAndFileAndFilesizeAndParent_returnCorrect()
     {
         $parent = '3894030578176289733';
-        $metadata = '{"status": "CHANGED", "mimetype": "application/x-empty", "parent_file_version": null, "parent_file_id": 3894030578176289733, "root_id": "stacksync", "server_modified": "Fri Mar 07 11:55:32 CET 2014", "checksum": 694355124, "client_modified": "Fri Mar 07 11:55:32 CET 2014", "filename": "pruebas.txt", "version": 7, "file_id": -7705621709365758847, "is_folder": false, "chunks": ["A6960EF3C0B501B4C338DE32A6C8E9A5004FE350"], "path": "/hola", "size": 15, "user": "web"}';
+        $metadata = '{"status": "CHANGED", "mimetype": "application/x-empty", "parent_file_version": null, "parent_file_id": 3894030578176289733, "root_id": "stacksync", "server_modified": "Fri Mar 07 11:55:32 CET 2014", "checksum": 694355124, "client_modified": "Fri Mar 07 11:55:32 CET 2014", "filename": "pruebas.txt", "version": 7, "file_id": -7705621709365758847, "is_folder": false, "chunks": ["A6960EF3C0B501B4C338DE32A6C8E9A5004FE350"], "path": "/hola/", "size": 15, "user": "web"}';
         $this->exerciseCreateFile($metadata,$parent);
+    }
+
+    /**
+     *method: createFolder
+     * when: called
+     * with: urlAndTokenAndFoldername
+     * should: returnCorrect
+     */
+    public function test_createFolder_called_urlAndTokenAndFoldername_returnCorrect()
+    {
+        $metadata = '{"status": "NEW", "mimetype": "inode/directory", "parent_file_version": "", "parent_file_id": "null", "root_id": "stacksync", "server_modified": "Fri Mar 07 17:22:51 CET 2014", "checksum": 0, "client_modified": "Fri Mar 07 17:22:51 CET 2014", "filename": "TestFolder", "version": 1, "file_id": "-3243347967282172526", "is_folder": true, "path": "/", "size": 0, "user": "web"}';
+        $this->exerciseCreateFolder($metadata);
+    }
+
+    /**
+     *method: createFolder
+     * when: called
+     * with: urlAndTokenAndFoldernameAndParent
+     * should: returnCorrect
+     */
+    public function test_createFolder_called_urlAndTokenAndFoldernameAndParent_returnCorrect()
+    {
+        $metadata = '{"status": "NEW", "mimetype": "inode/directory", "parent_file_version": "", "parent_file_id": "3894030578176289733", "root_id": "stacksync", "server_modified": "Fri Mar 07 17:22:51 CET 2014", "checksum": 0, "client_modified": "Fri Mar 07 17:22:51 CET 2014", "filename": "TestFolder", "version": 1, "file_id": -3243347967282172526, "is_folder": true, "path": "/", "size": 0, "user": "web"}';
+        $parent = '3894030578176289733';
+        $this->exerciseCreateFolder($metadata,$parent);
     }
 
     private function exerciseMetadata($metadataIn,$metadatOut,$fileId = NULL)
@@ -99,7 +124,16 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         fclose($file);
     }
 
+    private function exerciseCreateFolder($metadata,$parent = NULL)
+    {
+        $folderName = 'TestFolder';
+        $this->accessorProviderMock->expects($this->once())
+            ->method('sendMessage')
+            ->will($this->returnValue($metadata));
 
+        $result = $this->sut->createFolder($this->url,$this->token,$folderName,$parent);
+        $this->assertEquals(json_decode($metadata),$result);
+    }
 }
 
 ?>

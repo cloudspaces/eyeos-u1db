@@ -89,7 +89,6 @@ class MetadataTest (unittest.TestCase):
         array = self.getArrayParent()
         self.sut.insert(array)
         data = self.sut.getParent('/Documents/prueba/',"hola")
-        data.sort()
         self.assertEquals(array[2],data[0])
 
     def getArrayInsert(self):

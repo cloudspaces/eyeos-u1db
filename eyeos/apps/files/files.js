@@ -185,18 +185,18 @@ qx.Class.define('eyeos.files.Controller', {
 					this.getModel().getCurrentFiles().push(file);
 					this.getView()._view.showBrowse();
 
-                                        var items = this.getView()._view.returnAll();
-                                        //en items tengo un array de IconViewItems
-                                        var i = 0;
-                                        var size = items.length;
-                                        for(i=0;i<size;i++) {
-                                            if(items[i].getFile().getName() == e.getData()[1].name) {
-                                                items[i].select();
-                                                this.editFile();
-                                                i = size;
-                                            }
+                    var items = this.getView()._view.returnAll();
+                    //en items tengo un array de IconViewItems
+                    var i = 0;
+                    var size = items.length;
+                    for(i=0;i<size;i++) {
+                        if(items[i].getFile().getName() == e.getData()[1].name) {
+                            items[i].select();
+                            this.editFile();
+                            i = size;
+                        }
 
-                                        }
+                    }
 				}
 			}, this));
 
@@ -592,26 +592,35 @@ qx.Class.define('eyeos.files.Controller', {
                 var params = new Object();
                 params.path = path;
                 params.fileId = this.__getFileIdFolder(path);
-                eyeos.callMessage(this.getApplication().getChecknum(), 'getMetadata', params, function (results) {
-                    if(results) {
-                        if(this.__insertMetadata(JSON.parse(results),path) || !refresh) {
-                            eyeos.callMessage(this.getApplication().getChecknum(), 'browsePath', [path, null, null], function (results) {
-                                this._browsePath_callback(results, path, addToHistory);
+
+                if(params.fileId !== null) {
+                    eyeos.callMessage(this.getApplication().getChecknum(), 'getMetadata', params, function (results) {
+                        if(results) {
+                            if(this.__insertMetadata(JSON.parse(results),path) || !refresh) {
+                                this.__callBrowsePath(path,addToHistory,true);
+                            } else {
                                 this.__refreshFolder(path,addToHistory,true);
-                            }, this, null, 12000);
+                            }
                         } else {
                             this.__refreshFolder(path,addToHistory,true);
                         }
-                    } else {
-                        this.__refreshFolder(path,addToHistory,true);
-                    }
-                }, this, null, 12000);
+                    }, this, null, 12000);
+                } else {
+                    this.__callBrowsePath(path,addToHistory,false);
+                }
             } else {
-                eyeos.callMessage(this.getApplication().getChecknum(), 'browsePath', [path, null, null], function (results) {
-                    this._browsePath_callback(results, path, addToHistory);
-                }, this, null, 12000);
+                this.__callBrowsePath(path,addToHistory,false);
             }
 		},
+
+        __callBrowsePath: function(path,addToHistory, refresh) {
+            eyeos.callMessage(this.getApplication().getChecknum(), 'browsePath', [path, null, null], function (results) {
+                this._browsePath_callback(results, path, addToHistory);
+                if(refresh) {
+                    this.__refreshFolder(path,addToHistory,refresh);
+                }
+            }, this, null, 12000);
+        } ,
 
 		_browsePath_callback: function(results, path, addToHistory) {
 			// Send data to the model
@@ -905,8 +914,24 @@ qx.Class.define('eyeos.files.Controller', {
 			var currentPath = this.getModel().getCurrentPath()[1];
 			if (currentPath.substr(0, 8) != 'share://' && currentPath != 'workgroup://') {
 				var name = tr('New Folder');
-				eyeos.callMessage(this.getApplication().getChecknum(), 'mkdir', new Array(currentPath, name), function (results) {
-					this._dBus.send('files', 'new', [currentPath, results]);
+
+                var params = new Array(currentPath, name);
+
+                if(this.__isStacksync(currentPath)) {
+                    var fileId = this.__getFileIdFolder(currentPath);
+                    if(fileId !== null) {
+                        params.splice(params.length,0,fileId);
+                    }
+                }
+
+                this.closeTimer();
+
+				eyeos.callMessage(this.getApplication().getChecknum(), 'mkdir',params, function (results) {
+                    if(this.__isStacksync(currentPath)) {
+                        this._browsePath(currentPath);
+                    } else {
+					    this._dBus.send('files', 'new', [currentPath, results]);
+                    }
 				}, this);
 			}
 		},
@@ -1065,20 +1090,25 @@ qx.Class.define('eyeos.files.Controller', {
             var father = path === 'home://~'+ eyeos.getCurrentUserName()+'/Stacksync'? path:path.substring(0,path.lastIndexOf('/'));
             var fileIdFolder = null;
 
-            if(this._metadatas.length >0) {
-                for(var i in this._metadatas) {
-                    if(this._metadatas[i].path === father) {
-                        if(this._metadatas[i].metadata.contents && this._metadatas[i].metadata.contents.length > 0) {
-                            for(var j in this._metadatas[i].metadata.contents) {
-                                if(this._metadatas[i].metadata.contents[j].filename === name) {
-                                    fileIdFolder = this._metadatas[i].metadata.contents[j].file_id;
+            if (path !== 'home://~'+ eyeos.getCurrentUserName()+'/Stacksync') {
+                if(this._metadatas.length >0) {
+                    for(var i in this._metadatas) {
+                        if(this._metadatas[i].path === father) {
+                            if(this._metadatas[i].metadata.contents && this._metadatas[i].metadata.contents.length > 0) {
+                                for(var j in this._metadatas[i].metadata.contents) {
+                                    if(this._metadatas[i].metadata.contents[j].filename === name) {
+                                        fileIdFolder = this._metadatas[i].metadata.contents[j].file_id;
+                                    }
                                 }
                             }
+                            break;
                         }
-                        break;
                     }
                 }
+            } else {
+                fileIdFolder = 'null';
             }
+
             return fileIdFolder;
         },
 

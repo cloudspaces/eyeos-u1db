@@ -402,6 +402,13 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 			}
 		}
 		$dirToCreate->mkdir();
+
+        if(count($params) === 3) {
+            $apiManager = new ApiManager();
+            $idParent = $params[2] === 'null'?NULL:$params[2];
+            $apiManager->createFolder($dirToCreate->getName(),$idParent);
+        }
+
 		$return = self::getFileInfo($dirToCreate, $settings);
 		return $return;
 	}

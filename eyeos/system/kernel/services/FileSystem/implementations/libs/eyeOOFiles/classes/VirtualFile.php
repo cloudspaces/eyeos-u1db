@@ -1121,6 +1121,7 @@ abstract class EyeosAbstractVirtualFile extends AbstractFile implements IMetaAss
 	 * @throws EyeInvalidArgumentException
 	 */
 	public function mkdir($mode = null) {
+
 		if ($this->realFile === null) {
 			throw new EyeUnsupportedOperationException(__METHOD__ . ' on ' . $this->path);
 		}
@@ -1147,7 +1148,7 @@ abstract class EyeosAbstractVirtualFile extends AbstractFile implements IMetaAss
 			}
 			
 			//notify listeners on the parent directory
-			$this->getParentFile()->fireEvent('directoryCreated', new FileEvent($this));
+			//$this->getParentFile()->fireEvent('directoryCreated', new FileEvent($this));
 			
 			return true;
 		}

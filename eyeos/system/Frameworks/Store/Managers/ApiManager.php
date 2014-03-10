@@ -76,7 +76,7 @@ class ApiManager
                         }
                     }
                     for($i = 0;$i < count($dataU1db);$i++) {
-                        if($this->search($files,"file_id",$dataU1db[$i]->file_id) === false){
+                        if($this->search($files,"file_id",$dataU1db[$i]->file_id) === false && $metadata->file_id !== $dataU1db[$i]->file_id){
                             if($this->filesProvider->deleteFile($path . "/" . $dataU1db[$i]->filename, $dataU1db[$i]->is_folder)) {
                                 $this->callProcessU1db('delete',$dataU1db[$i]);
                             }
@@ -106,13 +106,21 @@ class ApiManager
             $parentId = NULL;
         }
         if($parentId !== -1) {
-            Logger::getLogger('sebas')->error('PathStore:' . $parentId);
             $metadata = $this->apiProvider->createFile($url,$token,$filename,$file,$filesize,$parentId);
             $this->callProcessU1db('insert',$metadata);
             $respuesta = json_encode($metadata);
         }
 
         return $respuesta;
+    }
+
+    public function createFolder($foldername,$idParent = NULL)
+    {
+        $url = $this->getDecryption($_SESSION['url']);
+        $token = $this->getDecryption($_SESSION['token']);
+        $metadata = $this->apiProvider->createFolder($url,$token,$foldername,$idParent);
+        $this->callProcessU1db('insert',$metadata);
+        return json_encode($metadata);
     }
 
     public function search($array, $key, $value)
