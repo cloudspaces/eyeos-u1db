@@ -1019,7 +1019,41 @@ qx.Class.define('eyeos.files.Controller', {
 
 				if (files.length >= 1) {
 					files.unshift(target);
-					eyeos.callMessage(this.getApplication().getChecknum(), action, files, function (results) {
+
+                    if(action == 'copy') {
+                        var params = new Object();
+                        params.folder = files[0];
+                        files.splice(0,1);
+                        params.files =files;
+
+                        if(this.__isStacksync(params.folder)) {
+                            var idParent = this.__getFileIdFolder(params.folder);
+                            var filesAux = [];
+
+                            if(idParent !== null) {
+                                params.idParent = idParent;
+                                for(var i in filesToPaste) {
+                                    var idFile = this.__getFileId(source,filesToPaste[i].getName());
+                                    if(idFile !== null) {
+                                        var file = new Object();
+                                        file.id = idFile;
+                                        file.path = filesToPaste[i].getAbsolutePath();
+                                        filesAux.splice(filesAux.length,0,file);
+                                    } else {
+                                        filesAux.splice(filesAux.length,0,filesToPaste[i].getAbsolutePath());
+                                    }
+                                }
+
+                                params.files = filesAux;
+                            }
+
+                        }
+
+                    } else {
+                        params = files;
+                    }
+
+					eyeos.callMessage(this.getApplication().getChecknum(), action, params, function (results) {
 						this._dBus.send('files', 'paste', [filesToPaste, action, source, target, results]);
 						if (action == 'move') {
 							this._filesQueue.setMoveQueue([]);

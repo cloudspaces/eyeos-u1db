@@ -26,7 +26,8 @@ class StoreListener extends AbstractFileAdapter implements ISharingListener {
 
     public function fileWritten(FileEvent $e)
     {
-        Logger::getLogger('sebas')->error('fileWritten:' . $e->getSource()->getPath());
+        FilesApplication::verifyToken();
+
         $path = $e->getSource()->getPath();
         $userName = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
         if(strpos($path,"home://~" . $userName . "/Stacksync") !== false) {

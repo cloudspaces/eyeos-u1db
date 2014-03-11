@@ -255,10 +255,26 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 	public static function copy($params) {
 		$currentUser = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
 		$settings = MetaManager::getInstance()->retrieveMeta($currentUser);
-		$target = FSI::getFile($params[0]);
+		$target = FSI::getFile($params['folder']);
 		$results = array();
-		for($i = 1; $i < count($params); $i++) {
-			$source = FSI::getFile($params[$i]);
+        $apiManager = new ApiManager();
+        $userName = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
+		for($i = 0; $i < count($params['files']); $i++) {
+            $stacksync = false;
+            if(is_array($params['files'][$i])) {
+                self::verifyToken();
+                $stacksync = true;
+                $source = FSI::getFile($params['files'][$i]['path']);
+                $content = $apiManager->downloadFile($params['files'][$i]['id']);
+                if(strlen($content) > 0) {
+                    $source->getRealFile()->putContents($content);
+                }
+
+
+            } else {
+			    $source = FSI::getFile($params['files'][$i]);
+            }
+
 			if (!$source->isDirectory()) {
 				$name = explode(".", $source->getName());
 				$extension = (string) $name[count($name) - 1];
@@ -274,7 +290,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 			}
 
 			$number = 1;
-			$newFile = FSI::getFile($params[0] . "/" . $nameForCheck);
+			$newFile = FSI::getFile($params['folder'] . "/" . $nameForCheck);
 			
 			while ($newFile->exists()) {
 				$futureName = Array($theName, $number);
@@ -283,10 +299,35 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 					$nameForCheck .= '.' . $extension;
 				}
 				$number++;
-				$newFile = FSI::getFile($params[0] . "/" . $nameForCheck);
+				$newFile = FSI::getFile($params['folder'] . "/" . $nameForCheck);
 			}
 			
-			$source->copyTo($newFile);
+			$isCopy = $source->copyTo($newFile);
+
+            if($stacksync === true && $isCopy === true) {
+                //Logger::getLogger('sebas')->error('ContenidoCopy:' . $newFile->getPath() . " copiado correctamente");
+                $pathReal =  AdvancedPathLib::parse_url($newFile->getRealFile()->getPath());
+                $file = fopen($pathReal['path'],"r");
+
+                if($file !== false) {
+                    $len = strlen("home://~" . $userName . "/Stacksync");
+                    $pathU1db = substr($newFile->getAbsolutePath(),$len);
+                    $lenfinal = strrpos($pathU1db, $newFile->getName());
+                    $posfinal = $lenfinal > 1?$lenfinal-strlen($pathU1db)-1:$lenfinal-strlen($pathU1db);
+                    $pathParent = substr($pathU1db,0,$posfinal);
+                    $folder = NULL;
+                    if ($pathParent !== '/') {
+                        $pos=strrpos($pathParent,'/');
+                        $folder = substr($pathParent,$pos+1);
+                        $pathParent = substr($pathParent,0,$pos+1);
+                    }
+                    self::verifyToken();
+                    $apiManager->createFile($nameForCheck,$file,filesize($pathReal['path']),$pathParent,$folder);
+                    fclose($file);
+                }
+            }
+
+
 			$results[] = self::getFileInfo($newFile, $settings);
 		}
 		return $results;
@@ -360,6 +401,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 			if($fileToRemove->delete(true)) {
 			    self::removeUrlShareInfo($param['file']);
                 if(isset($param['id'])) {
+                    self::verifyToken();
                     $apiManager->deleteComponent($param['id']);
                 }
             }
@@ -409,6 +451,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 		$dirToCreate->mkdir();
 
         if(count($params) === 3) {
+            self::verifyToken();
             $apiManager = new ApiManager();
             $idParent = $params[2] === 'null'?NULL:$params[2];
             $apiManager->createFolder($dirToCreate->getName(),$idParent);
@@ -498,6 +541,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
         if($stacksync) {
             if(!$fileToRename->isDirectory()) {
+                self::verifyToken();
                 $content = $apiManager->downloadFile($params[3]);
                 if(strlen($content) > 0) {
                     $fileToRename->getRealFile()->putContents($content);
@@ -525,6 +569,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                     $pathReal =  AdvancedPathLib::parse_url($renamed->getRealFile()->getPath());
                     $file = fopen($pathReal['path'],"r");
                     if($file !== false) {
+                       self::verifyToken();
                        $apiManager->renameFile($params[3],$nameForCheck,$file,filesize($pathReal['path']),$params[4]);
                        fclose($file);
                     }
@@ -536,6 +581,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
             } else {
                 if($fileToRename->delete(true) && $renamed->mkdir()) {
+                    self::verifyToken();
                     $apiManager->renameFolder($params[3],$nameForCheck,$params[4]);
 
                 }
@@ -582,34 +628,9 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 		return $arrayTree;
 	}
 
-    public static function getMetadata($params) {
-
-        $oauthManager = new OAuthManager();
-        $codeManager = new CodeManager();
-        $settings = new Settings();
-        $settings->setUrl(URL_CLOUDSPACE);
-        $settings->setCustomRequest("POST");
-        $postfields = array();
-        $postfields['auth'] = array();
-        $postfields['auth']['passwordCredentials'] = array();
-        $postfields['auth']['passwordCredentials']['username'] = $codeManager->getDecryption($_SESSION['user']);
-        $postfields['auth']['passwordCredentials']['password'] = $codeManager->getDecryption($_SESSION['password']);
-        $postfields['auth']['tenantName'] = $codeManager->getDecryption($_SESSION['user']);
-        $settings->setPostFields(json_encode($postfields));
-        $settings->setReturnTransfer(true);
-        $settings->setHttpHeader(array("Content-Type: application/json"));
-        $settings->setHeader(false);
-        $settings->setSslVerifyPeer(false);
-        $date = new DateTime();
-
-        $token = $oauthManager->verifyDateExpireToken($_SESSION['dateExpires'],date_format($date, 'Y-m-d H:i:s'),$settings);
-
-        if($token !== false) {
-            $_SESSION['token'] = $codeManager->getEncryption($token->getId());
-            $_SESSION['url'] = $codeManager->getEncryption($token->getUrl());
-            $_SESSION['dateExpires'] = $token->getExpire();
-        }
-
+    public static function getMetadata($params)
+    {
+        self::verifyToken();
         $path = $params['path'];
         $fileId = isset($params['fileId'])?$params['fileId']:null;
         $apiManager = new ApiManager();
@@ -744,5 +765,32 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 		}
 
 	}
+
+    public static function verifyToken()
+    {
+        $oauthManager = new OAuthManager();
+        $codeManager = new CodeManager();
+        $settings = new Settings();
+        $settings->setUrl(URL_CLOUDSPACE);
+        $settings->setCustomRequest("POST");
+        $postfields = array();
+        $postfields['auth'] = array();
+        $postfields['auth']['passwordCredentials'] = array();
+        $postfields['auth']['passwordCredentials']['username'] = $codeManager->getDecryption($_SESSION['user']);
+        $postfields['auth']['passwordCredentials']['password'] = $codeManager->getDecryption($_SESSION['password']);
+        $postfields['auth']['tenantName'] = $codeManager->getDecryption($_SESSION['user']);
+        $settings->setPostFields(json_encode($postfields));
+        $settings->setReturnTransfer(true);
+        $settings->setHttpHeader(array("Content-Type: application/json"));
+        $settings->setHeader(false);
+        $settings->setSslVerifyPeer(false);
+        $date = new DateTime();
+        $token = $oauthManager->verifyDateExpireToken($_SESSION['dateExpires'],date_format($date, 'Y-m-d H:i:s'),$settings);
+        if($token !== false) {
+            $_SESSION['token'] = $codeManager->getEncryption($token->getId());
+            $_SESSION['url'] = $codeManager->getEncryption($token->getUrl());
+            $_SESSION['dateExpires'] = $token->getExpire();
+        }
+    }
 }
 ?>
