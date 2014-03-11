@@ -88,7 +88,7 @@ class ProtocolTest (unittest.TestCase):
     with: typeGetParentAndPath
     should: returnArray
     """
-    def test_protocol_called_typeSelectAndList_returnArray(self):
+    def test_protocol_called_typeGetParentAndList_returnArray(self):
         params = '{"type":"parent","lista":[{"path":"/Documents/prueba/","folder":"hola"}]}'
         protocol = Protocol(self.db)
         protocol.getParent = Mock()
@@ -96,3 +96,18 @@ class ProtocolTest (unittest.TestCase):
         result = protocol.protocol(params)
         protocol.getParent.assert_called_once_with("/Documents/prueba/","hola")
         self.assertEquals('[]',result)
+
+    """
+    method: protocol
+    when: called
+    with: typeDeleteFolderAndList
+    should: deleteCorrect
+    """
+    def test_protocol_called_typeDeleteFolderAndList_deleteCorrect(self):
+        params = '{"type":"deleteFolder","lista":[{"file_id":"1234"}]}'
+        protocol = Protocol(self.db)
+        protocol.deleteFolder = Mock()
+        protocol.deleteFolder.return_value = True
+        result = protocol.protocol(params)
+        protocol.deleteFolder.assert_called_once_with("1234")
+        self.assertEquals('true',result)

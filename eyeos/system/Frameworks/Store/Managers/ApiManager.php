@@ -31,9 +31,7 @@ class ApiManager
 
     public function getMetadata($path,$fileId = NULL)
     {
-        $url = $this->getDecryption($_SESSION['url']);
-        $token = $this->getDecryption($_SESSION['token']);
-        $metadata = $this->apiProvider->getMetadata($url,$token,$fileId);
+        $metadata = $this->apiProvider->getMetadata($this->getUrl(),$this->getToken(),$fileId);
         $respuesta = '';
         if($metadata) {
             $respuesta = json_encode($metadata);
@@ -90,8 +88,6 @@ class ApiManager
 
     public function createFile($filename,$file,$filesize,$pathParent,$folderParent = NULL)
     {
-        $url = $this->getDecryption($_SESSION['url']);
-        $token = $this->getDecryption($_SESSION['token']);
         $respuesta = '';
         $parentId = -1;
         if($folderParent !== NULL) {
@@ -106,7 +102,7 @@ class ApiManager
             $parentId = NULL;
         }
         if($parentId !== -1) {
-            $metadata = $this->apiProvider->createFile($url,$token,$filename,$file,$filesize,$parentId);
+            $metadata = $this->apiProvider->createFile($this->getUrl(),$this->getToken(),$filename,$file,$filesize,$parentId);
             $this->callProcessU1db('insert',$metadata);
             $respuesta = json_encode($metadata);
         }
@@ -116,22 +112,19 @@ class ApiManager
 
     public function createFolder($foldername,$idParent = NULL)
     {
-        $url = $this->getDecryption($_SESSION['url']);
-        $token = $this->getDecryption($_SESSION['token']);
-        $metadata = $this->apiProvider->createFolder($url,$token,$foldername,$idParent);
+        $metadata = $this->apiProvider->createFolder($this->getUrl(),$this->getToken(),$foldername,$idParent);
         $this->callProcessU1db('insert',$metadata);
         return json_encode($metadata);
     }
 
-    public function deleteComponent($idComponent)
+    public function deleteComponent($idComponent,$folder = false)
     {
-        $url = $this->getDecryption($_SESSION['url']);
-        $token = $this->getDecryption($_SESSION['token']);
         $result = false;
-        if($this->apiProvider->deleteComponent($url,$token,$idComponent)) {
+        if($this->apiProvider->deleteComponent($this->getUrl(),$this->getToken(),$idComponent)) {
             $file = array();
             $file['file_id'] = $idComponent;
-            $result = $this->callProcessU1db('delete',$file) === 'true'?true:false;
+            $type = $folder?'deleteFolder':'delete';
+            $result = $this->callProcessU1db($type,$file) === 'true'?true:false;
         }
         return $result;
     }
@@ -140,19 +133,27 @@ class ApiManager
     {
         $result = '';
         if($this->deleteComponent($idFile)) {
-            $url = $this->getDecryption($_SESSION['url']);
-            $token = $this->getDecryption($_SESSION['token']);
-            $metadata = $this->apiProvider->createFile($url,$token,$fileName,$file,$filesize,$idParent);
+            $metadata = $this->apiProvider->createFile($this->getUrl(),$this->getToken(),$fileName,$file,$filesize,$idParent);
             $this->callProcessU1db('insert',$metadata);
             $result = json_encode($metadata);
         }
         return $result;
     }
 
-    public function downloadFile($idFile) {
-        $url = $this->getDecryption($_SESSION['url']);
-        $token = $this->getDecryption($_SESSION['token']);
-        return $this->apiProvider->downloadFile($url,$token,$idFile);
+    public function downloadFile($idFile)
+    {
+        return $this->apiProvider->downloadFile($this->getUrl(),$this->getToken(),$idFile);
+    }
+
+    public function renameFolder($idFolder,$folderName,$idParent = NULL)
+    {
+        $result = '';
+        if($this->deleteComponent($idFolder,true)) {
+            $metadata = $this->apiProvider->createFolder($this->getUrl(),$this->getToken(),$folderName,$idParent);
+            $this->callProcessU1db('insert',$metadata);
+            $result = json_encode($metadata);
+        }
+        return $result;
     }
 
     public function search($array, $key, $value)
@@ -194,6 +195,16 @@ class ApiManager
     {
         $codeManager = new CodeManager();
         return $codeManager->getDecryption($data);
+    }
+
+    public function getUrl()
+    {
+        return $this->getDecryption($_SESSION['url']);
+    }
+
+    public function getToken()
+    {
+        return $this->getDecryption($_SESSION['token']);
     }
 }
 

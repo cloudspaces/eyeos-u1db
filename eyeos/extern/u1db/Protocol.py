@@ -24,6 +24,8 @@ class Protocol:
             result = self.delete(lista)
         elif type == "parent":
             result = self.getParent(lista[0]['path'],lista[0]["folder"])
+        elif type == "deleteFolder":
+            result = self.deleteFolder(lista[0]["file_id"])
 
         return json.dumps(result)
 
@@ -44,6 +46,10 @@ class Protocol:
 
     def getParent(self,path,folder):
         return self.metadata.getParent(path,folder)
+
+    def deleteFolder(self,idFolder):
+        self.metadata.deleteFolder(idFolder)
+        return True
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:

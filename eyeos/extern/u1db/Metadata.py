@@ -61,5 +61,18 @@ class Metadata:
                 break
         return results
 
+    def deleteFolder(self,idFolder):
+        self.db.create_index("by-parentfileid", "parent_file_id")
+        files = self.db.get_from_index("by-parentfileid",str(idFolder))
 
+        if len(files) > 0:
+            for file in files:
+                if file.content["is_folder"] == True:
+                    self.deleteFolder(file.content['file_id'])
+                else:
+                    self.db.delete_doc(file)
 
+        self.db.create_index("by-fileid", "file_id")
+        files = self.db.get_from_index("by-fileid",str(idFolder))
+        if len(files) > 0:
+            self.db.delete_doc(files[0])

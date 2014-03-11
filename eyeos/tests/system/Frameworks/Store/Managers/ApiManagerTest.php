@@ -313,6 +313,34 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->sut->downloadFile($idFile);
     }
 
+    /**
+     *method: renameFolder
+     * when: called
+     * with: idFolderAndFoldername
+     * should: calledU1dbDeleteAndInsert
+     */
+    public function test_renameFolder_called_idFolderAndFoldername_calledU1dbDeleteAndInsert()
+    {
+        $idFolder = "12345";
+        $folderName = "folderTest";
+        $metadataProvider = '{"status": "NEW", "mimetype": "application/x-empty", "parent_file_version": null, "parent_file_id": "null", "root_id": "stacksync", "server_modified": "Fri Mar 07 11:55:32 CET 2014", "checksum": 694355124, "client_modified": "Fri Mar 07 11:55:32 CET 2014", "filename": "folderTest", "version": 1, "file_id":"44444", "is_folder": true, "chunks": ["A6960EF3C0B501B4C338DE32A6C8E9A5004FE350"], "path": "/", "size": 15, "user": "web"}';
+
+        $this->apiProviderMock->expects($this->at(0))
+            ->method('deleteComponent')
+            ->will($this->returnValue(true));
+        $this->accessorProviderMock->expects($this->at(0))
+            ->method('getProcessDataU1db')
+            ->will($this->returnValue('true'));
+        $this->apiProviderMock->expects($this->at(1))
+            ->method('createFolder')
+            ->will($this->returnValue(json_decode($metadataProvider)));
+        $this->accessorProviderMock->expects($this->at(1))
+            ->method('getProcessDataU1db')
+            ->will($this->returnValue('true'));
+
+        $this->sut->renameFolder($idFolder,$folderName);
+    }
+
     private function exerciseGetMetadataWithoutData($path,$metadata, $fileId = NULL)
     {
         $this->apiProviderMock->expects($this->at(0))

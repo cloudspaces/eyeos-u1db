@@ -502,25 +502,25 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 if(strlen($content) > 0) {
                     $fileToRename->getRealFile()->putContents($content);
                 }
+            }
 
-                $i = 1;
-                $nameForCheck = $params[2];
-                $renamed = FSI::getFile($params[1] . '/' . $params[2]);
-                while ($renamed->exists()) {
-                    $name = explode(".", $params[2]);
-                    $extension = (string) $name[count($name) - 1];
-                    $futureName = Array($name[0], $i);
-                    $nameForCheck = implode(' ', $futureName);
+            $i = 1;
+            $nameForCheck = $params[2];
+            $renamed = FSI::getFile($params[1] . '/' . $params[2]);
+            while ($renamed->exists()) {
+                $name = explode(".", $params[2]);
+                $extension = (string) $name[count($name) - 1];
+                $futureName = Array($name[0], $i);
+                $nameForCheck = implode(' ', $futureName);
 
-                    if (!$fileToRename->isDirectory()) {
-                        $nameForCheck .= '.' . $extension;
-                    }
-                    $i++;
-                    $renamed = FSI::getFile($params[1] . '/' . $nameForCheck);
+                if (!$fileToRename->isDirectory()) {
+                    $nameForCheck .= '.' . $extension;
                 }
+                $i++;
+                $renamed = FSI::getFile($params[1] . '/' . $nameForCheck);
+            }
 
-
-
+            if(!$fileToRename->isDirectory()) {
                 if($fileToRename->renameTo($nameForCheck)) {
                     $pathReal =  AdvancedPathLib::parse_url($renamed->getRealFile()->getPath());
                     $file = fopen($pathReal['path'],"r");
@@ -534,7 +534,15 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 $return = self::getFileInfo($fileToRename, $settings);
                 return $return;
 
+            } else {
+                if($fileToRename->delete(true) && $renamed->mkdir()) {
+                    $apiManager->renameFolder($params[3],$nameForCheck,$params[4]);
+
+                }
+
+                return true;
             }
+
         } else {
             $i = 1;
             $nameForCheck = $params[2];
