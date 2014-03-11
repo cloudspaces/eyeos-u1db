@@ -1,3 +1,2 @@
 #!/bin/bash
-
-phpunit  --configuration phpunit.xml  system/Frameworks/Store/
+phpunit  --configuration /var/www/eyeos/eyeos/tests/phpunit.xml system/Frameworks/Store/
