@@ -382,6 +382,11 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->accessorProviderMock->expects($this->at($sequence))
             ->method('getProcessDataU1db')
+            ->will($this->returnValue('[]'));
+        $sequence++;
+
+        $this->accessorProviderMock->expects($this->at($sequence))
+            ->method('getProcessDataU1db')
             ->will($this->returnValue('true'));
         $this->sut->createFile($filename,$file,filesize($path),$pathParent,$folderParent);
         fclose($file);

@@ -103,8 +103,23 @@ class ApiManager
         }
         if($parentId !== -1) {
             $metadata = $this->apiProvider->createFile($this->getUrl(),$this->getToken(),$filename,$file,$filesize,$parentId);
-            $this->callProcessU1db('insert',$metadata);
-            $respuesta = json_encode($metadata);
+
+            if(array_key_exists("file_id",$metadata)) {
+                $file = array();
+                $file['file_id'] = $metadata->file_id;
+                $query = $this->callProcessU1db('select',$file);
+
+                if($query == '[]') {
+                    $this->callProcessU1db('insert',$metadata);
+                } else {
+                    $dataU1db = json_decode($query);
+                    if($dataU1db) {
+                        $this->callProcessU1db("update",$metadata);
+                    }
+                }
+                $respuesta = json_encode($metadata);
+            }
+
         }
 
         return $respuesta;
