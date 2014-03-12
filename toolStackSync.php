@@ -44,9 +44,11 @@ function listContent($fileId,$user,$password)
         } else {
             if (array_key_exists('filename',$list)) {
                 if ($list->is_folder) {
-                    echo "Directorio: $list->filename <br><br>";
+                    echo "Directorio: $list->filename";
                     if (array_key_exists('contents',$list)) {
-                        if (count($list->contents) > 0) {
+                        $childrens = count($list->contents);
+                        if ($childrens > 0) {
+                            echo "&nbsp;&nbsp;(n&uacute;mero de elementos contenidos: $childrens)<br><br>";
                             foreach($list->contents as $meta) {
                                 if ($meta->is_folder) {
                                     $data = '<div><img src="/eyeos/extern/images/48x48/places/folder-documents.png" align="middle"/>';
@@ -57,7 +59,7 @@ function listContent($fileId,$user,$password)
                                 echo $data;
                             }
                         } else {
-                            echo "No contiene ni ficheros ni directorios<br>";
+                            echo "<br><br>No contiene ni ficheros ni directorios<br>";
                         }
                     }
                 } else {
