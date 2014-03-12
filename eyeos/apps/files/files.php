@@ -259,11 +259,17 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 		$results = array();
         $apiManager = new ApiManager();
         $userName = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
+        $stacksync = false;
+
+        $pathStackSync = "home://~" . $userName . "/Stacksync";
+
+        if(strpos($params['folder'],$pathStackSync) !== false) {
+            $stacksync = true;
+        }
+
 		for($i = 0; $i < count($params['files']); $i++) {
-            $stacksync = false;
             if(is_array($params['files'][$i])) {
                 self::verifyToken();
-                $stacksync = true;
                 $source = FSI::getFile($params['files'][$i]['path']);
                 $content = $apiManager->downloadFile($params['files'][$i]['id']);
                 if(strlen($content) > 0) {
@@ -304,13 +310,11 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 			
 			$isCopy = $source->copyTo($newFile);
 
-            if($stacksync === true && $isCopy === true) {
-                //Logger::getLogger('sebas')->error('ContenidoCopy:' . $newFile->getPath() . " copiado correctamente");
+            if($isCopy === true && $stacksync === true) {
                 $pathReal =  AdvancedPathLib::parse_url($newFile->getRealFile()->getPath());
                 $file = fopen($pathReal['path'],"r");
-
                 if($file !== false) {
-                    $len = strlen("home://~" . $userName . "/Stacksync");
+                    $len = strlen($pathStackSync);
                     $pathU1db = substr($newFile->getAbsolutePath(),$len);
                     $lenfinal = strrpos($pathU1db, $newFile->getName());
                     $posfinal = $lenfinal > 1?$lenfinal-strlen($pathU1db)-1:$lenfinal-strlen($pathU1db);
