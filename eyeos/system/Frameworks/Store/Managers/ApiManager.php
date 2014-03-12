@@ -45,6 +45,7 @@ class ApiManager
             }
             $file = array();
             $file['file_id'] = $fileId===NULL?'null':$fileId;
+            $file['user_eyeos'] = $_SESSION['user'];
             $query = $this->callProcessU1db('select',$file);
             if($query == '[]') {
                 foreach($files as $file) {
@@ -53,7 +54,7 @@ class ApiManager
                         $insert = $this->filesProvider->createFile($path . "/" . $file->filename,$file->is_folder);
                     }
                     if($insert) {
-                        $this->callProcessU1db('insert',$file);
+                        $this->callProcessU1db('insert',$this->setUserEyeos($file));
                     }
                 }
             } else {
@@ -62,13 +63,13 @@ class ApiManager
                     for($i = 0;$i < count($files);$i++) {
                         if($this->search($dataU1db,"file_id",$files[$i]->file_id) === false){
                             if($this->filesProvider->createFile($path . "/" . $files[$i]->filename,$files[$i]->is_folder)) {
-                                $this->callProcessU1db('insert',$files[$i]);
+                                $this->callProcessU1db('insert',$this->setUserEyeos($files[$i]));
                             }
                         } else {
                             $filenameDb = $this->getFilename($dataU1db,"file_id",$files[$i]->file_id,"filename");
                             if ($filenameDb !== $files[$i]->filename){
                                 if($this->filesProvider->renameFile($path . "/" . $filenameDb, $files[$i]->filename)) {
-                                    $this->callProcessU1db('update',$files[$i]);
+                                    $this->callProcessU1db('update',$this->setUserEyeos($files[$i]));
                                 }
                             }
                         }
@@ -76,7 +77,7 @@ class ApiManager
                     for($i = 0;$i < count($dataU1db);$i++) {
                         if($this->search($files,"file_id",$dataU1db[$i]->file_id) === false && $metadata->file_id !== $dataU1db[$i]->file_id){
                             if($this->filesProvider->deleteFile($path . "/" . $dataU1db[$i]->filename, $dataU1db[$i]->is_folder)) {
-                                $this->callProcessU1db('delete',$dataU1db[$i]);
+                                $this->callProcessU1db('delete',$this->setUserEyeos($dataU1db[$i]));
                             }
                         }
                     }
@@ -94,6 +95,7 @@ class ApiManager
             $lista = array();
             $lista['path'] = $pathParent;
             $lista['folder'] = $folderParent;
+            $lista['user_eyeos'] = $_SESSION['user'];
             $u1db = json_decode($this->callProcessU1db('parent',$lista));
             if($u1db !== NULL) {
                 $parentId = $u1db[0]->file_id === "null"?NULL:$u1db[0]->file_id;
@@ -107,14 +109,15 @@ class ApiManager
             if(array_key_exists("file_id",$metadata)) {
                 $file = array();
                 $file['file_id'] = $metadata->file_id;
+                $file['user_eyeos'] = $_SESSION['user'];
                 $query = $this->callProcessU1db('select',$file);
 
                 if($query == '[]') {
-                    $this->callProcessU1db('insert',$metadata);
+                    $this->callProcessU1db('insert',$this->setUserEyeos($metadata));
                 } else {
                     $dataU1db = json_decode($query);
                     if($dataU1db) {
-                        $this->callProcessU1db("update",$metadata);
+                        $this->callProcessU1db("update",$this->setUserEyeos($metadata));
                     }
                 }
                 $respuesta = json_encode($metadata);
@@ -128,7 +131,7 @@ class ApiManager
     public function createFolder($foldername,$idParent = NULL)
     {
         $metadata = $this->apiProvider->createFolder($this->getUrl(),$this->getToken(),$foldername,$idParent);
-        $this->callProcessU1db('insert',$metadata);
+        $this->callProcessU1db('insert',$this->setUserEyeos($metadata));
         return json_encode($metadata);
     }
 
@@ -138,6 +141,7 @@ class ApiManager
         if($this->apiProvider->deleteComponent($this->getUrl(),$this->getToken(),$idComponent)) {
             $file = array();
             $file['file_id'] = $idComponent;
+            $file['user_eyeos'] = $_SESSION['user'];
             $type = $folder?'deleteFolder':'delete';
             $result = $this->callProcessU1db($type,$file) === 'true'?true:false;
         }
@@ -149,7 +153,7 @@ class ApiManager
         $result = '';
         if($this->deleteComponent($idFile)) {
             $metadata = $this->apiProvider->createFile($this->getUrl(),$this->getToken(),$fileName,$file,$filesize,$idParent);
-            $this->callProcessU1db('insert',$metadata);
+            $this->callProcessU1db('insert',$this->setUserEyeos($metadata));
             $result = json_encode($metadata);
         }
         return $result;
@@ -165,7 +169,7 @@ class ApiManager
         $result = '';
         if($this->deleteComponent($idFolder,true)) {
             $metadata = $this->apiProvider->createFolder($this->getUrl(),$this->getToken(),$folderName,$idParent);
-            $this->callProcessU1db('insert',$metadata);
+            $this->callProcessU1db('insert',$this->setUserEyeos($metadata));
             $result = json_encode($metadata);
         }
         return $result;
@@ -220,6 +224,14 @@ class ApiManager
     public function getToken()
     {
         return $this->getDecryption($_SESSION['token']);
+    }
+
+    public function setUserEyeos($metadata)
+    {
+        $aux = new stdClass();
+        $aux->user_eyeos = $_SESSION['user'];
+        $metadata = (object)array_merge((array)$aux,(array)$metadata);
+        return $metadata;
     }
 }
 

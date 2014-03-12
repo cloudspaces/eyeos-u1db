@@ -17,15 +17,15 @@ class Protocol:
         if type == "insert":
             result = self.insert(lista)
         elif type == "select":
-            result = self.select(lista[0]["file_id"])
+            result = self.select(lista[0]["file_id"],lista[0]['user_eyeos'])
         elif type == "update":
             result = self.update(lista)
         elif type == "delete":
             result = self.delete(lista)
         elif type == "parent":
-            result = self.getParent(lista[0]['path'],lista[0]["folder"])
+            result = self.getParent(lista[0]['path'],lista[0]["folder"],lista[0]['user_eyeos'])
         elif type == "deleteFolder":
-            result = self.deleteFolder(lista[0]["file_id"])
+            result = self.deleteFolder(lista[0]["file_id"],lista[0]['user_eyeos'])
 
         return json.dumps(result)
 
@@ -33,8 +33,8 @@ class Protocol:
         self.metadata.insert(lista)
         return True
 
-    def select(self,id):
-        return self.metadata.select(id)
+    def select(self,id,user):
+        return self.metadata.select(id,user)
 
     def update(self,lista):
         self.metadata.update(lista)
@@ -44,11 +44,11 @@ class Protocol:
         self.metadata.delete(lista)
         return True
 
-    def getParent(self,path,folder):
-        return self.metadata.getParent(path,folder)
+    def getParent(self,path,folder,user):
+        return self.metadata.getParent(path,folder,user)
 
-    def deleteFolder(self,idFolder):
-        self.metadata.deleteFolder(idFolder)
+    def deleteFolder(self,idFolder,user):
+        self.metadata.deleteFolder(idFolder,user)
         return True
 
 if __name__ == "__main__":

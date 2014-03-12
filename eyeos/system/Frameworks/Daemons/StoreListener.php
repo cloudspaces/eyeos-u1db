@@ -68,8 +68,6 @@ class StoreListener extends AbstractFileAdapter implements ISharingListener {
                     $folder = substr($pathParent,$pos+1);
                     $pathParent = substr($pathParent,0,$pos+1);
                 }
-                Logger::getLogger('sebas')->error('PathStore:' . $pathParent);
-                Logger::getLogger('sebas')->error('PathStore:' . $folder);
 
                 $apiManager->createFile($e->getSource()->getName(),$file,filesize($pathAbsolute),$pathParent,$folder);
 
