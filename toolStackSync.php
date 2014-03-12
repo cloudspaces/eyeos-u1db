@@ -55,7 +55,7 @@ function listContent($fileId,$user,$password)
                                 } else {
                                     $data = '<div><img src="/eyeos/extern/images/48x48/mimetypes/text-plain.png" align="middle"/>';
                                 }
-                                $data .= 'Id: ' . $meta->file_id . ' -- Filename: ' . $meta->filename . ' -- Size: ' . $meta->size . '</div>';
+                                $data .= '&nbsp;&nbsp;Id: ' . $meta->file_id . ' -- Filename: ' . $meta->filename . ' -- Size: ' . $meta->size . '</div>';
                                 echo $data;
                             }
                         } else {
