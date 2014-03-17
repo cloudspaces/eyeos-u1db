@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 __author__ = 'root'
 
 import json
@@ -9,6 +11,7 @@ class Metadata:
             self.db = db
         else:
             self.db = u1db.open("metadata.u1db", create=True)
+        self.url = "http://127.0.0.1:9000/server.u1db"
 
     def __del__(self):
         self.db.close()
@@ -78,3 +81,48 @@ class Metadata:
         files = self.db.get_from_index("by-fileid",str(idFolder),user)
         if len(files) > 0:
             self.db.delete_doc(files[0])
+
+    def deleteEvent(self,lista):
+        for data in lista:
+            files = self.getEvents(data,False)
+            if len(files) > 0:
+                self.db.delete_doc(files[0])
+
+    def updateEvent(self,lista):
+        for data in lista:
+            files = self.getEvents(data,True)
+            if len(files) > 0:
+                file = files[0]
+                del data['timestartOld']
+                del data['timeendOld']
+                del data['isalldayOld']
+                file.set_json(json.dumps(data))
+                self.db.put_doc(file)
+
+    def selectEvent(self,type,user,idCalendar):
+        try:
+            self.db.sync(self.url)
+        except:
+            pass
+
+        results = []
+        self.db.create_index("by-event", "type","user_eyeos","calendarid")
+        files = self.db.get_from_index("by-event",type,user,idCalendar)
+        for file in files:
+            results.append(file.content)
+
+        return results
+
+    def getEvents(self,data,update):
+        self.db.create_index("by-event", "type","user_eyeos","calendarid","timestart","timeend","isallday")
+        if(update):
+            timestart = data['timestartOld']
+            timeend = data['timeendOld']
+            isallday = data['isalldayOld']
+        else:
+            timestart = data['timestart']
+            timeend = data['timeend']
+            isallday = data['isallday']
+        files = self.db.get_from_index("by-event",data['type'],data['user_eyeos'],data['calendarid'],timestart,timeend, isallday)
+        return files
+
