@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 __author__ = 'root'
 
 import unittest
@@ -137,6 +139,12 @@ class ProtocolTest (unittest.TestCase):
         self.protocol.updateEvent.assert_called_once_with(aux['lista'])
         self.assertEquals("true",result)
 
+    """
+    method: protocol
+    when: called
+    with: typeSelectEventAndList
+    should: return Array
+    """
     def test_protocol_called_typeSelectEventAndList_returnArray(self):
         params = '{"type":"selectEvent","lista":[{"type":"event","user_eyeos":"eyeos","calendarid":"eyeID_Calendar_2b"}]}'
         aux = json.loads(params)
@@ -145,3 +153,18 @@ class ProtocolTest (unittest.TestCase):
         result = self.protocol.protocol(params)
         self.protocol.selectEvent.assert_called_once_with("event","eyeos","eyeID_Calendar_2b")
         self.assertEquals("[]",result)
+
+    """
+    method: protocol
+    when: called
+    with: typeInsertEventAndList
+    should: insertCorrect
+    """
+    def test_protocol_called_typeInsertEventAndList_insertCorrect(self):
+        params = '{"type":"insertEvent" , "lista":[{"type":"event","user_eyeos": "eyeos","calendarid": "eyeID_Calendar_2b", "isallday":"0", "timestart": "201419160000", "timeend":"201419170000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Visita Médico", "location": "Barcelona", "description": "Llevar justificante"},{"type":"event","user_eyeos": "eyeos","calendarid": "eyeID_Calendar_2b", "isallday": "1", "timestart": "201420160000", "timeend":"201420170000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Excursión", "location": "Girona", "description": "Mochila"}]}'
+        aux = json.loads(params)
+        self.protocol.insertEvent = Mock()
+        self.protocol.insertEvent.return_value = True
+        result = self.protocol.protocol(params)
+        self.protocol.insertEvent.assert_called_once_with(aux['lista'])
+        self.assertEquals("true",result)

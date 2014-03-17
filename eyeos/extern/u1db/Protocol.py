@@ -32,6 +32,8 @@ class Protocol:
             result = self.updateEvent(lista)
         elif type == "selectEvent":
             result = self.selectEvent(lista[0]['type'],lista[0]['user_eyeos'],lista[0]['calendarid'])
+        elif type == "insertEvent":
+            result = self.insertEvent(lista)
 
         return json.dumps(result)
 
@@ -67,6 +69,10 @@ class Protocol:
 
     def selectEvent(self,type,user,calendarid):
         self.metadata.selectEvent(type,user,calendarid)
+
+    def insertEvent(self,lista):
+        self.metadata.insert(lista)
+        return True
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:

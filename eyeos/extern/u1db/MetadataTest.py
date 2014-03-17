@@ -151,6 +151,22 @@ class MetadataTest (unittest.TestCase):
         data.sort()
         self.assertEquals(array,data)
 
+    """
+    method: insertEvent
+    when: called
+    with: array
+    should: insertCorrect
+    """
+    def test_insertEvent_called_array_insertCorrect(self):
+        array = self.getArrayInsertEvent()
+        self.sut.insert(array)
+        files = self.db.get_all_docs()
+        results = []
+        for file in files[1]:
+            results.append(file.content)
+        results.sort()
+        self.assertEquals(array,results)
+
     def getArrayInsert(self):
         array = [{u'user_eyeos': u'eyeos',u'status': None, u'mimetype': None, u'parent_file_id': u'null', u'checksum': None, u'filename': u'Root', u'is_root': True, u'version': None, u'file_id': u'null', u'is_folder': True, u'path': None, u'size': None, u'user': None},
                  {u'user_eyeos': u'eyeos',u'status': u'NEW', u'mimetype': u'inode/directory', u'parent_file_id': u'null', u'server_modified': u'2013-11-11 15:40:45.784', u'checksum': 0, u'client_modified': u'2013-11-11 15:40:45.784', u'filename': u'helpFolder', u'is_root': False, u'version': 1, u'file_id': -7755273878059615652, u'is_folder': True, u'path': u'/', u'size': 0, u'user': u'web'}]
