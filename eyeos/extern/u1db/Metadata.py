@@ -4,13 +4,15 @@ __author__ = 'root'
 
 import json
 import u1db
+import os
 
 class Metadata:
     def __init__(self, db=None):
         if db != None:
             self.db = db
         else:
-            self.db = u1db.open("metadata.u1db", create=True)
+            db =  os.getcwd() + "/extern/u1db/metadata.u1db"
+            self.db = u1db.open(db, create=True)
         self.url = "http://127.0.0.1:9000/server.u1db"
 
     def __del__(self):

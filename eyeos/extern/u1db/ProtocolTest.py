@@ -13,7 +13,7 @@ class ProtocolTest (unittest.TestCase):
     def setUp(self):
         self.sut = ''
         self.db =  u1db.open("test.u1db", create=True)
-        self.protocol = Protocol()
+        self.protocol = Protocol(self.db)
 
     def tearDown(self):
         self.db.close()
