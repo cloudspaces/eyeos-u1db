@@ -116,7 +116,7 @@ class ProtocolTest (unittest.TestCase):
     should: deleteCorrect
     """
     def test_protocol_called_typeDeleteEventAndList_deleteCorrect(self):
-        params = '{"type":"deleteEvent","lista":[{"type":"event","user_eyeos":"eyeos","calendarid":"eyeID_Calendar_2b","timestart":"201419160000","timeend":"201419170000","isallday":"0"}]}'
+        params = '{"type":"deleteEvent","lista":[{"type":"event","user_eyeos":"eyeos","calendar":"personal","timestart":"201419160000","timeend":"201419170000","isallday":"0"}]}'
         aux = json.loads(params)
         self.protocol.deleteEvent = Mock()
         self.protocol.deleteEvent.return_value = True
@@ -131,7 +131,7 @@ class ProtocolTest (unittest.TestCase):
     should: updateCorrect
     """
     def test_protocol_called_typeUpdateEventAndList_updateCorrect(self):
-        params = '{"type":"updateEvent","lista":[{"type":"event","user_eyeos":"eyeos","calendarid":"eyeID_Calendar_2b","timestartOld":"201419160000","timestart":"201419173000","timeendOld":"201419170000","timeend":"201419193000","isalldayOld":"0","isallday":"0"}]}'
+        params = '{"type":"updateEvent","lista":[{"type":"event","user_eyeos":"eyeos","calendar":"personal","timestartOld":"201419160000","timestart":"201419173000","timeendOld":"201419170000","timeend":"201419193000","isalldayOld":"0","isallday":"0"}]}'
         aux = json.loads(params)
         self.protocol.updateEvent = Mock()
         self.protocol.updateEvent.return_value = True
@@ -146,12 +146,12 @@ class ProtocolTest (unittest.TestCase):
     should: return Array
     """
     def test_protocol_called_typeSelectEventAndList_returnArray(self):
-        params = '{"type":"selectEvent","lista":[{"type":"event","user_eyeos":"eyeos","calendarid":"eyeID_Calendar_2b"}]}'
+        params = '{"type":"selectEvent","lista":[{"type":"event","user_eyeos":"eyeos","calendar":"personal"}]}'
         aux = json.loads(params)
         self.protocol.selectEvent = Mock()
         self.protocol.selectEvent.return_value = []
         result = self.protocol.protocol(params)
-        self.protocol.selectEvent.assert_called_once_with("event","eyeos","eyeID_Calendar_2b")
+        self.protocol.selectEvent.assert_called_once_with("event","eyeos","personal")
         self.assertEquals("[]",result)
 
     """
@@ -161,7 +161,7 @@ class ProtocolTest (unittest.TestCase):
     should: insertCorrect
     """
     def test_protocol_called_typeInsertEventAndList_insertCorrect(self):
-        params = '{"type":"insertEvent" , "lista":[{"type":"event","user_eyeos": "eyeos","calendarid": "eyeID_Calendar_2b", "isallday":"0", "timestart": "201419160000", "timeend":"201419170000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Visita Médico", "location": "Barcelona", "description": "Llevar justificante"},{"type":"event","user_eyeos": "eyeos","calendarid": "eyeID_Calendar_2b", "isallday": "1", "timestart": "201420160000", "timeend":"201420170000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Excursión", "location": "Girona", "description": "Mochila"}]}'
+        params = '{"type":"insertEvent" , "lista":[{"type":"event","user_eyeos": "eyeos","calendar": "personal", "isallday":"0", "timestart": "201419160000", "timeend":"201419170000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Visita Médico", "location": "Barcelona", "description": "Llevar justificante"},{"type":"event","user_eyeos": "eyeos","calendarid": "eyeID_Calendar_2b", "isallday": "1", "timestart": "201420160000", "timeend":"201420170000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Excursión", "location": "Girona", "description": "Mochila"}]}'
         aux = json.loads(params)
         self.protocol.insertEvent = Mock()
         self.protocol.insertEvent.return_value = True

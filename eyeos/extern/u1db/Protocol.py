@@ -31,7 +31,7 @@ class Protocol:
         elif type == "updateEvent":
             result = self.updateEvent(lista)
         elif type == "selectEvent":
-            result = self.selectEvent(lista[0]['type'],lista[0]['user_eyeos'],lista[0]['calendarid'])
+            result = self.selectEvent(lista[0]['type'],lista[0]['user_eyeos'],lista[0]['calendar'])
         elif type == "insertEvent":
             result = self.insertEvent(lista)
 

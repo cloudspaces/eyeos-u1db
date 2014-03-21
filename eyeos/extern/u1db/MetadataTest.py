@@ -147,9 +147,8 @@ class MetadataTest (unittest.TestCase):
     def test_selectEvent_called_userAndIdCalendar_returnArray(self):
         array = self.getArrayInsertEvent()
         self.sut.insert(array)
-        data = self.sut.selectEvent('event','eyeos','eyeID_Calendar_2b')
-        data.sort()
-        self.assertEquals(array,data)
+        data = self.sut.selectEvent('event','eyeos','laboral')
+        self.assertEquals(2,len(data))
 
     """
     method: insertEvent
@@ -159,7 +158,7 @@ class MetadataTest (unittest.TestCase):
     """
     def test_insertEvent_called_array_insertCorrect(self):
         array = self.getArrayInsertEvent()
-        self.sut.insert(array)
+        self.sut.insertEvent(array)
         files = self.db.get_all_docs()
         results = []
         for file in files[1]:
@@ -204,21 +203,22 @@ class MetadataTest (unittest.TestCase):
 
 
     def getArrayInsertEvent(self):
-        array = [{u'type':u'event',u'user_eyeos': u'eyeos',u'calendarid': u'eyeID_Calendar_2b', u'isallday': u'0', u'timestart': u'201419160000', u'timeend':u'201419170000', u'repetition': u'None', u'finaltype': u'1', u'finalvalue': u'0', u'subject': u'Visita Médico', u'location': u'Barcelona', u'description': u'Llevar justificante'},
-                 {u'type':u'event',u'user_eyeos': u'eyeos',u'calendarid': u'eyeID_Calendar_2b', u'isallday': u'1', u'timestart': u'201420160000', u'timeend':u'201420170000', u'repetition': u'None', u'finaltype': u'1', u'finalvalue': u'0', u'subject': u'Excursión', u'location': u'Girona', u'description': u'Mochila'},
-                 {u'type':u'event',u'user_eyeos': u'eyeos',u'calendarid': u'eyeID_Calendar_2b', u'isallday': u'0', u'timestart': u'201421173000', u'timeend':u'201421183000', u'repetition': u'EveryWeek', u'finaltype': u'1', u'finalvalue': u'0', u'subject': u'ClaseInglés', u'location': u'Hospitalet', u'description': u'Trimestre'}]
+        array = [{u'type':u'event',u'user_eyeos': u'eyeos',u'calendar': u'personal', u'isallday': u'0', u'timestart': u'201419160000', u'timeend':u'201419170000', u'repetition': u'None', u'finaltype': u'1', u'finalvalue': u'0', u'subject': u'Visita Médico', u'location': u'Barcelona', u'description': u'Llevar justificante'},
+                 {u'type':u'event',u'user_eyeos': u'eyeos',u'calendar': u'laboral', u'isallday': u'1', u'timestart': u'201420160000', u'timeend':u'201420170000', u'repetition': u'None', u'finaltype': u'1', u'finalvalue': u'0', u'subject': u'Excursión', u'location': u'Girona', u'description': u'Mochila'},
+                 {u'type':u'event',u'user_eyeos': u'eyeos',u'calendar': u'laboral', u'isallday': u'0', u'timestart': u'201421173000', u'timeend':u'201421183000', u'repetition': u'EveryWeek', u'finaltype': u'1', u'finalvalue': u'0', u'subject': u'ClaseInglés', u'location': u'Hospitalet', u'description': u'Trimestre'}]
+        array.sort()
         return array
 
     def getArrayDeleteEvent(self):
-        array = [{u'type': u'event',u'user_eyeos': u'eyeos',u'calendarid':u'eyeID_Calendar_2b',u'timestart':u'201419160000',u'timeend':u'201419170000',u'isallday':u'0'},
-                 {u'type': u'event',u'user_eyeos': u'eyeos',u'calendarid':u'eyeID_Calendar_2b',u'timestart':u'201420160000',u'timeend':u'201420170000',u'isallday':u'1'},
-                 {u'type': u'event',u'user_eyeos': u'eyeos',u'calendarid':u'eyeID_Calendar_2b',u'timestart':u'201421173000',u'timeend':u'201421183000',u'isallday':u'0'}]
+        array = [{u'type': u'event',u'user_eyeos': u'eyeos',u'calendar':u'personal',u'timestart':u'201419160000',u'timeend':u'201419170000',u'isallday':u'0'},
+                 {u'type': u'event',u'user_eyeos': u'eyeos',u'calendar':u'laboral',u'timestart':u'201420160000',u'timeend':u'201420170000',u'isallday':u'1'},
+                 {u'type': u'event',u'user_eyeos': u'eyeos',u'calendar':u'laboral',u'timestart':u'201421173000',u'timeend':u'201421183000',u'isallday':u'0'}]
         return array
 
     def getArrayUpdateEvent(self):
-        array = [{u'type':u'event',u'user_eyeos': u'eyeos',u'calendarid': u'eyeID_Calendar_2b', u'isallday': u'0',u'isalldayOld': u'0', u'timestartOld': u'201419160000', u'timestart': u'201419173000', u'timeendOld':u'201419170000',u'timeend':u'201419183000', u'repetition': u'None', u'finaltype': u'1', u'finalvalue': u'0', u'subject': u'Visita Museo', u'location': u'Esplugues de llobregat', u'description': u'Llevar Ticket'},
-                 {u'type':u'event',u'user_eyeos': u'eyeos',u'calendarid': u'eyeID_Calendar_2b', u'isalldayOld': u'1',u'isallday': u'0', u'timestart': u'201420160000', u'timestartOld': u'201420160000', u'timeendOld':u'201420170000', u'timeend':u'201420170000', u'repetition': u'None', u'finaltype': u'1', u'finalvalue': u'0', u'subject': u'Excursión', u'location': u'Girona', u'description': u'Mochila'},
-                 {u'type':u'event',u'user_eyeos': u'eyeos',u'calendarid': u'eyeID_Calendar_2b', u'isalldayOld': u'0', u'isallday': u'0',u'timestartOld': u'201421173000', u'timestart': u'201421173000',u'timeendOld':u'201421183000', u'timeend':u'201421183000',u'repetition': u'EveryMonth', u'finaltype': u'1', u'finalvalue': u'0', u'subject': u'ClaseFrancés', u'location': u'Hospitalet', u'description': u'Trimestre'}]
+        array = [{u'type':u'event',u'user_eyeos': u'eyeos',u'calendar': u'personal', u'isallday': u'0',u'isalldayOld': u'0', u'timestartOld': u'201419160000', u'timestart': u'201419173000', u'timeendOld':u'201419170000',u'timeend':u'201419183000', u'repetition': u'None', u'finaltype': u'1', u'finalvalue': u'0', u'subject': u'Visita Museo', u'location': u'Esplugues de llobregat', u'description': u'Llevar Ticket'},
+                 {u'type':u'event',u'user_eyeos': u'eyeos',u'calendar': u'laboral', u'isalldayOld': u'1',u'isallday': u'0', u'timestart': u'201420160000', u'timestartOld': u'201420160000', u'timeendOld':u'201420170000', u'timeend':u'201420170000', u'repetition': u'None', u'finaltype': u'1', u'finalvalue': u'0', u'subject': u'Excursión', u'location': u'Girona', u'description': u'Mochila'},
+                 {u'type':u'event',u'user_eyeos': u'eyeos',u'calendar': u'laboral', u'isalldayOld': u'0', u'isallday': u'0',u'timestartOld': u'201421173000', u'timestart': u'201421173000',u'timeendOld':u'201421183000', u'timeend':u'201421183000',u'repetition': u'EveryMonth', u'finaltype': u'1', u'finalvalue': u'0', u'subject': u'ClaseFrancés', u'location': u'Hospitalet', u'description': u'Trimestre'}]
         array.sort()
         return array
 

@@ -89,6 +89,9 @@ class Metadata:
             files = self.getEvents(data,False)
             if len(files) > 0:
                 self.db.delete_doc(files[0])
+        self.sync()
+
+
 
     def updateEvent(self,lista):
         for data in lista:
@@ -100,15 +103,12 @@ class Metadata:
                 del data['isalldayOld']
                 file.set_json(json.dumps(data))
                 self.db.put_doc(file)
+        self.sync()
 
     def selectEvent(self,type,user,idCalendar):
-        try:
-            self.db.sync(self.url)
-        except:
-            pass
-
+        self.sync()
         results = []
-        self.db.create_index("by-event", "type","user_eyeos","calendarid")
+        self.db.create_index("by-event", "type","user_eyeos","calendar")
         files = self.db.get_from_index("by-event",type,user,idCalendar)
         for file in files:
             results.append(file.content)
@@ -116,7 +116,7 @@ class Metadata:
         return results
 
     def getEvents(self,data,update):
-        self.db.create_index("by-event", "type","user_eyeos","calendarid","timestart","timeend","isallday")
+        self.db.create_index("by-event", "type","user_eyeos","calendar","timestart","timeend","isallday")
         if(update):
             timestart = data['timestartOld']
             timeend = data['timeendOld']
@@ -125,6 +125,17 @@ class Metadata:
             timestart = data['timestart']
             timeend = data['timeend']
             isallday = data['isallday']
-        files = self.db.get_from_index("by-event",data['type'],data['user_eyeos'],data['calendarid'],timestart,timeend, isallday)
+        files = self.db.get_from_index("by-event",data['type'],data['user_eyeos'],data['calendar'],timestart,timeend, isallday)
         return files
+
+    def insertEvent(self,lista):
+        self.insert(lista)
+        self.sync()
+
+
+    def sync(self):
+        try:
+            self.db.sync(self.url)
+        except:
+            pass
 
