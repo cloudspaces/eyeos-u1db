@@ -105,6 +105,8 @@ qx.Class.define('eyeos.calendar.Controller', {
         __checknum: null,
 		__procVars: {},
 		__registeredViewParts: null,
+        __timer: null,
+        close: false,
 		
 		/**
 		 * @var {Map} eyeos.calendar.model.Event
@@ -126,6 +128,7 @@ qx.Class.define('eyeos.calendar.Controller', {
 			for (var i = 0; i < eventsData.length; i++) {
 				eventsData[i].calendar = calendar;
 				var event = eyeos.calendar.model.Event.fromJson(eventsData[i]);
+                //console.log(event);
 				this.__eventModels[event.getId()] = event;
 			}
             //console.log(this.__eventModels);
@@ -185,12 +188,12 @@ qx.Class.define('eyeos.calendar.Controller', {
 			this.setCalendarSelectedDate(this.getCalendarSelectedDate());
 		},
 		__onEventDeleted: function(event) {
-			event.fireDataEvent('deleteEvent', event);
-			delete this.__eventModels[event.getId()];
+			/*event.fireDataEvent('deleteEvent', event);
+			delete this.__eventModels[event.getId()];*/
 		},
 		
-		__onEventSaved: function(event, eventDataArr,mode) {	
-              if (mode == 'EDIT'){
+		__onEventSaved: function(event, eventDataArr,mode) {
+              /*if (mode == 'EDIT'){
                   var result = new Array();
                   for(var id in this.__eventModels) {
                       var eventModel = this.__eventModels[id];
@@ -225,7 +228,9 @@ qx.Class.define('eyeos.calendar.Controller', {
                                       this.__unsavedEventModels.splice(i, 1);
                               }
                       }
-              }
+              }*/
+
+            this.refreshEventsCalendar(event.getCalendar());
 					
 						//console.log(this.__eventModels,'after');
 			eyeos.consoleInfo('Event saved: [' + event.getId() + '] "' + event.getSubject() + '" on ' + event.getTimeStart());
@@ -245,16 +250,17 @@ qx.Class.define('eyeos.calendar.Controller', {
 				calendars[cal.getId()] = cal;
 			}
 			this.setCalendars(calendars);
-			
+
 			// Retrieve events for each calendar from the server
 			for(var id in calendars) {
-				eyeos.callMessage(
+				/*eyeos.callMessage(
 					this.__checknum,
 					'getAllEventsFromPeriod',
 					{
 						calendarId: id,
 						periodFrom: null,
-						periodTo: null
+						periodTo: null,
+                        calendar: calendars[id].getName()
 					},
 					function(id) {
 						return function(eventsData) {
@@ -267,7 +273,8 @@ qx.Class.define('eyeos.calendar.Controller', {
 						}
 					}(id),
 					this
-				);
+				);*/
+                this.refreshEventsCalendar(calendars[id]);
 			}
 		},
 		__onGroupCalendarsLoaded: function(data) {
@@ -463,7 +470,8 @@ qx.Class.define('eyeos.calendar.Controller', {
             }, this);
 		},
 		
-		deleteEvent: function(event,deleteAll) {	
+		deleteEvent: function(event,deleteAll) {
+            this.closeTimer();
 			// An error during the drawing process may leave an unfinished eventview on the stage
 			// so if the event has no ID, we can simply destroy the JS object without sending any
 			// request to the server.
@@ -480,17 +488,22 @@ qx.Class.define('eyeos.calendar.Controller', {
 				this.__checknum,
 				'deleteEvent',
 				{
-					eventId: event.getId(), dtstart:startTime.getTime() / 1000, isDeleteAll:deleteAll, groupId:event.getEventGroup(),calendarId:event.getCalendar().getId()
+					eventId: event.getId(), dtstart:startTime.getTime() / 1000, isDeleteAll:deleteAll, groupId:event.getEventGroup(),calendarId:event.getCalendar().getId(),
+                    calendar: event.getCalendar().getName(),isAllDay: event.isAllDay() ? 1 : 0,timeStart: event.getTimeStart().getTime() / 1000,timeEnd: event.getTimeEnd().getTime() / 1000,
+                    repetition: event.getRepetition(),finalType: event.getFinalType(),finalValue: event.getFinalValue(),subject: event.getSubject(),location: event.getLocation(),
+                    repeatType: event.getRepeatType(),description: event.getDescription()
 				},
 				function(e) {	//console.log(this.__eventModels)
-                      if(deleteAll == '1' && e.length > 0){ 
+                      /*if(deleteAll == '1' && e.length > 0){
                           for(var i = 0; i < e.length; i++){
                               var evn = this.__eventModels[e[i]]; 
                               this.__onEventDeleted(evn);
                           }
                       } else {
                           this.__onEventDeleted(event);
-                      }
+                      }*/
+
+                     this.refreshEventsCalendar(event.getCalendar());
 				},
 				this
 			);
@@ -622,7 +635,8 @@ qx.Class.define('eyeos.calendar.Controller', {
 			}, this);
 		},
 		
-		saveEvent: function(event, callback, callbackContext) { 
+		saveEvent: function(event, callback, callbackContext) {
+            this.closeTimer();
 			if (! event instanceof eyeos.calendar.model.Event) {
 				throw '[eyeos.calendar.Controller] saveEvent() event must be an instance of eyeos.calendar.model.Event';
 			}
@@ -699,6 +713,107 @@ qx.Class.define('eyeos.calendar.Controller', {
 		 _isEmpty : function(ob) {
 		   for(var i in ob){return false;}
 			 return true;
-		  }
+		  },
+        refreshEventsCalendar: function(calendar,refresh) {
+            if(!this.close) {
+                this.closeTimer();
+                eyeos.callMessage(
+                    this.__checknum,
+                    'getAllEventsFromPeriod',
+                    {
+                        calendarId: calendar.getId(),
+                        periodFrom: null,
+                        periodTo: null,
+                        calendar: calendar.getName()
+                    },
+                    function() {
+                        return function(eventsData) {
+                            var eventsOld = null;
+
+                            if(this.__eventModels !== {}) {
+                               eventsOld = this.__getEventsByPeriod(calendar);
+                            }
+
+                            this.__eventModels =  {};
+                            for (var i = 0; i < eventsData.length; i++) {
+                                eventsData[i].calendar = calendar;
+                                var event = eyeos.calendar.model.Event.fromJson(eventsData[i]);
+                                //console.log(event);
+                                this.__eventModels[event.getId()] = event;
+                            }
+
+                            var eventsNew = this.__getEventsByPeriod(calendar);
+
+                            var change = this.__getDataChange(eventsOld,eventsNew);
+
+                            if((change && refresh) || !refresh) {
+                                this.fireDataEvent('refreshEventsCalendar',eventsNew);
+                            }
+                            this.__refresh(calendar,true);
+
+                        }
+                    }(calendar.getId()),
+                    this
+                );
+            }
+        },
+
+        __refresh: function(calendar,refresh) {
+            var that = this;
+            var reffunction = function(){that.refreshEventsCalendar(calendar,refresh)};
+            this._timer = setTimeout(reffunction,10000);
+        },
+
+        __getEventsByPeriod: function(calendar) {
+            var events = this.getAllEventsFromPeriod(
+                calendar.getId(),
+                this.getCalendarCurrentPeriod().begin,
+                this.getCalendarCurrentPeriod().end
+            );
+
+            return events;
+        },
+
+        __getDataChange: function(eventsOld,eventsNew) {
+            var resp = true;
+
+            if(eventsOld.length > 0) {
+                if(eventsOld.length == eventsNew.length) {
+                    resp = false;
+                    for(var i in eventsOld) {
+
+                        /*console.log(eventsOld[i].getSubject().toLowerCase() +  '!=='  + eventsNew[i].getSubject().toLowerCase());
+                        console.log(eventsOld[i].getTimeStart().getTime() +  '!==' +  eventsNew[i].getTimeStart().getTime());
+                        console.log( eventsOld[i].getTimeEnd().getTime() +  '!==' +  eventsNew[i].getTimeEnd().getTime());
+                        console.log(eventsOld[i].getAllDay() +  '!==' +  eventsNew[i].getAllDay());
+                        console.log(eventsOld[i].getRepetition() + '!==' +  eventsNew[i].getRepetition());
+                        console.log(eventsOld[i].getRepeatType() + '!==' +  eventsNew[i].getRepeatType());
+                        console.log(eventsOld[i].getLocation().toLowerCase() +  '!==' +  eventsNew[i].getLocation().toLowerCase());
+                        console.log(eventsOld[i].getDescription().toLowerCase() +  '!==' +  eventsNew[i].getDescription().toLowerCase());
+                        console.log(eventsOld[i].getFinalType() +  '!==' +  eventsNew[i].getFinalType());
+                        console.log(eventsOld[i].getFinalValue() +  '!==' +  eventsNew[i].getFinalValue());*/
+
+                        if(eventsOld[i].getSubject().toLowerCase() != eventsNew[i].getSubject().toLowerCase() || eventsOld[i].getTimeStart().getTime() !== eventsNew[i].getTimeStart().getTime() ||
+                            eventsOld[i].getTimeEnd().getTime() !== eventsNew[i].getTimeEnd().getTime() || eventsOld[i].getAllDay() !== eventsNew[i].getAllDay() || eventsOld[i].getRepetition() !== eventsNew[i].getRepetition() ||
+                            eventsOld[i].getRepeatType() !== eventsNew[i].getRepeatType() || eventsOld[i].getLocation().toLowerCase() !== eventsNew[i].getLocation().toLowerCase() ||
+                            eventsOld[i].getDescription().toLowerCase() !== eventsNew[i].getDescription().toLowerCase() || eventsOld[i].getFinalType() !== eventsNew[i].getFinalType() ||
+                            eventsOld[i].getFinalValue() !== eventsNew[i].getFinalValue()) {
+                                resp = true;
+                                break;
+                        }
+                    }
+                }
+            } else if(eventsNew.length == 0) {
+                resp = false;
+            }
+
+            return resp;
+        },
+        closeTimer: function() {
+            if(this.__timer) {
+                clearTimeout(this._timer);
+                this._timer = null;
+            }
+        }
 	}
 });

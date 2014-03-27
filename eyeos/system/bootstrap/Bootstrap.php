@@ -91,7 +91,17 @@ abstract class Bootstrap {
         include_once "../system/Frameworks/Store/Managers/ApiManager.php";
         include_once "../system/Frameworks/Store/Providers/ApiProvider.php";
         include_once "../system/Frameworks/Store/Providers/FilesProvider.php";
-
+        include_once "../system/kernel/libs/abstraction/object.php";
+        include_once "../system/kernel/libs/abstraction/um.php";
+        include_once "../system/kernel/libs/abstraction/observer.php";
+        include_once "../system/kernel/libs/abstraction/security.php";
+        include_once "../system/kernel/services/Sharing/interface.php";
+        include_once "../system/kernel/libs/abstraction/sharing.php";
+        include_once "../system/Frameworks/Calendar/interfaces.php";
+        include_once "../system/Frameworks/Calendar/CalendarManager.php";
+        include_once "../system/Frameworks/Calendar/model/CalendarEvent.php";
+        include_once "../system/Frameworks/Calendar/model/Calendar.php";
+        include_once "../system/kernel/libs/utf8/mbstring/core.php";
     }
 	
 	/**

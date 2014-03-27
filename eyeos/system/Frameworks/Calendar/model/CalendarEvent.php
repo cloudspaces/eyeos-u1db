@@ -31,12 +31,41 @@
 */
 
 class CalendarEvent extends AbstractCalendarEvent {	
-	public function __construct() {
+	public function __construct($id = NULL, $subject = NULL,$location = NULL,$description = NULL, $isAllDay = false,$timeStart = NULL, $timeEnd = NULL, $creatorId = NULL,
+            $type = NULL,$calendarId = NULL, $privacy = NULL,$repetition = NULL, $repeatType = NULL,$finalType = NULL,$finalValue = NULL, $eventGroup = NULL, $gmtTimeDiffrence = NULL) {
 		//set default values
-		$this->setIsAllDay(false);
-		$this->setType(self::TYPE_OTHER);
-		$this->setPrivacy(self::PRIVACY_PRIVATE);
-		$this->setRepetition('');
+
+        if($id) $this->setId($id);
+        if($subject) $this->setSubject($subject);
+        if($location) $this->setLocation($location);
+        if($description) $this->setDescription($description);
+		$this->setIsAllDay($isAllDay);
+        if($timeStart !== NULL) $this->setTimeStart($timeStart);
+        if($timeEnd != NULL) $this->setTimeEnd($timeEnd);
+        if($creatorId) $this->setCreatorId($creatorId);
+        if($type) {
+            $this->setType($type);
+        } else {
+            $this->setType(self::TYPE_OTHER);
+        }
+
+        if($calendarId) $this->setCalendarId($calendarId);
+        if($privacy) {
+            $this->setPrivacy($privacy);
+        } else {
+            $this->setPrivacy(self::PRIVACY_PRIVATE);
+        }
+
+        if($repetition) {
+            $this->setRepetition($repetition);
+        } else {
+            $this->setRepetition('');
+        }
+        if($repeatType) $this->setRepeatType($repeatType);
+        if($finalType !== NULL) $this->setFinalType($finalType);
+        if($finalValue !== NULL) $this->setFinalValue($finalValue);
+        if($eventGroup) $this->setEventGroup($eventGroup);
+        if($gmtTimeDiffrence) $this->setGmtTimeDiffrence($gmtTimeDiffrence);
 	}
 	
 	public function addCollaborator(AbstractEyeosPrincipal $collaborator, SharePermission $permissions) {

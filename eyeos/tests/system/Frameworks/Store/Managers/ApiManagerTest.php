@@ -12,6 +12,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     private $apiProviderMock;
     private $filesProviderMock;
     private $sut;
+    private $calendarManagerMock;
 
     public function setUp()
     {
@@ -21,7 +22,8 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->accessorProviderMock = $this->getMock('AccessorProvider');
         $this->apiProviderMock = $this->getMock('ApiProvider');
         $this->filesProviderMock = $this->getMock("FilesProvider");
-        $this->sut = new ApiManager($this->accessorProviderMock,$this->apiProviderMock,$this->filesProviderMock);
+        $this->calendarManagerMock = $this->getMock('ICalendarManager');
+        $this->sut = new ApiManager($this->accessorProviderMock,$this->apiProviderMock,$this->filesProviderMock,$this->calendarManagerMock);
     }
 
     public function tearDown()
@@ -342,6 +344,178 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->sut->renameFolder($idFolder,$folderName);
     }
 
+    /**
+     * method: createEvent
+     * when: called
+     * with: event
+     * should: calledU1dbUpdate
+     */
+    public function test_createEvent_called_event_calledU1dbUpdate()
+    {
+        $event = json_decode('[{"type":"event","user_eyeos": "eyeos","calendar": "personal", "status":"NEW", "isallday":"0", "timestart": "201419160000", "timeend":"201419170000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Visita Médico", "location": "Barcelona", "description": "Llevar justificante"},{"type":"event","user_eyeos": "eyeos","calendarid": "eyeID_Calendar_2b", "isallday": "1", "timestart": "201420160000", "timeend":"201420170000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Excursión", "location": "Girona", "description": "Mochila"}]}');
+        $this->accessorProviderMock->expects($this->once())
+            ->method('getProcessDataU1db')
+            ->will($this->returnValue('true'));
+        $this->sut->createEvent($event);
+    }
+
+    /**
+     * method: deleteEvent
+     * when: called
+     * with: event
+     * should: calledU1dbDelete
+     */
+    public function test_deleteEvent_called_event_calledU1dbDelete()
+    {
+        $event = json_decode('[{"type":"event","user_eyeos": "eyeos","calendar": "personal", "status":"DELETED", "isallday": "0","timestart": "201419173000","timeend":"201419183000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Visita Museo", "location": "Esplugues de llobregat", "description": "Llevar Ticket"},
+                    {"type":"event","user_eyeos": "eyeos","calendar": "personal","status":"DELETED", "isallday": "0", "timestart": "201420160000", "timeend":"201420170000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Excursión", "location": "Girona", "description": "Mochila"}]');
+
+        $this->accessorProviderMock->expects($this->once())
+            ->method('getProcessDataU1db')
+            ->will($this->returnValue('true'));
+        $this->sut->deleteEvent($event);
+    }
+
+    /**
+     * method: updateEvent
+     * when: called
+     * with: event
+     * should: calledU1dbUpdate
+     */
+    public function test_updateEvent_called_event_calledU1dbUpdate()
+    {
+        $event = json_decode('[{"type":"event","user_eyeos": "eyeos","calendar": "personal", "status":"CHANGED", "isallday": "0","timestart": "201419173000","timeend":"201419183000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Visita Museo", "location": "Esplugues de llobregat", "description": "Llevar Ticket"},
+                    {"type":"event","user_eyeos": "eyeos","calendar": "personal","status":"CHANGED", "isallday": "0", "timestart": "201420160000", "timeend":"201420170000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Excursión", "location": "Girona", "description": "Mochila"}]');
+
+
+        $this->accessorProviderMock->expects($this->once())
+            ->method('getProcessDataU1db')
+            ->will($this->returnValue('true'));
+        $this->sut->updateEvent($event);
+
+    }
+
+    /**
+     * method: selectEvent
+     * when: called
+     * with: event
+     * should: calledU1db
+     */
+    public function test_selectEvent_called_event_calledU1db()
+    {
+        $u1db = '[{"type":"event","user_eyeos": "eyeos","calendar": "personal", "status":"NEW", "isallday": "0", "timestart": "201419173000","timeend":"201419183000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Visita Museo", "location": "Esplugues de llobregat", "description": "Llevar Ticket"},
+                    {"type":"event","user_eyeos": "eyeos","calendar": "personal", "status":"CHANGED" ,"isallday": "0", "timestart": "201420160000", "timeend":"201420170000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Excursión", "location": "Girona", "description": "Mochila"}]';
+        $event = json_decode('[{"type":"event","user_eyeos":"eyeos","calendar":"personal"}]');
+
+        $this->accessorProviderMock->expects($this->once())
+            ->method('getProcessDataU1db')
+            ->will($this->returnValue($u1db));
+        $this->sut->selectEvent($event);
+    }
+
+    /**
+     * method: synchronizeCalendar
+     * when: called
+     * with: userAndCalendarIdAndAndUser
+     * should: calledU1dbEmpty
+     */
+    public function test_synchronizeCalendar_called_userAndCalendarIdAndAndUser_calledU1dbEmpty()
+    {
+        $calendarId = 'eyeID_Calendar_f';
+        $user = 'eyeos';
+        $event['type'] = 'selectEvent';
+        $event['lista'] = json_decode('[{"type":"event","user_eyeos":"eyeos","calendar":"personal"}]');
+        $calendar = $this->getCalendar();
+
+        $this->calendarManagerMock->expects($this->at(0))
+            ->method('getCalendarById')
+            ->with($calendarId)
+            ->will($this->returnValue($calendar));
+
+        $this->calendarManagerMock->expects($this->at(1))
+            ->method('getAllEventsByPeriod')
+            ->with($calendar,null,null)
+            ->will($this->returnValue($this->getEvents()));
+
+        $this->accessorProviderMock->expects($this->at(0))
+            ->method('getProcessDataU1db')
+            ->with(json_encode($event))
+            ->will($this->returnValue('[]'));
+
+        $this->accessorProviderMock->expects($this->exactly(5))
+            ->method('getProcessDataU1db')
+            ->will($this->returnValue('true'));
+
+        $this->sut->synchronizeCalendar($calendarId,$user);
+    }
+
+    /**
+     * method: synchronizeCalendar
+     * when: called
+     * with: userAndCalendarIdAndUser
+     * should: calledU1db
+     */
+    public function test_synchronizeCalendar_called_userAndCalendarIdAndUser_calledU1db()
+    {
+        $calendarId = 'eyeID_Calendar_f';
+        $user = 'eyeos';
+        $event['type'] = 'selectEvent';
+        $event['lista'] = json_decode('[{"type":"event","user_eyeos":"eyeos","calendar":"personal"}]');
+        $calendar = $this->getCalendar();
+
+        $eventsU1db = array();
+        array_push($eventsU1db,$this->getEventsU1db('eyeos','personal',"DELETED",0,1395730800,1395738000,'None','n',1,0,"Examen","Barcelona","Examen de matemáticas"));
+        array_push($eventsU1db,$this->getEventsU1db('eyeos','personal',"NEW",0,1395820800,1395828000,'None','n',1,0,"Médico","Girona","Radiografia"));
+        array_push($eventsU1db,$this->getEventsU1db('eyeos','personal',"CHANGED",0,1394820800,1394820800,'None','n',1,0,"Salida","Barcelona","Parc Güell"));
+        array_push($eventsU1db,$this->getEventsU1db('eyeos','personal',"NEW",0,1394720800,1394720800,'None','n',1,0,"Clase","Tarragona","Matemáticas"));
+
+        $eventsCalendar = $this->getEvents();
+
+        $this->calendarManagerMock->expects($this->at(0))
+            ->method('getCalendarById')
+            ->with($calendarId)
+            ->will($this->returnValue($calendar));
+
+        $this->calendarManagerMock->expects($this->at(1))
+            ->method('getAllEventsByPeriod')
+            ->with($calendar,null,null)
+            ->will($this->returnValue($eventsCalendar));
+
+        $this->accessorProviderMock->expects($this->at(0))
+            ->method('getProcessDataU1db')
+            ->with(json_encode($event))
+            ->will($this->returnValue(json_encode($eventsU1db)));
+
+
+        $this->calendarManagerMock->expects($this->at(2))
+            ->method('deleteEvent')
+            ->with($eventsCalendar[0]);
+
+        $this->calendarManagerMock->expects($this->at(3))
+            ->method('saveEvent')
+            ->with(new CalendarEvent('eyeID_CalendarEvent_67','Salida','Barcelona','Parc Güell',false,1394820800,1394820800,'eyeID_EyeosUser_63','other','eyeID_Calendar_64','private','None','n',1,0,null,null));
+
+        $this->calendarManagerMock->expects($this->at(4))
+            ->method('getNewEvent')
+            ->will($this->returnValue(new CalendarEvent()));
+
+        $this->calendarManagerMock->expects($this->at(5))
+            ->method('saveEvent')
+            ->with(new CalendarEvent(null,'Clase','Tarragona','Matemáticas',false,1394720800,1394720800,'eyeID_EyeosUser_63',null,'eyeID_Calendar_64','private','None','n',1,0,null,null));
+
+        $event['type'] = 'insertEvent';
+        $event['lista'] = array($this->getEventsU1db('eyeos','personal',"NEW",0,1494820800,1494820800,'None','n',1,0,"Clase","Barcelona","Ingles"));
+
+        $this->accessorProviderMock->expects($this->at(1))
+            ->method('getProcessDataU1db')
+            ->with(json_encode($event))
+            ->will($this->returnValue('true'));
+
+
+        $this->sut->synchronizeCalendar($calendarId,$user);
+    }
+
+
     private function exerciseGetMetadataWithoutData($path,$metadata, $fileId = NULL)
     {
         $this->apiProviderMock->expects($this->at(0))
@@ -419,6 +593,49 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->sut->deleteComponent($idComponent);
     }
 
+    private function getEvents()
+    {
+        $events = array();
+        array_push($events,new CalendarEvent('eyeID_CalendarEvent_65','Examen','Barcelona','Examen de matemáticas',false,1395730800,1395738000,'eyeID_EyeosUser_63','other','eyeID_Calendar_64','private','None','n',1,0,null,null));
+        array_push($events,new CalendarEvent('eyeID_CalendarEvent_66','Médico','Girona','Radiografia',false,1395820800,1395828000,'eyeID_EyeosUser_63','other','eyeID_Calendar_64','private','None','n',1,0,null,null));
+        array_push($events,new CalendarEvent('eyeID_CalendarEvent_67','Salida','Lleida','Justificante',false,1394820800,1394820800,'eyeID_EyeosUser_63','other','eyeID_Calendar_64','private','None','n',1,0,null,null));
+        array_push($events,new CalendarEvent('eyeID_CalendarEvent_67','Clase','Barcelona','Ingles',false,1494820800,1494820800,'eyeID_EyeosUser_63','other','eyeID_Calendar_64','private','None','n',1,0,null,null));
+        return $events;
+    }
+
+    private function getCalendar()
+    {
+        $calendar = new Calendar();
+        $calendar->setId('eyeID_Calendar_64');
+        $calendar->setName('personal');
+        $calendar->setDescription('personal\'s personal calendar.');
+        $calendar->setTimezone(0);
+        $calendar->setOwnerId('eyeID_EyeosUser_63');
+
+        return $calendar;
+    }
+
+    private function getEventsU1db($user,$calendar,$status,$isallday,$timestart,$timeend,$repetition,$repeattype,$finaltype,$finalvalue,$subject,$location,$description)
+    {
+        $eventU1db = array();
+        $eventU1db['type'] = 'event';
+        $eventU1db['user_eyeos'] = $user;
+        $eventU1db['calendar'] = $calendar;
+        $eventU1db['status'] = $status;
+        $eventU1db['isallday'] = $isallday;
+        $eventU1db['timestart'] = $timestart;
+        $eventU1db['timeend'] = $timeend;
+        $eventU1db['repetition'] = $repetition;
+        $eventU1db['finaltype'] = $finaltype;
+        $eventU1db['finalvalue'] = $finalvalue;
+        $eventU1db['subject'] = $subject;
+        $eventU1db['location'] = $location;
+        $eventU1db['repeattype'] = $repeattype;
+        $eventU1db['description'] = $description;
+
+        return $eventU1db;
+
+    }
 }
 
 ?>

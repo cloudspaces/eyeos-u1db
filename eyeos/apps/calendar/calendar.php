@@ -172,7 +172,10 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 		$newEvent->setGmtTimeDiffrence($params['gmtTimeDiffrence']);
 		$newEvent->setCreatorId($creator->getId());
 		$newEventArr=array();
-		if($params['repeatType'] !='n' and !self::isRemoteCalendar($params['calendarId'])){	
+
+        $u1dbEvent = self::getEventU1db($params,"NEW");
+
+		if($params['repeatType'] !='n' and !self::isRemoteCalendar($params['calendarId'])){
 			$newEventArr = self::createRepeatEvent($params);		
 		}else{		
 			
@@ -182,7 +185,10 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 			}else{
 				$newEventArr=CalendarManager::getInstance()->saveEvent($newEvent); // we create the events for remote through RemoteCalendarProvider
 			}
-		}              
+
+            $apiManager = new ApiManager();
+            $apiManager->createEvent($u1dbEvent);
+		}
 				
 		return self::toArray($newEventArr);
 	}
@@ -256,6 +262,11 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
                       return $eventIdArr;
               } else {
                        CalendarManager::getInstance()->deleteEvent($event);
+
+                       $apiManager = new ApiManager();
+                       $eventU1db = self::getEventU1db($params,"DELETED");
+                       $apiManager->deleteEvent($eventU1db);
+
                        if ($params['groupId']>0){
                            CalendarManager::getInstance()->deleteEventInEventGroup($params['eventId'],$params['groupId']);
                        }
@@ -295,8 +306,12 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 			$to = (int) $params['periodTo'];
 		}
 
-        $cal = CalendarManager::getInstance()->getCalendarById($params['calendarId']);
-		$result = CalendarManager::getInstance()->getAllEventsByPeriod($cal, $from, $to);		
+        $apiManager = new ApiManager();
+        $codeManager = new CodeManager();
+        $result = $apiManager->synchronizeCalendar($params['calendarId'],$codeManager->getDecryption($_SESSION['user']));
+
+        /*$cal = CalendarManager::getInstance()->getCalendarById($params['calendarId']);
+		$result = CalendarManager::getInstance()->getAllEventsByPeriod($cal, $from, $to);*/
 		
 		return self::toArray($result);
 	}
@@ -513,6 +528,7 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 	 * 		'...' => ...
 	 */
 	public static function updateEvent($params) {
+        $apiManager = new ApiManager();
 		if (!isset($params['id']) || !is_string($params['id'])) {
 			throw new EyeMissingArgumentException('Missing or invalid $params[\'id\'].');
 		}
@@ -544,9 +560,16 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 					$params['eventId']=$params['id'];
 					$params['groupId']=$params['eventGroup'];
 					self::deleteEvent($params);
+
+                    $eventU1db = self::getEventU1db($params,"DELETED",$timeStart,$timeEnd);
+                    $apiManager->deleteEvent($eventU1db);
+
 					$params['timeStart'] = $timeStart;
 					$params['timeEnd'] = $timeEnd;
-					return self::createEvent($params);
+					$event = self::createEvent($params);
+                    $eventU1db = self::getEventU1db($params,"NEW",$timeStart,$timeEnd);
+                    $apiManager->createEvent($eventU1db);
+                    return $event;
 				} else {
 					$paramsToNotSave[] = 'timeStart';
 					$paramsToNotSave[] = 'timeEnd';
@@ -561,13 +584,22 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 							}
 						}
 						CalendarManager::getInstance()->saveAllEvent($event);
+                        $eventU1db = self::getEventU1dbUpdate($event);
+                        $apiManager->updateEvent($eventU1db);
 						$eventsArr[] = $event;
 					}
 				}
 			} else {
 				$event = CalendarManager::getInstance()->getEventById($params['id']);
+                if($event) {
+                    $timeStart = $event->getTimeStart();
+                    $timeEnd = $event->getTimeEnd();
+                    $isAllDay = $event->getIsAllDay();
+                }
 				if ($params['repeatType'] !='n'){
 					CalendarManager::getInstance()->deleteEvent($event);
+                    $eventU1db = self::getEventU1db($params,"DELETED",$timeStart,$timeEnd,$isAllDay);
+                    $apiManager->deleteEvent($eventU1db);
 					$newEventArr = self::createRepeatEvent($params);
 					return self::toArray($newEventArr);
 				} else {
@@ -577,8 +609,20 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 							$event->$setMethod($attributeValue);
 						}
 					}
+
 					CalendarManager::getInstance()->saveEvent($event);
 					$eventsArr[] = $event;
+
+                    $status = "CHANGED";
+                    $method = "updateEvent";
+                    if($params['timeStart'] != $timeStart || $params['timeEnd'] != $timeEnd || $params['isAllDay'] != $isAllDay) {
+                        $eventU1db = self::getEventU1db($params,"DELETED",$timeStart,$timeEnd,$isAllDay);
+                        $apiManager->deleteEvent($eventU1db);
+                        $status = "NEW";
+                        $method = "createEvent";
+                    }
+                    $eventU1db = self::getEventU1db($params,$status);
+                    $apiManager->$method($eventU1db);
 				}
 			}
 			return self::toArray($eventsArr);
@@ -647,12 +691,12 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 			}  else if($repeatType=='w'){
 				$no=  round( abs( $params['timeStart'] - $finalValue ) / 604800 )+1; 	// 604800 sec = one week
 			} else if($repeatType=='m'){				
-				$timeStartArray=self::createMonthArray( $timeStart,$finalValue,$finalType,$gmtTimeDiffrence); 
-				$timeEndArray=self::createMonthArray( $timeEnd,$finalValue,$finalType,$gmtTimeDiffrence); //echo $timeEnd.','.$finalValue.','.$finalType;
+				$timeStartArray=self::createDatesArray( $timeStart,$finalValue,$finalType,"+1 month");
+				$timeEndArray=self::createDatesArray( $timeEnd,$finalValue,$finalType,"+1 month"); //echo $timeEnd.','.$finalValue.','.$finalType;
 				$no=count($timeStartArray);
 			} else if($repeatType=='y'){				
-				$timeStartArray=self::createYearArray( $timeStart,$finalValue,$finalType,$gmtTimeDiffrence); 
-				$timeEndArray=self::createYearArray( $timeEnd,$finalValue,$finalType,$gmtTimeDiffrence); 
+				$timeStartArray=self::createDatesArray( $timeStart,$finalValue,$finalType,"+1 year");
+				$timeEndArray=self::createDatesArray( $timeEnd,$finalValue,$finalType,"+1 year");
 				$no=count($timeStartArray);				
 			}
 		} else if(strtolower($finalType)=='3'){
@@ -662,12 +706,12 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 				$no=  $finalValue;
 			} else if($repeatType=='m'){
 				$no=  $finalValue;
-				$timeStartArray=self::createMonthArray( $timeStart,$no,$finalType,$gmtTimeDiffrence); 
-				$timeEndArray=self::createMonthArray( $timeEnd,$no,$finalType,$gmtTimeDiffrence);
+				$timeStartArray=self::createDatesArray( $timeStart,$no,$finalType,"+1 month");
+				$timeEndArray=self::createDatesArray( $timeEnd,$no,$finalType,"+1 month");
 			} else if($repeatType=='y'){
 				$no=  $finalValue;
-				$timeStartArray=self::createYearArray( $timeStart,$no,$finalType,$gmtTimeDiffrence); 
-				$timeEndArray=self::createYearArray( $timeEnd,$no,$finalType,$gmtTimeDiffrence); 				
+				$timeStartArray=self::createDatesArray( $timeStart,$no,$finalType,"+1 year");
+				$timeEndArray=self::createDatesArray( $timeEnd,$no,$finalType,"+1 year");
 			}
 		} else if(strtolower($finalType)=='1') {
 			if($repeatType=='d'){
@@ -676,13 +720,13 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 				$no=$maxRepeatLimit;
 			} else if($repeatType=='m'){
 				$no=$maxRepeatLimit;
-				$timeStartArray=self::createMonthArray( $timeStart,$no,$finalType,$gmtTimeDiffrence); 
-				$timeEndArray=self::createMonthArray( $timeEnd,$no,$finalType,$gmtTimeDiffrence);
+				$timeStartArray=self::createDatesArray( $timeStart,$no,$finalType,"+1 month");
+				$timeEndArray=self::createDatesArray( $timeEnd,$no,$finalType,"+1 month");
 				//print_r($timeStartArray);
 			} else if($repeatType=='y'){
 				$no=$maxRepeatLimit;
-				$timeStartArray=self::createYearArray( $timeStart,$no,$finalType,$gmtTimeDiffrence); 
-				$timeEndArray=self::createYearArray( $timeEnd,$no,$finalType,$gmtTimeDiffrence); 								
+				$timeStartArray=self::createDatesArray( $timeStart,$no,$finalType,"+1 year");
+				$timeEndArray=self::createDatesArray( $timeEnd,$no,$finalType,"+1 year");
 			}
 		}
 		$creator = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();		
@@ -711,6 +755,11 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
             $newEvent->seteventGroup($eventGroupId);
 			$newEvent->setCreatorId($creator->getId());
 			$eventId=CalendarManager::getInstance()->saveEvent($newEvent);
+
+            $u1dbEvent = self::getEventU1db($params,"NEW",$timeStart,$timeEnd);
+            $apiManager = new ApiManager();
+            $apiManager->createEvent($u1dbEvent);
+
 			CalendarManager::getInstance()->saveEventInEventGroup($eventId,$eventGroupId);
             $newEvent->setEventGroup($eventGroupId);
 			$newRepeatEventArr[] = $newEvent;
@@ -718,15 +767,26 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 					return $newRepeatEventArr;
 			}
 			if($params['repeatType']=='d'){
-				$timeStart += 60*60*24;
-				$timeEnd += 60*60*24;
+                $timeStart = self::addInterval($timeStart,"+1 day");
+                $timeEnd = self::addInterval($timeEnd,"+1 day");
 			} else if($params['repeatType']=='w'){
-				$timeStart += 60 * 60 * 24 * 7;
-				$timeEnd += 60 * 60 * 24 * 7;
+                $timeStart = self::addInterval($timeStart,"+1 weeks");
+                $timeEnd = self::addInterval($timeEnd,"+1 weeks");
 			}
 		}
 		return $newRepeatEventArr;
     }
+
+    private static function addInterval($time,$interval)
+    {
+        $dateTimeZone = new DateTimeZone("Europe/Madrid");
+        $date = '@' . $time;
+        $dateInterval = new DateTime($date);
+        $dateInterval->setTimezone($dateTimeZone);
+        $dateInterval->modify($interval);
+        return $dateInterval->getTimestamp();
+    }
+
     /**
 	 * @param
 	 * 		$timeStamp = event start/end time,
@@ -736,125 +796,27 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 	 * 
 	 * @return timestamp array.
 	 */
-	private static function createMonthArray($timeStamp,$n,$finalType,$gmtTimeDiffrence) {
-		$str=$timeStamp+$gmtTimeDiffrence*3600;
-		$d= date ('d',$timeStamp);
-		$m= (int)date ('m',$timeStamp);
-		$y= date ('Y',$timeStamp);
-		$His= date ('H:i:s',$timeStamp);
-		// for check date 
-		$cd= date ('d',$str);
-		$cm= (int)date ('m',$str);
-		$cy= date ('Y',$str);
+	private static function createDatesArray($timeStamp,$n,$finalType,$interval) {
+        $dates = array();
+        array_push($dates,$timeStamp);
+        $time=$timeStamp;
 		
 		if(strtolower($finalType)=='2'){
-			$n=$n+$gmtTimeDiffrence*3600;
-			$i=$timeStamp;
-			$return[]=$timeStamp;	
-			while ($i < $n){
-				if($m < 12){
-					$m++;
-					$cm++;
-				}else{
-					$m=1;
-					$y++;
-					$cm=1;
-					$cy++;
-				}	
-				if(checkdate( $cm,$cd,$cy)){
-					$value= $y.'-'.$m.'-'.$d.' '.$His;
-					$value1= $y.'-'.$m.'-'.$d;
-					//echo date('d-m-Y H:i:s',$n).'#'.$value1.'<br>';
-					if(strtotime($value1)<=$n){
-						$return[]= strtotime($value);
-						$i=strtotime($value1);
-					}else{
-						$i= strtotime($value1);	
-					}				
-				}	
-			
-			}	
-		} else {		
-			$i=0;
-			
-			while ($i <= $n){
-				
-				if(checkdate( $cm,$cd,$cy)){
-					$value= $y.'-'.$m.'-'.$d.' '.$His; 
-					$return[]= strtotime($value);
-					$i++;
-				}
-				
-				if($m < 12){
-					$m++;
-					$cm++;
-				}else{
-					$m=1;
-					$y++;
-					$cm=1;
-					$cy++;
-				}	
-			
-			}
-		}
-		return $return;
-	}
-    /**
-	 * @param
-	 * 		$timeStamp = event start/end time,
-	 * 		$finalType = On the Date/ After
-	 * 		$n = Final date/final times,
-	 * 		$gmtTimeDiffrence =  GMT time defference
-	 *
-	 * @return timestamp array.
-	 */
-	private static function createYearArray($timeStamp,$n,$finalType,$gmtTimeDiffrence) {		
-		$str=$timeStamp+$gmtTimeDiffrence*3600;
-		$d= date ('d',$timeStamp);
-		$m= (int)date ('m',$timeStamp);
-		$y= date ('Y',$timeStamp);
-		$His= date ('H:i:s',$timeStamp);
-		// for check date 
-		$cd= date ('d',$str);
-		$cm= (int)date ('m',$str);
-		$cy= date ('Y',$str);
-		
-		if(strtolower($finalType)=='2'){
-			$n=$n+$gmtTimeDiffrence*3600;
-			$i=$timeStamp;
-			$return[]=$timeStamp;	
-			while ($i < $n){				
-					$y++;
-				
-				if(checkdate($cm,$cd,$cy)){
-					$value= $y.'-'.$m.'-'.$d.' '.$His;
-					$value1= $y.'-'.$m.'-'.$d;
-					//echo date('d-m-Y H:i:s',$n).'#'.$value1.'<br>';
-					if(strtotime($value1)<=$n){
-						$return[]= strtotime($value);
-						$i=strtotime($value1);
-					}else{
-						$i= strtotime($value1);	
-					}				
-				}	
-			
-			}	
+            while ($time < $n){
+                $time = self::addInterval($time,$interval);
+                if($time <= $n) {
+                    array_push($dates,$time);
+                }
+            }
 		} else {
-			$i=0;	
-			while ($i <= $n)
-			{
-				
-				if(checkdate( $cm,$cd,$cy)){				
-					 $value= $y.'-'.$m.'-'.$d.' '.$His;
-					 $return[]= strtotime($value);
-					$i++;
-				}
-				$y++;
-				$cy++;	
-			
-			}
+            $cont = 1;
+            while ($cont < $n){
+                $time = self::addInterval($time,$interval);
+                array_push($dates,$time);
+                $cont++;
+            }
 		}
-		return $return;
+		return $dates;
 	}
     /**
 	 * @param
@@ -921,6 +883,64 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 			}
 
          }
+
+         private static function getEventU1db($params,$status,$timestart = NULL, $timeend = NULL,$isallday = NULL)
+         {
+             $u1dbEvent = new stdClass();
+             $u1dbEvent->type = 'event';
+             $u1dbEvent->user_eyeos = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
+             $u1dbEvent->calendar = $params['calendar'];
+             $u1dbEvent->status = $status;
+
+             if($isallday) {
+                 $u1dbEvent->isallday = (int)$isallday;
+             } else {
+                $u1dbEvent->isallday = $params['isAllDay'];
+             }
+
+             if($timestart) {
+                 $u1dbEvent->timestart = (int)$timestart;
+             } else {
+                $u1dbEvent->timestart = $params['timeStart'];
+             }
+
+             if($timeend) {
+                 $u1dbEvent->timeend = (int)$timeend;
+             } else {
+                $u1dbEvent->timeend = $params['timeEnd'];
+             }
+
+             $u1dbEvent->repetition = $params['repetition'];
+             $u1dbEvent->finaltype = $params['finalType'];
+             $u1dbEvent->finalvalue = $params['finalValue'];
+             $u1dbEvent->subject = $params['subject'];
+             $u1dbEvent->location = $params['location'];
+             $u1dbEvent->repeattype = $params['repeatType'];
+             $u1dbEvent->description = $params['description'];
+
+             return $u1dbEvent;
+         }
+
+    private static function getEventU1dbUpdate(CalendarEvent $event)
+    {
+        $u1dbEvent = new stdClass();
+        $u1dbEvent->type = 'event';
+        $u1dbEvent->user_eyeos = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
+        $u1dbEvent->calendar = $event->getCalendar();
+        $u1dbEvent->status = "CHANGED";
+        $u1dbEvent->isallday = $event->getIsAllDay()?1:0;
+        $u1dbEvent->timestart = (int)$event->getTimeStart();
+        $u1dbEvent->timeend = (int)$event->getTimeEnd();
+        $u1dbEvent->repetition = $event->getRepetition();
+        $u1dbEvent->finaltype = (int)$event->getFinalType();
+        $u1dbEvent->finalvalue = (int)$event->getFinalValue();
+        $u1dbEvent->subject = $event->getSubject();
+        $u1dbEvent->location = $event->getLocation();
+        $u1dbEvent->repeattype = $event->getRepeatType();
+        $u1dbEvent->description = $event->getDescription();
+
+        return $u1dbEvent;
+    }
 
 }
 ?>

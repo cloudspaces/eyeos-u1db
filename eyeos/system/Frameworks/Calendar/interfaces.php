@@ -200,6 +200,7 @@ abstract class AbstractCalendarEvent implements ICalendarEvent {
 	private $finalValue;
     private $eventGroup;
 	private $gmtTimeDiffrence;
+    private $calendar;
     
 	public function __toString() {
 		$props = get_object_vars($this);
@@ -369,6 +370,14 @@ abstract class AbstractCalendarEvent implements ICalendarEvent {
 	public function getGmtTimeDiffrence() {	
 		return $this->gmtTimeDiffrence;
 	}
+
+    public function setCalendar($value) {
+        $this->calendar = $value;
+    }
+
+    public function getCalendar() {
+        return $this->calendar;
+    }
 }
 
 abstract class AbstractCalendar implements ICalendar {	

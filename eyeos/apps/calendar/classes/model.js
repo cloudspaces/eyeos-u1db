@@ -191,7 +191,7 @@ qx.Class.define('eyeos.calendar.model.Event', {
 				creatorId: data.creatorId,
 				calendar: data.calendar
 			});
-			return tmpObj;
+            return tmpObj;
 		},
 		
 		toJson: function(event) {
@@ -210,7 +210,8 @@ qx.Class.define('eyeos.calendar.model.Event', {
                 timeStart: event.getTimeStart().getTime() / 1000,
 				timeEnd: event.getTimeEnd().getTime() / 1000,
 				creatorId: event.getCreatorId(),
-				calendarId: event.getCalendar().getId()
+				calendarId: event.getCalendar().getId(),
+                calendar: event.getCalendar().getName()
 			};
 		},
 		checkTimeZone: function () {
@@ -228,7 +229,38 @@ qx.Class.define('eyeos.calendar.model.Event', {
                 } else {
                     return hoursDiffStdTime;
                 }
-		}	
+		},
+
+        __getParseDate: function(date) {
+            var yyyy = date.getFullYear().toString();
+            var MM = (date.getMonth()+1).toString();
+            var dd  = date.getDate().toString();
+            var hh = date.getHours().toString();
+            var mm = date.getMinutes().toString();
+            var ss = date.getSeconds().toString();
+
+            return yyyy + (MM[1]?MM:"0"+MM[0]) + (dd[1]?dd:"0"+dd[0]) + (hh[1]?hh:"0"+hh[0]) + (mm[1]?mm:"0"+mm[0]) + (ss[1]?ss:"0"+ss[0]);
+        },
+
+        __getObjectDate: function(timeStamp) {
+            var date = new Date(timeStamp * 1000);
+            var year    = date.getUTCFullYear();
+            var month   = date.getUTCMonth() + 1; // getMonth() is zero-indexed, so we'll increment to get the correct month number
+            var day     = date.getUTCDate();
+            var hours   = parseInt(date.getUTCHours(),10) - parseInt(date.getTimezoneOffset() / 60,10);
+            var minutes = date.getUTCMinutes();
+            var seconds = date.getUTCSeconds();
+
+            month   = (month < 10) ? '0' + month : month;
+            day     = (day < 10) ? '0' + day : day;
+            hours   = (hours < 10) ? '0' + hours : hours;
+            minutes = (minutes < 10) ? '0' + minutes : minutes;
+            seconds = (seconds < 10) ? '0' + seconds: seconds;
+
+            var aux = year + '-' + month + '-' + day + 'T' + hours + ':' + minutes + ":" + seconds;
+
+            return new Date(aux);
+        }
 		
 	},
 	

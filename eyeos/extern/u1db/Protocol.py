@@ -68,10 +68,10 @@ class Protocol:
         return True
 
     def selectEvent(self,type,user,calendarid):
-        self.metadata.selectEvent(type,user,calendarid)
+        return self.metadata.selectEvent(type,user,calendarid)
 
     def insertEvent(self,lista):
-        self.metadata.insert(lista)
+        self.metadata.insertEvent(lista)
         return True
 
 if __name__ == "__main__":

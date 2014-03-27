@@ -376,7 +376,9 @@ qx.Class.define('eyeos.calendar.dialogs.EditEvent', {
                           break;
                   case 3:
                           this.__finalSelectBox.setSelection([this.__finalSelectBoxItem3]);
-                          this.__timesTextField.setValue(this.__eventModel.getFinalValue());
+                          console.log(this.__eventModel.getFinalValue());
+                          console.log(this.__timesTextField.getValue());
+                          this.__timesTextField.setValue(this.__eventModel.getFinalValue().toString());
                           finalSubFieldsContainer.add(this.__timesTextField,{row: 0, column: 1});
                           finalSubFieldsContainer.add(timesLabel,{row: 0, column: 2});
                           break;

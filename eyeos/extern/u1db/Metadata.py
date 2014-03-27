@@ -85,22 +85,13 @@ class Metadata:
             self.db.delete_doc(files[0])
 
     def deleteEvent(self,lista):
-        for data in lista:
-            files = self.getEvents(data,False)
-            if len(files) > 0:
-                self.db.delete_doc(files[0])
-        self.sync()
-
-
+        self.updateEvent(lista)
 
     def updateEvent(self,lista):
         for data in lista:
-            files = self.getEvents(data,True)
+            files = self.getEvents(data)
             if len(files) > 0:
                 file = files[0]
-                del data['timestartOld']
-                del data['timeendOld']
-                del data['isalldayOld']
                 file.set_json(json.dumps(data))
                 self.db.put_doc(file)
         self.sync()
@@ -115,21 +106,25 @@ class Metadata:
 
         return results
 
-    def getEvents(self,data,update):
-        self.db.create_index("by-event", "type","user_eyeos","calendar","timestart","timeend","isallday")
-        if(update):
-            timestart = data['timestartOld']
-            timeend = data['timeendOld']
-            isallday = data['isalldayOld']
-        else:
-            timestart = data['timestart']
-            timeend = data['timeend']
-            isallday = data['isallday']
-        files = self.db.get_from_index("by-event",data['type'],data['user_eyeos'],data['calendar'],timestart,timeend, isallday)
+    def getEvents(self,data):
+        self.db.create_index("by-event2", "type","user_eyeos","calendar","timestart","timeend","isallday")
+        timestart = str(data['timestart'])
+        timeend = str(data['timeend'])
+        isallday = str(data['isallday'])
+        files = self.db.get_from_index("by-event2",data['type'],data['user_eyeos'],data['calendar'],timestart,timeend, isallday)
         return files
 
     def insertEvent(self,lista):
-        self.insert(lista)
+        #self.insert(lista)
+        for data in lista:
+            files = self.getEvents(data)
+            if len(files) > 0:
+                file = files[0]
+                file.set_json(json.dumps(data))
+                self.db.put_doc(file)
+            else:
+                self.db.create_doc_from_json(json.dumps(data))
+
         self.sync()
 
 

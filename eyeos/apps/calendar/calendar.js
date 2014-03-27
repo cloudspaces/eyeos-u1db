@@ -274,12 +274,19 @@ qx.Class.define('eyeos.application.Calendar', {
 				}
 				e.preventDefault();
 			}, this);
+
 			// --For debug purposes only--
 			
 			// Initialize controller for view parts
 			this._controller = new eyeos.calendar.Controller(this._checknum);
 			this._controller.init();
 			this._controller.setMainWindow(this.__window);
+
+            this.__window.addListener('beforeClose',function() {
+                this._controller.close = true;
+                this._controller.closeTimer();
+            },this);
+
 			//
 			//	MENUBAR
 			//

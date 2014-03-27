@@ -417,6 +417,10 @@ qx.Class.define('eyeos.calendar.view.GridCalendar', {
 			value.addListener('createEvent', function(e) {
 				this.displayEvents([e.getData()]);
 			}, this);
+            value.addListener('refreshEventsCalendar',function(e) {
+                this.clearEvents();
+                this.displayEvents(e.getData());
+            },this);
 			
 		},
 		
@@ -664,19 +668,20 @@ qx.Class.define('eyeos.calendar.view.GridCalendar', {
 		
 		refreshEvents: function() {
 			eyeos.consoleLog('[GridCalendar] refreshEvents()');
-			
 			this.clearEvents();
 			
 			var controller = this.getController();
+            controller.closeTimer();
 			var calendars = controller.getCalendars();
 			for(var id in calendars) {
 				if (calendars[id].isVisible()) {
-					var events = this.getController().getAllEventsFromPeriod(
+					/*var events = this.getController().getAllEventsFromPeriod(
 						id,
 						controller.getCalendarCurrentPeriod().begin,
 						controller.getCalendarCurrentPeriod().end
 					);
-					this.displayEvents(events);
+					this.displayEvents(events);*/
+                    controller.refreshEventsCalendar(calendars[id]);
 					//console.log(events);
 				}
 			}

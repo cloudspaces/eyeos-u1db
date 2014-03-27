@@ -39,6 +39,12 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->exerciseMetadata($metadataIn,$metadataOut);
     }
 
+    /**
+     *method: getMetadata
+     * when: called
+     * with: urlAndTokenAndFileid
+     * should: returnCorrectData
+     */
     public function test_getMetadata_called_urlAndTokenAndFileid_returnCorrectData()
     {
         $fileId = -1478707423980200270;
