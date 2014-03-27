@@ -218,7 +218,6 @@ class ApiManager
                 } else {
                     $arrayInsert = array();
 
-                    Logger::getLogger('sebas')->error('Contador::' . count($eventsCalendar));
                     for($i = 0;$i < count($u1dbCalendar);$i++) {
                         $encontrado = false;
                         for($j = 0;$j < count($eventsCalendar);$j++) {
