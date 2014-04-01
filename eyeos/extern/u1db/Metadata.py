@@ -7,13 +7,13 @@ import u1db
 import os
 
 class Metadata:
-    def __init__(self, db=None):
-        if db != None:
-            self.db = db
+    def __init__(self, name):
+        if name == "test.u1db":
+            db = name
         else:
-            db =  os.getcwd() + "/extern/u1db/metadata.u1db"
-            self.db = u1db.open(db, create=True)
-        self.url = "http://127.0.0.1:9000/server.u1db"
+            db =  os.getcwd() + "/extern/u1db/" + name
+        self.db = u1db.open(db, create=True)
+        self.url = "http://192.168.3.115:9000/server.u1db"
 
     def __del__(self):
         self.db.close()
@@ -103,7 +103,6 @@ class Metadata:
         files = self.db.get_from_index("by-event",type,user,idCalendar)
         for file in files:
             results.append(file.content)
-
         return results
 
     def getEvents(self,data):
@@ -124,9 +123,48 @@ class Metadata:
                 self.db.put_doc(file)
             else:
                 self.db.create_doc_from_json(json.dumps(data))
-
         self.sync()
 
+    def insertCalendar(self,lista):
+        for data in lista:
+            calendar = self.getCalendar(data)
+            if len(calendar) > 0:
+                file = calendar[0]
+                file.set_json(json.dumps(data))
+                self.db.put_doc(file)
+            else:
+                self.db.create_doc_from_json(json.dumps(data))
+        self.sync()
+
+    def getCalendar(self,data):
+        self.db.create_index("by-calendar", "type","user_eyeos","name")
+        calendar = self.db.get_from_index("by-calendar",data['type'],data['user_eyeos'],data['name'])
+        return calendar
+
+    def deleteCalendar(self,lista):
+        for data in lista:
+            calendar = self.getCalendar(data)
+            if len(calendar) > 0:
+                file = calendar[0]
+                file.set_json(json.dumps(data))
+                file.content['status'] = 'DELETED'
+                self.db.put_doc(file)
+                self.db.create_index("by-event", "type","user_eyeos","calendar")
+                events = self.db.get_from_index("by-event","event",data['user_eyeos'],data['name'])
+                if len(events) > 0:
+                    for event in events:
+                        event.content['status'] = 'DELETED'
+                        self.db.put_doc(event)
+        self.sync()
+
+    def selectCalendar(self,data):
+        self.db.create_index("by-calendar2", "type","user_eyeos")
+        calendar = self.db.get_from_index("by-calendar2",data['type'],data['user_eyeos'])
+        results = []
+        if len(calendar) > 0:
+            for cal in calendar:
+                results.append(cal.content)
+        return results
 
     def sync(self):
         try:

@@ -367,10 +367,10 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 	 */
 	public static function getAllUserCalendars($params) {
 		$owner = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
-		$results = CalendarManager::getInstance()->getAllCalendarsFromOwner($owner);
-		
+        $apiManager = new ApiManager();
+		//$results = CalendarManager::getInstance()->getAllCalendarsFromOwner($owner);
+        $results = $apiManager->synchronizeCalendars($owner);
 		$userId = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getid();
-		
 		$results = self::toArray($results);
 		foreach($results as &$result) {
 			$preferences = CalendarManager::getInstance()->getCalendarPreferences($userId, $result['id']);

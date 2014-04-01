@@ -11,12 +11,9 @@ import os
 
 class ProtocolTest (unittest.TestCase):
     def setUp(self):
-        self.sut = ''
-        self.db =  u1db.open("test.u1db", create=True)
-        self.protocol = Protocol(self.db)
+        self.protocol = Protocol(True)
 
     def tearDown(self):
-        self.db.close()
         os.remove("test.u1db")
 
 
@@ -168,3 +165,48 @@ class ProtocolTest (unittest.TestCase):
         result = self.protocol.protocol(params)
         self.protocol.insertEvent.assert_called_once_with(aux['lista'])
         self.assertEquals("true",result)
+
+    """
+    method: protocol
+    when: called
+    with: typeInsertCalendarAndList
+    should: insertCorrect
+    """
+    def test_protocol_called_typeInsertCalendarAndList_insertCorrect(self):
+        params = '{"type":"insertCalendar" , "lista":[{"type":"calendar","user_eyeos": "eyeos","name": "personal", "status":"NEW","description":"personal calendar","timezone":0}]}'
+        aux = json.loads(params)
+        self.protocol.insertCalendar = Mock()
+        self.protocol.insertCalendar.return_value = True
+        result = self.protocol.protocol(params)
+        self.protocol.insertCalendar.assert_called_once_with(aux['lista'])
+        self.assertEquals("true",result)
+
+    """
+    method: protocol
+    when: called
+    with: typeDeleteCalendarAndList
+    should: deleteCorrect
+    """
+    def test_protocol_called_typeDeleteCalendarAndList_deleteCorrect(self):
+        params = '{"type":"deleteCalendar" , "lista":[{"type":"calendar","user_eyeos": "eyeos","name": "personal"}]}'
+        aux = json.loads(params)
+        self.protocol.deleteCalendar = Mock()
+        self.protocol.deleteCalendar.return_value = True
+        result = self.protocol.protocol(params)
+        self.protocol.deleteCalendar.assert_called_once_with(aux['lista'])
+        self.assertEquals("true",result)
+
+    """
+    method: protocol
+    when: called
+    with: typeSelectCalendarAndList
+    should: returnArray
+    """
+    def test_protocol_called_typeSelectCalendarAndList_returnArray(self):
+        params = '{"type":"selectCalendar" , "lista":[{"type":"calendar","user_eyeos": "eyeos"}]}'
+        aux = json.loads(params)
+        self.protocol.selectCalendar = Mock()
+        self.protocol.selectCalendar.return_value = []
+        result = self.protocol.protocol(params)
+        self.protocol.selectCalendar.assert_called_once_with(aux['lista'][0])
+        self.assertEquals("[]",result)

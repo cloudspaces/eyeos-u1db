@@ -10,11 +10,10 @@ from Metadata import Metadata
 class MetadataTest (unittest.TestCase):
 
     def setUp(self):
-        self.db = u1db.open("test.u1db", create=True)
-        self.sut = Metadata(self.db)
+        self.sut = Metadata("test.u1db")
 
     def tearDown(self):
-        self.db.close()
+        self.sut.db.close()
         os.remove("test.u1db")
 
     """
@@ -26,8 +25,8 @@ class MetadataTest (unittest.TestCase):
     def test_insert_called_array_insertCorrect(self):
         array = self.getArrayInsert()
         self.sut.insert(array)
-        self.db.create_index("by-fileid", "file_id", "user_eyeos")
-        results = self.db.get_from_index("by-fileid", "-7755273878059615652","eyeos")
+        self.sut.db.create_index("by-fileid", "file_id", "user_eyeos")
+        results = self.sut.db.get_from_index("by-fileid", "-7755273878059615652","eyeos")
         self.assertEquals(array[1],results[0].content)
 
     """
@@ -54,8 +53,8 @@ class MetadataTest (unittest.TestCase):
         update = self.getArrayUpdate()
         self.sut.insert(array)
         self.sut.update(update)
-        self.db.create_index("by-user","user_eyeos")
-        files = self.db.get_from_index("by-user","eyeos")
+        self.sut.db.create_index("by-user","user_eyeos")
+        files = self.sut.db.get_from_index("by-user","eyeos")
 
         results = []
         for file in files:
@@ -76,8 +75,8 @@ class MetadataTest (unittest.TestCase):
         self.sut.insert(array)
         list = self.getArrayDelete()
         self.sut.delete(list)
-        self.db.create_index("by-user", "eyeos_user")
-        files = self.db.get_from_index("by-user","eyeos")
+        self.sut.db.create_index("by-user", "eyeos_user")
+        files = self.sut.db.get_from_index("by-user","eyeos")
         self.assertEquals(0,len(files))
 
 
@@ -103,7 +102,7 @@ class MetadataTest (unittest.TestCase):
         array = self.getArrayDeleteFolder()
         self.sut.insert(array)
         self.sut.deleteFolder("754050","eyeos")
-        docs = self.db.get_all_docs()
+        docs = self.sut.db.get_all_docs()
         self.assertEquals(0,len(docs[1]))
 
     """
@@ -117,7 +116,7 @@ class MetadataTest (unittest.TestCase):
         self.sut.insert(array)
         list = self.getArrayDeleteEvent()
         self.sut.deleteEvent(list)
-        files = self.db.get_all_docs();
+        files = self.sut.db.get_all_docs()
         results = []
         for file in files[1]:
             results.append(file.content)
@@ -135,7 +134,7 @@ class MetadataTest (unittest.TestCase):
         self.sut.insert(array)
         update = self.getArrayUpdateEvent()
         self.sut.updateEvent(update)
-        files = self.db.get_all_docs();
+        files = self.sut.db.get_all_docs();
         results = []
         for file in files[1]:
             results.append(file.content)
@@ -170,12 +169,64 @@ class MetadataTest (unittest.TestCase):
         self.sut.insertEvent(array)
         array2 = [{u'type':u'event',u'user_eyeos': u'eyeos',u'calendar': u'personal',u'status':u'NEW', u'isallday': u'0', u'timestart': u'201419160000', u'timeend':u'201419170000', u'repetition': u'None', u'finaltype': u'1', u'finalvalue': u'0', u'subject': u'Visita Médico', u'location': u'Barcelona', u'description': u'Llevar justificante'}]
         self.sut.insertEvent(array2)
-        files = self.db.get_all_docs()
+        files = self.sut.db.get_all_docs()
         results = []
         for file in files[1]:
             results.append(file.content)
         results.sort()
         self.assertEquals(array,results)
+
+    """
+    method: insertCalendar
+    when: called
+    with: array
+    should: insertCorrect
+    """
+    def test_insertCalendar_called_array_insertCorrect(self):
+        array = self.getArrayInsertCalendar()
+        self.sut.insertCalendar(array)
+        array2 = [{u'type':u'calendar',u'user_eyeos':u'eyeos',u'name':u'school',u'status':u'NEW',u'description':u'school calendar',u'timezone':0}]
+        self.sut.insertCalendar(array2)
+        files = self.sut.db.get_all_docs()
+        results = []
+        for file in files[1]:
+            results.append(file.content)
+        results.sort()
+        self.assertEquals(array,results)
+
+    """
+    method: deleteCalendar
+    when: called
+    with: array
+    should: deleteCorrect
+    """
+    def test_deleteCalendar_called_array_deleteCorrect(self):
+        array = self.getArrayInsertCalendar()
+        self.sut.insertCalendar(array)
+        listEvents = self.getArrayInsertCalendarEvents()
+        self.sut.insertEvent(listEvents)
+        arrayDelete = self.getArrayDeleteCalendar()
+        self.sut.deleteCalendar(arrayDelete)
+        files = self.sut.db.get_all_docs()
+        results = []
+        for file in files[1]:
+            results.append(file.content)
+        results.sort()
+        self.assertEquals(self.getArrayDeleteCalendarAndEvents(),results)
+
+    """
+    method: selectCalendar
+    when: called
+    with: nameCalendar
+    should: returnArray
+    """
+    def test_selectCalendar_called_nameCalendar_returnArray(self):
+        array = self.getArrayInsertCalendar()
+        self.sut.insertCalendar(array)
+        select = {u'type':u'calendar',u'user_eyeos':u'eyeos'}
+        calendar = self.sut.selectCalendar(select)
+        calendar.sort()
+        self.assertEquals(array,calendar)
 
     def getArrayInsert(self):
         array = [{u'user_eyeos': u'eyeos',u'status': None, u'mimetype': None, u'parent_file_id': u'null', u'checksum': None, u'filename': u'Root', u'is_root': True, u'version': None, u'file_id': u'null', u'is_folder': True, u'path': None, u'size': None, u'user': None},
@@ -236,9 +287,31 @@ class MetadataTest (unittest.TestCase):
         array.sort()
         return array
 
+    def getArrayInsertCalendar(self):
+        array =[{u'type':u'calendar',u'user_eyeos':u'eyeos',u'name':u'personal',u'status':u'NEW',u'description':u'personal calendar',u'timezone':0},
+                {u'type':u'calendar',u'user_eyeos':u'eyeos',u'name':u'school',u'status':u'NEW',u'description':u'school calendar',u'timezone':0}]
+        array.sort()
+        return array
 
+    def getArrayInsertCalendarEvents(self):
+        array = [{u'type':u'event',u'user_eyeos': u'eyeos',u'calendar': u'personal',u'status':u'NEW', u'isallday': u'0', u'timestart': u'201419160000', u'timeend':u'201419170000', u'repetition': u'None', u'finaltype': u'1', u'finalvalue': u'0', u'subject': u'Visita Médico', u'location': u'Barcelona', u'description': u'Llevar justificante'},
+                 {u'type':u'event',u'user_eyeos': u'eyeos',u'calendar': u'personal', u'status':u'NEW',u'isallday': u'1', u'timestart': u'201420160000', u'timeend':u'201420170000', u'repetition': u'None', u'finaltype': u'1', u'finalvalue': u'0', u'subject': u'Excursión', u'location': u'Girona', u'description': u'Mochila'}]
+        array.sort()
+        return array
 
+    def getArrayDeleteCalendar(self):
+        array =[{u'type':u'calendar',u'user_eyeos':u'eyeos',u'name':u'personal'},
+                {u'type':u'calendar',u'user_eyeos':u'eyeos',u'name':u'school'}]
+        array.sort()
+        return array
 
+    def getArrayDeleteCalendarAndEvents(self):
+        array =[{u'type':u'calendar',u'user_eyeos':u'eyeos',u'name':u'personal',u'status':u'DELETED'},
+                {u'type':u'calendar',u'user_eyeos':u'eyeos',u'name':u'school',u'status':u'DELETED'},
+                {u'type':u'event',u'user_eyeos': u'eyeos',u'calendar': u'personal',u'status':u'DELETED', u'isallday': u'0', u'timestart': u'201419160000', u'timeend':u'201419170000', u'repetition': u'None', u'finaltype': u'1', u'finalvalue': u'0', u'subject': u'Visita Médico', u'location': u'Barcelona', u'description': u'Llevar justificante'},
+                {u'type':u'event',u'user_eyeos': u'eyeos',u'calendar': u'personal', u'status':u'DELETED',u'isallday': u'1', u'timestart': u'201420160000', u'timeend':u'201420170000', u'repetition': u'None', u'finaltype': u'1', u'finalvalue': u'0', u'subject': u'Excursión', u'location': u'Girona', u'description': u'Mochila'}]
+        array.sort()
+        return array
 
 
 

@@ -6,6 +6,14 @@
  * Time: 18:25
  */
 
+class EyeosUserTest  implements IPrincipal,EyeObject
+{
+    public function setId($id){}
+    public function getId($forceGeneration=true){}
+    public function getName(){}
+    public function __toString(){return "";}
+}
+
 class ApiManagerTest extends PHPUnit_Framework_TestCase
 {
     private $accessorProviderMock;
@@ -425,7 +433,8 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $user = 'eyeos';
         $event['type'] = 'selectEvent';
         $event['lista'] = json_decode('[{"type":"event","user_eyeos":"eyeos","calendar":"personal"}]');
-        $calendar = $this->getCalendar();
+
+        $calendar = $this->getCalendar('eyeID_Calendar_64', 'personal', 'personal\'s personal calendar.', 'eyeID_EyeosUser_63');
 
         $this->calendarManagerMock->expects($this->at(0))
             ->method('getCalendarById')
@@ -461,7 +470,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $user = 'eyeos';
         $event['type'] = 'selectEvent';
         $event['lista'] = json_decode('[{"type":"event","user_eyeos":"eyeos","calendar":"personal"}]');
-        $calendar = $this->getCalendar();
+        $calendar = $this->getCalendar('eyeID_Calendar_64', 'personal', 'personal\'s personal calendar.', 'eyeID_EyeosUser_63');
 
         $eventsU1db = array();
         array_push($eventsU1db,$this->getEventsU1db('eyeos','personal',"DELETED",0,1395730800,1395738000,'None','n',1,0,"Examen","Barcelona","Examen de matemáticas"));
@@ -513,6 +522,114 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
 
         $this->sut->synchronizeCalendar($calendarId,$user);
+    }
+
+
+    /**
+     *method: synchronizeCalendars
+     * when: called
+     * with: user
+     * should: calledU1dbEmpty
+     */
+    public function test_synchronizeCalendars_called_user_calledU1dbEmpty()
+    {
+        $userMock = $this->getMock("EyeosUserTest");
+
+        $event['type'] = 'selectCalendar';
+        $event['lista'] = json_decode('[{"type":"calendar","user_eyeos":"eyeos"}]');
+        $calendars = array();
+        array_push($calendars,$this->getCalendar('eyeID_Calendar_64', 'personal', 'personal\'s personal calendar.', 'eyeID_EyeosUser_63'));
+        array_push($calendars,$this->getCalendar('eyeID_Calendar_65', 'school', 'school calendar.', 'eyeID_EyeosUser_63'));
+
+        $userMock->expects($this->any())
+            ->method("getName")
+            ->will($this->returnValue('eyeos'));
+
+        $this->accessorProviderMock->expects($this->at(0))
+            ->method('getProcessDataU1db')
+            ->with(json_encode($event))
+            ->will($this->returnValue('[]'));
+
+
+        $this->calendarManagerMock->expects($this->at(0))
+            ->method('getAllCalendarsFromOwner')
+            ->with($userMock)
+            ->will($this->returnValue($calendars));
+
+
+        $this->accessorProviderMock->expects($this->at(2))
+            ->method('getProcessDataU1db')
+            ->will($this->returnValue('true'));
+
+        $this->sut->synchronizeCalendars($userMock);
+
+    }
+
+    /**
+     * method: synchronizeCalendars
+     * when: called
+     * with: user
+     * should: calledU1db
+     */
+    public function test_synchronizeCalendars_called_user_calledU1db()
+    {
+        $userMock = $this->getMock("EyeosUserTest");
+
+        $event['type'] = 'selectCalendar';
+        $event['lista'] = json_decode('[{"type":"calendar","user_eyeos":"eyeos"}]');
+
+        $calendarInsert = array();
+        $calendarInsert['type'] = 'insertCalendar';
+        $calendarInsert['lista'] = json_decode('[{"name":"people","type":"calendar","status":"NEW","user_eyeos":"eyeos","timezone":0,"description":"people calendar."}]');
+
+        $calendars = array();
+        array_push($calendars,$this->getCalendar('eyeID_Calendar_64', 'personal', 'personal\'s personal calendar.', 'eyeID_EyeosUser_63'));
+        array_push($calendars,$this->getCalendar('eyeID_Calendar_65', 'school', 'school calendar.', 'eyeID_EyeosUser_63'));
+        array_push($calendars,$this->getCalendar('eyeID_Calendar_66', 'people', 'people calendar.', 'eyeID_EyeosUser_63'));
+        array_push($calendars,$this->getCalendar('eyeID_Calendar_66', 'family', 'family calendar.', 'eyeID_EyeosUser_63'));
+
+        $calendarsU1db = array();
+        array_push($calendarsU1db,$this->getCalendarU1db("eyeos","personal","NEW","personal calendar",0));
+        array_push($calendarsU1db,$this->getCalendarU1db("eyeos","school","NEW","school calendar",0));
+        array_push($calendarsU1db,$this->getCalendarU1db("eyeos","work","NEW","work calendar",0));
+        array_push($calendarsU1db,$this->getCalendarU1db("eyeos","family","DELETED","family calendar",0));
+        array_push($calendarsU1db,$this->getCalendarU1db("eyeos","class","DELETED","class calendar",0));
+        $calendar = new Calendar();
+
+        $userMock->expects($this->any())
+            ->method("getName")
+            ->will($this->returnValue('eyeos'));
+
+        $userMock->expects($this->any())
+            ->method("getId")
+            ->will($this->returnValue('eyeID_EyeosUser_63'));
+
+        $this->accessorProviderMock->expects($this->at(0))
+            ->method('getProcessDataU1db')
+            ->with(json_encode($event))
+            ->will($this->returnValue(json_encode($calendarsU1db)));
+
+        $this->calendarManagerMock->expects($this->at(0))
+            ->method('getAllCalendarsFromOwner')
+            ->with($userMock)
+            ->will($this->returnValue($calendars));
+
+        $this->calendarManagerMock->expects($this->at(1))
+            ->method('getNewCalendar')
+            ->will($this->returnValue($calendar));
+
+        $this->calendarManagerMock->expects($this->at(2))
+            ->method('saveCalendar');
+
+        $this->calendarManagerMock->expects($this->at(3))
+            ->method('deleteCalendar');
+
+        $this->accessorProviderMock->expects($this->at(1))
+            ->method('getProcessDataU1db')
+            ->with(json_encode($calendarInsert))
+            ->will($this->returnValue("true"));
+
+        $this->sut->synchronizeCalendars($userMock);
     }
 
 
@@ -603,15 +720,14 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         return $events;
     }
 
-    private function getCalendar()
+    private function getCalendar($id, $name, $description, $ownerId)
     {
         $calendar = new Calendar();
-        $calendar->setId('eyeID_Calendar_64');
-        $calendar->setName('personal');
-        $calendar->setDescription('personal\'s personal calendar.');
+        $calendar->setId($id);
+        $calendar->setName($name);
+        $calendar->setDescription($description);
         $calendar->setTimezone(0);
-        $calendar->setOwnerId('eyeID_EyeosUser_63');
-
+        $calendar->setOwnerId($ownerId);
         return $calendar;
     }
 
@@ -634,8 +750,21 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $eventU1db['description'] = $description;
 
         return $eventU1db;
-
     }
+
+    private function getCalendarU1db($user,$name,$status,$description,$timezone)
+    {
+        $calendarU1db = array();
+        $calendarU1db['type'] = 'calendar';
+        $calendarU1db['user_eyeos'] = $user;
+        $calendarU1db['name'] = $name;
+        $calendarU1db['status'] = $status;
+        $calendarU1db['description'] = $description;
+        $calendarU1db['timezone'] = $timezone;
+
+        return $calendarU1db;
+    }
+
 }
 
 ?>

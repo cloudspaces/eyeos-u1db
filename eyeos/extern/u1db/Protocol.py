@@ -5,14 +5,18 @@ from Metadata import Metadata
 import sys
 
 class Protocol:
-    def __init__(self,db=None):
-        self.metadata = Metadata(db)
+    def __init__(self,test = None):
+        self.test = False
+        if test != None:
+            self.test = True
 
     def protocol(self,params):
         aux = json.loads(params)
         type = aux["type"]
         lista = aux["lista"]
         result = False
+
+        self.configDb(type)
 
         if type == "insert":
             result = self.insert(lista)
@@ -34,6 +38,12 @@ class Protocol:
             result = self.selectEvent(lista[0]['type'],lista[0]['user_eyeos'],lista[0]['calendar'])
         elif type == "insertEvent":
             result = self.insertEvent(lista)
+        elif type == "insertCalendar":
+            result = self.insertCalendar(lista)
+        elif type == "deleteCalendar":
+            result = self.deleteCalendar(lista)
+        elif type == "selectCalendar":
+            result = self.selectCalendar(lista[0])
 
         return json.dumps(result)
 
@@ -73,6 +83,27 @@ class Protocol:
     def insertEvent(self,lista):
         self.metadata.insertEvent(lista)
         return True
+
+    def insertCalendar(self,lista):
+        self.metadata.insertCalendar(lista)
+        return True
+
+    def deleteCalendar(self,lista):
+        self.metadata.deleteCalendar(lista)
+        return True
+
+    def selectCalendar(self,data):
+        return self.metadata.selectCalendar(data)
+
+    def configDb(self,type):
+        if self.test == True:
+            name = "test.u1db"
+        else:
+            name = "metadata.u1db"
+            if type == "deleteEvent" or type == "updateEvent" or type == "selectEvent" or type == "insertEvent":
+                name = "calendar.u1db"
+
+        self.metadata = Metadata(name)
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:

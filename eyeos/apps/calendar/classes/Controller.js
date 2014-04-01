@@ -105,7 +105,7 @@ qx.Class.define('eyeos.calendar.Controller', {
         __checknum: null,
 		__procVars: {},
 		__registeredViewParts: null,
-        __timer: null,
+        __timer: [],
         close: false,
 		
 		/**
@@ -715,53 +715,54 @@ qx.Class.define('eyeos.calendar.Controller', {
 			 return true;
 		  },
         refreshEventsCalendar: function(calendar,refresh) {
-            if(!this.close) {
-                this.closeTimer();
-                eyeos.callMessage(
-                    this.__checknum,
-                    'getAllEventsFromPeriod',
-                    {
-                        calendarId: calendar.getId(),
-                        periodFrom: null,
-                        periodTo: null,
-                        calendar: calendar.getName()
-                    },
-                    function() {
-                        return function(eventsData) {
-                            var eventsOld = null;
+            this.closeTimerCalendar(calendar.getId());
+            eyeos.callMessage(
+                this.__checknum,
+                'getAllEventsFromPeriod',
+                {
+                    calendarId: calendar.getId(),
+                    periodFrom: null,
+                    periodTo: null,
+                    calendar: calendar.getName()
+                },
+                function() {
+                    return function(eventsData) {
+                        var eventsOld = null;
 
-                            if(this.__eventModels !== {}) {
-                               eventsOld = this.__getEventsByPeriod(calendar);
-                            }
-
-                            this.__eventModels =  {};
-                            for (var i = 0; i < eventsData.length; i++) {
-                                eventsData[i].calendar = calendar;
-                                var event = eyeos.calendar.model.Event.fromJson(eventsData[i]);
-                                //console.log(event);
-                                this.__eventModels[event.getId()] = event;
-                            }
-
-                            var eventsNew = this.__getEventsByPeriod(calendar);
-
-                            var change = this.__getDataChange(eventsOld,eventsNew);
-
-                            if((change && refresh) || !refresh) {
-                                this.fireDataEvent('refreshEventsCalendar',eventsNew);
-                            }
-                            this.__refresh(calendar,true);
-
+                        if(this.__eventModels !== {}) {
+                           eventsOld = this.__getEventsByPeriod(calendar);
                         }
-                    }(calendar.getId()),
-                    this
-                );
-            }
+
+                        console.log(calendar);
+
+                        this.__eventModels =  {};
+                        for (var i = 0; i < eventsData.length; i++) {
+                            eventsData[i].calendar = calendar;
+                            var event = eyeos.calendar.model.Event.fromJson(eventsData[i]);
+                            //console.log(event);
+                            this.__eventModels[event.getId()] = event;
+                        }
+
+                        var eventsNew = this.__getEventsByPeriod(calendar);
+
+                        var change = this.__getDataChange(eventsOld,eventsNew);
+
+                        if((change && refresh) || !refresh) {
+                            this.fireDataEvent('refreshEventsCalendar',eventsNew);
+                        }
+                        this.__refresh(calendar,true);
+
+                    }
+                }(calendar.getId()),
+                this
+            );
+
         },
 
         __refresh: function(calendar,refresh) {
             var that = this;
             var reffunction = function(){that.refreshEventsCalendar(calendar,refresh)};
-            this._timer = setTimeout(reffunction,10000);
+            this.__timer[calendar.getId()] = setTimeout(reffunction,10000);
         },
 
         __getEventsByPeriod: function(calendar) {
@@ -811,9 +812,16 @@ qx.Class.define('eyeos.calendar.Controller', {
         },
         closeTimer: function() {
             if(this.__timer) {
-                clearTimeout(this._timer);
-                this._timer = null;
+                for(var k in this.__timer) {
+                    clearTimeout(this.__timer[k]);
+                }
             }
+        },
+
+        closeTimerCalendar: function(id) {
+           if(this.__timer) {
+               clearTimeout(this.__timer[id]);
+           }
         }
 	}
 });

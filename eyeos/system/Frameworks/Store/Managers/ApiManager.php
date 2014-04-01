@@ -268,6 +268,74 @@ class ApiManager
         return array();
     }
 
+    public function synchronizeCalendars($user)
+    {
+        $calendar = array();
+        $calendar['type'] = 'calendar';
+        $calendar['user_eyeos'] = $user->getName();
+        $u1dbCalendar = json_decode($this->callProcessU1db("selectCalendar",$calendar));
+
+        if(is_array($u1dbCalendar)) {
+            $calendars = $this->calendarManager->getAllCalendarsFromOwner($user);
+            if(count($u1dbCalendar) === 0 && count($calendars) > 0) {
+                foreach($calendars as $calendar) {
+                    $calendarU1db = $this->getCalendarInsert($calendar->getName(),$user->getName(),$calendar->getTimezone(),$calendar->getDescription());
+                    $this->callProcessU1db("insertCalendar",$calendarU1db);
+                }
+            } else {
+                $arrayInsert = array();
+
+                for($i = 0;$i < count($u1dbCalendar);$i++) {
+                    $encontrado = false;
+                    for($j = 0;$j < count($calendars);$j++) {
+                        if($u1dbCalendar[$i]->name == $calendars[$j]->getName()) {
+                            $encontrado = true;
+
+                            if($u1dbCalendar[$i]->status == "DELETED") {
+                                $this->calendarManager->deleteCalendar($calendars[$j]);
+                                unset($calendars[$j]);
+                                $calendars = array_values($calendars);
+                            }
+
+                            break;
+                        }
+                    }
+
+                    if(!$encontrado) {
+                        if($u1dbCalendar[$i]->status != "DELETED") {
+                            array_push($arrayInsert,$this->createNewCalendar($u1dbCalendar[$i]->name,$u1dbCalendar[$i]->description,$u1dbCalendar[$i]->timezone,$user->getId()));
+                        }
+                    }
+                }
+
+                if(count($arrayInsert) > 0) {
+                    $calendars = array_merge($calendars,$arrayInsert);
+                }
+
+                for($i = 0;$i < count($calendars);$i++) {
+                    $encontrado = false;
+                    for($j = 0;$j < count($u1dbCalendar);$j++) {
+                        if($calendars[$i]->getName() == $u1dbCalendar[$j]->name) {
+                            $encontrado = true;
+                            break;
+                        }
+                    }
+
+                    if(!$encontrado) {
+                        $calendar = $this->getCalendarInsert($calendars[$i]->getName(),$user->getName(),$calendars[$i]->getTimezone(),$calendars[$i]->getDescription());
+                        $this->callProcessU1db("insertCalendar",$calendar);
+                    }
+                }
+
+            }
+
+            return $calendars;
+        }
+
+        return array();
+
+    }
+
     public function search($array, $key, $value)
     {
         if (is_array($array)) {
@@ -391,6 +459,29 @@ class ApiManager
         $newEvent->setCreatorId($cal->getOwnerId());
         $this->calendarManager->saveEvent($newEvent);
         return $newEvent;
+    }
+
+    public function getCalendarInsert($name,$user,$timezone,$description)
+    {
+        $calendar = array();
+        $calendar['name'] = $name;
+        $calendar['type'] = 'calendar';
+        $calendar['status'] = 'NEW';
+        $calendar['user_eyeos'] = $user;
+        $calendar['timezone'] = $timezone;
+        $calendar['description'] = $description;
+        return $calendar;
+    }
+
+    public function createNewCalendar($name,$description,$timezone, $ownerId)
+    {
+        $calendar = $this->calendarManager->getNewCalendar();
+        $calendar->setName($name);
+        $calendar->setDescription($description);
+        $calendar->setTimezone($timezone);
+        $calendar->setOwnerId($ownerId);
+        $this->calendarManager->saveCalendar($calendar);
+        return $calendar;
     }
 }
 
