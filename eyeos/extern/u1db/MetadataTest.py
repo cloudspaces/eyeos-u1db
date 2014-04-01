@@ -228,6 +228,20 @@ class MetadataTest (unittest.TestCase):
         calendar.sort()
         self.assertEquals(array,calendar)
 
+    """
+    method: updateCalendar
+    when: called
+    with: array
+    should: updateCorrect
+    """
+    def test_updateCalendar_called_array_updateCorrect(self):
+        array = self.getArrayInsertCalendar()
+        self.sut.insertCalendar(array)
+        arrayUpdate = [{u'type':u'calendar',u'user_eyeos':u'eyeos',u'name':u'personal',u'status':u'DELETED',u'description':u'personal calendar',u'timezone':0}]
+        self.sut.updateCalendar(arrayUpdate)
+        calendar = self.sut.getCalendar({u'type':u'calendar',u'user_eyeos':u'eyeos',u'name':u'personal'})
+        self.assertEquals(arrayUpdate[0],calendar[0].content)
+
     def getArrayInsert(self):
         array = [{u'user_eyeos': u'eyeos',u'status': None, u'mimetype': None, u'parent_file_id': u'null', u'checksum': None, u'filename': u'Root', u'is_root': True, u'version': None, u'file_id': u'null', u'is_folder': True, u'path': None, u'size': None, u'user': None},
                  {u'user_eyeos': u'eyeos',u'status': u'NEW', u'mimetype': u'inode/directory', u'parent_file_id': u'null', u'server_modified': u'2013-11-11 15:40:45.784', u'checksum': 0, u'client_modified': u'2013-11-11 15:40:45.784', u'filename': u'helpFolder', u'is_root': False, u'version': 1, u'file_id': -7755273878059615652, u'is_folder': True, u'path': u'/', u'size': 0, u'user': u'web'}]

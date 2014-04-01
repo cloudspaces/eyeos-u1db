@@ -44,6 +44,8 @@ class Protocol:
             result = self.deleteCalendar(lista)
         elif type == "selectCalendar":
             result = self.selectCalendar(lista[0])
+        elif type == "updateCalendar":
+            result = self.updateCalendar(lista)
 
         return json.dumps(result)
 
@@ -94,6 +96,10 @@ class Protocol:
 
     def selectCalendar(self,data):
         return self.metadata.selectCalendar(data)
+
+    def updateCalendar(self,lista):
+        self.metadata.updateCalendar(lista)
+        return True
 
     def configDb(self,type):
         if self.test == True:

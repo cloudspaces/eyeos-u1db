@@ -166,6 +166,14 @@ class Metadata:
                 results.append(cal.content)
         return results
 
+    def updateCalendar(self,lista):
+        for data in lista:
+            calendar = self.getCalendar(data)
+            if len(calendar) > 0:
+                file = calendar[0]
+                file.set_json(json.dumps(data))
+                self.db.put_doc(file)
+
     def sync(self):
         try:
             self.db.sync(self.url)

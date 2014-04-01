@@ -210,3 +210,18 @@ class ProtocolTest (unittest.TestCase):
         result = self.protocol.protocol(params)
         self.protocol.selectCalendar.assert_called_once_with(aux['lista'][0])
         self.assertEquals("[]",result)
+
+    """
+    method: protocol
+    when: called
+    with: typeUpdateCalendarAndList
+    should: updateCorrect
+    """
+    def test_protocol_called_typeUpdateCalendarAndList_updateCorrect(self):
+        params = '{"type":"updateCalendar" , "lista":[{"type":"calendar","user_eyeos": "eyeos","name":"personal","description":"personal calendar","timezone":0,"status":"CHANGED"}]}'
+        aux = json.loads(params)
+        self.protocol.updateCalendar = Mock()
+        self.protocol.updateCalendar.return_value = True
+        result = self.protocol.protocol(params)
+        self.protocol.updateCalendar.assert_called_once_with(aux['lista'])
+        self.assertEquals("true",result)

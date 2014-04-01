@@ -285,6 +285,7 @@ qx.Class.define('eyeos.application.Calendar', {
             this.__window.addListener('beforeClose',function() {
                 this._controller.close = true;
                 this._controller.closeTimer();
+                this._controller.closeTimerCalendar();
             },this);
 
 			//

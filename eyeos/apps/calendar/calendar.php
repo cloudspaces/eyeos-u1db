@@ -294,7 +294,7 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 	 * @return array(Event)
 	 */
 	public static function getAllEventsFromPeriod($params) {
-		if (!isset($params['calendarId']) || !is_string($params['calendarId'])) {
+		/*if (!isset($params['calendarId']) || !is_string($params['calendarId'])) {
 			throw new EyeMissingArgumentException('Missing or invalid $params[\'calendarId\'].');
 		}
 		$from = null;
@@ -310,10 +310,24 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
         $codeManager = new CodeManager();
         $result = $apiManager->synchronizeCalendar($params['calendarId'],$codeManager->getDecryption($_SESSION['user']));
 
-        /*$cal = CalendarManager::getInstance()->getCalendarById($params['calendarId']);
-		$result = CalendarManager::getInstance()->getAllEventsByPeriod($cal, $from, $to);*/
+        $cal = CalendarManager::getInstance()->getCalendarById($params['calendarId']);
+		$result = CalendarManager::getInstance()->getAllEventsByPeriod($cal, $from, $to);
 		
-		return self::toArray($result);
+		return self::toArray($result);*/
+
+        if(!isset($params['calendar'])) {
+            throw new EyeMissingArgumentException('Missing calendars');
+        }
+
+        $apiManager = new ApiManager();
+        $codeManager = new CodeManager();
+        $results = array();
+
+        foreach($params['calendar'] as $calendar) {
+            array_push($results,self::toArray($apiManager->synchronizeCalendar($calendar['id'],$codeManager->getDecryption($_SESSION['user']))));
+        }
+
+        return $results;
 	}
 
     /**

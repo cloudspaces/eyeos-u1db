@@ -105,7 +105,8 @@ qx.Class.define('eyeos.calendar.Controller', {
         __checknum: null,
 		__procVars: {},
 		__registeredViewParts: null,
-        __timer: [],
+        __timer: null,
+        __timerCalendar: null,
         close: false,
 		
 		/**
@@ -250,6 +251,10 @@ qx.Class.define('eyeos.calendar.Controller', {
 				calendars[cal.getId()] = cal;
 			}
 			this.setCalendars(calendars);
+
+            var that = this;
+            var reffunction = function(){that.__refreshCalendars()};
+            this.__timerCalendar = setTimeout(reffunction,10000);
 
 			// Retrieve events for each calendar from the server
 			for(var id in calendars) {
@@ -714,60 +719,121 @@ qx.Class.define('eyeos.calendar.Controller', {
 		   for(var i in ob){return false;}
 			 return true;
 		  },
-        refreshEventsCalendar: function(calendar,refresh) {
-            this.closeTimerCalendar(calendar.getId());
-            eyeos.callMessage(
-                this.__checknum,
-                'getAllEventsFromPeriod',
+        refreshEventsCalendar: function(refresh) {
+            /*if(calendar.isVisible()) {
+                this.closeTimerCalendar(calendar.getId());
+                eyeos.callMessage(
+                    this.__checknum,
+                    'getAllEventsFromPeriod',
+                    {
+                        calendarId: calendar.getId(),
+                        periodFrom: null,
+                        periodTo: null,
+                        calendar: calendar.getName()
+                    },
+                    function() {
+                        return function(eventsData) {
+                            var eventsOld = null;
+
+                            if(this.__eventModels !== {}) {
+                               eventsOld = this.__getEventsByPeriod(calendar);
+                            }
+
+                            console.log(calendar);
+
+                            this.__eventModels =  {};
+                            for (var i = 0; i < eventsData.length; i++) {
+                                eventsData[i].calendar = calendar;
+                                var event = eyeos.calendar.model.Event.fromJson(eventsData[i]);
+                                //console.log(event);
+                                this.__eventModels[event.getId()] = event;
+                            }
+
+                            var eventsNew = this.__getEventsByPeriod(calendar);
+
+                            var change = this.__getDataChange(eventsOld,eventsNew);
+
+                            if((change && refresh) || !refresh) {
+                                this.fireDataEvent('refreshEventsCalendar',eventsNew);
+                            }
+                            this.__refresh(calendar,true);
+
+                        }
+                    }(calendar.getId()),
+                    this
+                );
+            }*/
+
+            if(!this.close) {
+                this.closeTimer();
+                var params = new Object();
+                params.calendar = new Array();
+                params.periodFrom = null;
+                params.periodTo = null;
+
+                for(var id in this.getCalendars())
                 {
-                    calendarId: calendar.getId(),
-                    periodFrom: null,
-                    periodTo: null,
-                    calendar: calendar.getName()
-                },
-                function() {
-                    return function(eventsData) {
-                        var eventsOld = null;
-
-                        if(this.__eventModels !== {}) {
-                           eventsOld = this.__getEventsByPeriod(calendar);
-                        }
-
-                        console.log(calendar);
-
-                        this.__eventModels =  {};
-                        for (var i = 0; i < eventsData.length; i++) {
-                            eventsData[i].calendar = calendar;
-                            var event = eyeos.calendar.model.Event.fromJson(eventsData[i]);
-                            //console.log(event);
-                            this.__eventModels[event.getId()] = event;
-                        }
-
-                        var eventsNew = this.__getEventsByPeriod(calendar);
-
-                        var change = this.__getDataChange(eventsOld,eventsNew);
-
-                        if((change && refresh) || !refresh) {
-                            this.fireDataEvent('refreshEventsCalendar',eventsNew);
-                        }
-                        this.__refresh(calendar,true);
-
+                    if(this.getCalendars()[id].isVisible()) {
+                        var calendar = new Object();
+                        calendar.id = this.getCalendars()[id].getId();
+                        calendar.name = this.getCalendars()[id].getName();
+                        params.calendar.splice(params.calendar.length,0,calendar);
                     }
-                }(calendar.getId()),
-                this
-            );
+                }
+
+                if(params.calendar.length > 0) {
+                    eyeos.callMessage(this.__checknum,'getAllEventsFromPeriod',params,function(calendars) {
+                        if(calendars && calendars.length > 0) {
+                            this.__eventModels =  {};
+                            var change = false;
+                            var events = [];
+                            for(var i in calendars) {
+                                var eventsOld = [];
+                                var eventsNew = [];
+                                if(this.__eventModels !== {} && !change) {
+                                    if(calendars[i].length > 0) {
+                                        eventsOld = this.__getEventsByPeriod(calendars[i][0].calendarId);
+                                    }
+                                }
+
+                                for (var j = 0; j < calendars[i].length; j++) {
+                                    calendars[i][j].calendar = this.getCalendars()[calendars[i][j].calendarId];
+                                    var event = eyeos.calendar.model.Event.fromJson(calendars[i][j]);
+                                    this.__eventModels[event.getId()] = event;
+                                    events.splice(events.length,0,event);
+                                }
+
+                                if(!change) {
+                                    if(calendars[i].length > 0) {
+                                        var eventsNew = this.__getEventsByPeriod(calendars[i][0].calendarId);
+                                    }
+
+                                    change = this.__getDataChange(eventsOld,eventsNew);
+                                }
+
+                            }
+
+                            if((change && refresh) || !refresh) {
+                                this.fireDataEvent('refreshEventsCalendar',events);
+                            }
+
+                            this.__refresh(true);
+                        }
+                    },this);
+                }
+            }
 
         },
 
-        __refresh: function(calendar,refresh) {
+        __refresh: function(refresh) {
             var that = this;
-            var reffunction = function(){that.refreshEventsCalendar(calendar,refresh)};
-            this.__timer[calendar.getId()] = setTimeout(reffunction,10000);
+            var reffunction = function(){that.refreshEventsCalendar(refresh)};
+            this.__timer = setTimeout(reffunction,10000);
         },
 
-        __getEventsByPeriod: function(calendar) {
+        __getEventsByPeriod: function(id) {
             var events = this.getAllEventsFromPeriod(
-                calendar.getId(),
+                id,
                 this.getCalendarCurrentPeriod().begin,
                 this.getCalendarCurrentPeriod().end
             );
@@ -812,16 +878,59 @@ qx.Class.define('eyeos.calendar.Controller', {
         },
         closeTimer: function() {
             if(this.__timer) {
-                for(var k in this.__timer) {
-                    clearTimeout(this.__timer[k]);
-                }
+                clearTimeout(this.__timer);
             }
         },
 
-        closeTimerCalendar: function(id) {
-           if(this.__timer) {
-               clearTimeout(this.__timer[id]);
-           }
+        closeTimerCalendar: function() {
+            if(this.__timerCalendar) {
+                clearTimeout(this.__timerCalendar);
+            }
+        },
+
+        __refreshCalendars: function() {
+            if(!this.close) {
+                this.closeTimerCalendar();
+                eyeos.callMessage(this.__checknum, 'getAllUserCalendars', null,function(calendars) {
+                    if(calendars) {
+                        var listCalendars ={};
+                        for(var i in calendars) {
+                            var cal = eyeos.calendar.model.Calendar.fromJson(calendars[i])
+                            cal.addListener('changeVisibility', this.__onCalendarChangeVisibility, this);
+                            cal.addListener('changeColor', this.__onChangeCalendarPreferences, this);
+                            listCalendars[cal.getId()] = cal;
+                        }
+
+                        var change = this.__calendarsChanged(listCalendars);
+
+                        if(change) {
+                            this.setCalendars(listCalendars);
+                            this.fireDataEvent("changeCalendars");
+                        }
+                    }
+
+                    var that = this;
+                    var reffunction = function(){that.__refreshCalendars()};
+                    this.__timerCalendar = setTimeout(reffunction,20000);
+
+                }, this);
+            }
+        },
+
+        __calendarsChanged: function(calendars) {
+            var changed = false;
+            if(Object.keys(calendars).length  == Object.keys(this.getCalendars()).length) {
+                for(var i in calendars) {
+                    if(!this.getCalendars()[i]) {
+                        change = true;
+                        break;
+                    }
+                }
+            } else {
+                changed = true;
+            }
+
+            return changed;
         }
 	}
 });
