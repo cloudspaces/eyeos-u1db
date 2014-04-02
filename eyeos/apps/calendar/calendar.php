@@ -223,6 +223,10 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 		
 		$cal = CalendarManager::getInstance()->getCalendarById($params['calendarId']);
 		CalendarManager::getInstance()->deleteCalendar($cal);
+
+        $apiManager = new ApiManager();
+        $apiManager->deleteCalendar($owner->getName(),$cal->getName());
+
 		return  self::getAllUserCalendars($params);
 	}
 	public static function deleteRemoteCalendar($params) {
