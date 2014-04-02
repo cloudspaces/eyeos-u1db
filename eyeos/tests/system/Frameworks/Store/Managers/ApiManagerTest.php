@@ -632,6 +632,26 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->sut->synchronizeCalendars($userMock);
     }
 
+    /**
+     * method: insertCalendar
+     * when: called
+     * with: userAndCalendar
+     * should: calledU1db
+     */
+    public function test_insertCalendar_called_userAndCalendar_calledU1db()
+    {
+        $user = 'eyeos';
+        $calendar = $this->getCalendar('eyeID_Calendar_64', 'personal', 'personal\'s personal calendar.', 'eyeID_EyeosUser_63');
+        $calendarU1db = '{"type":"insertCalendar","lista":[{"type":"calendar","user_eyeos":"eyeos","name":"personal","description":"personal\'s personal calendar.","timezone":0,"status":"NEW"}]}';
+
+        $this->accessorProviderMock->expects($this->at(0))
+            ->method('getProcessDataU1db')
+            ->with($calendarU1db)
+            ->will($this->returnValue("true"));
+
+        $this->sut->insertCalendar($user,$calendar);
+    }
+
 
     private function exerciseGetMetadataWithoutData($path,$metadata, $fileId = NULL)
     {

@@ -336,6 +336,19 @@ class ApiManager
 
     }
 
+    public function insertCalendar($user,Calendar $calendar)
+    {
+        $calendarU1db = array();
+        $calendarU1db['type'] = 'calendar';
+        $calendarU1db['user_eyeos'] = $user;
+        $calendarU1db['name'] = $calendar->getName();
+        $calendarU1db['description'] = $calendar->getDescription();
+        $calendarU1db['timezone'] = $calendar->getTimezone();
+        $calendarU1db['status'] = 'NEW';
+
+        return json_decode($this->callProcessU1db("insertCalendar",$calendarU1db));
+    }
+
     public function search($array, $key, $value)
     {
         if (is_array($array)) {

@@ -91,6 +91,9 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 		}
 		$newCalendar->setOwnerId($owner->getId());
 		CalendarManager::getInstance()->saveCalendar($newCalendar);
+
+        $apiManager = new ApiManager();
+        $apiManager->insertCalendar($owner->getName(),$newCalendar);
 		
 		// Use self::getCalendar() to retrieve the preferences at the same time
 		return self::getCalendar(array('id' => $newCalendar->getId()));
