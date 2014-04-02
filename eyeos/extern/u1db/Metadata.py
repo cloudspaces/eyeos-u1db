@@ -13,7 +13,7 @@ class Metadata:
         else:
             db =  os.getcwd() + "/extern/u1db/" + name
         self.db = u1db.open(db, create=True)
-        self.url = "http://192.168.3.115:9000/server.u1db"
+        self.url = "http://192.168.3.115:9000/" + name
 
     def __del__(self):
         self.db.close()
