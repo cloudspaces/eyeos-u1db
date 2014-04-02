@@ -459,6 +459,7 @@ qx.Class.define('eyeos.calendar.Controller', {
               }, this);
         },
 		deleteCalendar: function(calendar) {
+            this.closeTimerCalendar();
 			var calendarData = eyeos.calendar.model.Calendar.toJson(calendar);
 			eyeos.callMessage(this.__checknum, 'deleteCalendar', calendarData, function(calendarData) {
                 if (calendarData == null ){
@@ -466,6 +467,7 @@ qx.Class.define('eyeos.calendar.Controller', {
                 } else{
                     this.__onCalendarDeleted(calendar, calendarData);
                 }
+                this.__refreshCalendars();
             }, this);
 		},
 		deleteRemoteCalendar: function(calendar) {
