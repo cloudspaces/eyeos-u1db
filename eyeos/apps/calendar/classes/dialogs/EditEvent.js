@@ -408,12 +408,14 @@ qx.Class.define('eyeos.calendar.dialogs.EditEvent', {
               });
               var calendars = this.__controller.getCalendars();
               for(var id in calendars) {
-                  var item = new qx.ui.form.ListItem(calendars[id].getName()).set({
-                      model: calendars[id]
-                  });
-                  this.__calendarSelectBox.add(item);
-                  if (id == this.__eventModel.getCalendar().getId()) {
-                      this.__calendarSelectBox.setSelection([item]);
+                  if (calendars[id].isVisible()) {
+                      var item = new qx.ui.form.ListItem(calendars[id].getName()).set({
+                          model: calendars[id]
+                      });
+                      this.__calendarSelectBox.add(item);
+                      if (id == this.__eventModel.getCalendar().getId()) {
+                          this.__calendarSelectBox.setSelection([item]);
+                      }
                   }
               }
 			  // add group calendars

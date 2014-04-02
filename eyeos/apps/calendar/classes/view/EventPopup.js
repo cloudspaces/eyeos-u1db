@@ -218,7 +218,7 @@ qx.Class.define('eyeos.calendar.view.EventPopup', {
 		saveAndClose: function() {
 			this.__eventModel.setSubject(this.__subjectTextField.getValue());
 			this.__eventModel.setCalendar(this.__calendarSelectBox.getSelection()[0].getModel());
-			
+
 			this.getController().saveEvent(this.__eventModel, function() {
 				// If the event belongs to a currently non-visible calendar, show it
 				if (!this.__eventModel.getCalendar().isVisible()) {

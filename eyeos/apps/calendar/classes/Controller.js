@@ -439,12 +439,14 @@ qx.Class.define('eyeos.calendar.Controller', {
 		},
 		
 		createNewCalendar: function(calendar) {
+            this.closeTimerCalendar();
 			if (typeof calendar.getTimezone() == 'undefined') {
 				calendar.setTimezone(0);		//FIXME
 			}
 			var calendarData = eyeos.calendar.model.Calendar.toJson(calendar);
 			eyeos.callMessage(this.__checknum, 'createCalendar', calendarData, function(calendarData) {
 				this.__onCalendarSaved(calendar, calendarData);
+                this.__refreshCalendars();
 			}, this);
 		},
         createRemoteCalendar: function(calendar) {
