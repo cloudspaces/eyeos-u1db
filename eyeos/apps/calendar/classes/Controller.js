@@ -910,6 +910,8 @@ qx.Class.define('eyeos.calendar.Controller', {
                         if(change) {
                             this.setCalendars(listCalendars);
                             this.fireDataEvent("changeCalendars");
+                            this.closeTimer();
+                            this.__refresh(true);
                         }
                     }
 
