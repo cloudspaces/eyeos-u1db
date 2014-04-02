@@ -106,7 +106,7 @@ class Protocol:
             name = "test.u1db"
         else:
             name = "metadata.u1db"
-            if type == "deleteEvent" or type == "updateEvent" or type == "selectEvent" or type == "insertEvent":
+            if type == "deleteEvent" or type == "updateEvent" or type == "selectEvent" or type == "insertEvent" or type == "insertCalendar" or type == "deleteCalendar" or type == "selectCalendar" or type == "updateCalendar":
                 name = "calendar.u1db"
 
         self.metadata = Metadata(name)
