@@ -158,6 +158,7 @@ class Metadata:
         self.sync()
 
     def selectCalendar(self,data):
+        self.sync()
         self.db.create_index("by-calendar2", "type","user_eyeos")
         calendar = self.db.get_from_index("by-calendar2",data['type'],data['user_eyeos'])
         results = []
