@@ -201,7 +201,10 @@ class ApiManager
 
     public function synchronizeCalendar($calendarId,$user)
     {
-        $cal = $this->calendarManager->getCalendarById($calendarId);
+        $cal = null;
+        try {
+            $cal = $this->calendarManager->getCalendarById($calendarId);
+        } catch(Exception $e){}
         if($cal) {
             $eventsCalendar = $this->calendarManager->getAllEventsByPeriod($cal,null,null);
             $event['type'] = 'event';

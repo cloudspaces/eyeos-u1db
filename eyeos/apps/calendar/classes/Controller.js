@@ -231,7 +231,7 @@ qx.Class.define('eyeos.calendar.Controller', {
                       }
               }*/
 
-            this.refreshEventsCalendar(event.getCalendar());
+            this.refreshEventsCalendar(true);
 					
 						//console.log(this.__eventModels,'after');
 			eyeos.consoleInfo('Event saved: [' + event.getId() + '] "' + event.getSubject() + '" on ' + event.getTimeStart());
@@ -279,7 +279,7 @@ qx.Class.define('eyeos.calendar.Controller', {
 					}(id),
 					this
 				);*/
-                this.refreshEventsCalendar(calendars[id]);
+                this.refreshEventsCalendar(true);
 			}
 		},
 		__onGroupCalendarsLoaded: function(data) {
@@ -460,6 +460,7 @@ qx.Class.define('eyeos.calendar.Controller', {
         },
 		deleteCalendar: function(calendar) {
             this.closeTimerCalendar();
+            this.closeTimer();
 			var calendarData = eyeos.calendar.model.Calendar.toJson(calendar);
 			eyeos.callMessage(this.__checknum, 'deleteCalendar', calendarData, function(calendarData) {
                 if (calendarData == null ){
@@ -910,8 +911,7 @@ qx.Class.define('eyeos.calendar.Controller', {
                         if(change) {
                             this.setCalendars(listCalendars);
                             this.fireDataEvent("changeCalendars");
-                            this.closeTimer();
-                            this.__refresh(true);
+                            this.refreshEventsCalendar(false);
                         }
                     }
 
