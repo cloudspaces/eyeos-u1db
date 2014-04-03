@@ -353,6 +353,28 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * method: deleteMetadataUser
+     * when: called
+     * with: user
+     * should: calledU1dbDeleteCorrect
+     */
+    public function test_deleteMetadataUser_called_user_calledU1dbDeleteCorrect()
+    {
+        $user = 'eyeos';
+        $file = array();
+        $file['type'] = "deleteMetadataUser";
+        $file['lista'] = array();
+        array_push($file['lista'],array("user_eyeos" => $user));
+
+        $this->accessorProviderMock->expects($this->at(0))
+            ->method('getProcessDataU1db')
+            ->with(json_encode($file))
+            ->will($this->returnValue('true'));
+
+        $this->sut->deleteMetadataUser($user);
+    }
+
+    /**
      * method: createEvent
      * when: called
      * with: event

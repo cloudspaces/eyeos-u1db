@@ -268,7 +268,12 @@ abstract class UserManagementApplication extends EyeosApplicationExecutable {
 			throw new EyeInvalidArgumentException('Missing or invalid $params');
 		}
 		$myUManager = UMManager::getInstance();
-		$myUManager->deletePrincipal($myUManager->getUserById($params));
+        $user = $myUManager->getUserById($params);
+		$myUManager->deletePrincipal($user);
+        $apiManager = new ApiManager();
+        $codeManager = new CodeManager();
+        $apiManager->deleteMetadataUser($codeManager->getEncryption($user->getName()));
+
 	}
 
 	/**

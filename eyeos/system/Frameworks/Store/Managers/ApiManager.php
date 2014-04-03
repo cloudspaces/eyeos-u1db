@@ -179,6 +179,13 @@ class ApiManager
         return $result;
     }
 
+    public function deleteMetadataUser($user)
+    {
+        $file = array();
+        $file['user_eyeos'] = $user;
+        return json_decode($this->callProcessU1db("deleteMetadataUser",$file));
+    }
+
     public function createEvent($event)
     {
         return json_decode($this->callProcessU1db("insertEvent",$event));

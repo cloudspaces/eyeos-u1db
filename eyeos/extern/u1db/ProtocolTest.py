@@ -109,6 +109,20 @@ class ProtocolTest (unittest.TestCase):
     """
     method: protocol
     when: called
+    with: typeDeleteMetadataUserAndList
+    should: deleteCorrect
+    """
+    def test_protocol_called_typeDeleteMetadataUserAndList_deleteCorrect(self):
+        params = '{"type":"deleteMetadataUser","lista":[{"user_eyeos":"eyeos"}]}'
+        self.protocol.deleteMetadataUser = Mock()
+        self.protocol.deleteMetadataUser.return_value = True
+        result = self.protocol.protocol(params)
+        self.protocol.deleteMetadataUser.assert_called_once_with("eyeos")
+        self.assertEquals('true',result)
+
+    """
+    method: protocol
+    when: called
     with: typeDeleteEventAndList
     should: deleteCorrect
     """

@@ -30,6 +30,8 @@ class Protocol:
             result = self.getParent(lista[0]['path'],lista[0]["folder"],lista[0]['user_eyeos'])
         elif type == "deleteFolder":
             result = self.deleteFolder(lista[0]["file_id"],lista[0]['user_eyeos'])
+        elif type == "deleteMetadataUser":
+            result = self.deleteMetadataUser(lista[0]['user_eyeos'])
         elif type == "deleteEvent":
             result = self.deleteEvent(lista)
         elif type == "updateEvent":
@@ -69,6 +71,10 @@ class Protocol:
 
     def deleteFolder(self,idFolder,user):
         self.metadata.deleteFolder(idFolder,user)
+        return True
+
+    def deleteMetadataUser(self,user):
+        self.metadata.deleteMetadataUser(user)
         return True
 
     def deleteEvent(self,lista):

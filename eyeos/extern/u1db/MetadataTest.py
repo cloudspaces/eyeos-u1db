@@ -106,6 +106,19 @@ class MetadataTest (unittest.TestCase):
         self.assertEquals(0,len(docs[1]))
 
     """
+    method: deleteMetadataUser
+    when: called
+    with: user
+    should: deleteCorrect
+    """
+    def test_deleteMetadataUser_called_user_deleteCorrect(self):
+        array = self.getArrayInsert()
+        self.sut.insert(array)
+        self.sut.deleteMetadataUser('eyeos')
+        docs = self.sut.db.get_all_docs()
+        self.assertEquals(0,len(docs[1]))
+
+    """
     method: deleteEvent
     when: called
     with: array
