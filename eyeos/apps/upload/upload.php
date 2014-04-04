@@ -298,6 +298,8 @@ abstract class UploadApplication extends EyeosApplicationExecutable {
                     $settings = MetaManager::getInstance()->retrieveMeta($currentUser);
                     $message = new ClientBusMessage('file', 'uploadComplete', self::getFileInfo($destFile, $settings));
                     ClientMessageBusController::getInstance()->queueMessage($message);
+                    $event = new FileEvent($destFile);
+                    $destFile->fireEvent('fileWritten',$event);
                 }
             }
             register_shutdown_function('endRequestUpload');
