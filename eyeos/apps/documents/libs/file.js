@@ -76,17 +76,19 @@ qx.Class.define('eyeos.application.documents.File', {
 		    if (object.__currentDoc.path) {
 			    var tinymceId = 'tinymce_editor' + object.getApplication().getPid();
 			    eyeos.callMessage(object.getApplication().getChecknum(), 'fileSave',
-				    [object.__currentDoc.path, tinyMCE.getInstanceById(tinymceId).getContent()], function() {
+				    [object.__currentDoc.path, tinyMCE.getInstanceById(tinymceId).getContent()], function(result) {
 					    object.fireEvent('fileSaved');
-					    object.__currentDoc.checksum = eyeos.application.documents.Utils.crc32(tinyMCE.getInstanceById(tinymceId).getContent());
+					    object.__currentDoc.checksum = eyeos.application.documents.Utils.crc32(result[1]);
+
 					    if (object.__closeFlag) {
 						    object.__closeFlag = false;
 						    object.getApplication().getWindow().close();
-					    }
+					    } else {
+                            if(object.isSocialBarVisible()) {
+                                object.getApplication().updateSocialBar(object.__currentDoc.path);
+                            }
+                        }
 
-					    if(object.isSocialBarVisible()) {
-						    object.getApplication().updateSocialBar(object.__currentDoc.path);
-					    }
 				    }, object);
 		    } else {
 			    object.fileSaveAs();
@@ -131,6 +133,8 @@ qx.Class.define('eyeos.application.documents.File', {
 			var tinymceId = 'tinymce_editor' + object.getApplication().getPid();
 			var content = tinyMCE.getInstanceById(tinymceId).getContent();
 			var checksum = eyeos.application.documents.Utils.crc32(content);
+            checksum = eyeos.application.documents.Utils.crc32(tinyMCE.getInstanceById(tinymceId).getContent());
+
 			if (checksum == object.__currentDoc.checksum) {
 				return true;
 			}

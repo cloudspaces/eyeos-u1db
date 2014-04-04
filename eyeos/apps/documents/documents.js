@@ -254,7 +254,6 @@ qx.Class.define('eyeos.application.Documents', {
 			}, this);
 
 			this.getWindow().addListener('beforeClose', function(e) {
-
 				var tinymceId = 'tinymce_editor' + this.getPid();
                 
 				if(!this.isExplorer()) {
@@ -278,11 +277,11 @@ qx.Class.define('eyeos.application.Documents', {
 							if (result == 0) {
 								//unsubscribe here
 								var object = this.getMenuBar().getActions();
-								var netSync = eyeos.netSync.NetSync.getInstance();
+								/*var netSync = eyeos.netSync.NetSync.getInstance();
 								clearInterval(tinyMCE.getInstanceById(tinymceId).interval);
 								clearInterval(tinyMCE.getInstanceById(tinymceId).intervalPing);
 								clearInterval(this.getMenuBar().getActions().interval);
-								clearInterval(this.getMenuBar().getActions().intervalGet);
+								clearInterval(this.getMenuBar().getActions().intervalGet);*/
 
 								this.getMenuBar().getActions().__currentDoc.checksum =
 								eyeos.application.documents.Utils.crc32(tinyMCE.getInstanceById(tinymceId).getContent());
@@ -304,12 +303,12 @@ qx.Class.define('eyeos.application.Documents', {
 					else {
 						//unsubscribe here
 						var object = this.getMenuBar().getActions();
-						var netSync = eyeos.netSync.NetSync.getInstance();
+						/*var netSync = eyeos.netSync.NetSync.getInstance();
 						netSync.unsubscribe('document_'+object.__currentDoc.duid);
 						clearInterval(tinyMCE.getInstanceById(tinymceId).interval);
 						clearInterval(tinyMCE.getInstanceById(tinymceId).intervalPing);
 						clearInterval(this.getMenuBar().getActions().interval);
-						clearInterval(this.getMenuBar().getActions().intervalGet);
+						clearInterval(this.getMenuBar().getActions().intervalGet);*/
 						this.getMenuBar().getActions().dynamicsWriteOpenRecent();
 					}
 				}

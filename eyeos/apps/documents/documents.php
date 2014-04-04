@@ -750,7 +750,7 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
         shell_exec($cmd);
 		chdir($oldDir);
 
-		return $params[0];
+		return $params;
 	}
 
 	public static function fileSaveAs(array $datas) {
