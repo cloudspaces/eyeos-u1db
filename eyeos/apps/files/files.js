@@ -1085,7 +1085,7 @@ qx.Class.define('eyeos.files.Controller', {
 
                     var stacksync = false;
 
-                    if(action == 'copy') {
+                    if(action == 'copy' || action == 'move') {
                         var params = new Object();
                         params.folder = files[0];
                         files.splice(0,1);
@@ -1112,7 +1112,6 @@ qx.Class.define('eyeos.files.Controller', {
 
                                 params.files = filesAux;
                             }
-
                         }
 
                     } else {
@@ -1120,7 +1119,7 @@ qx.Class.define('eyeos.files.Controller', {
                     }
 
 					eyeos.callMessage(this.getApplication().getChecknum(), action, params, function (results) {
-                        if(action == "copy" && stacksync === true) {
+                        if((action == "copy" || action == "move") && stacksync === true) {
                             this._browsePath(target);
                         } else {
 						    this._dBus.send('files', 'paste', [filesToPaste, action, source, target, results]);

@@ -469,33 +469,93 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 	 * TODO: Will need to be moved/merged to/with FileSystemExecModule
 	 */
 	public static function move($params) {
-		$target = FSI::getFile($params[0]);
-		for($i = 1; $i < count($params); $i++) {
-			$x = 1;
-			$nameForCheck = utf8_basename($params[$i]);
-			$renamed = FSI::getFile($params[0] . '/' . $nameForCheck);
-			while ($renamed->exists()) {
-				$name = explode(".", utf8_basename($params[$i]));
-				$extension = (string) $name[count($name) - 1];
-				$futureName = Array($name[0]);
-				
-				$nameForCheck = implode(' ', $futureName);
-				$nameForCheck .= ' '.$x;
-				if(!$renamed->isDirectory()) {
-					$nameForCheck .= '.' . $extension;
-				}
-				$x++;
+		$target = FSI::getFile($params['folder']);
+        $apiManager = new ApiManager();
+        $userName = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
+        $stacksync = false;
 
-				$renamed = FSI::getFile($params[0] . '/' . $nameForCheck);
-			}
+        $pathStackSync = "home://~" . $userName . "/Stacksync";
 
-			$source = FSI::getFile($params[$i]);
-			$source->moveTo($renamed);
-			//check if the file already exists
-			
-			$filename = basename($params[$i]);
+        if(strpos($params['folder'],$pathStackSync) !== false) {
+            $stacksync = true;
+        }
+
+		for($i = 0; $i < count($params['files']); $i++) {
+            if(is_array($params['files'][$i])) {
+                self::verifyToken();
+                $source = FSI::getFile($params['files'][$i]['path']);
+                $content = $apiManager->downloadFile($params['files'][$i]['id']);
+                if(strlen($content) > 0) {
+                    $source->getRealFile()->putContents($content);
+                }
+
+
+            } else {
+                $source = FSI::getFile($params['files'][$i]);
+            }
+            if (!$source->isDirectory()) {
+                $name = explode(".", $source->getName());
+                $extension = (string) $name[count($name) - 1];
+                $theName = substr($source->getName(), 0, strlen($source->getName()) - strlen($extension) - 1);
+            } else {
+                $theName = $source->getName();
+            }
+
+            $nameForCheck = $theName;
+
+            if (!$source->isDirectory()) {
+                $nameForCheck .= '.' . $extension;
+            }
+
+            $number = 1;
+            $newFile = FSI::getFile($params['folder'] . "/" . $nameForCheck);
+
+            while ($newFile->exists()) {
+                $futureName = Array($theName, $number);
+                $nameForCheck = implode(' ', $futureName);
+                if (!$source->isDirectory()) {
+                    $nameForCheck .= '.' . $extension;
+                }
+                $number++;
+                $newFile = FSI::getFile($params['folder'] . "/" . $nameForCheck);
+            }
+
+			//$source = FSI::getFile($params['files'][$i]);
+			$isMove = $source->moveTo($newFile);
+
+
+            if($isMove === true && $stacksync === true) {
+                // upload cloudspaces destination
+                $pathReal =  AdvancedPathLib::parse_url($newFile->getRealFile()->getPath());
+                $file = fopen($pathReal['path'],"r");
+                if($file !== false) {
+                    $len = strlen($pathStackSync);
+                    $pathU1db = substr($newFile->getAbsolutePath(),$len);
+                    $lenfinal = strrpos($pathU1db, $newFile->getName());
+                    $posfinal = $lenfinal > 1?$lenfinal-strlen($pathU1db)-1:$lenfinal-strlen($pathU1db);
+                    $pathParent = substr($pathU1db,0,$posfinal);
+                    $folder = NULL;
+                    if ($pathParent !== '/') {
+                        $pos=strrpos($pathParent,'/');
+                        $folder = substr($pathParent,$pos+1);
+                        $pathParent = substr($pathParent,0,$pos+1);
+                    }
+                    self::verifyToken();
+                    $apiManager->createFile($nameForCheck,$file,filesize($pathReal['path']),$pathParent,$folder);
+                    fclose($file);
+                }
+
+                // delete origin cloudspaces
+                if(is_array($params['files'][$i])) {
+                    $apiManager->deleteComponent($params['files'][$i]['id'],$source->isDirectory());
+                }
+            }
+
+
+            $pathFile = is_array($params['files'][$i])?$params['files'][$i]['path']:$params['files'][$i];
+            $filename = basename($pathFile);
 			//TODO24: it should use fsi listeners
-			self::updateUrlShare($params[$i], $target->getPath() . '/' . $filename);
+			self::updateUrlShare($pathFile, $target->getPath() . '/' . $filename);
 			/*
 			if(get_class($target) == 'EyeWorkgroupFile'){
 				$meta = $target->getMeta();
