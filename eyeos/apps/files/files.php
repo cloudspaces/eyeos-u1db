@@ -796,5 +796,21 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $_SESSION['dateExpires'] = $token->getExpire();
         }
     }
+
+    public static function downloadFileStacksync($params)
+    {
+        if( !isset($params['file_id']) || !isset($params['path'])) {
+            throw new EyeMissingArgumentException('Missing or invalid $params[\'calendarId\'].');
+        }
+
+        $apiManager = new ApiManager();
+        $source = FSI::getFile($params['path']);
+        $content = $apiManager->downloadFile($params['file_id']);
+        if(strlen($content) > 0) {
+            $source->getRealFile()->putContents($content);
+        }
+
+        return $params['path'];
+    }
 }
 ?>

@@ -825,61 +825,124 @@ qx.Class.define('eyeos.files.Controller', {
 			var extensionsForPDFViewer = ['PDF'];
 			var extensionsForLink = ['LNK'];
 
+            var parent = null;
+
+            if(filesToOpen.length > 0 && this.__isStacksync(filesToOpen[0].getFile().getPath())) {
+                parent = filesToOpen[0].getFile().getPath();
+            }
+
 			for (var i = 0; i < filesToOpen.length; ++i) {
 				var type = filesToOpen[i].getFile().getType();
 				var extension = filesToOpen[i].getFile().getExtension();
 				if (type == 'folder') {
 					foldersToOpen.push(filesToOpen[i].getFile().getAbsolutePath());
 				} else {
+                    console.log(filesToOpen[i].getFile().getName());
 					if (extensionsForViewer.indexOf(extension) != -1) {
-						filesForViewer.push(filesToOpen[i].getFile().getAbsolutePath());
+                        if(parent) {
+                            filesForViewer.push(this.__getObjectDownloadStacksync(parent,filesToOpen[i].getFile().getAbsolutePath(),filesToOpen[i].getFile().getName()));
+                        } else {
+						    filesForViewer.push(filesToOpen[i].getFile().getAbsolutePath());
+                        }
 					}
 					if (extensionsForImageViewer.indexOf(extension) != -1) {
-						filesForImageViewer.push(filesToOpen[i].getFile().getAbsolutePath());
+                        if(parent) {
+                            filesForImageViewer.push(this.__getObjectDownloadStacksync(parent,filesToOpen[i].getFile().getAbsolutePath(),filesToOpen[i].getFile().getName()));
+                        } else {
+						    filesForImageViewer.push(filesToOpen[i].getFile().getAbsolutePath());
+                        }
 					}
 					if (extensionsForDocuments.indexOf(extension) != -1) {
-						filesForDocuments.push(filesToOpen[i].getFile().getAbsolutePath());
+                        if(parent) {
+                            filesForDocuments.push(this.__getObjectDownloadStacksync(parent,filesToOpen[i].getFile().getAbsolutePath(),filesToOpen[i].getFile().getName()));
+                        } else {
+						    filesForDocuments.push(filesToOpen[i].getFile().getAbsolutePath());
+                        }
 					}
 					if (extensionsForFemto.indexOf(extension) != -1) {
-						filesForFemto.push(filesToOpen[i].getFile().getAbsolutePath());
+                        if(parent) {
+                            filesForFemto.push(this.__getObjectDownloadStacksync(parent,filesToOpen[i].getFile().getAbsolutePath(),filesToOpen[i].getFile().getName()));
+                        } else {
+						    filesForFemto.push(filesToOpen[i].getFile().getAbsolutePath());
+                        }
+
 					}
 					if (extensionsDocPreview.indexOf(extension) != -1) {
-						filesForDocPreview.push(filesToOpen[i].getFile().getAbsolutePath());
+                        if(parent) {
+                            filesForDocPreview.push(this.__getObjectDownloadStacksync(parent,filesToOpen[i].getFile().getAbsolutePath(),filesToOpen[i].getFile().getName()));
+                        } else {
+						    filesForDocPreview.push(filesToOpen[i].getFile().getAbsolutePath());
+                        }
 					}
 					if (extensionsForPDFViewer.indexOf(extension) != -1) {
-						filesForPDFPreview.push(filesToOpen[i].getFile().getAbsolutePath());
+                        if(parent) {
+                            filesForPDFPreview.push(this.__getObjectDownloadStacksync(parent,filesToOpen[i].getFile().getAbsolutePath(),filesToOpen[i].getFile().getName()));
+                        } else {
+						    filesForPDFPreview.push(filesToOpen[i].getFile().getAbsolutePath());
+                        }
 					}
 					if (extensionsForLink.indexOf(extension) != -1) {
-						filesForOpenLink.push(filesToOpen[i].getFile().getAbsolutePath());
+                        if(parent) {
+                            filesForPDFPreview.push(this.__getObjectDownloadStacksync(parent,filesToOpen[i].getFile().getAbsolutePath(),filesToOpen[i].getFile().getName()));
+                        } else {
+                            filesForOpenLink.push(filesToOpen[i].getFile().getAbsolutePath());
+                        }
 					}
 				}
 			}
-
 			if (filesForViewer.length >= 1) {
-				eyeos.execute('viewer', this.getApplication().getChecknum(), filesForViewer);
+                if(parent) {
+                    this.__openFileStacksync('viewer',filesForViewer);
+                } else {
+				    eyeos.execute('viewer', this.getApplication().getChecknum(), filesForViewer);
+                }
 			}
 
 			if (filesForImageViewer.length >= 1) {
-				eyeos.execute('imageviewer', this.getApplication().getChecknum(), filesForImageViewer);
+                if(parent) {
+                    this.__openFileStacksync('imageviewer',filesForImageViewer);
+                } else {
+				    eyeos.execute('imageviewer', this.getApplication().getChecknum(), filesForImageViewer);
+                }
 			}
 			
 			if (filesForDocuments.length >= 1) {
-				eyeos.execute('documents', this.getApplication().getChecknum(), filesForDocuments);
+                if(parent) {
+                    this.__openFileStacksync('documents',filesForDocuments);
+                } else {
+				    eyeos.execute('documents', this.getApplication().getChecknum(), filesForDocuments);
+                }
 			}
 
 			if (filesForDocPreview.length >= 1) {
-				eyeos.execute('docviewer', this.getApplication().getChecknum(), filesForDocPreview);
+                if(parent) {
+                    this.__openFileStacksync('docviewer',filesForDocuments);
+                } else {
+				    eyeos.execute('docviewer', this.getApplication().getChecknum(), filesForDocPreview);
+                }
 			}
 
 			if (filesForPDFPreview.length >= 1) {
-				eyeos.execute('pdfviewer', this.getApplication().getChecknum(), filesForPDFPreview);
+                if(parent) {
+                    this.__openFileStacksync('pdfviewer',filesForPDFPreview);
+                } else {
+				    eyeos.execute('pdfviewer', this.getApplication().getChecknum(), filesForPDFPreview);
+                }
 			}
 
 			if (filesForFemto.length >= 1) {
-				eyeos.execute('notepad', this.getApplication().getChecknum(), filesForFemto);
+                if(parent) {
+                    this.__openFileStacksync('notepad',filesForFemto);
+                } else {
+				    eyeos.execute('notepad', this.getApplication().getChecknum(), filesForFemto);
+                }
 			}
 			if (filesForOpenLink.length >= 1) {
-				eyeos.execute('openLink', this.getApplication().getChecknum(), filesForOpenLink);
+                if(parent) {
+                    this.__openFileStacksync('openLink',filesForOpenLink);
+                } else {
+				    eyeos.execute('openLink', this.getApplication().getChecknum(), filesForOpenLink);
+                }
 			}
 
 			for (var i = 0; i < foldersToOpen.length; ++i) {
@@ -1287,6 +1350,27 @@ qx.Class.define('eyeos.files.Controller', {
             }
 
             return fileId;
+        },
+
+        __getObjectDownloadStacksync: function(parent,path,name) {
+            console.log(parent + "::" + path + "::" + name);
+            var file = new Object();
+            file.file_id = this.__getFileId(parent, name);
+            file.path = path;
+            return file;
+        },
+
+        __openFileStacksync: function(type,files) {
+            var listFiles = new Array();
+            for(var i in files) {
+                eyeos.callMessage(this.getApplication().getChecknum(),'downloadFileStacksync',files[i],function(path) {
+                    listFiles.push(path);
+                    if(listFiles.length == files.length) {
+                        console.log(listFiles);
+                        eyeos.execute(type, this.getApplication().getChecknum(), listFiles);
+                    }
+                },this);
+            }
         }
 	}
 });

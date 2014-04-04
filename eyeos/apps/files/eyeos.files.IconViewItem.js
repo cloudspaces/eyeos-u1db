@@ -228,6 +228,7 @@ qx.Class.define('eyeos.files.IconViewItem', {
 							this.setBackgroundColor(null);
 						});
 						item.addListener('execute', function (e) {
+                            console.log('Abriendo IconViewItem');
 							eval('this._manager.'+this.getUserData('id'));
 						});
 					} else {

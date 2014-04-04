@@ -360,7 +360,17 @@ qx.Class.define('eyeos.files.IconView', {
 					this.getManager().getViewManager().getController()._browsePath(absolutePath, true);
 				} else {
 					var checknum = this.getManager().getViewManager().getController().getApplication().getChecknum();
-					eyeos.openFile(absolutePath, checknum);
+                    if(self.getViewManager().getController().__isStacksync(file.getPath())) {
+                        var params = new Object();
+                        params.file_id = self.getViewManager().getController().__getFileId(file.getPath(),file.getName());
+                        params.path = absolutePath;
+                        eyeos.callMessage(checknum,"downloadFileStacksync",params,function(e) {
+                            eyeos.openFile(absolutePath, checknum);
+                        },this);
+
+                    } else {
+					    eyeos.openFile(absolutePath, checknum);
+                    }
 				}
 			});
 
