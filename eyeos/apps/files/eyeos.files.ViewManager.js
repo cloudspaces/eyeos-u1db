@@ -151,6 +151,7 @@ qx.Class.define('eyeos.files.ViewManager', {
 
             this.addListener('beforeClose',function() {
                 this.getController().closeTimer();
+                this.getController().closeProgress();
             },this);
 		},
 

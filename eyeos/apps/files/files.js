@@ -109,6 +109,7 @@ qx.Class.define('eyeos.files.Controller', {
 		_dBus: eyeos.messageBus.getInstance(),
         _metadatas: new Array(),
         _timer: null,
+        __progress: null,
 
 		_addListeners: function () {
 //			this.addListener('selectedFile', function (e) {
@@ -1118,17 +1119,22 @@ qx.Class.define('eyeos.files.Controller', {
                         params = files;
                     }
 
-					eyeos.callMessage(this.getApplication().getChecknum(), action, params, function (results) {
-                        if((action == "copy" || action == "move") && stacksync === true) {
-                            this._browsePath(target);
-                        } else {
-						    this._dBus.send('files', 'paste', [filesToPaste, action, source, target, results]);
-                        }
-						if (action == 'move') {
-							this._filesQueue.setMoveQueue([]);
-							this._filesQueue.setAction('');
-						}
-					}, this, {"dontAutoCatchExceptions": true});
+                    if(action == 'copy' || action == 'move') {
+                        this.__createWindowProgress(params);
+                    } else {
+
+                        eyeos.callMessage(this.getApplication().getChecknum(), action, params, function (results) {
+                            if((action == "copy" || action == "move") && stacksync === true) {
+                                this._browsePath(target);
+                            } else {
+                                this._dBus.send('files', 'paste', [filesToPaste, action, source, target, results]);
+                            }
+                            if (action == 'move') {
+                                this._filesQueue.setMoveQueue([]);
+                                this._filesQueue.setAction('');
+                            }
+                        }, this, {"dontAutoCatchExceptions": true});
+					}
 				} else {
 					this._dBus.send('files', 'paste', [filesToPaste, action, source, target]);
 						if (action == 'move') {
@@ -1368,6 +1374,36 @@ qx.Class.define('eyeos.files.Controller', {
                         console.log(listFiles);
                         eyeos.execute(type, this.getApplication().getChecknum(), listFiles);
                     }
+                },this);
+            }
+        },
+
+        closeProgress: function()  {
+            if(this.__progress) {
+                this.__progress.close();
+            }
+        },
+
+        __createWindowProgress: function(params)  {
+            if(!this.__progress) {
+                this.__progress = new qx.ui.window.Window(tr('Progress'));
+                this.__progress.set({
+                    layout: new qx.ui.layout.VBox(),
+                    width: 300,
+                    height: 100,
+                    allowMaximize: false,
+                    allowMinimize: false,
+                    resizable: false
+                });
+
+                var iframe = new qx.ui.embed.Iframe("index.php?message=copyFiles&checknum="+this.getApplication().getChecknum() + "&params=" + JSON.stringify(params));
+                iframe.set({decorator:null});
+                this.__progress.add(iframe);
+                this.__progress.center();
+                this.__progress.open();
+
+                this.__progress.addListener('beforeClose',function() {
+                    this.__progress = null;
                 },this);
             }
         }

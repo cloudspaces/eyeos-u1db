@@ -320,8 +320,11 @@ class AccessorProviderTest  extends PHPUnit_Framework_TestCase
             ->method("setOption")
             ->with(CURLOPT_SSL_VERIFYPEER,false);
         $this->curlMock->expects($this->at(5))
-            ->method("execute");
+            ->method("setOption")
+            ->with(CURLOPT_SSL_VERIFYHOST,0);
         $this->curlMock->expects($this->at(6))
+            ->method("execute");
+        $this->curlMock->expects($this->at(7))
             ->method("close");
 
         $this->sut->sendMessage($settings);

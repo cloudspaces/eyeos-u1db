@@ -275,8 +275,6 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 if(strlen($content) > 0) {
                     $source->getRealFile()->putContents($content);
                 }
-
-
             } else {
 			    $source = FSI::getFile($params['files'][$i]);
             }
@@ -285,56 +283,58 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 				$name = explode(".", $source->getName());
 				$extension = (string) $name[count($name) - 1];
 				$theName = substr($source->getName(), 0, strlen($source->getName()) - strlen($extension) - 1);
-			} else {
-				$theName = $source->getName();
-			}
 
-			$nameForCheck = $theName;
+                $nameForCheck = $theName;
 
-			if (!$source->isDirectory()) {
-				$nameForCheck .= '.' . $extension;
-			}
-
-			$number = 1;
-			$newFile = FSI::getFile($params['folder'] . "/" . $nameForCheck);
-			
-			while ($newFile->exists()) {
-				$futureName = Array($theName, $number);
-				$nameForCheck = implode(' ', $futureName);
-				if (!$source->isDirectory()) {
-					$nameForCheck .= '.' . $extension;
-				}
-				$number++;
-				$newFile = FSI::getFile($params['folder'] . "/" . $nameForCheck);
-			}
-			
-			$isCopy = $source->copyTo($newFile);
-
-            if($isCopy === true && $stacksync === true) {
-                $pathReal =  AdvancedPathLib::parse_url($newFile->getRealFile()->getPath());
-                $file = fopen($pathReal['path'],"r");
-                if($file !== false) {
-                    $len = strlen($pathStackSync);
-                    $pathU1db = substr($newFile->getAbsolutePath(),$len);
-                    $lenfinal = strrpos($pathU1db, $newFile->getName());
-                    $posfinal = $lenfinal > 1?$lenfinal-strlen($pathU1db)-1:$lenfinal-strlen($pathU1db);
-                    $pathParent = substr($pathU1db,0,$posfinal);
-                    $folder = NULL;
-                    if ($pathParent !== '/') {
-                        $pos=strrpos($pathParent,'/');
-                        $folder = substr($pathParent,$pos+1);
-                        $pathParent = substr($pathParent,0,$pos+1);
-                    }
-                    self::verifyToken();
-                    $apiManager->createFile($nameForCheck,$file,filesize($pathReal['path']),$pathParent,$folder);
-                    fclose($file);
+                if (!$source->isDirectory()) {
+                    $nameForCheck .= '.' . $extension;
                 }
+
+                $number = 1;
+                $newFile = FSI::getFile($params['folder'] . "/" . $nameForCheck);
+
+                while ($newFile->exists()) {
+                    $futureName = Array($theName, $number);
+                    $nameForCheck = implode(' ', $futureName);
+                    if (!$source->isDirectory()) {
+                        $nameForCheck .= '.' . $extension;
+                    }
+                    $number++;
+                    $newFile = FSI::getFile($params['folder'] . "/" . $nameForCheck);
+                }
+
+                $isCopy = $source->copyTo($newFile);
+
+                if($isCopy === true && $stacksync === true) {
+                    $pathReal =  AdvancedPathLib::parse_url($newFile->getRealFile()->getPath());
+                    $file = fopen($pathReal['path'],"r");
+                    if($file !== false) {
+                        $len = strlen($pathStackSync);
+                        $pathU1db = substr($newFile->getAbsolutePath(),$len);
+                        $lenfinal = strrpos($pathU1db, $newFile->getName());
+                        $posfinal = $lenfinal > 1?$lenfinal-strlen($pathU1db)-1:$lenfinal-strlen($pathU1db);
+                        $pathParent = substr($pathU1db,0,$posfinal);
+                        $folder = NULL;
+                        if ($pathParent !== '/') {
+                            $pos=strrpos($pathParent,'/');
+                            $folder = substr($pathParent,$pos+1);
+                            $pathParent = substr($pathParent,0,$pos+1);
+                        }
+                        self::verifyToken();
+                        $apiManager->createFile($nameForCheck,$file,filesize($pathReal['path']),$pathParent,$folder);
+                        fclose($file);
+                    }
+                }
+                $results[] = self::getFileInfo($newFile, $settings);
+            } else {
+                //self::copyDirectory($stacksync,$params['files'][$i]);
             }
-
-
-			$results[] = self::getFileInfo($newFile, $settings);
 		}
 		return $results;
+
+
+
+
 	}
 
 	/**
@@ -871,6 +871,40 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         }
 
         return $params['path'];
+    }
+
+    public static function copyFiles($params)
+    {
+        $files = json_decode($params);
+
+        ?>
+        <html>
+            <head>
+                <script>
+                    function updateProgress(data,percent) {
+                        document.getElementById("internalCopy").style.width = data;
+                        document.getElementById("internalCopyText").innerHTML = "<center>" + percent + "</center>";
+                    }
+                </script>
+            </head>
+            <body>
+                <div style="margin-left:12px;font-family:Helvetica, Arial, Verdana, Sans, FreeSans;font-size:15px;">
+                    <div id='pgbfiles' style='margin-top:10px;'>
+                        <div id='wrapper' style='width:240px;border:1px solid black;height:18px;margin-left:10px;'>
+                            <div id="internalCopy" style="width:0px; background-repeat: repeat-x; height: 18px; background-image: url('index.php?extern=images/bg_progress.png')"></div>
+                            <div id='internalCopyText' style='width:240px;height:18px;position:relative;top:-17px;'><center>0%</center></div>
+                        </div>
+                    </div>
+                </div>
+            </body>
+        <?
+
+
+        ?>
+        </html>
+        <?
+
+        exit;
     }
 }
 ?>
