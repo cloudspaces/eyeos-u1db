@@ -402,11 +402,12 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 		foreach ($params as $param) {
 			$fileToRemove = FSI::getFile($param['file']);
 			$filesInfo[] = $fileToRemove->getAbsolutePath();
+            $isFolder = $fileToRemove->isDirectory();
 			if($fileToRemove->delete(true)) {
 			    self::removeUrlShareInfo($param['file']);
                 if(isset($param['id'])) {
                     self::verifyToken();
-                    $apiManager->deleteComponent($param['id']);
+                    $apiManager->deleteComponent($param['id'],$isFolder);
                 }
             }
 		}
@@ -1037,12 +1038,12 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 $pathParent = substr($pathParent,0,$pos+1);
             }
 
-            //Logger::getLogger('sebas')->error('StackSyncIdParent:' . $pathParent . "::" . $nameFolder);
+            Logger::getLogger('sebas')->error('StackSyncIdParent:' . $pathParent . "::" . $nameFolder);
 
             if($folder) {
                 self::verifyToken();
                 $file_id = $apiManager->getParentFileId($pathParent,$nameFolder);
-                //Logger::getLogger('sebas')->error('StackSyncIdParent:IdFolder' . $file_id);
+                Logger::getLogger('sebas')->error('StackSyncIdParent:IdFolder' . $file_id);
                 if($file_id != -1) {
                     self::verifyToken();
                     $apiManager->createFolder($filename,$file_id);
@@ -1075,7 +1076,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             }
         }
 
-        //Logger::getLogger('sebas')->error('PathDestino:' . $pathDest);
+        Logger::getLogger('sebas')->error('PathDestino:' . $pathDest);
 
         $pathDest .= $filename;
         $newFile = FSI::getFile($pathDest);
