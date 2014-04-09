@@ -860,7 +860,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
     public static function downloadFileStacksync($params)
     {
         if( !isset($params['file_id']) || !isset($params['path'])) {
-            throw new EyeMissingArgumentException('Missing or invalid $params[\'calendarId\'].');
+            throw new EyeMissingArgumentException('Missing or invalid file.');
         }
 
         $apiManager = new ApiManager();
@@ -873,38 +873,224 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         return $params['path'];
     }
 
-    public static function copyFiles($params)
+    public static function startProgress($params)
     {
-        $files = json_decode($params);
+        $apiManager = new ApiManager();
+        $metadatas = array();
+        $result = array();
 
-        ?>
-        <html>
-            <head>
-                <script>
-                    function updateProgress(data,percent) {
-                        document.getElementById("internalCopy").style.width = data;
-                        document.getElementById("internalCopyText").innerHTML = "<center>" + percent + "</center>";
-                    }
-                </script>
-            </head>
-            <body>
-                <div style="margin-left:12px;font-family:Helvetica, Arial, Verdana, Sans, FreeSans;font-size:15px;">
-                    <div id='pgbfiles' style='margin-top:10px;'>
-                        <div id='wrapper' style='width:240px;border:1px solid black;height:18px;margin-left:10px;'>
-                            <div id="internalCopy" style="width:0px; background-repeat: repeat-x; height: 18px; background-image: url('index.php?extern=images/bg_progress.png')"></div>
-                            <div id='internalCopyText' style='width:240px;height:18px;position:relative;top:-17px;'><center>0%</center></div>
-                        </div>
-                    </div>
-                </div>
-            </body>
-        <?
+        for($i = 0; $i < count($params['files']); $i++) {
+            if(is_array($params['files'][$i])) {
+                $apiManager->getSkel($params['files'][$i]['id'],$metadatas);
+            } else {
+                self::getSkelLocal($params['files'][$i],$metadatas,null);
+            }
+        }
+
+        $size = 0;
+
+        for($i = 0;$i < count($metadatas);$i++) {
+            if(!$metadatas[$i]->is_folder) {
+                $size += $metadatas[$i]->size;
+            }
+        }
+
+        $result['size'] = $size;
+        $result['metadatas'] = $metadatas;
+        return $result;
+    }
+
+    public static function getSkelLocal($path,&$metadatas,$parent)
+    {
+        $file = FSI::getFile($path);
+
+        if($file->isDirectory()) {
+            if ($parent == NULL) {
+                $parentFolder =  "/" . $file->getName();
+            }
+            else {
+                $parentFolder = $parent . "/" . $file->getName();
+            }
+
+            $files = $file->listFiles();
+
+            foreach($files as $auxFile) {
+                self::getSkelLocal($auxFile->getPath(),$metadatas,$parentFolder);
+            }
+        }
+
+        $metadata = new stdClass();
+        $metadata->path = $path;
+        $metadata->size = $file->getSize();
+        $metadata->parent = $parent;
+        $metadata->is_folder = $file->isDirectory();
+        $metadata->filename = $file->getName();
+
+        array_push($metadatas,$metadata);
+
+    }
+
+    public static function copyFile($params)
+    {
+        $apiManager = new ApiManager();
+        $userName = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
+        $stacksync = false;
+
+        $pathStackSync = "home://~" . $userName . "/Stacksync";
+        $pathOrig = null;
+
+        if(strpos($params['orig'],$pathStackSync) !== false) {
+            if ($pathStackSync == $params['orig']) {
+                $pathOrig = "/";
+            } else {
+                $pathOrig = substr($params['orig'],strlen($pathStackSync)) . "/";
+            }
+        }
+
+        if(strpos($params['dest'],$pathStackSync) !== false) {
+            $stacksync = true;
+        }
+
+        $file = null;
+        $folder = true;
+        $tmpFile = null;
+        $filename = null;
+        $pathinfo = null;
+
+        if(!$params['file']['is_folder']) {
+            $folder = false;
+            if(array_key_exists('file_id',$params['file'])) {
+                self::verifyToken();
+                $fileContent = $apiManager->downloadFile($params['file']['file_id']);
+            } else {
+                $file = FSI::getFile($params['file']['path']);
+                $fileContent = $file->getContents();
+            }
+
+            $tmpFile = new LocalFile('/var/tmp/' . date('Y_m_d_H_i_s') . '_' . ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId());
+            $tmpFile->putContents($fileContent);
+        }
+
+        if($pathOrig) {
+            if($params['file']['path'] == $pathOrig) {
+                $pathinfo = pathinfo($params['file']['filename']);
+            }
+        } else {
+            if($params['file']['parent'] == null) {
+                $pathinfo = pathinfo($params['file']['filename']);
+            }
+        }
+
+        if($pathinfo) {
+            $nameForCheck = $pathinfo['filename'];
+            $extension = null;
+            if(isset($pathinfo['extension'])) {
+                $extension = $pathinfo['extension'];
+                $nameForCheck .=  '.' . $extension;
+            }
+
+            $number = 1;
+            $newFile = FSI::getFile($params['dest'] . "/" . $nameForCheck);
+
+            while ($newFile->exists()) {
+                $futureName = Array($pathinfo['filename'], $number);
+                $nameForCheck = implode(' ', $futureName);
+                if ($extension) {
+                    $nameForCheck .= '.' . $extension;
+                }
+                $number++;
+                $newFile = FSI::getFile($params['dest'] . "/" . $nameForCheck);
+                $params['filenameChange'] = $nameForCheck;
+
+                if(!array_key_exists('parent',$params['file'])) {
+                    $params['pathChange'] = substr($params['dest'],strlen($pathStackSync));
+                }
+            }
+
+            $filename = $newFile->getName();
+
+        } else {
+            $filename = $params['file']['filename'];
+        }
+
+        if ($stacksync) {
+            $pathParent = substr($params['dest'],strlen($pathStackSync));
+            if (array_key_exists('parent',$params['file'])) {
+                if (strlen($pathParent) == 0 && !$params['file']['parent']) {
+                    $pathParent = '/';
+                }
+                if($params['file']['parent']) {
+                    $pathParent .= $params['file']['parent'];
+                }
+
+            } else {
+                $pathParent .= '/' . substr($params['file']['path'],strlen($pathOrig));
+                if(strlen($pathParent) > 1) {
+                    $pathParent = substr($pathParent,0,-1);
+                }
+            }
+
+            $nameFolder = NULL;
+            if ($pathParent !== '/') {
+                $pos=strrpos($pathParent,'/');
+                $nameFolder = substr($pathParent,$pos+1);
+                $pathParent = substr($pathParent,0,$pos+1);
+            }
+
+            //Logger::getLogger('sebas')->error('StackSyncIdParent:' . $pathParent . "::" . $nameFolder);
+
+            if($folder) {
+                self::verifyToken();
+                $file_id = $apiManager->getParentFileId($pathParent,$nameFolder);
+                //Logger::getLogger('sebas')->error('StackSyncIdParent:IdFolder' . $file_id);
+                if($file_id != -1) {
+                    self::verifyToken();
+                    $apiManager->createFolder($filename,$file_id);
+                }
+
+            } else {
+                $f = fopen($tmpFile->getPath(), "r");
+                if($f) {
+                    $apiManager->createFile($filename,$f,filesize($tmpFile->getPath()),$pathParent,$nameFolder);
+                    fclose($f);
+                }
+            }
 
 
-        ?>
-        </html>
-        <?
+        }
 
-        exit;
+        $pathDest = null;
+        if (array_key_exists('parent',$params['file'])) {
+            if ($params['file']['parent']) {
+                $pathDest = $params['dest'] . $params['file']['parent'] . '/';
+            } else {
+                $pathDest = $params['dest'] . '/';
+            }
+        } else {
+            if ($pathOrig == $params['file']['path']) {
+                $pathDest = $params['dest'] . '/';
+            } else {
+                //$pathDest = $params['dest'] . $params['file']['path'];
+                $pathDest = $params['dest'] . '/' . substr($params['file']['path'],strlen($pathOrig));
+            }
+        }
+
+        //Logger::getLogger('sebas')->error('PathDestino:' . $pathDest);
+
+        $pathDest .= $filename;
+        $newFile = FSI::getFile($pathDest);
+        if($folder) {
+            $newFile->mkdir();
+        } else {
+            $tmpFile->copyTo($newFile);
+        }
+
+
+        if($tmpFile) {
+            $tmpFile->delete();
+        }
+
+        return $params;
     }
 }
 ?>

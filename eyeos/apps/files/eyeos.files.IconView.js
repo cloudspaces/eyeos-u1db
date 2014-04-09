@@ -364,9 +364,14 @@ qx.Class.define('eyeos.files.IconView', {
                         var params = new Object();
                         params.file_id = self.getViewManager().getController().__getFileId(file.getPath(),file.getName());
                         params.path = absolutePath;
-                        eyeos.callMessage(checknum,"downloadFileStacksync",params,function(e) {
+
+                        if(params.file_id) {
+                            eyeos.callMessage(checknum,"downloadFileStacksync",params,function(e) {
+                                eyeos.openFile(absolutePath, checknum);
+                            },this);
+                        } else {
                             eyeos.openFile(absolutePath, checknum);
-                        },this);
+                        }
 
                     } else {
 					    eyeos.openFile(absolutePath, checknum);

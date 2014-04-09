@@ -110,6 +110,7 @@ qx.Class.define('eyeos.files.Controller', {
         _metadatas: new Array(),
         _timer: null,
         __progress: null,
+        __size: 0,
 
 		_addListeners: function () {
 //			this.addListener('selectedFile', function (e) {
@@ -1065,6 +1066,7 @@ qx.Class.define('eyeos.files.Controller', {
 
 		pasteFile: function () {
 			var filesToPaste = this._filesQueue.getMoveQueue();
+            this.__checkFilesToPaste(filesToPaste);
 			if (filesToPaste.length >= 1) {
 				var source = this._filesQueue.getMoveSource();
 				var target = this.getModel().getCurrentPath()[1];
@@ -1092,10 +1094,14 @@ qx.Class.define('eyeos.files.Controller', {
                         files.splice(0,1);
                         params.files =files;
 
-                        if(this.__isStacksync(params.folder)) {
+                        if(this.__isStacksync(params.folder) || this.__isStacksync(files[0])) {
                             stacksync = true;
                             var idParent = this.__getFileIdFolder(params.folder);
                             var filesAux = [];
+
+                            if(!idParent) {
+                                idParent = this.__getFileIdFolder(files[0]);
+                            }
 
                             if(idParent !== null) {
                                 params.idParent = idParent;
@@ -1368,13 +1374,19 @@ qx.Class.define('eyeos.files.Controller', {
         __openFileStacksync: function(type,files) {
             var listFiles = new Array();
             for(var i in files) {
-                eyeos.callMessage(this.getApplication().getChecknum(),'downloadFileStacksync',files[i],function(path) {
-                    listFiles.push(path);
+                if(files[i].file_id) {
+                    eyeos.callMessage(this.getApplication().getChecknum(),'downloadFileStacksync',files[i],function(path) {
+                        listFiles.push(path);
+                        if(listFiles.length == files.length) {
+                            eyeos.execute(type, this.getApplication().getChecknum(), listFiles);
+                        }
+                    },this);
+                } else {
+                    listFiles.push(files[i].path);
                     if(listFiles.length == files.length) {
-                        console.log(listFiles);
                         eyeos.execute(type, this.getApplication().getChecknum(), listFiles);
                     }
-                },this);
+                }
             }
         },
 
@@ -1386,6 +1398,8 @@ qx.Class.define('eyeos.files.Controller', {
 
         __createWindowProgress: function(params)  {
             if(!this.__progress) {
+                this.__size = 0;
+                this.closeTimer();
                 this.__progress = new qx.ui.window.Window(tr('Progress'));
                 this.__progress.set({
                     layout: new qx.ui.layout.VBox(),
@@ -1396,15 +1410,146 @@ qx.Class.define('eyeos.files.Controller', {
                     resizable: false
                 });
 
-                var iframe = new qx.ui.embed.Iframe("index.php?message=copyFiles&checknum="+this.getApplication().getChecknum() + "&params=" + JSON.stringify(params));
-                iframe.set({decorator:null});
-                this.__progress.add(iframe);
+                var progress = new qx.ui.container.Composite().set({
+                    layout:  new qx.ui.layout.VBox(),
+                    width: 240,
+                    height: 18,
+                    marginTop: 15,
+                    decorator: new qx.ui.decoration.Single(1)
+                });
+
+                var imageProgress = new qx.ui.basic.Image('eyeos/extern/images/bg_progress.png').set({
+                    width: 0,
+                    zIndex: 1,
+                    scale: true
+                });
+
+                progress.add(imageProgress);
+
+                var labelProgress = new qx.ui.basic.Label().set({
+                   marginTop: -17,
+                   alignX: 'center',
+                   value: "0%",
+                   zIndex: 2
+                });
+
+                progress.add(labelProgress);
+
+                this.__progress.add(progress);
+
                 this.__progress.center();
                 this.__progress.open();
 
                 this.__progress.addListener('beforeClose',function() {
                     this.__progress = null;
+                    this._browsePath(params['folder'], true,true);
                 },this);
+
+                this.__progress.getChildren()[0].getChildren()[0].setWidth(3);
+                this.__progress.getChildren()[0].getChildren()[1].setValue("1%");
+
+                var pathOrig = '';
+
+                if(params.files[0].id) {
+                    pathOrig = params.files[0].path.substring(0,params.files[0].path.lastIndexOf('/'));
+                } else {
+                    pathOrig = params.files[0].substring(0,params.files[0].lastIndexOf('/'));
+                }
+
+                eyeos.callMessage(this.getApplication().getChecknum(),'startProgress',params,function(result) {
+                    if(result && result.metadatas && result.metadatas.length > 0) {
+                        this.__copyFile(result,result.metadatas.length - 1,params.folder,pathOrig);
+                    }
+                },this);
+
+            }
+        },
+
+        __copyFile: function(data,pos,dest,pathOrig)
+        {
+            if(pos > -1) {
+                var params = new Object();
+                params.file = data.metadatas[pos];
+                params.dest = dest;
+                params.orig = pathOrig;
+                eyeos.callMessage(this.getApplication().getChecknum(),'copyFile',params,function(result) {
+
+                    if(result.filenameChange) {
+                        this.__replacePath(params.file.filename,result.filenameChange,data.metadatas,pos-1,result.pathChange);
+                    }
+                    /*if(data.size > 0) {
+                        if(!data.metadatas[pos].is_folder) {
+                            this.__size += data.metadatas[pos].size;
+                            this.__updateProgress(data.size);
+                        }
+                    } else {
+                        this.__size += 1;
+                        this.__updateProgress(data.metadatas.length);
+                    }*/
+
+                    this.__size += 1;
+                    this.__updateProgress(data.metadatas.length);
+
+                    pos--;
+                    this.__copyFile(data,pos,dest,pathOrig);
+                },this);
+            } else {
+                var that = this;
+                var reffunction = function(){that.__closeProgressUser()};
+                this._timer = setTimeout(reffunction,2000);
+            }
+        },
+
+        __updateProgress: function(sizeTotal) {
+            var percent = parseInt((this.__size * 100) / sizeTotal,10);
+            var newWidth = parseInt(percent * 2.76);
+
+            this.__progress.getChildren()[0].getChildren()[0].setWidth(newWidth);
+            this.__progress.getChildren()[0].getChildren()[1].setValue(percent + "%");
+        },
+
+        __replacePath: function(filenameOld,filenameNew,data,pos,dirChange) {
+            filenameOld = '/' + filenameOld;
+            filenameNew = '/' + filenameNew;
+
+            if(dirChange) {
+                filenameOld = dirChange + filenameOld;
+                filenameNew = dirChange + filenameNew;
+            }
+
+            for(var i = pos;i > -1;i--) {
+                if(data[i].hasOwnProperty("parent")) {
+                    if(data[i].parent.length >= filenameOld.length) {
+                        var file = data[i].parent.substring(0,filenameOld.length);
+                        if(file === filenameOld) {
+                            var path = filenameNew + data[i].parent.substring(filenameOld.length);
+                            data[i].parent = path;
+                        }
+                    }
+                } else {
+                    if(data[i].path.length >= filenameOld.length) {
+                        var file = data[i].path.substring(0,filenameOld.length);
+                        console.log(file + "==" + filenameOld);
+                        if(file === filenameOld) {
+                            var path = filenameNew + data[i].path.substring(filenameOld.length);
+                            data[i].path = path;
+                        }
+                    }
+                }
+            }
+        },
+
+        __closeProgressUser: function() {
+            if(this.__progress) {
+                this.__progress.close();
+            }
+        },
+
+        __checkFilesToPaste: function(files) {
+            for(var i in files) {
+                if(files[i].getAbsolutePath() === 'home://~'+ eyeos.getCurrentUserName()+'/Stacksync') {
+                    files.splice(i,1);
+                }
             }
         }
 	}

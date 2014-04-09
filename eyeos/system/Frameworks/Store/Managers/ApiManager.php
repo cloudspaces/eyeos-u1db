@@ -91,6 +91,17 @@ class ApiManager
         return $respuesta;
     }
 
+    public function getSkel($fileId,&$metadatas) {
+        $metadata = $this->apiProvider->getMetadata($this->getUrl(),$this->getToken(),$fileId);
+        if($metadata->is_folder) {
+            for ($i=0;$i<count($metadata->contents);$i++){
+                $this->getSkel($metadata->contents[$i]->file_id,$metadatas);
+            }
+        }
+        unset($metadata->contents);
+        array_push($metadatas,$metadata);
+    }
+
     public function createFile($filename,$file,$filesize,$pathParent,$folderParent = NULL)
     {
         $respuesta = '';
@@ -101,7 +112,7 @@ class ApiManager
             $lista['folder'] = $folderParent;
             $lista['user_eyeos'] = $_SESSION['user'];
             $u1db = json_decode($this->callProcessU1db('parent',$lista));
-            if($u1db !== NULL) {
+            if($u1db !== NULL && count($u1db) > 0) {
                 $parentId = $u1db[0]->file_id === "null"?NULL:$u1db[0]->file_id;
             }
         } else {
@@ -137,6 +148,25 @@ class ApiManager
         $metadata = $this->apiProvider->createFolder($this->getUrl(),$this->getToken(),$foldername,$idParent);
         $this->callProcessU1db('insert',$this->setUserEyeos($metadata));
         return json_encode($metadata);
+    }
+
+    public function getParentFileId($path,$folder)
+    {
+        $parentId = -1;
+        if($folder !== NULL) {
+            $lista = array();
+            $lista['path'] = $path;
+            $lista['folder'] = $folder;
+            $lista['user_eyeos'] = $_SESSION['user'];
+            $u1db = json_decode($this->callProcessU1db('parent',$lista));
+            if($u1db !== NULL && count($u1db) > 0) {
+                $parentId = $u1db[0]->file_id === "null"?NULL:$u1db[0]->file_id;
+            }
+        } else {
+            $parentId = NULL;
+        }
+
+        return $parentId;
     }
 
     public function deleteComponent($idComponent,$folder = false)

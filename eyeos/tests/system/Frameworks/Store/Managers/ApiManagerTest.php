@@ -191,6 +191,57 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * method: getSkel
+     * when: called
+     * with: fileId
+     * should: callMetadataFileApiStore
+     */
+    public function test_getSkel_called_fileId_callMetadataFileApiStore()
+    {
+        $fileId = -8090905582480578692;
+        $metadatas = array();
+        $metadata='{"file_id":-8090905582480578692,"parent_file_id":null,"filename":"Cloudspaces_trial.txt","path":"/","is_folder":false,"status":"NEW","server_modified":"2014-03-11 14:22:45.757","client_modified":"2014-03-11 14:22:45.757","user":"web","version":1,"checksum":589445744,"size":166,"mimetype":"text/plain","chunks":[],"contents":[]}';
+        $this->apiProviderMock->expects($this->once())
+            ->method('getMetadata')
+            ->will($this->returnValue(json_decode($metadata)));
+
+        $this->sut->getSkel($fileId,$metadatas);
+    }
+
+    /**
+     * method: getSkel
+     * when: called
+     * with: fileId
+     * should: callMetadataFolderApiStore
+     */
+    public function test_getSkel_called_fileId_callMetadataFolderApiStore()
+    {
+        $fileId=-7545835892890956592;
+        $metadatas = array();
+        $metadata = '{"file_id":-7545835892890956592,"parent_file_id":819819698545290447,"filename":"prueba","path":"/Documents/","is_folder":true,"status":"NEW","server_modified":"2013-11-18 19:20:25.189","client_modified":"2013-11-18 19:20:25.189","user":"web","version":1,"checksum":0,"size":0,"mimetype":"inode/directory","is_root":false,"contents":[{"file_id":-4070153038274133293,"parent_file_id":-7545835892890956592,"filename":"otro nivel","path":"/Documents/prueba/","is_folder":true,"status":"NEW","server_modified":"2013-11-20 12:19:58.131","client_modified":"2013-11-20 12:19:58.131","user":"web","version":1,"checksum":0,"size":0,"mimetype":"inode/directory","is_root":false},{"file_id":-9049115177914930636,"parent_file_id":-7545835892890956592,"filename":"prueba.txt","path":"/Documents/prueba/","is_folder":false,"status":"CHANGED","server_modified":"2013-11-22 12:51:44.293","client_modified":"2013-11-22 12:51:44.292","user":"web","version":15,"checksum":883689008,"size":16,"mimetype":"application/x-empty","chunks":[]}]}';
+        $this->apiProviderMock->expects($this->at(0))
+            ->method('getMetadata')
+            ->will($this->returnValue(json_decode($metadata)));
+
+        $metadata = '{"file_id":-4070153038274133293,"parent_file_id":-7545835892890956592,"filename":"otro nivel","path":"/Documents/prueba/","is_folder":true,"status":"NEW","server_modified":"2013-11-20 12:19:58.131","client_modified":"2013-11-20 12:19:58.131","user":"web","version":1,"checksum":0,"size":0,"mimetype":"inode/directory","is_root":false,"contents":[{"file_id":-5737202061262510274,"parent_file_id":-4070153038274133293,"filename":"hhhh","path":"/Documents/prueba/otro nivel/","is_folder":true,"status":"NEW","server_modified":"2013-12-03 17:42:32.939","client_modified":"2013-12-03 17:42:32.939","user":"web","version":1,"checksum":0,"size":0,"mimetype":"inode/directory","is_root":false}]}';
+        $this->apiProviderMock->expects($this->at(1))
+            ->method('getMetadata')
+            ->will($this->returnValue(json_decode($metadata)));
+
+        $metadata = '{"file_id":-5737202061262510274,"parent_file_id":-4070153038274133293,"filename":"hhhh","path":"/Documents/prueba/otro nivel/","is_folder":true,"status":"NEW","server_modified":"2013-12-03 17:42:32.939","client_modified":"2013-12-03 17:42:32.939","user":"web","version":1,"checksum":0,"size":0,"mimetype":"inode/directory","is_root":false,"contents":[]}';
+        $this->apiProviderMock->expects($this->at(2))
+            ->method('getMetadata')
+            ->will($this->returnValue(json_decode($metadata)));
+
+        $metadata = '{"file_id":-9049115177914930636,"parent_file_id":-7545835892890956592,"filename":"prueba.txt","path":"/Documents/prueba/","is_folder":false,"status":"CHANGED","server_modified":"2013-11-22 12:51:44.293","client_modified":"2013-11-22 12:51:44.292","user":"web","version":15,"checksum":883689008,"size":16,"mimetype":"application/x-empty","chunks":[],"contents":[]}';
+        $this->apiProviderMock->expects($this->at(3))
+            ->method('getMetadata')
+            ->will($this->returnValue(json_decode($metadata)));
+
+        $this->sut->getSkel($fileId,$metadatas);
+    }
+
+    /**
      *method: createFile
      * when: called
      * with:filenameAndFileAndFilesizeAndPathParentAndFolderParent
@@ -242,6 +293,25 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     {
         $metadataProvider = '{"status": "NEW", "mimetype": "inode/directory", "parent_file_version": "", "parent_file_id": "null", "root_id": "stacksync", "server_modified": "Fri Mar 07 17:22:51 CET 2014", "checksum": 0, "client_modified": "Fri Mar 07 17:22:51 CET 2014", "filename": "TestFolder", "version": 1, "file_id": -3243347967282172526, "is_folder": true, "path": "/", "size": 0, "user": "web"}';
         $this->exerciseCreateFolder($metadataProvider);
+    }
+
+    /**
+     * method: getParentFileId
+     * when: called
+     * with: pathAndFolder
+     * should: calledU1dbData
+     */
+    public function test_getParentFileId_pathAndFolder_calledU1dbData()
+    {
+        $path = '/';
+        $folder = 'a';
+        $metadata = '[{"status": "NEW", "mimetype": "inode/directory", "parent_file_version": "", "parent_file_id": "123456", "root_id": "stacksync", "server_modified": "Fri Mar 07 17:22:51 CET 2014", "checksum": 0, "client_modified": "Fri Mar 07 17:22:51 CET 2014", "filename": "a", "version": 1, "file_id": -3243347967282172526, "is_folder": true, "path": "/", "size": 0, "user": "web"}]';
+
+        $this->accessorProviderMock->expects($this->once())
+            ->method('getProcessDataU1db')
+            ->will($this->returnValue($metadata));
+
+        $this->sut->getParentFileId($path,$folder);
     }
 
     /**
