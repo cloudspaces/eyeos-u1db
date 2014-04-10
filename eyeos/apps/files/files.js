@@ -1405,9 +1405,9 @@ qx.Class.define('eyeos.files.Controller', {
                     layout: new qx.ui.layout.VBox(),
                     width: 300,
                     height: 100,
-                    allowMaximize: false,
-                    allowMinimize: false,
-                    resizable: false
+                    resizable: false,
+                    showMaximize: false,
+                    showMinimize: false
                 });
 
                 var progress = new qx.ui.container.Composite().set({
