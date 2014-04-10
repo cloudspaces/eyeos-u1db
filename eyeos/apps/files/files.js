@@ -1125,7 +1125,7 @@ qx.Class.define('eyeos.files.Controller', {
                         params = files;
                     }
 
-                    if(action == 'copy' || action == 'move') {
+                    if(action == 'copy') {
                         this.__createWindowProgress(params);
                     } else {
 
