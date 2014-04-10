@@ -44,28 +44,30 @@ function listContent($user,$user_name)
     if (is_array($resultado)) {
         if (is_array($resultado)) {
             echo "<div style=\"font-family:'Verdana';font-size:15px;margin-top:30px;\"><p>N&uacute;mero de calendarios disponibles: " .  count($resultado) . "</p></div>";
-            //echo "Total Calendarios: " . count($resultado) . "<br>";
-
-            echo "<table width=\"50%\" border=\"1\">";
-            echo "<tr style=\"font-family:'Verdana';font-size:15px;font-weight:bold;background-color:lightgrey\"><td align='left' width=\"30%\">Calendario</td><td align='center' width=\"70%\">Eventos</td></tr>";
-
-            foreach($resultado as $cal) {
-                //echo "Calendar name: " . $cal->name . "&nbsp;&nbsp;&nbsp;&nbsp;";
-                $jsonSend = '{"type":"selectEvent","lista":[{"type":"event","user_eyeos":"' . $user_name . '","calendar":"' . $cal->name . '"}]}';
-                $path = "python '/var/www/eyeos/eyeos/extern/u1db/Protocol.py' " . escapeshellarg($jsonSend);
-                $salidaPython = exec($path);
-                $salida = json_decode($salidaPython);
-
-                if (is_array($salida)) {
-                    if (is_array($salida)) {
-                        echo "<tr style=\"font-family:'Verdana';font-size:13px;\"><td align='left' width=\"30%\">" . $cal->name . "</td><td align='center' width=\"70%\">" . count($salida) . "</td></tr>";
-                        //echo "Eventos: " . count($salida) . "<br>";
-                    }
-                } else {
-                    echo "Se produjo un error: <br>" . $salidaPython;
-                }
+            $table = false;
+            if (count($resultado) > 0 ) {
+                $table = true;
             }
-            echo "</table>";
+            if ($table) {
+                echo "<table width=\"50%\" border=\"1\">";
+                echo "<tr style=\"font-family:'Verdana';font-size:15px;font-weight:bold;background-color:lightgrey\"><td align='left' width=\"30%\">Calendario</td><td align='center' width=\"70%\">Eventos</td></tr>";
+
+                foreach($resultado as $cal) {
+                    $jsonSend = '{"type":"selectEvent","lista":[{"type":"event","user_eyeos":"' . $user_name . '","calendar":"' . $cal->name . '"}]}';
+                    $path = "python '/var/www/eyeos/eyeos/extern/u1db/Protocol.py' " . escapeshellarg($jsonSend);
+                    $salidaPython = exec($path);
+                    $salida = json_decode($salidaPython);
+
+                    if (is_array($salida)) {
+                        if (is_array($salida)) {
+                            echo "<tr style=\"font-family:'Verdana';font-size:13px;\"><td align='left' width=\"30%\">" . $cal->name . "</td><td align='center' width=\"70%\">" . count($salida) . "</td></tr>";
+                        }
+                    } else {
+                        echo "Se produjo un error: <br>" . $salidaPython;
+                    }
+                }
+                echo "</table>";
+            }
         }
     } else {
         echo "Se produjo un error: <br>" . $datosPython;
