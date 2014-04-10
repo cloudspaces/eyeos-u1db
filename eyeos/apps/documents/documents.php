@@ -712,6 +712,7 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
 		mkdir($dir . '/images_new/');
 		chdir($oldDir);
 		preg_match_all('/<img src="([^"]+)"/', $params[1], $matches);
+
 		if(is_array($matches) && is_array($matches[1])) {
 			foreach($matches[1] as $value) {
 				if(strpos($value, 'params=')) {
@@ -749,6 +750,9 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
 		$cmd = 'rm -fr ' . $dir;
         shell_exec($cmd);
 		chdir($oldDir);
+
+        $event = new FileEvent($myFile);
+        $myFile->fireEvent('fileWritten',$event);
 
 		return $params;
 	}

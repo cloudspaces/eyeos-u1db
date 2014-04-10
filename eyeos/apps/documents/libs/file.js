@@ -155,14 +155,14 @@ qx.Class.define('eyeos.application.documents.File', {
 				object.getApplication().getWindow().setCaption('Document - ' + datas[1]);
 
 				//subscribe to document channel
-				var netSync = eyeos.netSync.NetSync.getInstance();
-				netSync.subscribe('document_'+datas[2]);
+				/*var netSync = eyeos.netSync.NetSync.getInstance();
+				netSync.subscribe('document_'+datas[2]);*/
 
 				//FIXME: PLACE IT INSIDE AN OBJECT!!!
 				originalContent = tinyMCE.getInstanceById(tinymceId).getContent();
 				if(originalContent != datas[0]) {
 				    object.addListener('fileSaved', function() {
-					eyeos.callMessage(object.getApplication().getChecknum(), 'reOpen',object.__currentDoc.path, function() {
+					/*eyeos.callMessage(object.getApplication().getChecknum(), 'reOpen',object.__currentDoc.path, function() {
 					    var netSync = eyeos.netSync.NetSync.getInstance();
 					    var message = new eyeos.netSync.Message({
 						    type: 'documents',
@@ -171,7 +171,7 @@ qx.Class.define('eyeos.application.documents.File', {
 						    data: "refresh"
 					    });
 					    netSync.send(message);
-					}, this);
+					}, this);*/
 				    }, this);
 				    this.fileSave(object);
 				}

@@ -165,14 +165,14 @@ qx.Class.define('eyeos.application.documents.Utils', {
 			if(patch_text) {
 //				console.log(patch_text);
 				//if there is a change...
-				var netSync = eyeos.netSync.NetSync.getInstance();
+				/*var netSync = eyeos.netSync.NetSync.getInstance();
 				var message = new eyeos.netSync.Message({
 					type: 'documents',
 					name: 'change',
 					to: 'document_'+duid,
 					data: patch_text
 				});
-				netSync.send(message);
+				netSync.send(message);*/
 			}
 			ed.blockEx = 0;
 		},
