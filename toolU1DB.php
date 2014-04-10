@@ -19,7 +19,7 @@ if ($_GET["user"] && strlen($_GET["user"])) {
 function listContent($user,$user_name)
 {
     chdir(dirname(__FILE__) . "/eyeos");
-    echo "<div style=\"font-family:'Verdana';font-size:15px;\"><p>User:&nbsp;<b><span style='text-decoration:normal'>$user_name</span></b></p>";
+    echo "<div style=\"font-family:'Verdana';font-size:15px;\"><p>User:&nbsp;<b><span>$user_name</span></b></p>";
 
     $jsonSend = '{"type":"selectMetadataUser","lista":[{"user_eyeos":"' . $user . '"}]}';
     $path = "python '/var/www/eyeos/eyeos/extern/u1db/Protocol.py' " . escapeshellarg($jsonSend);
@@ -43,23 +43,31 @@ function listContent($user,$user_name)
 
     if (is_array($resultado)) {
         if (is_array($resultado)) {
-            echo "<div style=\"font-family:'Verdana';font-size:15px;margin-top:30px;\"><p>N&uacute;mero de calendarios disponibles: " .  count($resultado) . "</p></div>";
-            $table = false;
-            if (count($resultado) > 0 ) {
-                $table = true;
+            for ($i=0; $i < count($resultado); $i++) {
+                if ($resultado[$i]->status == 'DELETED') {
+                    unset($resultado[$i]);
+                    $resultado = array_values($resultado);
+                    $i--;
+                }
             }
-            if ($table) {
+            echo "<div style=\"font-family:'Verdana';font-size:15px;margin-top:30px;\"><p>N&uacute;mero de calendarios disponibles: " .  count($resultado) . "</p></div>";
+            if (count($resultado) > 0) {
                 echo "<table width=\"50%\" border=\"1\">";
                 echo "<tr style=\"font-family:'Verdana';font-size:15px;font-weight:bold;background-color:lightgrey\"><td align='left' width=\"30%\">Calendario</td><td align='center' width=\"70%\">Eventos</td></tr>";
-
                 foreach($resultado as $cal) {
                     $jsonSend = '{"type":"selectEvent","lista":[{"type":"event","user_eyeos":"' . $user_name . '","calendar":"' . $cal->name . '"}]}';
                     $path = "python '/var/www/eyeos/eyeos/extern/u1db/Protocol.py' " . escapeshellarg($jsonSend);
                     $salidaPython = exec($path);
                     $salida = json_decode($salidaPython);
-
                     if (is_array($salida)) {
                         if (is_array($salida)) {
+                            for ($i=0; $i < count($salida); $i++) {
+                                if ($salida[$i]->status == 'DELETED') {
+                                    unset($salida[$i]);
+                                    $salida = array_values($salida);
+                                    $i--;
+                                }
+                            }
                             echo "<tr style=\"font-family:'Verdana';font-size:13px;\"><td align='left' width=\"30%\">" . $cal->name . "</td><td align='center' width=\"70%\">" . count($salida) . "</td></tr>";
                         }
                     } else {
