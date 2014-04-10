@@ -32,6 +32,8 @@ class Protocol:
             result = self.deleteFolder(lista[0]["file_id"],lista[0]['user_eyeos'])
         elif type == "deleteMetadataUser":
             result = self.deleteMetadataUser(lista[0]['user_eyeos'])
+        elif type == "selectMetadataUser":
+            result = self.selectMetadataUser(lista[0]['user_eyeos'])
         elif type == "deleteEvent":
             result = self.deleteEvent(lista)
         elif type == "updateEvent":
@@ -76,6 +78,9 @@ class Protocol:
     def deleteMetadataUser(self,user):
         self.metadata.deleteMetadataUser(user)
         return True
+
+    def selectMetadataUser(self,user):
+        return self.metadata.selectMetadataUser(user)
 
     def deleteEvent(self,lista):
         self.metadata.deleteEvent(lista)

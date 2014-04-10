@@ -91,6 +91,15 @@ class Metadata:
             for file in files:
                 self.db.delete_doc(file)
 
+    def selectMetadataUser(self,user):
+        result = []
+        self.db.create_index("by-usereyeos", "user_eyeos")
+        files = self.db.get_from_index("by-usereyeos",user)
+        if len(files) > 0:
+            for file in files:
+                result.append(file.content)
+        return result
+
     def deleteEvent(self,lista):
         self.updateEvent(lista)
 

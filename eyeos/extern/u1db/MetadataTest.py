@@ -119,6 +119,20 @@ class MetadataTest (unittest.TestCase):
         self.assertEquals(0,len(docs[1]))
 
     """
+    method: selectMetadataUser
+    when: called
+    with: user
+    should: return Array
+    """
+    def test_selectMetadataUser_called_user_returnArray(self):
+        array = self.getArrayInsert()
+        self.sut.insert(array)
+        files = self.sut.selectMetadataUser('eyeos')
+        files.sort()
+        self.assertEquals(array,files)
+
+
+    """
     method: deleteEvent
     when: called
     with: array

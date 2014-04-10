@@ -123,6 +123,20 @@ class ProtocolTest (unittest.TestCase):
     """
     method: protocol
     when: called
+    with: typeSelectMetatadataUserAndList
+    should: returnArray
+    """
+    def test_protocol_called_typeSelectMetadataUserAndList_returnArray(self):
+        params = '{"type":"selectMetadataUser","lista":[{"user_eyeos":"eyeos"}]}'
+        self.protocol.selectMetadataUser = Mock()
+        self.protocol.selectMetadataUser.return_value = []
+        result = self.protocol.protocol(params)
+        self.protocol.selectMetadataUser.assert_called_once_with("eyeos")
+        self.assertEquals('[]',result)
+
+    """
+    method: protocol
+    when: called
     with: typeDeleteEventAndList
     should: deleteCorrect
     """
