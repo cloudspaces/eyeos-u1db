@@ -36,43 +36,31 @@ function listContent($user,$user_name)
         echo "Se produjo un error: <br>" . $datosPython;
     }
 
-    $jsonSend = '{"type":"selectCalendar" , "lista":[{"type":"calendar","user_eyeos": "' . $user_name . '"}]}';
+    $jsonSend = '{"type":"selectCalendarsAndEvents" , "lista":[{"user_eyeos": "' . $user_name . '"}]}';
     $path = "python '/var/www/eyeos/eyeos/extern/u1db/Protocol.py' " . escapeshellarg($jsonSend);
     $datosPython = exec($path);
     $resultado = json_decode($datosPython);
 
     if (is_array($resultado)) {
         if (is_array($resultado)) {
-            for ($i=0; $i < count($resultado); $i++) {
-                if ($resultado[$i]->status == 'DELETED') {
-                    unset($resultado[$i]);
-                    $resultado = array_values($resultado);
-                    $i--;
+            $salida = array();
+            foreach($resultado as $dato) {
+                if ($dato->type == 'calendar') {
+                    $dato->events = array();
+                    array_push($salida,$dato);
                 }
             }
-            echo "<div style=\"font-family:'Verdana';font-size:15px;margin-top:30px;\"><p>N&uacute;mero de calendarios disponibles: " .  count($resultado) . "</p></div>";
+            foreach($resultado as $dato) {
+                if ($dato->type == 'event') {
+                    insertEvent($dato,$salida);
+                }
+            }
+            echo "<div style=\"font-family:'Verdana';font-size:15px;margin-top:30px;\"><p>N&uacute;mero de calendarios disponibles: " .  count($salida) . "</p></div>";
             if (count($resultado) > 0) {
                 echo "<table width=\"50%\" border=\"1\">";
                 echo "<tr style=\"font-family:'Verdana';font-size:15px;font-weight:bold;background-color:lightgrey\"><td align='left' width=\"30%\">Calendario</td><td align='center' width=\"70%\">Eventos</td></tr>";
-                foreach($resultado as $cal) {
-                    $jsonSend = '{"type":"selectEvent","lista":[{"type":"event","user_eyeos":"' . $user_name . '","calendar":"' . $cal->name . '"}]}';
-                    $path = "python '/var/www/eyeos/eyeos/extern/u1db/Protocol.py' " . escapeshellarg($jsonSend);
-                    $salidaPython = exec($path);
-                    $salida = json_decode($salidaPython);
-                    if (is_array($salida)) {
-                        if (is_array($salida)) {
-                            for ($i=0; $i < count($salida); $i++) {
-                                if ($salida[$i]->status == 'DELETED') {
-                                    unset($salida[$i]);
-                                    $salida = array_values($salida);
-                                    $i--;
-                                }
-                            }
-                            echo "<tr style=\"font-family:'Verdana';font-size:13px;\"><td align='left' width=\"30%\">" . $cal->name . "</td><td align='center' width=\"70%\">" . count($salida) . "</td></tr>";
-                        }
-                    } else {
-                        echo "Se produjo un error: <br>" . $salidaPython;
-                    }
+                foreach($salida as $cal) {
+                    echo "<tr style=\"font-family:'Verdana';font-size:13px;\"><td align='left' width=\"30%\">" . $cal->name . "</td><td align='center' width=\"70%\">" . count($cal->events) . "</td></tr>";
                 }
                 echo "</table>";
             }
@@ -81,5 +69,15 @@ function listContent($user,$user_name)
         echo "Se produjo un error: <br>" . $datosPython;
     }
     echo "</div>";
+}
+
+function insertEvent($elemento,&$lista)
+{
+    foreach($lista as $dato) {
+        if ($elemento->calendar == $dato->name) {
+            array_push($dato->events,$elemento);
+            break;
+        }
+    }
 }
 ?>
