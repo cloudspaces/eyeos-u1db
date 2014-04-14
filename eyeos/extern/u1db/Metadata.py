@@ -143,14 +143,11 @@ class Metadata:
 
     def insertCalendar(self,lista):
         for data in lista:
+            self.sync()
             calendar = self.getCalendar(data)
-            if len(calendar) > 0:
-                file = calendar[0]
-                file.set_json(json.dumps(data))
-                self.db.put_doc(file)
-            else:
+            if len(calendar) == 0:
                 self.db.create_doc_from_json(json.dumps(data))
-        self.sync()
+
 
     def getCalendar(self,data):
         self.db.create_index("by-calendar", "type","user_eyeos","name")
