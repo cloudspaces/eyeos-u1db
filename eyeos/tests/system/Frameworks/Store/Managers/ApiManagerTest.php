@@ -764,6 +764,24 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->sut->deleteCalendar($user,$calendar);
     }
 
+    /**
+     *method: deleteCalendarAndEventsByUser
+     * when: called
+     * with: user
+     * should: calledU1db
+     */
+    public function test_deleteCalendarAndEventsByUser_called_user_calledU1db()
+    {
+        $user = 'eyeos';
+        $calendarU1db = '{"type":"deleteCalendarUser","lista":[{"user_eyeos":"eyeos"}]}';
+        $this->accessorProviderMock->expects($this->at(0))
+            ->method('getProcessDataU1db')
+            ->with($calendarU1db)
+            ->will($this->returnValue("true"));
+
+        $this->sut->deleteCalendarAndEventsByUser($user);
+    }
+
 
     private function exerciseGetMetadataWithoutData($path,$metadata, $fileId = NULL)
     {

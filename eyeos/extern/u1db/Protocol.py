@@ -50,6 +50,10 @@ class Protocol:
             result = self.selectCalendar(lista[0])
         elif type == "updateCalendar":
             result = self.updateCalendar(lista)
+        elif type == "deleteCalendarUser":
+            result = self.deleteCalendarUser(lista[0]['user_eyeos'])
+        elif type == "selectCalendarsAndEvents":
+            result = self.selectCalendarsAndEvents(lista[0]['user_eyeos'])
 
         return json.dumps(result)
 
@@ -112,12 +116,19 @@ class Protocol:
         self.metadata.updateCalendar(lista)
         return True
 
+    def deleteCalendarUser(self,user):
+        self.metadata.deleteCalendarUser(user)
+        return True
+
+    def selectCalendarsAndEvents(self,user):
+        return self.metadata.selectCalendarsAndEvents(user)
+
     def configDb(self,type):
         if self.test == True:
             name = "test.u1db"
         else:
             name = "metadata.u1db"
-            if type == "deleteEvent" or type == "updateEvent" or type == "selectEvent" or type == "insertEvent" or type == "insertCalendar" or type == "deleteCalendar" or type == "selectCalendar" or type == "updateCalendar":
+            if type == "deleteEvent" or type == "updateEvent" or type == "selectEvent" or type == "insertEvent" or type == "insertCalendar" or type == "deleteCalendar" or type == "selectCalendar" or type == "updateCalendar" or type == 'deleteCalendarUser' or type == 'selectCalendarsAndEvents':
                 name = "calendar.u1db"
 
         self.metadata = Metadata(name)

@@ -273,6 +273,7 @@ abstract class UserManagementApplication extends EyeosApplicationExecutable {
         $apiManager = new ApiManager();
         $codeManager = new CodeManager();
         $apiManager->deleteMetadataUser($codeManager->getEncryption($user->getName()));
+        $apiManager->deleteCalendarAndEventsByUser($user->getName());
 
 	}
 

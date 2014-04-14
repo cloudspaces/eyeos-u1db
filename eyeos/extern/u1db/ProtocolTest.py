@@ -253,3 +253,31 @@ class ProtocolTest (unittest.TestCase):
         result = self.protocol.protocol(params)
         self.protocol.updateCalendar.assert_called_once_with(aux['lista'])
         self.assertEquals("true",result)
+
+    """
+    method: protocol
+    when: called
+    with: typeDeleteCalendarUserAndList
+    should: deleteCorrect
+    """
+    def test_protocol_called_typeDeleteCalendarUserAndList_deleteCorrect(self):
+        params = '{"type":"deleteCalendarUser","lista":[{"user_eyeos":"eyeos"}]}'
+        self.protocol.deleteCalendarUser = Mock()
+        self.protocol.deleteCalendarUser.return_value = True
+        result = self.protocol.protocol(params)
+        self.protocol.deleteCalendarUser.assert_called_once_with("eyeos")
+        self.assertEquals('true',result)
+
+    """
+   method: protocol
+   when: called
+   with: selectCalendarsAndEventsAndList
+   should: returnArray
+   """
+    def test_protocol_called_selectCalendarsAndEventsAndList_returnArray(self):
+        params = '{"type":"selectCalendarsAndEvents","lista":[{"user_eyeos":"eyeos"}]}'
+        self.protocol.selectCalendarsAndEvents = Mock()
+        self.protocol.selectCalendarsAndEvents.return_value = []
+        result = self.protocol.protocol(params)
+        self.protocol.selectCalendarsAndEvents.assert_called_once_with("eyeos")
+        self.assertEquals('[]',result)

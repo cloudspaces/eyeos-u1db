@@ -162,7 +162,6 @@ class Metadata:
             calendar = self.getCalendar(data)
             if len(calendar) > 0:
                 file = calendar[0]
-                file.set_json(json.dumps(data))
                 file.content['status'] = 'DELETED'
                 self.db.put_doc(file)
                 self.db.create_index("by-event", "type","user_eyeos","calendar")
@@ -196,4 +195,16 @@ class Metadata:
             self.db.sync(self.url)
         except:
             pass
+
+    def deleteCalendarUser(self,user):
+        self.deleteMetadataUser(user)
+
+    def selectCalendarsAndEvents(self,user):
+        result = []
+        self.db.create_index("by-userStatus", "user_eyeos","status")
+        files = self.db.get_from_index("by-userStatus",user,"NEW")
+        if len(files) > 0:
+            for file in files:
+                result.append(file.content)
+        return result
 

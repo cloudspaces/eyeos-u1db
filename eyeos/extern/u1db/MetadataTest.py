@@ -239,7 +239,7 @@ class MetadataTest (unittest.TestCase):
         for file in files[1]:
             results.append(file.content)
         results.sort()
-        self.assertEquals(self.getArrayDeleteCalendarAndEvents(),results)
+        self.assertEquals(self.getArrayDeleteCalendarAndEvents("DELETED"),results)
 
     """
     method: selectCalendar
@@ -268,6 +268,39 @@ class MetadataTest (unittest.TestCase):
         self.sut.updateCalendar(arrayUpdate)
         calendar = self.sut.getCalendar({u'type':u'calendar',u'user_eyeos':u'eyeos',u'name':u'personal'})
         self.assertEquals(arrayUpdate[0],calendar[0].content)
+
+    """
+    method: deleteCalendarUser
+    when: called
+    with: user
+    should: deleteCorrect
+    """
+    def test_deleteCalendarUser_called_user_deleteCorrect(self):
+        calendars = self.getArrayInsertCalendar()
+        self.sut.insertCalendar(calendars)
+        events = self.getArrayInsertCalendarEvents()
+        self.sut.insertEvent(events)
+        self.sut.deleteCalendarUser('eyeos')
+        files = self.sut.db.get_all_docs()
+        self.assertEquals(0,len(files[1]))
+
+    """
+    method: selectCalendarsAndEvents
+    when: called
+    with: user
+    should: returnArray
+    """
+    def test_selectCalendarsAndEvents_called_user_returnArray(self):
+        calendars = self.getArrayInsertCalendar()
+        self.sut.insertCalendar(calendars)
+        self.sut.insertCalendar([{u'type':u'calendar',u'user_eyeos':u'eyeos',u'name':u'class',u'status':u'DELETED'}])
+        events = self.getArrayInsertCalendarEvents()
+        self.sut.insertEvent(events)
+        self.sut.insertEvent([{u'type':u'event',u'user_eyeos': u'eyeos',u'calendar': u'class',u'status':u'DELETED', u'isallday': u'0', u'timestart': u'201419160000', u'timeend':u'201419170000', u'repetition': u'None', u'finaltype': u'1', u'finalvalue': u'0', u'subject': u'Visita Médico', u'location': u'Barcelona', u'description': u'Llevar justificante'}])
+        files = self.sut.selectCalendarsAndEvents('eyeos')
+        files.sort()
+        self.assertEquals(self.getArrayDeleteCalendarAndEvents("NEW"),files)
+
 
     def getArrayInsert(self):
         array = [{u'user_eyeos': u'eyeos',u'status': None, u'mimetype': None, u'parent_file_id': u'null', u'checksum': None, u'filename': u'Root', u'is_root': True, u'version': None, u'file_id': u'null', u'is_folder': True, u'path': None, u'size': None, u'user': None},
@@ -346,13 +379,15 @@ class MetadataTest (unittest.TestCase):
         array.sort()
         return array
 
-    def getArrayDeleteCalendarAndEvents(self):
-        array =[{u'type':u'calendar',u'user_eyeos':u'eyeos',u'name':u'personal',u'status':u'DELETED'},
-                {u'type':u'calendar',u'user_eyeos':u'eyeos',u'name':u'school',u'status':u'DELETED'},
-                {u'type':u'event',u'user_eyeos': u'eyeos',u'calendar': u'personal',u'status':u'DELETED', u'isallday': u'0', u'timestart': u'201419160000', u'timeend':u'201419170000', u'repetition': u'None', u'finaltype': u'1', u'finalvalue': u'0', u'subject': u'Visita Médico', u'location': u'Barcelona', u'description': u'Llevar justificante'},
-                {u'type':u'event',u'user_eyeos': u'eyeos',u'calendar': u'personal', u'status':u'DELETED',u'isallday': u'1', u'timestart': u'201420160000', u'timeend':u'201420170000', u'repetition': u'None', u'finaltype': u'1', u'finalvalue': u'0', u'subject': u'Excursión', u'location': u'Girona', u'description': u'Mochila'}]
+    def getArrayDeleteCalendarAndEvents(self,status):
+        array =[{u'type':u'calendar',u'user_eyeos':u'eyeos',u'name':u'personal',u'status':u'' + status + '',u'description':u'personal calendar',u'timezone':0},
+                {u'type':u'calendar',u'user_eyeos':u'eyeos',u'name':u'school',u'status':u'' + status +'',u'description':u'school calendar',u'timezone':0},
+                {u'type':u'event',u'user_eyeos': u'eyeos',u'calendar': u'personal',u'status':u'' + status +'', u'isallday': u'0', u'timestart': u'201419160000', u'timeend':u'201419170000', u'repetition': u'None', u'finaltype': u'1', u'finalvalue': u'0', u'subject': u'Visita Médico', u'location': u'Barcelona', u'description': u'Llevar justificante'},
+                {u'type':u'event',u'user_eyeos': u'eyeos',u'calendar': u'personal', u'status':u'' + status +'',u'isallday': u'1', u'timestart': u'201420160000', u'timeend':u'201420170000', u'repetition': u'None', u'finaltype': u'1', u'finalvalue': u'0', u'subject': u'Excursión', u'location': u'Girona', u'description': u'Mochila'}]
         array.sort()
         return array
+
+
 
 
 

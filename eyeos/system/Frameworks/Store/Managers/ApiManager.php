@@ -399,6 +399,14 @@ class ApiManager
         return json_decode($this->callProcessU1db("deleteCalendar",$calendarU1db));
     }
 
+    public function deleteCalendarAndEventsByUser($user)
+    {
+        $calendarU1db = array();
+        $calendarU1db['user_eyeos'] = $user;
+
+        return json_decode($this->callProcessU1db("deleteCalendarUser",$calendarU1db));
+    }
+
     public function search($array, $key, $value)
     {
         if (is_array($array)) {
