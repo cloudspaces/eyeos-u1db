@@ -570,7 +570,10 @@ qx.Class.define('eyeos.files.Controller', {
 					path: this.getModel().getCurrentPath()[1],
 					selected: this._getFilesFromIconViews(e.getData()),
 					checknum: this.getApplication().getChecknum()
-				}
+				};
+                if (this.__isStacksync(params.path)) {
+                    params.selected = this.__getFilesFromIconViewsStackSync(params.path,params.selected);
+                }
 				this.getSocialBarUpdater().selectionChanged(params);
 			}, this);
 
@@ -582,6 +585,18 @@ qx.Class.define('eyeos.files.Controller', {
 				this.getSocialBarUpdater().directoryChanged(params);
 			}, this);
 		},
+
+        __getFilesFromIconViewsStackSync: function(path,list)
+        {
+            for(var i=0; i<list.length; i++) {
+                var metadata = this.__getFileId(path,list[i].getName(),true);
+                if (metadata) {
+                    console.log(metadata)
+                    list[i].setSize(metadata.size);
+                }
+            }
+            return list;
+        },
 
 		_getFilesFromIconViews: function (iconViews) {
 			var filesArray = [];
@@ -1358,8 +1373,9 @@ qx.Class.define('eyeos.files.Controller', {
             this._timer = setTimeout(reffunction,10000);
         },
 
-        __getFileId: function(path,filename) {
+        __getFileId: function(path,filename,socialBar) {
             var fileId = null;
+            var metadata = null;
 
             if(this._metadatas.length >0) {
                 for(var i in this._metadatas) {
@@ -1368,6 +1384,7 @@ qx.Class.define('eyeos.files.Controller', {
                             for(var j in this._metadatas[i].metadata.contents) {
                                 if(this._metadatas[i].metadata.contents[j].filename === filename) {
                                     fileId = this._metadatas[i].metadata.contents[j].file_id;
+                                    metadata = this._metadatas[i].metadata.contents[j];
                                     break;
                                 }
                             }
@@ -1377,7 +1394,11 @@ qx.Class.define('eyeos.files.Controller', {
                 }
             }
 
-            return fileId;
+            if (socialBar) {
+                return metadata;
+            } else {
+                return fileId;
+            }
         },
 
         __getObjectDownloadStacksync: function(parent,path,name) {
