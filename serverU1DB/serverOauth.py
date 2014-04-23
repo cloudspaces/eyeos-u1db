@@ -7,6 +7,7 @@ import oauth
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from settings import settings
 from mongodb import mongoDb
+import sys, os
 
 
 class MockOAuthDataStore(oauth.OAuthDataStore):
@@ -166,7 +167,28 @@ class RequestHandler(BaseHTTPRequestHandler):
 
 #run(host='192.168.3.118', port=8080)
 
+
+def createPid(pid):
+    try:
+        file = open('/var/run/serverOauth.pid', 'w')
+        file.write(str(pid))
+        file.close()
+    except IOError as e:
+        print >>sys.stderr, "Error create file pid:%d (%s)" % (e.errno, e.strerror)
+        os.kill(int(pid), 9)
+        sys.exit(0)
+
 try:
+
+    try:
+        pid = os.fork()
+        if pid > 0:
+            createPid(str(pid))
+            sys.exit(0)
+    except OSError, e:
+        print >>sys.stderr, "fork #1 failed: %d (%s)" % (e.errno, e.strerror)
+        sys.exit(1)
+
     server = HTTPServer((settings['Server']['host'], settings['Server']['port']), RequestHandler)
     print 'Test server running...'
     server.serve_forever()

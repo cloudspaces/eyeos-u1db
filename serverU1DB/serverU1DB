@@ -1,0 +1,78 @@
+#!/bin/bash
+
+PID_FILE=/var/run/serverU1DB.pid
+
+start(){
+ if [ -f $PID_FILE ];
+ then
+     echo -e -n "\nServer U1db is running\n"
+ else
+    echo -e -n "\nStarting server U1DB\n"
+
+    CONFIG_FILE="/etc/default/U1DBServe"
+    if [ -r $CONFIG_FILE ]; then
+
+        port=$(cat $CONFIG_FILE | grep PORT | awk -F"=" '{ print $2 }')
+        working_dir=$(cat $CONFIG_FILE | grep WORKING_DIR | awk -F"=" '{ print $2 }')
+
+        let size_port=${#port}
+        let size_working_dir=${#working_dir}
+
+        if [ $size_port -gt 0 -a $size_working_dir -gt 0 ]; then
+              python /usr/local/src/serverU1DB/u1db-serve.py --port=$port --working-dir=$working_dir 1> /dev/null
+              RETVAL=$?
+        fi
+    else
+        echo "No existe fichero de configuracion en Path:$CONFIG_FILE"
+    fi
+ fi
+}
+
+stop(){
+ if [ -f $PID_FILE ];
+ then
+    echo -e -n "\nStopping server U1db\n"
+    PID=$(cat $PID_FILE)
+    kill -9 ${PID}
+    rm $PID_FILE
+    RETVAL=$?
+ else
+    echo -e -n "\nServer U1db is not running\n"
+ fi
+}
+
+restart(){
+ stop
+ sleep 5
+ start
+}
+
+status(){
+    if [ -f $PID_FILE ]; then
+        echo -e -n "\nServer U1db is running\n"
+    else
+        echo -e -n "\nServer U1db is not running\n"
+    fi
+}
+
+# Dependiendo del parametro que se le pase
+#start - stop - restart ejecuta la función correspondiente.
+case "$1" in
+start)
+ start
+ ;;
+stop)
+ stop
+ ;;
+restart)
+ restart
+ ;;
+status)
+ status
+ ;;
+*)
+ echo $"Usar: $0 {start|stop|restart|status}"
+ exit 1
+esac
+
+exit 0
