@@ -5,7 +5,7 @@ settings = {
 		"name":"oauth"
 	},
 	"Server":{
-		"host":"localhost",
+		"host":"192.168.3.118",
 		"port":8080
 	},
 	"Urls":{
@@ -18,5 +18,8 @@ settings = {
 	"VERIFIER":"verifier",
 	"token": {
 		"expires":86400
-	}
+	},
+    "U1DB": {
+        "path":"/var/lib/u1db/"
+    }
 }

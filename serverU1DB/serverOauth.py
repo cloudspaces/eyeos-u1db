@@ -138,6 +138,11 @@ class RequestHandler(BaseHTTPRequestHandler):
                 self.oauth_server.data_store.request_token.getRequestToken(oauth_request.get_parameter('oauth_consumer_key'))
                 self.oauth_server.data_store.access_token.getResourceToken(oauth_request.get_parameter('oauth_consumer_key'),oauth_request.get_parameter('oauth_token'))
                 consumer, token, params = self.oauth_server.verify_request(oauth_request)
+
+                name = self.path.split('/', 2 )
+                database = settings['U1DB']['path'] + name[1]
+                os.system("/usr/local/src/serverU1DB/u1db-client init-db " + database)
+
                 url=settings['Urls']['RESOURCE_URL'] + self.path
                 result=urllib2.urlopen(url).read()
                 self.send_response(200, 'OK')

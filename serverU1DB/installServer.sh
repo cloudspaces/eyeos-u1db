@@ -82,6 +82,7 @@ echo -e -n $data > /etc/default/U1DBServe
 echo -e -n "Instalando servidor U1DB\n"
 PATH_SERVER="$dir_base/serverU1DB"
 PATH_SCRIPT="$dir_base/u1db-serve.py"
+PATH_CLIENT="$dir_base/u1db-client"
 cp $PATH_SERVER /etc/init.d/
 
 if [ ! -d "/usr/local/src/serverU1DB" ]; then
@@ -89,6 +90,7 @@ if [ ! -d "/usr/local/src/serverU1DB" ]; then
 fi
 
 cp $PATH_SCRIPT /usr/local/src/serverU1DB/
+cp $PATH_CLIENT /usr/local/src/serverU1DB/
 update-rc.d serverU1DB defaults
 /etc/init.d/serverU1DB start
 echo -e -n "Servidor U1DB instalado\n"
@@ -210,12 +212,15 @@ CONFIG_FILE="/etc/default/U1DBServe"
 if [ -r $CONFIG_FILE ]; then
     port=$(cat $CONFIG_FILE | grep PORT | awk -F"=" '{ print $2 }')
     let size_port=${#port}
-    if [ $size_port -gt 0 ]; then
+    working_dir=$(cat $CONFIG_FILE | grep WORKING_DIR | awk -F"=" '{ print $2 }')
+    let size_working_dir=${#working_dir}
+    if [ $size_port -gt 0 -a $size_working_dir -gt 0 ]; then
         data="settings = {\n\t\"MongoDb\":{\n\t\t\"host\":\"$HOSTMONGO\",\n\t\t\"port\":$PORTMONGO,\n\t\t\"name\":\"$DATABASE\"\n\t},"
         data+="\n\t\"Server\":{\n\t\t\"host\":\"$HOSTOAUTH\",\n\t\t\"port\":$PORTOAUTH\n\t},"
         data+="\n\t\"Urls\":{\n\t\t\"REQUEST_TOKEN_URL\":\"/request_token\",\n\t\t\"AUTHORIZATION_URL\":\"/authorize\",\n\t\t\"ACCESS_TOKEN_URL\":\"/access_token\",\n\t\t\"CALLBACK_URL\":\"http://$HOSTOAUTH:$PORTOAUTH/request_token_ready\",\n\t\t\"RESOURCE_URL\":\"http://localhost:$port\"\n\t},"
         data+="\n\t\"VERIFIER\":\"verifier\","
-        data+="\n\t\"token\": {\n\t\t\"expires\":$EXPIRES\n\t}\n}"
+        data+="\n\t\"token\": {\n\t\t\"expires\":$EXPIRES\n\t},"
+        data+="\n\t\"U1DB\": {\n\t\t\"path\":\"$working_dir\"\n\t}\n}"
         echo -e -n $data > "/usr/local/src/serverOauth/settings.py"
         cp "$dir_base/mongodb.py" /usr/local/src/serverOauth/
         cp "$dir_base/oauth.py" /usr/local/src/serverOauth/
