@@ -5,15 +5,18 @@ __author__ = 'root'
 import json
 import u1db
 import os
+from settings import settings
 
 class Metadata:
-    def __init__(self, name):
+    def __init__(self, name, creds=None):
         if name == "test.u1db":
             db = name
         else:
             db =  os.getcwd() + "/extern/u1db/" + name
         self.db = u1db.open(db, create=True)
-        self.url = "http://192.168.3.115:9000/" + name
+        #self.url = "http://192.168.3.118:8080/" + name
+        self.url = settings['Oauth']['sync'] + settings['Oauth']['server'] + ":" + str(settings['Oauth']['port']) + "/" + name
+        self.creds = creds
 
     def __del__(self):
         self.db.close()
@@ -189,7 +192,7 @@ class Metadata:
 
     def sync(self):
         try:
-            self.db.sync(self.url)
+            print(self.db.sync(self.url,creds=self.creds))
         except:
             pass
 

@@ -21,6 +21,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     private $filesProviderMock;
     private $sut;
     private $calendarManagerMock;
+    private $credentials;
 
     public function setUp()
     {
@@ -32,6 +33,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->filesProviderMock = $this->getMock("FilesProvider");
         $this->calendarManagerMock = $this->getMock('ICalendarManager');
         $this->sut = new ApiManager($this->accessorProviderMock,$this->apiProviderMock,$this->filesProviderMock,$this->calendarManagerMock);
+        $this->credentials = '{"credentials":{"token_key":"1234","token_secret":"ABCD","consumer_key":"keySebas","consumer_secret":"secretSebas"},"request_token":{"key":"HIJK","secret":"ABCD"},"verifier":"verifier"}';
     }
 
     public function tearDown()
@@ -453,9 +455,15 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     public function test_createEvent_called_event_calledU1dbUpdate()
     {
         $event = json_decode('[{"type":"event","user_eyeos": "eyeos","calendar": "personal", "status":"NEW", "isallday":"0", "timestart": "201419160000", "timeend":"201419170000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Visita Médico", "location": "Barcelona", "description": "Llevar justificante"},{"type":"event","user_eyeos": "eyeos","calendarid": "eyeID_Calendar_2b", "isallday": "1", "timestart": "201420160000", "timeend":"201420170000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Excursión", "location": "Girona", "description": "Mochila"}]}');
+
+        $this->accessorProviderMock->expects($this->once())
+            ->method('getProcessCredentials')
+            ->will($this->returnValue($this->credentials));
+
         $this->accessorProviderMock->expects($this->once())
             ->method('getProcessDataU1db')
             ->will($this->returnValue('true'));
+
         $this->sut->createEvent($event);
     }
 
@@ -525,6 +533,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $user = 'eyeos';
         $event['type'] = 'selectEvent';
         $event['lista'] = json_decode('[{"type":"event","user_eyeos":"eyeos","calendar":"personal"}]');
+        $event['credentials'] = json_decode('{"oauth":{"token_key":"1234","token_secret":"ABCD","consumer_key":"keySebas","consumer_secret":"secretSebas"}}');
 
         $calendar = $this->getCalendar('eyeID_Calendar_64', 'personal', 'personal\'s personal calendar.', 'eyeID_EyeosUser_63');
 
@@ -539,6 +548,10 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->will($this->returnValue($this->getEvents()));
 
         $this->accessorProviderMock->expects($this->at(0))
+            ->method('getProcessCredentials')
+            ->will($this->returnValue($this->credentials));
+
+        $this->accessorProviderMock->expects($this->at(1))
             ->method('getProcessDataU1db')
             ->with(json_encode($event))
             ->will($this->returnValue('[]'));
@@ -562,6 +575,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $user = 'eyeos';
         $event['type'] = 'selectEvent';
         $event['lista'] = json_decode('[{"type":"event","user_eyeos":"eyeos","calendar":"personal"}]');
+        $event['credentials'] = json_decode('{"oauth":{"token_key":"1234","token_secret":"ABCD","consumer_key":"keySebas","consumer_secret":"secretSebas"}}');
         $calendar = $this->getCalendar('eyeID_Calendar_64', 'personal', 'personal\'s personal calendar.', 'eyeID_EyeosUser_63');
 
         $eventsU1db = array();
@@ -583,6 +597,10 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->will($this->returnValue($eventsCalendar));
 
         $this->accessorProviderMock->expects($this->at(0))
+            ->method('getProcessCredentials')
+            ->will($this->returnValue($this->credentials));
+
+        $this->accessorProviderMock->expects($this->at(1))
             ->method('getProcessDataU1db')
             ->with(json_encode($event))
             ->will($this->returnValue(json_encode($eventsU1db)));
@@ -607,7 +625,11 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $event['type'] = 'insertEvent';
         $event['lista'] = array($this->getEventsU1db('eyeos','personal',"NEW",0,1494820800,1494820800,'None','n',1,0,"Clase","Barcelona","Ingles"));
 
-        $this->accessorProviderMock->expects($this->at(1))
+        $this->accessorProviderMock->expects($this->at(2))
+            ->method('getProcessCredentials')
+            ->will($this->returnValue($this->credentials));
+
+        $this->accessorProviderMock->expects($this->at(3))
             ->method('getProcessDataU1db')
             ->with(json_encode($event))
             ->will($this->returnValue('true'));
@@ -629,6 +651,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $event['type'] = 'selectCalendar';
         $event['lista'] = json_decode('[{"type":"calendar","user_eyeos":"eyeos"}]');
+        $event['credentials'] = json_decode('{"oauth":{"token_key":"1234","token_secret":"ABCD","consumer_key":"keySebas","consumer_secret":"secretSebas"}}');
         $calendars = array();
         array_push($calendars,$this->getCalendar('eyeID_Calendar_64', 'personal', 'personal\'s personal calendar.', 'eyeID_EyeosUser_63'));
         array_push($calendars,$this->getCalendar('eyeID_Calendar_65', 'school', 'school calendar.', 'eyeID_EyeosUser_63'));
@@ -638,6 +661,10 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->will($this->returnValue('eyeos'));
 
         $this->accessorProviderMock->expects($this->at(0))
+            ->method('getProcessCredentials')
+            ->will($this->returnValue($this->credentials));
+
+        $this->accessorProviderMock->expects($this->at(1))
             ->method('getProcessDataU1db')
             ->with(json_encode($event))
             ->will($this->returnValue('[]'));
@@ -648,8 +675,11 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->with($userMock)
             ->will($this->returnValue($calendars));
 
+        $this->accessorProviderMock->expects($this->at(3))
+            ->method('getProcessCredentials')
+            ->will($this->returnValue($this->credentials));
 
-        $this->accessorProviderMock->expects($this->at(2))
+        $this->accessorProviderMock->expects($this->at(4))
             ->method('getProcessDataU1db')
             ->will($this->returnValue('true'));
 
@@ -669,10 +699,12 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $event['type'] = 'selectCalendar';
         $event['lista'] = json_decode('[{"type":"calendar","user_eyeos":"eyeos"}]');
+        $event['credentials'] = json_decode('{"oauth":{"token_key":"1234","token_secret":"ABCD","consumer_key":"keySebas","consumer_secret":"secretSebas"}}');
 
         $calendarInsert = array();
         $calendarInsert['type'] = 'insertCalendar';
         $calendarInsert['lista'] = json_decode('[{"name":"people","type":"calendar","status":"NEW","user_eyeos":"eyeos","timezone":0,"description":"people calendar."}]');
+        $calendarInsert['credentials'] = json_decode('{"oauth":{"token_key":"1234","token_secret":"ABCD","consumer_key":"keySebas","consumer_secret":"secretSebas"}}');
 
         $calendars = array();
         array_push($calendars,$this->getCalendar('eyeID_Calendar_64', 'personal', 'personal\'s personal calendar.', 'eyeID_EyeosUser_63'));
@@ -697,6 +729,10 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->will($this->returnValue('eyeID_EyeosUser_63'));
 
         $this->accessorProviderMock->expects($this->at(0))
+            ->method('getProcessCredentials')
+            ->will($this->returnValue($this->credentials));
+
+        $this->accessorProviderMock->expects($this->at(1))
             ->method('getProcessDataU1db')
             ->with(json_encode($event))
             ->will($this->returnValue(json_encode($calendarsU1db)));
@@ -716,7 +752,11 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->calendarManagerMock->expects($this->at(3))
             ->method('deleteCalendar');
 
-        $this->accessorProviderMock->expects($this->at(1))
+        $this->accessorProviderMock->expects($this->at(2))
+            ->method('getProcessCredentials')
+            ->will($this->returnValue($this->credentials));
+
+        $this->accessorProviderMock->expects($this->at(3))
             ->method('getProcessDataU1db')
             ->with(json_encode($calendarInsert))
             ->will($this->returnValue("true"));
@@ -734,9 +774,13 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     {
         $user = 'eyeos';
         $calendar = $this->getCalendar('eyeID_Calendar_64', 'personal', 'personal\'s personal calendar.', 'eyeID_EyeosUser_63');
-        $calendarU1db = '{"type":"insertCalendar","lista":[{"type":"calendar","user_eyeos":"eyeos","name":"personal","description":"personal\'s personal calendar.","timezone":0,"status":"NEW"}]}';
+        $calendarU1db = '{"type":"insertCalendar","lista":[{"type":"calendar","user_eyeos":"eyeos","name":"personal","description":"personal\'s personal calendar.","timezone":0,"status":"NEW"}],"credentials":{"oauth":{"token_key":"1234","token_secret":"ABCD","consumer_key":"keySebas","consumer_secret":"secretSebas"}}}';
 
         $this->accessorProviderMock->expects($this->at(0))
+            ->method('getProcessCredentials')
+            ->will($this->returnValue($this->credentials));
+
+        $this->accessorProviderMock->expects($this->at(1))
             ->method('getProcessDataU1db')
             ->with($calendarU1db)
             ->will($this->returnValue("true"));
@@ -754,9 +798,13 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     {
         $user = 'eyeos';
         $calendar = 'personal';
-        $calendarU1db = '{"type":"deleteCalendar","lista":[{"type":"calendar","user_eyeos":"eyeos","name":"personal"}]}';
+        $calendarU1db = '{"type":"deleteCalendar","lista":[{"type":"calendar","user_eyeos":"eyeos","name":"personal"}],"credentials":{"oauth":{"token_key":"1234","token_secret":"ABCD","consumer_key":"keySebas","consumer_secret":"secretSebas"}}}';
 
         $this->accessorProviderMock->expects($this->at(0))
+            ->method('getProcessCredentials')
+            ->will($this->returnValue($this->credentials));
+
+        $this->accessorProviderMock->expects($this->at(1))
             ->method('getProcessDataU1db')
             ->with($calendarU1db)
             ->will($this->returnValue("true"));
@@ -773,8 +821,13 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     public function test_deleteCalendarAndEventsByUser_called_user_calledU1db()
     {
         $user = 'eyeos';
-        $calendarU1db = '{"type":"deleteCalendarUser","lista":[{"user_eyeos":"eyeos"}]}';
+        $calendarU1db = '{"type":"deleteCalendarUser","lista":[{"user_eyeos":"eyeos"}],"credentials":{"oauth":{"token_key":"1234","token_secret":"ABCD","consumer_key":"keySebas","consumer_secret":"secretSebas"}}}';
+
         $this->accessorProviderMock->expects($this->at(0))
+            ->method('getProcessCredentials')
+            ->will($this->returnValue($this->credentials));
+
+        $this->accessorProviderMock->expects($this->at(1))
             ->method('getProcessDataU1db')
             ->with($calendarU1db)
             ->will($this->returnValue("true"));

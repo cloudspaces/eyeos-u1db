@@ -96,7 +96,7 @@ class OAuthConsumer(object):
         secret = self.selectConsumer(key)
         if secret != None:
             self.key = key
-            self.secret = str(secret)
+            self.secret = secret
 
     def selectConsumer(self,key):
         return self.db.selectConsumer(key)
@@ -121,16 +121,16 @@ class OAuthToken(object):
         self.db = db
 
     def setKey(self,key):
-        self.key = str(key)
+        self.key = key
 
     def setSecret(self,secret):
-        self.secret = str(secret)
+        self.secret = secret
 
     def getRequestToken(self,consumerKey):
         requestToken = self.selectRequestToken(consumerKey)
         if requestToken != None:
-            self.key = str(requestToken['key'])
-            self.secret = str(requestToken['secret'])
+            self.key = requestToken['key']
+            self.secret = requestToken['secret']
 
     def selectRequestToken(self,consumerKey):
         return self.db.selectRequestToken(consumerKey)
@@ -138,8 +138,8 @@ class OAuthToken(object):
     def getAccessToken(self,consumerKey,requestToken):
         accessToken = self.getAccessTokenDb(consumerKey,requestToken)
         if accessToken != None:
-            self.key = str(accessToken['key'])
-            self.secret = str(accessToken['secret'])
+            self.key = accessToken['key']
+            self.secret = accessToken['secret']
 
     def getAccessTokenDb(self,consumerKey,requestToken):
         return self.db.getAccessToken(consumerKey,requestToken)
@@ -147,8 +147,8 @@ class OAuthToken(object):
     def getResourceToken(self,consumerKey,accessTokenKey):
         accessToken = self.getResourceTokenDb(consumerKey,accessTokenKey)
         if accessToken != None:
-            self.key = str(accessToken['key'])
-            self.secret = str(accessToken['secret'])
+            self.key = accessToken['key']
+            self.secret = accessToken['secret']
 
     def getResourceTokenDb(self,consumerKey,accessToken):
         return self.db.getResourceToken(consumerKey,accessToken)
@@ -657,6 +657,7 @@ class OAuthSignatureMethod(object):
         built = self.build_signature(oauth_request, consumer, token)
         return built == signature
 
+
 class OAuthSignatureMethod_HMAC_SHA1(OAuthSignatureMethod):
 
     def get_name(self):
@@ -668,16 +669,10 @@ class OAuthSignatureMethod_HMAC_SHA1(OAuthSignatureMethod):
             escape(oauth_request.get_normalized_http_url()),
             escape(oauth_request.get_normalized_parameters()),
         )
-
-        """print(oauth_request.get_normalized_http_method())
-        print(oauth_request.get_normalized_http_url())
-        print(oauth_request.get_normalized_parameters())"""
-
         key = '%s&' % escape(consumer.secret)
         if token:
             key += escape(token.secret)
         raw = '&'.join(sig)
-
         return key, raw
 
     def build_signature(self, oauth_request, consumer, token):

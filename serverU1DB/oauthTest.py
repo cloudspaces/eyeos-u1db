@@ -1,8 +1,8 @@
 __author__ = 'root'
 
 import unittest
-from oauth import OAuthConsumer
-from oauth import OAuthToken
+from oauth_client import OAuthConsumer
+from oauth_client import OAuthToken
 from mock import Mock
 from mongodb import mongoDb
 

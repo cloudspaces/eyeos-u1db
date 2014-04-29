@@ -6,7 +6,8 @@ settings = {
 	},
 	"Server":{
 		"host":"192.168.3.118",
-		"port":8080
+		"port":8080,
+        "header": "http://"
 	},
 	"Urls":{
 		"REQUEST_TOKEN_URL":"/request_token",

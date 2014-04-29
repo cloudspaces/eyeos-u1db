@@ -14,9 +14,14 @@ class Protocol:
         aux = json.loads(params)
         type = aux["type"]
         lista = aux["lista"]
+        creds = None
+
+        if aux.has_key('credentials'):
+            creds = {'oauth':{'consumer_key':'' + str(aux['credentials']['oauth']['consumer_key']) + '','consumer_secret':'' + str(aux['credentials']['oauth']['consumer_secret']) + '','token_key':'' + str(aux['credentials']['oauth']['token_key']) + '','token_secret':'' + str(aux['credentials']['oauth']['token_secret']) + ''}}
+
         result = False
 
-        self.configDb(type)
+        self.configDb(type,creds)
 
         if type == "insert":
             result = self.insert(lista)
@@ -123,7 +128,7 @@ class Protocol:
     def selectCalendarsAndEvents(self,user):
         return self.metadata.selectCalendarsAndEvents(user)
 
-    def configDb(self,type):
+    def configDb(self,type,creds = None):
         if self.test == True:
             name = "test.u1db"
         else:
@@ -131,7 +136,7 @@ class Protocol:
             if type == "deleteEvent" or type == "updateEvent" or type == "selectEvent" or type == "insertEvent" or type == "insertCalendar" or type == "deleteCalendar" or type == "selectCalendar" or type == "updateCalendar" or type == 'deleteCalendarUser' or type == 'selectCalendarsAndEvents':
                 name = "calendar.u1db"
 
-        self.metadata = Metadata(name)
+        self.metadata = Metadata(name,creds)
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:

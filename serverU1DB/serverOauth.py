@@ -81,11 +81,11 @@ class RequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
 
-        print(self.command)
-        print(self.path)
+        """print(self.command)
+        print(self.path)"""
 
         postdata = None
-        if self.command == 'POST':
+        if self.command == 'POST' or self.command == 'PUT':
             try:
                 length = int(self.headers.getheader('content-length'))
                 postdata = self.rfile.read(length)
@@ -134,6 +134,8 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         if self.path.find('/sync-from/') != -1:
             try:
+                url = settings['Server']['header'] + settings['Server']['host'] + ":" + str(settings['Server']['port']) + self.path
+                oauth_request.http_url = url
                 self.oauth_server.data_store.consumer.getConsumer(oauth_request.get_parameter('oauth_consumer_key'))
                 self.oauth_server.data_store.request_token.getRequestToken(oauth_request.get_parameter('oauth_consumer_key'))
                 self.oauth_server.data_store.access_token.getResourceToken(oauth_request.get_parameter('oauth_consumer_key'),oauth_request.get_parameter('oauth_token'))
@@ -143,11 +145,28 @@ class RequestHandler(BaseHTTPRequestHandler):
                 database = settings['U1DB']['path'] + name[1]
                 os.system("/usr/local/src/serverU1DB/u1db-client init-db " + database)
 
-                url=settings['Urls']['RESOURCE_URL'] + self.path
-                result=urllib2.urlopen(url).read()
-                self.send_response(200, 'OK')
-                self.end_headers()
-                self.wfile.write(result)
+                handler = urllib2.HTTPHandler()
+                opener = urllib2.build_opener(handler)
+                url=settings['Urls']['RESOURCE_URL'] +  self.path
+                request = urllib2.Request(url, data=postdata)
+                request.headers = self.headers
+                request.get_method = lambda: self.command
+
+                try:
+                    connection = opener.open(request)
+                except urllib2.HTTPError,e:
+                    connection = e
+
+                if connection.code == 200:
+                    result = connection.read()
+                    self.send_response(200, 'OK')
+                    self.end_headers()
+                    self.wfile.write(result)
+                else:
+                    self.send_response(connection.code, 'KO')
+                    self.end_headers()
+
+
             except oauth.OAuthError, err:
                 self.send_oauth_error(err)
             except urllib2.HTTPError, err:
@@ -167,6 +186,9 @@ class RequestHandler(BaseHTTPRequestHandler):
         return
 
     def do_POST(self):
+        return self.do_GET()
+
+    def do_PUT(self):
         return self.do_GET()
 
 
@@ -193,7 +215,6 @@ try:
     except OSError, e:
         print >>sys.stderr, "fork #1 failed: %d (%s)" % (e.errno, e.strerror)
         sys.exit(1)
-
     server = HTTPServer((settings['Server']['host'], settings['Server']['port']), RequestHandler)
     print 'Test server running...'
     server.serve_forever()

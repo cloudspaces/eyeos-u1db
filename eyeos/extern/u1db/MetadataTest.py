@@ -10,7 +10,7 @@ from Metadata import Metadata
 class MetadataTest (unittest.TestCase):
 
     def setUp(self):
-        self.sut = Metadata("test.u1db")
+        self.sut = Metadata("test.u1db",{'oauth':{'token_key':'NKKN8XVZLP5X23X','token_secret':'59ZN54UEUD3ULRU','consumer_key':'keySebas','consumer_secret':'secretSebas'}})
 
     def tearDown(self):
         self.sut.db.close()

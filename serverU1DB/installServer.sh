@@ -216,7 +216,7 @@ if [ -r $CONFIG_FILE ]; then
     let size_working_dir=${#working_dir}
     if [ $size_port -gt 0 -a $size_working_dir -gt 0 ]; then
         data="settings = {\n\t\"MongoDb\":{\n\t\t\"host\":\"$HOSTMONGO\",\n\t\t\"port\":$PORTMONGO,\n\t\t\"name\":\"$DATABASE\"\n\t},"
-        data+="\n\t\"Server\":{\n\t\t\"host\":\"$HOSTOAUTH\",\n\t\t\"port\":$PORTOAUTH\n\t},"
+        data+="\n\t\"Server\":{\n\t\t\"host\":\"$HOSTOAUTH\",\n\t\t\"port\":$PORTOAUTH,\n\t\t\"header\":\"http://\"\n\t},"
         data+="\n\t\"Urls\":{\n\t\t\"REQUEST_TOKEN_URL\":\"/request_token\",\n\t\t\"AUTHORIZATION_URL\":\"/authorize\",\n\t\t\"ACCESS_TOKEN_URL\":\"/access_token\",\n\t\t\"CALLBACK_URL\":\"http://$HOSTOAUTH:$PORTOAUTH/request_token_ready\",\n\t\t\"RESOURCE_URL\":\"http://localhost:$port\"\n\t},"
         data+="\n\t\"VERIFIER\":\"verifier\","
         data+="\n\t\"token\": {\n\t\t\"expires\":$EXPIRES\n\t},"

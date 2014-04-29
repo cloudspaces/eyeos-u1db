@@ -8,7 +8,7 @@ start(){
      echo -e -n "\nServer Oauth is running\n"
  else
     echo -e -n "\nStarting server Oauth\n"
-    python /usr/local/src/serverOauth/serverOauth.py 1> /dev/null
+    python /usr/local/src/serverOauth/serverOauth.py > /dev/null 2>&1
     RETVAL=$?
  fi
 }
