@@ -19,7 +19,7 @@ start(){
         let size_working_dir=${#working_dir}
 
         if [ $size_port -gt 0 -a $size_working_dir -gt 0 ]; then
-              python /usr/local/src/serverU1DB/u1db-serve.py --port=$port --working-dir=$working_dir > /dev/null 2>&1
+              python /usr/local/src/serverU1DB/u1db-serve.py --port=$port --working-dir=$working_dir >> /var/log/serverU1DB.log 2>&1
               RETVAL=$?
         fi
     else
