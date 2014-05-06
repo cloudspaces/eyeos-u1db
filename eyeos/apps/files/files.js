@@ -1140,10 +1140,9 @@ qx.Class.define('eyeos.files.Controller', {
                         params = files;
                     }
 
-                    if(action == 'copy') {
-                        this.__createWindowProgress(params);
+                    if(action == 'copy' || action == 'move') {
+                        this.__createWindowProgress(params,action);
                     } else {
-
                         eyeos.callMessage(this.getApplication().getChecknum(), action, params, function (results) {
                             if((action == "copy" || action == "move") && stacksync === true) {
                                 this._browsePath(target);
@@ -1434,7 +1433,7 @@ qx.Class.define('eyeos.files.Controller', {
             }
         },
 
-        __createWindowProgress: function(params)  {
+        __createWindowProgress: function(params,action)  {
             if(!this.__progress) {
                 this.__size = 0;
                 this.closeTimer();
@@ -1494,16 +1493,22 @@ qx.Class.define('eyeos.files.Controller', {
                     pathOrig = params.files[0].substring(0,params.files[0].lastIndexOf('/'));
                 }
 
+                var deleteFiles = [];
+
                 eyeos.callMessage(this.getApplication().getChecknum(),'startProgress',params,function(result) {
                     if(result && result.metadatas && result.metadatas.length > 0) {
-                        this.__copyFile(result,result.metadatas.length - 1,params.folder,pathOrig);
+                        if(action == 'move') {
+                            deleteFiles = this.__getFilesDelete(result.metadatas,pathOrig);
+                        }
+
+                        this.__copyFile(result,result.metadatas.length - 1,params.folder,pathOrig,deleteFiles);
                     }
                 },this);
 
             }
         },
 
-        __copyFile: function(data,pos,dest,pathOrig)
+        __copyFile: function(data,pos,dest,pathOrig,deleteFiles)
         {
             if(pos > -1) {
                 var params = new Object();
@@ -1526,16 +1531,24 @@ qx.Class.define('eyeos.files.Controller', {
                     }*/
 
                     this.__size += 1;
-                    this.__updateProgress(data.metadatas.length);
+                    this.__updateProgress(data.metadatas.length + deleteFiles.length);
 
                     pos--;
-                    this.__copyFile(data,pos,dest,pathOrig);
+                    this.__copyFile(data,pos,dest,pathOrig,deleteFiles);
                 },this);
             } else {
-                var that = this;
-                var reffunction = function(){that.__closeProgressUser()};
-                this._timer = setTimeout(reffunction,2000);
+                if(deleteFiles.length == 0) {
+                    this.__closeProgress();
+                } else {
+                    this.__deleteComponent(deleteFiles,0,data.metadatas.length + deleteFiles.length);
+                }
             }
+        },
+
+        __closeProgress: function() {
+            var that = this;
+            var reffunction = function(){that.__closeProgressUser()};
+            this._timer = setTimeout(reffunction,2000);
         },
 
         __updateProgress: function(sizeTotal) {
@@ -1588,6 +1601,53 @@ qx.Class.define('eyeos.files.Controller', {
                 if(files[i].getAbsolutePath() === 'home://~'+ eyeos.getCurrentUserName()+'/Stacksync') {
                     files.splice(i,1);
                 }
+            }
+        },
+
+        __getFilesDelete: function(metadatas,pathOrig) {
+            console.log(metadatas);
+            console.log(pathOrig);
+            var files = [];
+
+            for(var i in metadatas) {
+                if(metadatas[i].file_id) {
+                    var path = pathOrig + "/";
+                    var stacksync = 'home://~'+ eyeos.getCurrentUserName()+'/Stacksync';
+                    path = path.substring(stacksync.length);
+
+                    if(path == metadatas[i].path) {
+                        var file = new Object();
+                        file.file = pathOrig + "/" + metadatas[i].filename;
+                        file.id = metadatas[i].file_id;
+                        files.push(file);
+                    }
+                } else {
+                    var path = metadatas[i].path.replace(/\\/g, '/').replace(/\/[^\/]*\/?$/, '');
+                    if(path == pathOrig) {
+                        var file = new Object();
+                        file.file = metadatas[i].path;
+                        files.push(file);
+                    }
+                }
+            }
+
+            return files;
+
+        },
+
+        __deleteComponent: function(deleteFiles,pos,sizeTotal) {
+            if(pos < deleteFiles.length) {
+                eyeos.callMessage(this.getApplication().getChecknum(),'delete',[deleteFiles[pos]],function() {
+                    this.__size += 1;
+                    this.__updateProgress(sizeTotal);
+
+                    pos++;
+
+                    this.__deleteComponent(deleteFiles,pos,sizeTotal);
+
+                },this);
+            } else {
+                this.__closeProgress();
             }
         }
 	}

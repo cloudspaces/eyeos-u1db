@@ -470,7 +470,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 	 * TODO: Will need to be moved/merged to/with FileSystemExecModule
 	 */
 	public static function move($params) {
-		$target = FSI::getFile($params['folder']);
+		/*$target = FSI::getFile($params['folder']);
         $apiManager = new ApiManager();
         $userName = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
         $stacksync = false;
@@ -564,8 +564,10 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 				$meta->set('listeners', null);
 				$target->setMeta($meta);
 			}
-			 */
-		}
+
+		}*/
+
+        Logger::getLogger('sebas')->error('MoverFicheros:' .json_encode($params));
 	}
 
 	/**
