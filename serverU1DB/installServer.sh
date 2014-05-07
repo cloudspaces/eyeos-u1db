@@ -18,11 +18,11 @@ function valid_ip()
     return $stat
 }
 
-echo -e -n "\nIniciando la instalacion del servidor U1DB"
-echo -e -n "\nConfiguración del servidor U1DB:\n"
+echo -e -n "\nStarting U1DB server installation"
+echo -e -n "\nU1DB server configuration:\n"
 
 while [ "$exit" != "Yes" ]; do
-    echo -e -n "Introduce puerto[ENTER]= "
+    echo -e -n "Enter port [ENTER]= "
     read PORT
     let SIZE=${#PORT}
     if [ $SIZE -gt 0 ]; then
@@ -32,10 +32,10 @@ while [ "$exit" != "Yes" ]; do
                 hasPort=true
                 exit="Yes"
             else
-                echo -e -n "Puerto no válido:$PORT\n"
+                echo -e -n "Invalid port:$PORT\n"
             fi
         else
-            echo -e -n "Puerto no válido:$PORT\n"
+            echo -e -n "Invalid port:$PORT\n"
         fi
     else
         exit="Yes"
@@ -48,12 +48,12 @@ fi
 
 exit="No"
 while [ "$exit" != "Yes" ]; do
-    echo -e -n "Introduce el path del servidor U1DB[ENTER]= "
+    echo -e -n "Enter U1DB server working directory [ENTER]= "
     read workingDirectory
     let SIZE=${#workingDirectory}
     if [ $SIZE -gt 0 ]; then
         if [ ! -d "$workingDirectory" ]; then
-            echo -e -n "No existe el path:$workingDirectory\n"
+            echo -e -n "Path not exists:$workingDirectory\n"
         else
             PATH=$(realpath -s $workingDirectory)
             hasWorkingDirectory=true
@@ -79,7 +79,7 @@ else
 fi
 echo -e -n $data > /etc/default/U1DBServe
 
-echo -e -n "Instalando servidor U1DB\n"
+echo -e -n "Installing U1DB server\n"
 PATH_SERVER="$dir_base/serverU1DB"
 PATH_SCRIPT="$dir_base/u1db-serve.py"
 PATH_CLIENT="$dir_base/u1db-client"
@@ -93,25 +93,25 @@ cp $PATH_SCRIPT /usr/local/src/serverU1DB/
 cp $PATH_CLIENT /usr/local/src/serverU1DB/
 update-rc.d serverU1DB defaults
 /etc/init.d/serverU1DB start
-echo -e -n "Servidor U1DB instalado\n"
+echo -e -n "Installed U1DB server\n"
 
 if [ ! -d "/usr/local/src/serverOauth" ]; then
     mkdir -p "/usr/local/src/serverOauth"
 fi
 
-echo -e -n "Iniciando instalacion server Oauth\n"
-echo -e -n "Configuracion MongoDb\n"
+echo -e -n "Starting Oauth server installation\n"
+echo -e -n "MongoDb configuration\n"
 
 exit="No"
 while [ "$exit" != "Yes" ]; do
-    echo -e -n "Introduce Host[ENTER]= "
+    echo -e -n "Enter Host[ENTER]= "
     read HOSTMONGO
     let SIZE=${#HOSTMONGO}
     if [ $SIZE -gt 0 ]; then
         if valid_ip $HOSTMONGO; then
             exit="Yes"
         else
-            echo -n -e "IP no válida:$HOSTMONGO\n"
+            echo -n -e "Invalid IP:$HOSTMONGO\n"
         fi
     else
         HOSTMONGO="localhost"
@@ -121,7 +121,7 @@ done
 
 exit="No"
 while [ "$exit" != "Yes" ]; do
-    echo -e -n "Introduce puerto[ENTER]= "
+    echo -e -n "Enter port[ENTER]= "
     read PORTMONGO
     let SIZE=${#PORTMONGO}
     if [ $SIZE -gt 0 ]; then
@@ -130,10 +130,10 @@ while [ "$exit" != "Yes" ]; do
             if [[ $PORTMONGO -gt 1000 ]] ; then
                 exit="Yes"
             else
-                echo -e -n "Puerto no válido:$PORTMONGO\n"
+                echo -e -n "Invalid port:$PORTMONGO\n"
             fi
         else
-            echo -e -n "Puerto no válido:$PORTMONGO\n"
+            echo -e -n "Invalid port:$PORTMONGO\n"
         fi
     else
         PORTMONGO=27017
@@ -141,25 +141,25 @@ while [ "$exit" != "Yes" ]; do
     fi
 done
 
-echo -e -n "Introduce nombre database[ENTER]= "
+echo -e -n "Enter database name[ENTER]= "
 read DATABASE
 let SIZE=${#DATABASE}
 if [ $SIZE -eq 0 ]; then
     DATABASE="oauth"
 fi
 
-echo -e -n "Configuración servidor Oauth\n"
+echo -e -n "Oauth server configuration\n"
 
 exit="No"
 while [ "$exit" != "Yes" ]; do
-    echo -e -n "Introduce Host[ENTER]= "
+    echo -e -n "Enter Host[ENTER]= "
     read HOSTOAUTH
     let SIZE=${#HOSTOAUTH}
     if [ $SIZE -gt 0 ]; then
         if valid_ip $HOSTOAUTH; then
             exit="Yes"
         else
-            echo -n -e "IP no válida:$HOSTOAUTH\n"
+            echo -n -e "Invalid IP:$HOSTOAUTH\n"
         fi
     else
         HOSTOAUTH="localhost"
@@ -169,7 +169,7 @@ done
 
 exit="No"
 while [ "$exit" != "Yes" ]; do
-    echo -e -n "Introduce puerto[ENTER]= "
+    echo -e -n "Enter port[ENTER]= "
     read PORTOAUTH
     let SIZE=${#PORTOAUTH}
     if [ $SIZE -gt 0 ]; then
@@ -178,10 +178,10 @@ while [ "$exit" != "Yes" ]; do
             if [[ $PORTOAUTH -gt 1000 ]] ; then
                 exit="Yes"
             else
-                echo -e -n "Puerto no válido:$PORTOAUTH\n"
+                echo -e -n "Invalid port:$PORTOAUTH\n"
             fi
         else
-            echo -e -n "Puerto no válido:$PORTOAUTH\n"
+            echo -e -n "Invalid port:$PORTOAUTH\n"
         fi
     else
         PORTOAUTH=8080
@@ -191,7 +191,7 @@ done
 
 exit="No"
 while [ "$exit" != "Yes" ]; do
-    echo -e -n "Introduce el intervalo de tiempo de la caducidad del token (en horas)[ENTER]="
+    echo -e -n "Enter the access token's expiration time (in hours) [ENTER]= "
     read EXPIRES
     let SIZE=${#EXPIRES}
     if [ $SIZE -gt 0 ]; then
@@ -200,7 +200,7 @@ while [ "$exit" != "Yes" ]; do
             exit="Yes"
             EXPIRES=$(($EXPIRES*3600))
         else
-            echo -e -n "Caducidad no válida:$EXPIRES\n"
+            echo -e -n "Invalid expiration time:$EXPIRES\n"
         fi
     else
         EXPIRES=86400
@@ -228,11 +228,11 @@ if [ -r $CONFIG_FILE ]; then
         cp "$dir_base/serverOauth" /etc/init.d/
         update-rc.d serverOauth defaults
         /etc/init.d/serverOauth start
-        echo -e -n "Servidor Oauth instalado\n"
+        echo -e -n "Oauth server installed\n"
     else
-         echo -e -n "No existe PORT en fichero de configuracion en Path:$CONFIG_FILE\n"
+         echo -e -n "No port in config file.Path:$CONFIG_FILE\n"
     fi
 else
-    echo -e -n "No existe fichero de configuracion en Path:$CONFIG_FILE\n"
+    echo -e -n "Not exists config file.Path:$CONFIG_FILE\n"
 fi
 
