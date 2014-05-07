@@ -345,10 +345,10 @@ abstract class UserManagementApplication extends EyeosApplicationExecutable {
 		$subject = $params['emailSubject'];
 		$body = sprintf($params['emailBody'], $url, $username, $password, $url, $url);
 
-		$headers  = 'MIME-Version: 1.0' . '\r\n';
-		$headers .= 'Content-type: text/html; charset=utf-8' . '\r\n';
-		$headers .= 'To: ' . $to . '\r\n';
-		$headers .= 'From: ' . $from . '\r\n';
+		$headers  = 'MIME-Version: 1.0' . "\r\n";
+		$headers .= 'Content-type: text/html; charset=utf-8' . "\r\n";
+		$headers .= 'To: ' . $to . "\r\n";
+		$headers .= "From: Eyeos <$from>\r\n";
 
 		mail($to, $subject, $body, $headers);
 	}

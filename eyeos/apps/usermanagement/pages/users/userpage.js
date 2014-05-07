@@ -34,7 +34,7 @@ qx.Class.define('eyeos.application.usermanagement.userpage', {
 
 	statics: {
 		NEWUSERMAILSUBJECT: tr('Your new eyeOS account was created'),
-		NEWUSERMAILBODY: tr('Welcome,\n A new eyeOS account was created for you on %s\nThis is your information to log on:\n Username: %s\nPassword: %s\n URL: %s\nPlease do not forget to change your password the first time you login.\n\n Sincerely,\n%s')
+		NEWUSERMAILBODY: tr('Welcome,<p>A new eyeOS account was created for you on %s</p><p>This is your information to log on:<br> Username: %s<br>Password: %s<br> URL: %s<br></p><p>Please do not forget to change your password the first time you login.</p><p>Sincerely,<br>%s</p>')
 	},
 	
 	properties: {
