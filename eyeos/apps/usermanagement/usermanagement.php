@@ -343,7 +343,7 @@ abstract class UserManagementApplication extends EyeosApplicationExecutable {
 		$password = $params['password'];
 
 		$subject = $params['emailSubject'];
-		$body = sprintf($params['emailBody'], $url, $username, $password, $url, $url);
+		$body = sprintf($params['emailBody'], $url, $url, $username, $password, $url, $url, $url, $url);
 
 		$headers  = 'MIME-Version: 1.0' . "\r\n";
 		$headers .= 'Content-type: text/html; charset=utf-8' . "\r\n";
