@@ -3,7 +3,7 @@
 <b>Table contents</b>
 
 <ul>
-    <li><a href='#Instalacion' style='font-family:verdana;font-size:14px;text-decoration:none'>Installation
+    <li><a href='#Instalacion' style='font-family:verdana;font-size:14px;text-decoration:none'>Installation</a>
         <ul>
             <li><a href='#Requisitos' style='font-family:verdana;font-size:14px;text-decoration:none'>Requirements</a></li>
             <li><a href='#Pasos' style='font-family:verdana;font-size:14px;text-decoration:none'>Step by step</a></li>
