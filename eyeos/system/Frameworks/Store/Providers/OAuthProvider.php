@@ -6,7 +6,7 @@
  * Time: 12:46
  */
 
-class OAuthProvider
+class OAuth_Provider
 {
     private $accessorProvider;
 

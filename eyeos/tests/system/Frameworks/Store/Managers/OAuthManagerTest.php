@@ -13,7 +13,7 @@ class OAuthManagerTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->oauthProviderMock = $this->getMock('OAuthProvider');
+        $this->oauthProviderMock = $this->getMock('OAuth_Provider');
         $this->sut = new OAuthManager($this->oauthProviderMock);
     }
 

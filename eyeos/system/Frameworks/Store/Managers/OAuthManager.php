@@ -13,7 +13,7 @@ class OAuthManager
     public function __construct($oauthProvider=NULL)
     {
         if(!$oauthProvider) {
-            $oauthProvider = new OAuthProvider();
+            $oauthProvider = new OAuth_Provider();
         }
         $this->oauthProvider = $oauthProvider;
     }
