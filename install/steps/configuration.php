@@ -33,7 +33,8 @@ function getContent() {
             '../eyeos/extras/EyeosEventsNotificationSQL/EyeosEventNotification.sql',
             '../eyeos/extras/LanguageAdminSQL/languageAdmin.sql',
             '../eyeos/extras/netSyncSQL/netSync.sql',
-            '../eyeos/extras/UrlShareSQL/UrlShareSQL.sql'
+            '../eyeos/extras/UrlShareSQL/UrlShareSQL.sql',
+            '../eyeos/extras/StoreSQL/StoreSQL.sql'
         );
 
         foreach($files as $file) {
