@@ -2,6 +2,9 @@
 
 abstract class FilesApplication extends EyeosApplicationExecutable {
 	public static function __run(AppExecutionContext $context, MMapResponse $response) {
+
+        if(self::singleInstanceCheck()) exit;
+
 		//if ($context->getIncludeBody()) {
 			$buffer = '';
 
@@ -22,6 +25,24 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 			$response->appendToBody($buffer);
 		//}
 	}
+
+    private static function singleInstanceCheck() {
+        $result = false;
+        $procList = ProcManager::getInstance()->getProcessesList();
+        $counter = 0;
+        foreach($procList as $proc) {
+            if($proc == 'files') {
+                $counter++;
+            }
+        }
+
+        if($counter > 1) {
+            $result = true;
+            $currentProc = ProcManager::getInstance()->getCurrentProcess();
+            ProcManager::getInstance()->kill($currentProc);
+        }
+        return $result;
+    }
 
 	private static final function object_to_array($mixed) {
 		if(is_object($mixed)) $mixed = (array) $mixed;
