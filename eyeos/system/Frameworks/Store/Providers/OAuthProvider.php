@@ -40,7 +40,7 @@ class OAuth_Provider
             }
         }
         if(isset($token) && isset($url) && isset($dateExpires)) {
-            return new Token($url,$token,$dateExpires);
+            return new OauthToken($url,$token,$dateExpires);
         } else {
             throw new EyeCurlException();
         }

@@ -1116,5 +1116,25 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
         return $params;
     }
+
+    public static function getToken()
+    {
+        $result = 0;
+        try {
+            $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
+            $apiManager =  new ApiManager();
+            $token = $apiManager->getTokenDB($user);
+
+            if(strlen($token->getToken()) > 0) {
+                $_SESSION['token_v2'] = $token->getToken();
+                $result = true;
+            }
+
+        } catch (Exception $e){
+            throw new Exception($e->getMessage());
+        }
+
+        return $result;
+    }
 }
 ?>

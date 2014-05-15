@@ -836,6 +836,24 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     }
 
 
+    /**
+     * method: getTokenDB
+     * when: called
+     * with: any
+     * should: returnToken
+     */
+    public function test_getTokenDB_called_any_returnToken()
+    {
+        $user = 'eyeID_EyeosUser_453';
+        $this->apiProviderMock->expects($this->once())
+            ->method("getToken")
+            ->with($user)
+            ->will($this->returnValue("ABCDSESSS"));
+
+        $this->sut->getTokenDB($user);
+    }
+
+
     private function exerciseGetMetadataWithoutData($path,$metadata, $fileId = NULL)
     {
         $this->apiProviderMock->expects($this->at(0))

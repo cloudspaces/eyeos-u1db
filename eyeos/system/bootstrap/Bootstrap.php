@@ -87,7 +87,7 @@ abstract class Bootstrap {
         include_once "../system/kernel/libs/exceptions/subclasses/SystemException.php";
         include_once "../system/Frameworks/Store/Managers/CodeManager.php";
         include_once "../system/Frameworks/Store/Providers/CodeProvider.php";
-        include_once "../system/Frameworks/Store/Providers/Data/Token.php";
+        include_once "../system/Frameworks/Store/Providers/Data/OauthToken.php";
         include_once "../system/Frameworks/Store/Managers/ApiManager.php";
         include_once "../system/Frameworks/Store/Providers/ApiProvider.php";
         include_once "../system/Frameworks/Store/Providers/FilesProvider.php";
@@ -102,6 +102,9 @@ abstract class Bootstrap {
         include_once "../system/Frameworks/Calendar/model/CalendarEvent.php";
         include_once "../system/Frameworks/Calendar/model/Calendar.php";
         include_once "../system/kernel/libs/utf8/mbstring/core.php";
+        include_once "../system/kernel/services/Storage/interface.php";
+        include_once "../system/kernel/services/Storage/implementations/Handlers/SQL/EyeosDAO.php";
+        include_once "../system/Frameworks/Store/TransferObjects/Token.php";
     }
 	
 	/**

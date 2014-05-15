@@ -17,6 +17,7 @@ require FRAMEWORK_STORE_PATH . '/Providers/ApiProvider.php';
 require FRAMEWORK_STORE_PATH . '/Providers/FilesProvider.php';
 require FRAMEWORK_STORE_PATH . '/Providers/Data/Settings.php';
 require FRAMEWORK_STORE_PATH . '/Providers/Data/OptionSetting.php';
-require FRAMEWORK_STORE_PATH . '/Providers/Data/Token.php';
+require FRAMEWORK_STORE_PATH . '/Providers/Data/OauthToken.php';
+require FRAMEWORK_STORE_PATH . '/TransferObjects/Token.php';
 
 ?>

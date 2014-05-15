@@ -9,11 +9,15 @@
 class ApiProvider
 {
     private $accessorProvider;
+    private $dao;
 
-    public function __construct(AccessorProvider $accessorProvider = NULL)
+    public function __construct(AccessorProvider $accessorProvider = NULL,EyeosDAO $dao = NULL)
     {
         if(!$accessorProvider) $accessorProvider = new AccessorProvider();
         $this->accessorProvider = $accessorProvider;
+
+        if(!$dao) $dao = new EyeosDAO();
+        $this->dao = $dao;
     }
 
     public function getMetadata($url, $tokenId, $fileId=NULL)
@@ -135,6 +139,16 @@ class ApiProvider
             }
         }
         return $result;
+    }
+
+    public function getToken($user)
+    {
+        $token = new Token();
+        $token->setUserId($user);
+        try {
+            $this->dao->read($token);
+        } catch(EyeResultNotFoundException $e) {}
+        return $token;
     }
 }
 

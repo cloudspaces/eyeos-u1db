@@ -9,6 +9,7 @@
 class ApiProviderTest extends PHPUnit_Framework_TestCase
 {
     private $accessorProviderMock;
+    private $daoMock;
     private $sut;
     private $url;
     private $token;
@@ -16,7 +17,8 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->accessorProviderMock = $this->getMock('AccessorProvider');
-        $this->sut = new ApiProvider($this->accessorProviderMock);
+        $this->daoMock = $this->getMock('EyeosDAO');
+        $this->sut = new ApiProvider($this->accessorProviderMock,$this->daoMock);
         $this->url = "https://cloudspaces.urv.cat:8080/v1/AUTH_6d3b65697d5048d5aaffbb430c9dbe6a";
         $this->token = '555555';
     }
@@ -146,6 +148,24 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
 
         $result = $this->sut->downloadFile($this->url,$this->token,$fileId);
         $this->assertEquals($content,$result);
+    }
+
+    /**
+     * method: getToken
+     * when: called
+     * with: user
+     * should: returnToken
+     */
+    public function test_getToken_called_user_returnToken()
+    {
+        $userId = 'eyeID_EyeosUser_453';
+        $token = new Token();
+        $token->setUserId($userId);
+        $this->daoMock->expects($this->once())
+            ->method("read")
+            ->with($token);
+
+        $this->sut->getToken($userId);
     }
 
     private function exerciseMetadata($metadataIn,$metadatOut,$fileId = NULL)
