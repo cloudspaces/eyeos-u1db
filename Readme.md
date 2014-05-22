@@ -106,7 +106,7 @@
         # java -version<br>
     </div>
     <div style='margin:0 auto'>
-        <img src="img/apache2_version.jpg"/>
+        <img src="img/java_version.jpg"/>
     </div>
 </p>
 <p style="margin-top:30px;margin-bottom:10px;font-family:verdana;font-size:12px;">
