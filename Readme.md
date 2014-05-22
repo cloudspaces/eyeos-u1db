@@ -3,7 +3,7 @@
 <b>Tabla de contenidos</b>
 
 <ul style='font-family:verdana;font-size:14px;'>
-    <li><a href='#Instalacion' style='text-decoration:none'>Instalación de eyeOS en Ubuntu</a>
+    <li><a href='#Instalacion' style='text-decoration:none'>Instalación de eyeOS en Ubuntu 12.04</a>
         <ul>
             <li><a href='#Requisitos' style='text-decoration:none'>Requisitos</a></li>
             <li><a href='#Eyeos' style='text-decoration:none'>Instalación eyeOS</a></li>
@@ -22,7 +22,7 @@
     <li></li>
 </ul>     
       
-<h2><a name=Instalacion>Instalación de eyeOS en Ubuntu</a></h2>
+<h2><a name=Instalacion>Instalación de eyeOS en Ubuntu 12.04</a></h2>
 <hr>
 <h3><a name=Requisitos>Requisitos</a></h3>
 <p style="margin-bottom:10px;font-family:verdana;font-size:12px;">
@@ -106,7 +106,7 @@
         # java -version<br>
     </div>
     <div style='margin:0 auto'>
-        <img src="img/apache2_version.jpg"/>
+        <img src="img/java_version.jpg"/>
     </div>
 </p>
 <p style="margin-top:30px;margin-bottom:10px;font-family:verdana;font-size:12px;">
