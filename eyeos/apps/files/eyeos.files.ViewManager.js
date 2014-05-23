@@ -38,18 +38,27 @@ qx.Class.define('eyeos.files.ViewManager', {
 		this.setController(controller);
 		this.setModel(model);
 		this.setKeyPress(false);
-		this._buildLayout();
+		/*this._buildLayout();
 		this._buildMenuBar();
 		this._buildToolBar();
 		this._buildSideBar();
 		this._buildContent();
-		this._addListeners();
+		this._addListeners();*/
 		this.set({
 			width: 800,
-			height: 450
+			height: 450,
+            contentPadding: 0,
+            layout: new qx.ui.layout.HBox()
 		});
+
 		this.open();
-                this.toggleShowStatusbar();
+                //this.toggleShowStatusbar();
+
+        this.addListener('resize',function() {
+             if(this._cursor) {
+                 this.centerCursor();
+             }
+        },this);
 	},
 
 	properties: {
@@ -76,6 +85,7 @@ qx.Class.define('eyeos.files.ViewManager', {
 		_toolBar: null,
 		_toolBarLayout: null,
 		_top: null,
+        _cursor: null,
 
 		close: function () {
 			var dBusListeners = this.getController()._dBusListeners
@@ -86,10 +96,29 @@ qx.Class.define('eyeos.files.ViewManager', {
 			this.base(arguments);
 		},
 
-		_buildLayout: function () {
+        initFiles: function() {
+            this._buildStacksync();
+            this._buildLayout();
+            this._buildMenuBar();
+            this._buildToolBar();
+            this._buildSideBar();
+            this._buildContent();
+            this._addListeners();
+            this.toggleShowStatusbar();
+        },
 
-			this.setContentPadding(0);
-			this.setLayout(new qx.ui.layout.HBox());
+        _buildStacksync: function() {
+            if(!this.getController().getToken()) {
+                for(var i in this.self(arguments).PLACES) {
+                    if(this.self(arguments).PLACES[i].label == 'Stacksync') {
+                        this.self(arguments).PLACES.splice(i,1);
+                        break;
+                    }
+                }
+            }
+        },
+
+		_buildLayout: function () {
 
 			this._socialBar = new eyeos.socialbar.SocialBar('#FFFFFF');
 
@@ -316,7 +345,236 @@ qx.Class.define('eyeos.files.ViewManager', {
 
 		resetAllSelected: function () { 
 			this._view.resetAllSelected();
-		}
+		},
+
+        showCursor: function() {
+            this._cursor = new qx.ui.basic.Image().set({
+                width: 42,
+                height: 42,
+                source: "index.php?extern=images/ajax-loader-1.gif"
+            });
+            this.add(this._cursor);
+            this.centerCursor();
+        },
+
+        closeCursor: function() {
+            this.remove(this._cursor);
+            this._cursor = null;
+        },
+
+        centerCursor: function() {
+            var widthParent = this.getBounds()?this.getBounds().width:this.getWidth();
+            var heightParent = this.getBounds()?this.getBounds().height:this.getHeight();
+            var widthImage = this._cursor.getWidth();
+            var heightImage = this._cursor.getHeight();
+
+            var left = (widthParent / 2) - (widthImage / 2);
+            var top = (heightParent / 2) - (heightImage / 2) - 30;
+
+            this._cursor.setMarginTop(top);
+            this._cursor.setMarginLeft(left);
+        },
+
+        createDialogStacksync:function() {
+
+            var dialog = new qx.ui.container.Composite().set({
+                layout: new qx.ui.layout.VBox(),
+                width: this.getWidth(),
+                allowGrowY: false
+            });
+
+            dialog.addListener('appear',function(e) {
+                var heightParent = this.getBounds()?this.getBounds().height:this.getHeight();
+                var heightDialog = e.getCurrentTarget().getBounds().height;
+                var top = (heightParent / 2) - (heightDialog / 2) - 80;
+                e.getCurrentTarget().setMarginTop(top);
+            },this);
+
+            var logo = new qx.ui.basic.Image().set({
+               source:  "index.php?extern=images/stacksync.png",
+               width: 100,
+               height: 100,
+               scale: true,
+               alignX: 'center'
+            });
+            dialog.add(logo);
+
+            var label = new qx.ui.basic.Label().set({
+               value: tr("Do you want to log on Stacksync?"),
+               font:  new qx.bom.Font(18, ['Arial', 'sans-serif']),
+               alignX: 'center',
+               marginTop: 20
+            });
+
+            dialog.add(label);
+
+            var containerButtons = new qx.ui.container.Composite().set({
+                layout: new qx.ui.layout.HBox(),
+                allowGrowX: false,
+                alignX: 'center',
+                marginTop: 20
+            });
+
+            var buttonOK = new qx.ui.form.Button().set({
+                label: tr('Yes'),
+                font:  new qx.bom.Font(12, ['Arial', 'sans-serif']),
+                marginRight: 40,
+                width: 60,
+                height: 30
+            });
+
+            buttonOK.addListener('execute',function() {
+                this.waitStackSync();
+            },this);
+
+            var buttonKO = new qx.ui.form.Button().set({
+                label: tr('No'),
+                font:  new qx.bom.Font(12, ['Arial', 'sans-serif']),
+                width: 60,
+                height: 30
+            });
+
+            buttonKO.addListener('execute',function() {
+                this.removeAll();
+                this.getController()._initFiles();
+            },this);
+
+            containerButtons.add(buttonOK);
+            containerButtons.add(buttonKO);
+
+            dialog.add(containerButtons);
+
+            this.add(dialog);
+        },
+        waitStackSync: function() {
+
+            this.removeAll();
+
+            var containerWait = new qx.ui.container.Composite().set({
+                layout: new qx.ui.layout.VBox(),
+                width: this.getWidth(),
+                allowGrowY: false
+            });
+
+            containerWait.addListener('appear',function(e) {
+                var heightParent = this.getBounds()?this.getBounds().height:this.getHeight();
+                var heightContainer = e.getCurrentTarget().getBounds().height;
+                var top = (heightParent / 2) - (heightContainer / 2) - 80;
+                e.getCurrentTarget().setMarginTop(top);
+            },this);
+
+            var logo = new qx.ui.basic.Image().set({
+                source:  "index.php?extern=images/stacksync.png",
+                width: 100,
+                height: 100,
+                scale: true,
+                alignX: 'center'
+            });
+            containerWait.add(logo);
+
+            var label = new qx.ui.basic.Label().set({
+                value: tr("Waiting StackSync"),
+                font:  new qx.bom.Font(18, ['Arial', 'sans-serif']),
+                alignX: 'center',
+                marginTop: 20
+            });
+
+            containerWait.add(label);
+
+            var cursor = new qx.ui.basic.Image().set({
+                width: 42,
+                height: 42,
+                source: "index.php?extern=images/ajax-loader-1.gif",
+                marginTop: 10
+            });
+
+            cursor.addListener('appear',function(e) {
+                var widthParent = this.getBounds()?this.getBounds().width:this.getWidth();
+                var widthCursor = e.getCurrentTarget().getBounds().width;
+                var left = (widthParent / 2) - (widthCursor / 2);
+                e.getCurrentTarget().setMarginLeft(left);
+            },this);
+
+            containerWait.add(cursor);
+
+            this.add(containerWait);
+
+            this.getController()._getTokenStacksync();
+
+        },
+        timeOutStakSync: function(message) {
+            this.removeAll();
+
+            var containerTimeout = new qx.ui.container.Composite().set({
+                layout: new qx.ui.layout.VBox(),
+                width: this.getWidth(),
+                allowGrowY: false
+            });
+
+            containerTimeout.addListener('appear',function(e) {
+                var heightParent = this.getBounds()?this.getBounds().height:this.getHeight();
+                var heightContainer = e.getCurrentTarget().getBounds().height;
+                var top = (heightParent / 2) - (heightContainer / 2) - 80;
+                e.getCurrentTarget().setMarginTop(top);
+            },this);
+
+            var logo = new qx.ui.basic.Image().set({
+                source:  "index.php?extern=images/stacksync.png",
+                width: 100,
+                height: 100,
+                scale: true,
+                alignX: 'center'
+            });
+            containerTimeout.add(logo);
+
+            var label = new qx.ui.basic.Label().set({
+                value: message,
+                font:  new qx.bom.Font(18, ['Arial', 'sans-serif']),
+                alignX: 'center',
+                marginTop: 20
+            });
+
+            containerTimeout.add(label);
+
+            var containerButtons = new qx.ui.container.Composite().set({
+                layout: new qx.ui.layout.HBox(),
+                allowGrowX: false,
+                alignX: 'center',
+                marginTop: 20
+            });
+
+            var buttonReload = new qx.ui.form.Button().set({
+                label: tr('Reload'),
+                font:  new qx.bom.Font(12, ['Arial', 'sans-serif']),
+                marginRight: 40,
+                width: 100,
+                height: 30
+            });
+
+            buttonReload.addListener('execute',function() {
+                 this.waitStackSync();
+            },this);
+
+            var buttonCancel = new qx.ui.form.Button().set({
+                label: tr('Cancel'),
+                font:  new qx.bom.Font(12, ['Arial', 'sans-serif']),
+                width: 100,
+                height: 30
+            });
+
+            buttonCancel.addListener('execute',function() {
+                this.removeAll();
+                this.getController()._initFiles();
+            },this);
+
+            containerButtons.add(buttonReload);
+            containerButtons.add(buttonCancel);
+
+            containerTimeout.add(containerButtons);
+
+            this.add(containerTimeout);
+
+        }
 	},
 
 	// function tr() to translate menus and toolbar isn't need here, because apply translate when items is constructing.
@@ -458,7 +716,7 @@ qx.Class.define('eyeos.files.ViewManager', {
                 label: 'Stacksync',
                 icon: 'index.php?extern=images/16x16/places/folder-txt.png',
                 path: 'home://~'+eyeos.getCurrentUserName()+'/Stacksync'
-            }, {
+            },{
 				label: 'Documents',
 				icon: 'index.php?extern=images/16x16/places/folder-txt.png',
 				path: 'home://~'+eyeos.getCurrentUserName()+'/Documents'

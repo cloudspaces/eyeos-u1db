@@ -853,6 +853,25 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->sut->getTokenDB($user);
     }
 
+    /**
+     * method: insertTokenDB
+     * when: called
+     * with: token
+     * should: returnCorrect
+     */
+    public function test_insertTokenDB_called_token_returnCorrect()
+    {
+        $token = new Token();
+        $token->setUserID('eyeID_EyeosUser_453');
+        $token->setTkey('ABCD');
+        $token->setTsecret('EFGH');
+        $this->apiProviderMock->expects($this->once())
+            ->method("insertToken")
+            ->with($token)
+            ->will($this->returnValue(true));
+        $this->sut->insertToken($token);
+    }
+
 
     private function exerciseGetMetadataWithoutData($path,$metadata, $fileId = NULL)
     {

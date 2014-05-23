@@ -132,7 +132,7 @@ class EyeosSQLLoginModule implements ILoginModule {
 
     private function getCredentials($user,$password)
     {
-        $oauthManager = new OAuthManager();
+        $oauthManager = new OAuthManagerOld();
         $settings = new Settings();
         $settings->setUrl(URL_CLOUDSPACE);
         $settings->setCustomRequest("POST");

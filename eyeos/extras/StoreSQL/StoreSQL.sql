@@ -12,8 +12,9 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 
 CREATE TABLE IF NOT EXISTS `token` (
   `userID` varchar(128) NOT NULL,
-  `token` varchar(25) NOT NULL,
+  `tkey` varchar(25) NOT NULL,
+  `tsecret` varchar(25) NOT NULL,
   PRIMARY KEY (`userID`),
-  UNIQUE KEY `token` (`token`)
+  UNIQUE KEY `tkey` (`tkey`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

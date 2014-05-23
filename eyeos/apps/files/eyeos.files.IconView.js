@@ -610,7 +610,11 @@ qx.Class.define('eyeos.files.IconView', {
 			var files = this.reorder(this.getViewManager().getModel().getCurrentFiles());
 			for (var i = 0; i < files.length; ++i) {
 				var item = new eyeos.files.IconViewItem(this, files[i]);
-				this._addItem(item);
+
+                if(!(!this.getViewManager().getController().getToken() && files[i].getAbsolutePath() === 'home://~'+ eyeos.getCurrentUserName()+'/Stacksync')) {
+                    this._addItem(item);
+                }
+
 			}
 		},
 
@@ -620,7 +624,9 @@ qx.Class.define('eyeos.files.IconView', {
 			for (var i = 0; i < files.length; ++i) {
 				if(files[i].getName().toUpperCase().indexOf(filter.toUpperCase()) >= 0) {
 					var item = new eyeos.files.IconViewItem(this, files[i]);
-					this._addItem(item);
+                    if(!(!this.getViewManager().getController().getToken() && files[i].getAbsolutePath() === 'home://~'+ eyeos.getCurrentUserName()+'/Stacksync')) {
+                        this._addItem(item);
+                    }
 				}
 			}
 		},

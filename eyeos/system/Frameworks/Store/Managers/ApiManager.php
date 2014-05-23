@@ -388,6 +388,11 @@ class ApiManager
         return $this->apiProvider->getToken($user);
     }
 
+    public function insertToken($token)
+    {
+        return $this->apiProvider->insertToken($token);
+    }
+
     public function insertCalendar($user,Calendar $calendar)
     {
         $credentials = $this->callProcessCredentials();

@@ -76,6 +76,8 @@ abstract class Bootstrap {
 
     public static function initTests() {
         setlocale(LC_ALL, 'en_US.utf8');
+        include_once "../system/Frameworks/Store/Managers/OAuthManagerOld.php";
+        include_once "../system/Frameworks/Store/Providers/OAuthProviderOld.php";
         include_once "../system/Frameworks/Store/Managers/OAuthManager.php";
         include_once "../system/Frameworks/Store/Providers/OAuthProvider.php";
         include_once "../system/Frameworks/Store/Providers/Data/Settings.php";

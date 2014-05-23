@@ -6,9 +6,11 @@
  * Time: 12:51
  */
 
+require FRAMEWORK_STORE_PATH . '/Managers/OAuthManagerOld.php';
 require FRAMEWORK_STORE_PATH . '/Managers/OAuthManager.php';
 require FRAMEWORK_STORE_PATH . '/Managers/CodeManager.php';
 require FRAMEWORK_STORE_PATH . '/Managers/ApiManager.php';
+require FRAMEWORK_STORE_PATH . '/Providers/OAuthProviderOld.php';
 require FRAMEWORK_STORE_PATH . '/Providers/OAuthProvider.php';
 require FRAMEWORK_STORE_PATH . '/Providers/AccessorProvider.php';
 require FRAMEWORK_STORE_PATH . '/Providers/CurlRequest.php';
