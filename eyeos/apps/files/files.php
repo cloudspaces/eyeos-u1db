@@ -1146,14 +1146,14 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
     public static function getTokenStacksync() {
         $oautManager = new OAuthManager();
+        $result['status'] = false;
         try {
             $request_token = $oautManager->getRequestToken();
             if($request_token) {
                  $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
                  $_SESSION['token'] = $request_token;
-                 $result['status'] = 'OK';
+                 $result['status'] = true;
                  $result['url'] = URL_CLOUDSPACE . "?userId=" . $user . "&oauth_token=" . $request_token->key;
-                 return $url;
             }
         } catch (Exception $e) {}
 
