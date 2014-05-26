@@ -58,6 +58,17 @@ class AccessorProvider
         Logger::getLogger('sebas')->error('PathPython:' . $path);
         return exec($path);
     }
+
+    public function getProcessOauthCredentials($json = NULL)
+    {
+        $path = "python '" . EXTERN_DIR . '/' . U1DB . "/OauthCredentials.py'";
+
+        if($json) {
+            $path .= " " .escapeshellarg($json);
+        }
+
+        return exec($path);
+    }
 }
 
 

@@ -2,8 +2,8 @@
 /**
  * Created by PhpStorm.
  * User: root
- * Date: 27/02/14
- * Time: 12:42
+ * Date: 23/05/14
+ * Time: 13:42
  */
 
 class OAuthManager
@@ -13,20 +13,21 @@ class OAuthManager
     public function __construct($oauthProvider=NULL)
     {
         if(!$oauthProvider) {
-            $oauthProvider = new OAuth_Provider();
+            $oauthProvider = new OAuthProvider_();
         }
         $this->oauthProvider = $oauthProvider;
     }
 
-    public function verifyUser($settings)
+    public function getRequestToken()
     {
-        return $this->oauthProvider->verifyUser($settings);
+        return $this->oauthProvider->getRequestToken();
     }
 
-    public function verifyDateExpireToken($dateExpire,$currentDate,$settings)
+    public function getAccessToken($token)
     {
-        return $this->oauthProvider->verifyDateExpireToken($dateExpire,$currentDate,$settings);
+        return $this->oauthProvider->getAccessToken($token);
     }
 }
+
 
 ?>

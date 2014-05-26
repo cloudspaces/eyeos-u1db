@@ -856,7 +856,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
     public static function verifyToken()
     {
-        $oauthManager = new OAuthManager();
+        $oauthManager = new OAuthManagerOld();
         $codeManager = new CodeManager();
         $settings = new Settings();
         $settings->setUrl(URL_CLOUDSPACE);
@@ -1121,12 +1121,19 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
     {
         $result = 0;
         try {
-            $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
-            $apiManager =  new ApiManager();
-            $token = $apiManager->getTokenDB($user);
+            if(!isset( $_SESSION['token_v2'])) {
+                $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
+                $apiManager =  new ApiManager();
+                $token = $apiManager->getTokenDB($user);
 
-            if(strlen($token->getToken()) > 0) {
-                $_SESSION['token_v2'] = $token->getToken();
+                if(strlen($token->getTkey()) > 0) {
+                    $aux = new stdClass();
+                    $aux->key = $token->getTkey();
+                    $aux->secret = $token->getTsecret();
+                    $_SESSION['token_v2'] = $aux;
+                    $result = true;
+                }
+            } else {
                 $result = true;
             }
 
@@ -1135,6 +1142,52 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         }
 
         return $result;
+    }
+
+    public static function getTokenStacksync() {
+        $oautManager = new OAuthManager();
+        try {
+            $request_token = $oautManager->getRequestToken();
+            if($request_token) {
+                 $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
+                 $_SESSION['token'] = $request_token;
+                 $result['status'] = 'OK';
+                 $result['url'] = URL_CLOUDSPACE . "?userId=" . $user . "&oauth_token=" . $request_token->key;
+                 return $url;
+            }
+        } catch (Exception $e) {}
+
+        return $result;
+    }
+
+    public static function getAccessStacksync($verifier)
+    {
+        try {
+            $oauthManager = new OAuthManager();
+            $apiManager = new ApiManager();
+            $token = new stdClass();
+            $token->token = new stdClass();
+            $token->token->key = $_SESSION['token']['key'];
+            $token->token->secret = $_SESSION['token']['secret'];
+            $token->verifier = $verifier;
+            $access_token = $oauthManager->getAccessToken($token);
+
+            if($access_token) {
+                $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
+                $tokenDB = new Token();
+                $tokenDB->setUserID($user);
+                $tokenDB->setTkey($token->token->key);
+                $tokenDB->setTsecret($token->token->secret);
+
+                if($apiManager->insertToken($tokenDB)) {
+                    $_SESSION['token_v2'] = $access_token;
+                    return true;
+                }
+            }
+        } catch (Exception $e) {}
+
+        return 0;
+
     }
 }
 ?>

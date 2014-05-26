@@ -168,6 +168,26 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->sut->getToken($userId);
     }
 
+    /**
+     * method: insertToken
+     * when: called
+     * with: token
+     * should: returnCorrect
+     */
+    public function test_insertToken_called_token_returnCorrect()
+    {
+        $token = new Token();
+        $token->setUserID('eyeID_EyeosUser_453');
+        $token->setTkey('ABCD');
+        $token->setTsecret('EFGH');
+        $this->daoMock->expects($this->once())
+            ->method('create')
+            ->with($token);
+
+        $result = $this->sut->insertToken($token);
+        $this->assertEquals(true,$result);
+    }
+
     private function exerciseMetadata($metadataIn,$metadatOut,$fileId = NULL)
     {
         $this->accessorProviderMock->expects($this->once())

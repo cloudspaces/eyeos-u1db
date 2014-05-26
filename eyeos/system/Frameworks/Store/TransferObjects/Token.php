@@ -9,22 +9,33 @@
 class Token
 {
     private $userID;
-    private $token;
+    private $tkey;
+    private $tsecret;
 
     /**
      * @param mixed $token
      */
-    public function setToken($token)
+    public function setTkey($tkey)
     {
-        $this->token = $token;
+        $this->tkey = $tkey;
     }
 
     /**
      * @return mixed
      */
-    public function getToken()
+    public function getTkey()
     {
-        return $this->token;
+        return $this->tkey;
+    }
+
+    public function setTsecret($tsecret)
+    {
+        $this->tsecret = $tsecret;
+    }
+
+    public function getTsecret()
+    {
+        return $this->tsecret;
     }
 
     /**

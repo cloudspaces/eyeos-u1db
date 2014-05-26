@@ -44,6 +44,7 @@ qx.Class.define('eyeos.files.Controller', {
 		
 		// SETTERS
 		this.setApplication(application);
+        this.setChecknum(checknum);
 
 		/*
 		 * We fill with a default path in case none is given
@@ -73,14 +74,21 @@ qx.Class.define('eyeos.files.Controller', {
 				false
 		));
 
+        this._getToken();
+
+        /*eyeos.callMessage(this.getApplication().getChecknum(), 'getToken', null, function (results) {
+
+        },this);*/
+
 		// Init SocialBarUpdater
-		var socialBarUpdater = new eyeos.files.SUManager(this.getView()._socialBar, checknum);
+		/*var socialBarUpdater = new eyeos.files.SUManager(this.getView()._socialBar, checknum);
 		this.setSocialBarUpdater(socialBarUpdater);
 		this._addSocialBarUpdaterListeners();
 		
-		this._browse(true);
+		this._browse(true);*/
 		//this.getView().maximize();
 	},
+
 
 	properties: {
 		application: {
@@ -98,7 +106,15 @@ qx.Class.define('eyeos.files.Controller', {
 		socialBarUpdater: {
 			check: 'eyeos.files.SocialBarUpdater',
 			init: null
-		}
+		},
+        token: {
+            check: 'Boolean',
+            init: false
+        },
+        checknum: {
+            init: null,
+            check: 'Integer'
+        }
 	},
 
 	members: {
@@ -111,6 +127,7 @@ qx.Class.define('eyeos.files.Controller', {
         _timer: null,
         __progress: null,
         __size: 0,
+        __stacksync: false,
 
 		_addListeners: function () {
 //			this.addListener('selectedFile', function (e) {
@@ -1649,6 +1666,65 @@ qx.Class.define('eyeos.files.Controller', {
             } else {
                 this.__closeProgress();
             }
+        },
+        _getToken: function() {
+            this.getView().showCursor();
+            eyeos.callMessage(this.getApplication().getChecknum(), 'getToken', null, function (result) {
+                this.getView().closeCursor();
+                if(result === true) {
+                    this.setToken(true);
+                    this._initFiles();
+                } else {
+                    this.getView().createDialogStacksync();
+                }
+            },this);
+        },
+        _initFiles: function() {
+             this.getView().initFiles();
+             var socialBarUpdater = new eyeos.files.SUManager(this.getView()._socialBar, this.getChecknum());
+             this.setSocialBarUpdater(socialBarUpdater);
+             this._addSocialBarUpdaterListeners();
+             this._browse(true);
+        },
+        _getTokenStacksync: function() {
+
+            this._dBus.removeListener('eyeos_stacksync_token',this.__authorizeUser,this);
+            this._dBus.addListener('eyeos_stacksync_token',this.__authorizeUser,this);
+
+            eyeos.callMessage(this.getApplication().getChecknum(), 'getTokenStacksync', null, function (result) {
+                if(result.status === true && result.url) {
+                    //window.open(result.url, '_new');
+                    var that = this;
+                    var reffunction = function(){that.__cancelStacksync()};
+                    setTimeout(reffunction,60000);
+                } else {
+                    this.getView().timeOutStakSync(tr("An error has occurred when processing request to Stacksync"));
+                    this._dBus.removeListener('eyeos_stacksync_token',this.__authorizeUser,this);
+                }
+            },this);
+        },
+
+        __cancelStacksync: function() {
+            if(!this.__stacksync) {
+                this.getView().timeOutStakSync(tr("Time out"));
+                this._dBus.removeListener('eyeos_stacksync_token',this.__authorizeUser,this);
+            }
+        },
+        __authorizeUser: function(e){
+            this.__stacksync = true;
+            var verifier = e.getData();
+            this._dBus.removeListener('eyeos_stacksync_token',this.__authorizeUser,this);
+
+            eyeos.callMessage(this.getApplication().getChecknum(), 'getAccessStacksync', verifier, function (result) {
+                if(result === true) {
+                    this.getView().removeAll();
+                    this.setToken(true);
+                    this._initFiles();
+                } else {
+                    this.getView().timeOutStakSync(tr("An error has occurred when processing request to Stacksync"));
+
+                }
+            },this);
         }
 	}
 });

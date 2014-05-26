@@ -26,7 +26,7 @@ class StoreListener extends AbstractFileAdapter implements ISharingListener {
 
     public function fileWritten(FileEvent $e)
     {
-        $oauthManager = new OAuthManager();
+        $oauthManager = new OAuthManagerOld();
         $codeManager = new CodeManager();
         $settings = new Settings();
         $settings->setUrl(URL_CLOUDSPACE);

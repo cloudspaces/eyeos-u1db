@@ -150,6 +150,19 @@ class ApiProvider
         } catch(EyeResultNotFoundException $e) {}
         return $token;
     }
+
+    public function insertToken($token)
+    {
+        try {
+            $this->dao->create($token);
+            return true;
+        } catch (Exception $e)
+        {
+            Logger::getLogger('sebas')->error('DaoSebas:' . $e->getMessage());
+        }
+
+        return false;
+    }
 }
 
 ?>
