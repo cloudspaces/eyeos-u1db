@@ -54,7 +54,7 @@ class StoreListener extends AbstractFileAdapter implements ISharingListener {
         $userName = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
         if(strpos($path,"home://~" . $userName . "/Stacksync") !== false) {
             $pathAbsolute = AdvancedPathLib::getPhpLocalHackPath($e->getSource()->getRealFile()->getAbsolutePath());
-            $apiManager = new ApiManager();
+            $apiManager = new ApiManagerOld();
             $file = fopen($pathAbsolute,"r");
             if($file) {
                 $len = strlen("home://~" . $userName . "/Stacksync");

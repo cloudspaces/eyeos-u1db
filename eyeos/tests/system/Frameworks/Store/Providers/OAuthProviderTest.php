@@ -11,11 +11,13 @@ class OAuthProviderTest extends PHPUnit_Framework_TestCase
     private $accessorProviderMock;
     private $sut;
     private $token;
+    private $daoMock;
 
     public function setUp()
     {
         $this->accessorProviderMock = $this->getMock('AccessorProvider');
-        $this->sut = new OAuthProvider_($this->accessorProviderMock);
+        $this->daoMock = $this->getMock('EyeosDAO');
+        $this->sut = new OAuthProvider_($this->accessorProviderMock,$this->daoMock);
         $this->token = new stdClass();
         $this->token->key = "ABCD";
         $this->token->secret = "EFG";
@@ -93,6 +95,66 @@ class OAuthProviderTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(null,$result);
     }
 
+    /**
+     * method: getToken
+     * when: called
+     * with: user
+     * should: returnToken
+     */
+    public function test_getToken_called_user_returnToken()
+    {
+        $userId = 'eyeID_EyeosUser_453';
+        $token = $this->getToken($userId);
+        $token->setUserId($userId);
+        $this->daoMock->expects($this->once())
+            ->method("read")
+            ->with($token);
+        $this->sut->getToken($userId);
+    }
+
+    /**
+     * method: insertToken
+     * when: called
+     * with: token
+     * should: returnCorrect
+     */
+    public function test_insertToken_called_token_returnCorrect()
+    {
+        $token = $this->getToken('eyeID_EyeosUser_453');
+        $token->setTkey('ABCD');
+        $token->setTsecret('EFGH');
+        $this->daoMock->expects($this->once())
+            ->method('create')
+            ->with($token);
+
+        $result = $this->sut->insertToken($token);
+        $this->assertEquals(true,$result);
+    }
+
+
+    /**
+     * method: deleteToken
+     * when: called
+     * with: user
+     * should: returnCorrect
+     */
+    public function test_deleteToken_called_user_returnCorrect()
+    {
+        $userId = 'eyeID_EyeosUser_453';
+        $token = $this->getToken($userId);
+        $this->daoMock->expects($this->once())
+            ->method('delete')
+            ->with($token);
+        $result = $this->sut->deleteToken($token);
+        $this->assertEquals(true,$result);
+    }
+
+    private function getToken($userId)
+    {
+        $token = new Token();
+        $token->setUserID($userId);
+        return $token;
+    }
 }
 
 ?>

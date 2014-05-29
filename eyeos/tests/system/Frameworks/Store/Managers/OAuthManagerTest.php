@@ -39,7 +39,6 @@ class OAuthManagerTest extends PHPUnit_Framework_TestCase
         $this->oauthProviderMock->expects($this->once())
             ->method('getRequestToken')
             ->will($this->returnValue($this->token));
-
         $this->sut->getRequestToken();
     }
 
@@ -57,6 +56,60 @@ class OAuthManagerTest extends PHPUnit_Framework_TestCase
             ->with($this->token)
             ->will($this->returnValue(json_encode('{"key":"JKLM","secret":"JYLM"}')));
         $this->sut->getAccessToken($this->token);
+    }
+
+
+    /**
+     * method: getToken
+     * when: called
+     * with: user
+     * should: returnToken
+     */
+    public function test_getToken_called_user_returnToken()
+    {
+        $user = 'eyeID_EyeosUser_453';
+        $this->oauthProviderMock->expects($this->once())
+            ->method("getToken")
+            ->with($user)
+            ->will($this->returnValue("ABCDSESSS"));
+
+        $this->sut->getToken($user);
+    }
+
+    /**
+     * method: insertToken
+     * when: called
+     * with: token
+     * should: returnCorrect
+     */
+    public function test_insertToken_called_token_returnCorrect()
+    {
+        $token = new Token();
+        $token->setUserID('eyeID_EyeosUser_453');
+        $token->setTkey('ABCD');
+        $token->setTsecret('EFGH');
+        $this->oauthProviderMock->expects($this->once())
+            ->method("insertToken")
+            ->with($token)
+            ->will($this->returnValue(true));
+        $this->sut->insertToken($token);
+    }
+
+    /**
+     * method: deleteToken
+     * when: called
+     * with: token
+     * should: returnCorrect
+     */
+    public function test_deleteToken_called_token_returnCorrect()
+    {
+        $token = new Token();
+        $token->setUserID('eyeID_EyeosUser_453');
+        $this->oauthProviderMock->expects($this->once())
+            ->method("deleteToken")
+            ->with($token)
+            ->will($this->returnValue(true));
+        $this->sut->deleteToken($token);
     }
 }
 

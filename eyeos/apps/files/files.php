@@ -278,7 +278,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 		$settings = MetaManager::getInstance()->retrieveMeta($currentUser);
 		$target = FSI::getFile($params['folder']);
 		$results = array();
-        $apiManager = new ApiManager();
+        $apiManager = new ApiManagerOld();
         $userName = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
         $stacksync = false;
 
@@ -419,7 +419,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 		$currentUser = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
 		$settings = MetaManager::getInstance()->retrieveMeta($currentUser);
 		$filesInfo = array();
-        $apiManager = new ApiManager();
+        $apiManager = new ApiManagerOld();
 		foreach ($params as $param) {
 			$fileToRemove = FSI::getFile($param['file']);
 			$filesInfo[] = $fileToRemove->getAbsolutePath();
@@ -478,7 +478,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
         if(count($params) === 3) {
             self::verifyToken();
-            $apiManager = new ApiManager();
+            $apiManager = new ApiManagerOld();
             $idParent = $params[2] === 'null'?NULL:$params[2];
             $apiManager->createFolder($dirToCreate->getName(),$idParent);
         }
@@ -624,7 +624,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 		$currentUser = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
 		$settings = MetaManager::getInstance()->retrieveMeta($currentUser);
 		$fileToRename = FSI::getFile($params[0]);
-        $apiManager = new ApiManager();
+        $apiManager = new ApiManagerOld();
         $stacksync = count($params) == 5?true:false;
 
         if($stacksync) {
@@ -721,7 +721,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         self::verifyToken();
         $path = $params['path'];
         $fileId = isset($params['fileId'])?$params['fileId']:null;
-        $apiManager = new ApiManager();
+        $apiManager = new ApiManagerOld();
         $result = $apiManager->getMetadata($path,$fileId);
         return $result;
     }
@@ -887,7 +887,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             throw new EyeMissingArgumentException('Missing or invalid file.');
         }
 
-        $apiManager = new ApiManager();
+        $apiManager = new ApiManagerOld();
         $source = FSI::getFile($params['path']);
         $content = $apiManager->downloadFile($params['file_id']);
         if(strlen($content) > 0) {
@@ -899,7 +899,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
     public static function startProgress($params)
     {
-        $apiManager = new ApiManager();
+        $apiManager = new ApiManagerOld();
         $metadatas = array();
         $result = array();
 
@@ -956,7 +956,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
     public static function copyFile($params)
     {
-        $apiManager = new ApiManager();
+        $apiManager = new ApiManagerOld();
         $userName = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
         $stacksync = false;
 
@@ -1121,16 +1121,16 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
     {
         $result = 0;
         try {
-            if(!isset( $_SESSION['token_v2'])) {
+            if(!isset( $_SESSION['access_token_v2'])) {
                 $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
-                $apiManager =  new ApiManager();
+                $apiManager =  new ApiManagerOld();
                 $token = $apiManager->getTokenDB($user);
 
                 if(strlen($token->getTkey()) > 0) {
                     $aux = new stdClass();
                     $aux->key = $token->getTkey();
                     $aux->secret = $token->getTsecret();
-                    $_SESSION['token_v2'] = $aux;
+                    $_SESSION['access_token_v2'] = $aux;
                     $result = true;
                 }
             } else {
@@ -1150,10 +1150,12 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         try {
             $request_token = $oautManager->getRequestToken();
             if($request_token) {
-                 $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
-                 $_SESSION['token'] = $request_token;
+                 $_SESSION['request_token_v2'] = $request_token;
+                 $url = URL_CLOUDSPACE ;
+                 $url =  'http://api.stacksync.com:8080/oauth/authorize?oauth_token=';
                  $result['status'] = true;
-                 $result['url'] = URL_CLOUDSPACE . "?userId=" . $user . "&oauth_token=" . $request_token->key;
+                 $result['url'] = $url . $request_token->key;
+                 $result['token'] = $request_token->key;
             }
         } catch (Exception $e) {}
 
@@ -1164,23 +1166,23 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
     {
         try {
             $oauthManager = new OAuthManager();
-            $apiManager = new ApiManager();
             $token = new stdClass();
             $token->token = new stdClass();
-            $token->token->key = $_SESSION['token']['key'];
-            $token->token->secret = $_SESSION['token']['secret'];
+            $token->token->key = $_SESSION['request_token_v2']->key;
+            $token->token->secret = $_SESSION['request_token_v2']->secret;
             $token->verifier = $verifier;
             $access_token = $oauthManager->getAccessToken($token);
 
             if($access_token) {
+                Logger::getLogger('sebas')->error('Token:' . json_encode($access_token));
                 $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
                 $tokenDB = new Token();
                 $tokenDB->setUserID($user);
-                $tokenDB->setTkey($token->token->key);
-                $tokenDB->setTsecret($token->token->secret);
+                $tokenDB->setTkey($access_token->key);
+                $tokenDB->setTsecret($access_token->secret);
 
-                if($apiManager->insertToken($tokenDB)) {
-                    $_SESSION['token_v2'] = $access_token;
+                if($oauthManager->insertToken($tokenDB)) {
+                    $_SESSION['access_token_v2'] = $access_token;
                     return true;
                 }
             }

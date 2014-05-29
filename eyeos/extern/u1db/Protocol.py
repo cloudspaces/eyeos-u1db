@@ -1,7 +1,7 @@
 __author__ = 'root'
 
 import json
-from Metadata import Metadata
+from Metadata_v1 import Metadata_v1
 import sys
 
 class Protocol:
@@ -26,7 +26,7 @@ class Protocol:
         if type == "insert":
             result = self.insert(lista)
         elif type == "select":
-            result = self.select(lista[0]["file_id"],lista[0]['user_eyeos'])
+            result = self.select(lista[0]["id"],lista[0]['user_eyeos'])
         elif type == "update":
             result = self.update(lista)
         elif type == "delete":
@@ -34,7 +34,7 @@ class Protocol:
         elif type == "parent":
             result = self.getParent(lista[0]['path'],lista[0]["folder"],lista[0]['user_eyeos'])
         elif type == "deleteFolder":
-            result = self.deleteFolder(lista[0]["file_id"],lista[0]['user_eyeos'])
+            result = self.deleteFolder(lista[0]["id"],lista[0]['user_eyeos'])
         elif type == "deleteMetadataUser":
             result = self.deleteMetadataUser(lista[0]['user_eyeos'])
         elif type == "selectMetadataUser":
@@ -136,11 +136,12 @@ class Protocol:
             if type == "deleteEvent" or type == "updateEvent" or type == "selectEvent" or type == "insertEvent" or type == "insertCalendar" or type == "deleteCalendar" or type == "selectCalendar" or type == "updateCalendar" or type == 'deleteCalendarUser' or type == 'selectCalendarsAndEvents':
                 name = "calendar.u1db"
 
-        self.metadata = Metadata(name,creds)
+        #self.metadata = Metadata_v1(name,creds)
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
-         protocol = Protocol()
-         print (protocol.protocol(str(sys.argv[1])))
+        protocol = Protocol()
+        print (protocol.protocol(str(sys.argv[1])))
     else:
         print ('false')
+

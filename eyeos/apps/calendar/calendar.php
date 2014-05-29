@@ -92,7 +92,7 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 		$newCalendar->setOwnerId($owner->getId());
 		CalendarManager::getInstance()->saveCalendar($newCalendar);
 
-        $apiManager = new ApiManager();
+        $apiManager = new ApiManagerOld();
         $apiManager->insertCalendar($owner->getName(),$newCalendar);
 		
 		// Use self::getCalendar() to retrieve the preferences at the same time
@@ -189,7 +189,7 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 				$newEventArr=CalendarManager::getInstance()->saveEvent($newEvent); // we create the events for remote through RemoteCalendarProvider
 			}
 
-            $apiManager = new ApiManager();
+            $apiManager = new ApiManagerOld();
             $apiManager->createEvent($u1dbEvent);
 		}
 				
@@ -224,7 +224,7 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 		$cal = CalendarManager::getInstance()->getCalendarById($params['calendarId']);
 		CalendarManager::getInstance()->deleteCalendar($cal);
 
-        $apiManager = new ApiManager();
+        $apiManager = new ApiManagerOld();
         $apiManager->deleteCalendar($owner->getName(),$cal->getName());
 
 		return  self::getAllUserCalendars($params);
@@ -270,7 +270,7 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
               } else {
                        CalendarManager::getInstance()->deleteEvent($event);
 
-                       $apiManager = new ApiManager();
+                       $apiManager = new ApiManagerOld();
                        $eventU1db = self::getEventU1db($params,"DELETED");
                        $apiManager->deleteEvent($eventU1db);
 
@@ -326,7 +326,7 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
             throw new EyeMissingArgumentException('Missing calendars');
         }
 
-        $apiManager = new ApiManager();
+        $apiManager = new ApiManagerOld();
         $codeManager = new CodeManager();
         $results = array();
 
@@ -388,7 +388,7 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 	 */
 	public static function getAllUserCalendars($params) {
 		$owner = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
-        $apiManager = new ApiManager();
+        $apiManager = new ApiManagerOld();
 		//$results = CalendarManager::getInstance()->getAllCalendarsFromOwner($owner);
         $results = $apiManager->synchronizeCalendars($owner);
 		$userId = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getid();
@@ -549,7 +549,7 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 	 * 		'...' => ...
 	 */
 	public static function updateEvent($params) {
-        $apiManager = new ApiManager();
+        $apiManager = new ApiManagerOld();
 		if (!isset($params['id']) || !is_string($params['id'])) {
 			throw new EyeMissingArgumentException('Missing or invalid $params[\'id\'].');
 		}
@@ -778,7 +778,7 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 			$eventId=CalendarManager::getInstance()->saveEvent($newEvent);
 
             $u1dbEvent = self::getEventU1db($params,"NEW",$timeStart,$timeEnd);
-            $apiManager = new ApiManager();
+            $apiManager = new ApiManagerOld();
             $apiManager->createEvent($u1dbEvent);
 
 			CalendarManager::getInstance()->saveEventInEventGroup($eventId,$eventGroupId);

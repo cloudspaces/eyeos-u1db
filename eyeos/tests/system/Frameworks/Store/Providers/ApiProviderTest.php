@@ -2,237 +2,461 @@
 /**
  * Created by PhpStorm.
  * User: root
- * Date: 5/03/14
+ * Date: 28/05/14
  * Time: 10:20
  */
 
 class ApiProviderTest extends PHPUnit_Framework_TestCase
 {
     private $accessorProviderMock;
-    private $daoMock;
     private $sut;
-    private $url;
     private $token;
+    private $exception;
+    private $permission;
 
     public function setUp()
     {
         $this->accessorProviderMock = $this->getMock('AccessorProvider');
-        $this->daoMock = $this->getMock('EyeosDAO');
-        $this->sut = new ApiProvider($this->accessorProviderMock,$this->daoMock);
-        $this->url = "https://cloudspaces.urv.cat:8080/v1/AUTH_6d3b65697d5048d5aaffbb430c9dbe6a";
-        $this->token = '555555';
+        $this->sut = new ApiProvider($this->accessorProviderMock);
+        $this->token = new stdClass();
+        $this->token->key = "ABCD";
+        $this->token->secret = "EFGH";
+        $this->exception = '{"error":-1}';
+        $this->permission = '{"error":403}';
     }
 
     public function tearDown()
     {
-
+        $this->accessorProviderMock = null;
+        $this->token = null;
     }
 
     /**
-     *method: getMetadata
+     * method: getMetadata
      * when: called
-     * with: urlAndToken
+     * with: tokenAndFileAndId
      * should: returnCorrectData
      */
-    public function test_getMetadata_called_urlAndToken_returnCorrectData()
+    public function test_getMetadata_called_tokenAndfileAndId_returnCorrectData()
     {
-        $metadataIn = '{"file_id":null,"parent_file_id":null,"filename":"root","path":null,"is_folder":true,"status":null,"user":null,"version":null,"checksum":null,"size":null,"mimetype":null,"is_root":true,"contents":[{"file_id":-7755273878059615652,"parent_file_id":null,"filename":"helpFolder","path":"/","is_folder":true,"status":"NEW","server_modified":"2013-11-11 15:40:45.784","client_modified":"2013-11-11 15:40:45.784","user":"web","version":1,"checksum":0,"size":0,"mimetype":"inode/directory","is_root":false},{"file_id":-5201053391767961053,"parent_file_id":null,"filename":"New File.txt","path":"/","is_folder":false,"status":"CHANGED","server_modified":"2013-11-26 16:00:06.308","client_modified":"2013-11-26 16:00:06.307","user":"web","version":20,"checksum":122290589,"size":8,"mimetype":"application/x-empty","chunks":[]},{"file_id":-3378160743781590173,"parent_file_id":null,"filename":"Bienvenido.txt","path":"/","is_folder":false,"status":"CHANGED","server_modified":"2013-12-12 13:49:46.262","client_modified":"2013-12-12 13:49:46.261","user":"web","version":6,"checksum":1705643629,"size":50,"mimetype":"application/x-empty","chunks":[]},{"file_id":-2705812544177220237,"parent_file_id":null,"filename":"images","path":"/","is_folder":true,"status":"NEW","server_modified":"2013-10-07 17:58:02.213","client_modified":"2013-07-10 17:42:19.0","user":"ast_cotes201310071757","version":1,"checksum":0,"size":4096,"mimetype":"inode/directory","is_root":false},{"file_id":-1478707423980200270,"parent_file_id":null,"filename":"Cloudspaces_trial","path":"/","is_folder":true,"status":"NEW","server_modified":"2013-12-10 22:53:21.052","client_modified":"2013-12-10 22:53:21.052","user":"web","version":1,"checksum":0,"size":0,"mimetype":"inode/directory","is_root":false},{"file_id":819819698545290447,"parent_file_id":null,"filename":"Documents","path":"/","is_folder":true,"status":"NEW","server_modified":"2013-11-18 13:48:51.269","client_modified":"2013-11-18 13:48:51.269","user":"web","version":1,"checksum":0,"size":0,"mimetype":"inode/directory","is_root":false},{"file_id":1977451714816609267,"parent_file_id":null,"filename":"test.txt","path":"/","is_folder":false,"status":"CHANGED","server_modified":"2013-12-03 12:04:49.392","client_modified":"2013-12-03 12:04:49.391","user":"web","version":5,"checksum":94306754,"size":5,"mimetype":"text/plain","chunks":[]},{"file_id":3894030578176289733,"parent_file_id":null,"filename":"hola","path":"/","is_folder":true,"status":"NEW","server_modified":"2013-11-18 12:11:35.656","client_modified":"2013-11-18 12:11:35.656","user":"web","version":1,"checksum":0,"size":0,"mimetype":"inode/directory","is_root":false},{"file_id":6377614534029818696,"parent_file_id":null,"filename":"testtt","path":"/","is_folder":true,"status":"NEW","server_modified":"2013-11-15 13:00:00.073","client_modified":"2013-11-15 13:00:00.073","user":"web","version":1,"checksum":0,"size":0,"mimetype":"inode/directory","is_root":false}]}';
-        $metadataOut = '{"file_id":"null","parent_file_id":"null","filename":"root","path":null,"is_folder":true,"status":null,"user":null,"version":null,"checksum":null,"size":null,"mimetype":null,"is_root":true,"contents":[{"file_id":-7755273878059615652,"parent_file_id":"null","filename":"helpFolder","path":"/","is_folder":true,"status":"NEW","server_modified":"2013-11-11 15:40:45.784","client_modified":"2013-11-11 15:40:45.784","user":"web","version":1,"checksum":0,"size":0,"mimetype":"inode/directory","is_root":false},{"file_id":-5201053391767961053,"parent_file_id":"null","filename":"New File.txt","path":"/","is_folder":false,"status":"CHANGED","server_modified":"2013-11-26 16:00:06.308","client_modified":"2013-11-26 16:00:06.307","user":"web","version":20,"checksum":122290589,"size":8,"mimetype":"application/x-empty","chunks":[]},{"file_id":-3378160743781590173,"parent_file_id":"null","filename":"Bienvenido.txt","path":"/","is_folder":false,"status":"CHANGED","server_modified":"2013-12-12 13:49:46.262","client_modified":"2013-12-12 13:49:46.261","user":"web","version":6,"checksum":1705643629,"size":50,"mimetype":"application/x-empty","chunks":[]},{"file_id":-2705812544177220237,"parent_file_id":"null","filename":"images","path":"/","is_folder":true,"status":"NEW","server_modified":"2013-10-07 17:58:02.213","client_modified":"2013-07-10 17:42:19.0","user":"ast_cotes201310071757","version":1,"checksum":0,"size":4096,"mimetype":"inode/directory","is_root":false},{"file_id":-1478707423980200270,"parent_file_id":"null","filename":"Cloudspaces_trial","path":"/","is_folder":true,"status":"NEW","server_modified":"2013-12-10 22:53:21.052","client_modified":"2013-12-10 22:53:21.052","user":"web","version":1,"checksum":0,"size":0,"mimetype":"inode/directory","is_root":false},{"file_id":819819698545290447,"parent_file_id":"null","filename":"Documents","path":"/","is_folder":true,"status":"NEW","server_modified":"2013-11-18 13:48:51.269","client_modified":"2013-11-18 13:48:51.269","user":"web","version":1,"checksum":0,"size":0,"mimetype":"inode/directory","is_root":false},{"file_id":1977451714816609267,"parent_file_id":"null","filename":"test.txt","path":"/","is_folder":false,"status":"CHANGED","server_modified":"2013-12-03 12:04:49.392","client_modified":"2013-12-03 12:04:49.391","user":"web","version":5,"checksum":94306754,"size":5,"mimetype":"text/plain","chunks":[]},{"file_id":3894030578176289733,"parent_file_id":"null","filename":"hola","path":"/","is_folder":true,"status":"NEW","server_modified":"2013-11-18 12:11:35.656","client_modified":"2013-11-18 12:11:35.656","user":"web","version":1,"checksum":0,"size":0,"mimetype":"inode/directory","is_root":false},{"file_id":6377614534029818696,"parent_file_id":"null","filename":"testtt","path":"/","is_folder":true,"status":"NEW","server_modified":"2013-11-15 13:00:00.073","client_modified":"2013-11-15 13:00:00.073","user":"web","version":1,"checksum":0,"size":0,"mimetype":"inode/directory","is_root":false}]}';
-        $this->exerciseMetadata($metadataIn,$metadataOut);
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"get","file":true,"id":123456,"contents":null}}';
+        $metadataOut = '{"name":"Client1.pdf","path":"/documents/clients/Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"DELETED","version":3,"parent":-348534824681,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}';
+        $this->exerciseGetMetadata($metadataIn,$metadataOut,$metadataOut,true,123456);
     }
 
     /**
-     *method: getMetadata
+     * method: getMetadata
      * when: called
-     * with: urlAndTokenAndFileid
+     * with: tokenAndFolderAndId
      * should: returnCorrectData
      */
-    public function test_getMetadata_called_urlAndTokenAndFileid_returnCorrectData()
+    public function test_getMetadata_called_tokenAndFolderAndId_returnCorrectData()
     {
-        $fileId = -1478707423980200270;
-        $metadataIn = '{"file_id":-1478707423980200270,"parent_file_id":null,"filename":"Cloudspaces_trial","path":"/","is_folder":true,"status":"NEW","server_modified":"2013-12-10 22:53:21.052","client_modified":"2013-12-10 22:53:21.052","user":"web","version":1,"checksum":0,"size":0,"mimetype":"inode/directory","is_root":false,"contents":[{"file_id":2681230491652302322,"parent_file_id":-1478707423980200270,"filename":"Cloudspaces demo text.txt","path":"/Cloudspaces_trial/","is_folder":false,"status":"CHANGED","server_modified":"2013-12-10 22:54:59.665","client_modified":"2013-12-10 22:54:59.664","user":"web","version":2,"checksum":3674040746,"size":299,"mimetype":"text/plain","chunks":[]},{"file_id":-2096699531480976652,"parent_file_id":-1478707423980200270,"filename":"Authentication.jpg","path":"/Cloudspaces_trial/","is_folder":false,"status":"CHANGED","server_modified":"2013-12-10 22:55:56.393","client_modified":"2013-12-10 22:55:56.392","user":"web","version":2,"checksum":2876523746,"size":574156,"mimetype":"image/jpeg","chunks":[]}]}';
-        $metadataOut = '{"file_id":-1478707423980200270,"parent_file_id":"null","filename":"Cloudspaces_trial","path":"/","is_folder":true,"status":"NEW","server_modified":"2013-12-10 22:53:21.052","client_modified":"2013-12-10 22:53:21.052","user":"web","version":1,"checksum":0,"size":0,"mimetype":"inode/directory","is_root":false,"contents":[{"file_id":2681230491652302322,"parent_file_id":-1478707423980200270,"filename":"Cloudspaces demo text.txt","path":"/Cloudspaces_trial/","is_folder":false,"status":"CHANGED","server_modified":"2013-12-10 22:54:59.665","client_modified":"2013-12-10 22:54:59.664","user":"web","version":2,"checksum":3674040746,"size":299,"mimetype":"text/plain","chunks":[]},{"file_id":-2096699531480976652,"parent_file_id":-1478707423980200270,"filename":"Authentication.jpg","path":"/Cloudspaces_trial/","is_folder":false,"status":"CHANGED","server_modified":"2013-12-10 22:55:56.393","client_modified":"2013-12-10 22:55:56.392","user":"web","version":2,"checksum":2876523746,"size":574156,"mimetype":"image/jpeg","chunks":[]}]}';
-        $this->exerciseMetadata($metadataIn,$metadataOut,$fileId);
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"get","file":false,"id":9873615,"contents":null}}';
+        $metadataOut = '{"name":"clients","path":"/documents/clients","id":9873615,"status":"NEW","version":1,"parent":-348534824681,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false}';
+        $this->exerciseGetMetadata($metadataIn,$metadataOut,$metadataOut,false,9873615);
     }
 
     /**
-     *method: createFile
+     * method: getMetadata
      * when: called
-     * with: urlAndTokenAndFilenameAndFileAndFilesize
+     * with: tokenAndFolderAndIdAndContents
+     * should: returnCorrectData
+     */
+    public function test_getMetadata_called_tokenAndFolderAndIdAndContents_returnCorrectData()
+    {
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"get","file":false,"id":9873615,"contents":true}}';
+        $metadataOut = '{"name":"clients","path":"/documents/clients","id":9873615,"status":"NEW","version":1,"parent":-348534824681,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"contents":[{"name":"Client1.pdf","path":"/documents/clients/Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"DELETED","version":3,"parent":-348534824681,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false}]}';
+        $this->exerciseGetMetadata($metadataIn,$metadataOut,$metadataOut,false,9873615,true);
+
+    }
+
+    /**
+     * method: getMetadata
+     * when: called
+     * with: tokenAndFolderAndId
+     * should: returnException
+     */
+    public function test_getMetadata_called_tokenAndFolderAndId_returnException()
+    {
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"get","file":false,"id":9873615,"contents":null}}';
+        $metadataOut = 'false';
+        $this->exerciseGetMetadata($metadataIn,$metadataOut,$this->exception,false,9873615);
+    }
+
+    /**
+     * method: getMetadata
+     * when: called
+     * with: tokenAndFolderAndId
+     * should: returnPermissionDenied
+     */
+    public function test_getMetadata_called_tokenAndFolderAndId_returnPermissionDenied()
+    {
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"get","file":false,"id":9873615,"contents":null}}';
+        $metadataOut = '403';
+        $this->exerciseGetMetadata($metadataIn,$metadataOut,$this->permission,false,9873615);
+    }
+
+    /**
+     * method: updateMetadata
+     * when: called
+     * with: tokenAndFileAndIdAndNameAndParent
+     * should: returnMetadataRename
+     */
+    public function test_updateMetadata_called_tokenAndFileAndIdAndNameAndParent_returnMetadataRename()
+    {
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":32565632156,"name":"Winter2012_renamed.jpg","parent":12386548974}}';
+        $metadataOut = '{"name":"Winter2012_renamed.jpg","path":"/documents/clients/Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent":12386548974,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}';
+        $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$metadataOut,true,32565632156,"Winter2012_renamed.jpg",12386548974);
+    }
+
+    /**
+     * method: updateMetadata
+     * when: called
+     * with: tokenAndFileAndIdAndParent
+     * should: returnMetadataMove
+     */
+    public function test_updateMetadata_called_tokenAndFileAndIdAndParent_returnMetadataMove()
+    {
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":32565632156,"name":null,"parent":123456}}';
+        $metadataOut = '{"name":"Winter2012_renamed.jpg","path":"/documents/clients/Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent":123456,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}';
+        $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$metadataOut,true,32565632156,null,123456);
+    }
+
+    /**
+     * method: updateMetadata
+     * when: called
+     * with: tokenAndFileAndId
+     * should: returnMetadataMove
+     */
+    public function test_updateMetadata_called_tokenAndFileAndId_returnMetadataMove()
+    {
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":32565632156,"name":null,"parent":null}}';
+        $metadataOut = '{"name":"Winter2012_renamed.jpg","path":"/documents/clients/Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}';
+        $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$metadataOut,true,32565632156);
+    }
+
+    /**
+     * method: updateMetadata
+     * when: called
+     * with: tokenAndFolderAndIdAndNameAndParent
+     * should: returnMetadataRename
+     */
+    public function test_updateMeta_called_tokenAndFolderAndIdAndNameAndParent_returnMetadataRename()
+    {
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":32565632156,"name":"Winter2012_renamed","parent":12386548974}}';
+        $metadataOut = '{"name":"Winter2012_renamed","path":"/documents/clients/Winter2012_renamed","id":32565632156,"status":"CHANGED","version":2,"parent":12386548974,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false}';
+        $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$metadataOut,false,32565632156,"Winter2012_renamed",12386548974);
+    }
+
+    /**
+     * method: updateMetadata
+     * when: called
+     * with: tokenAndFolderAndIdAndParent
+     * should: returnMetadataMove
+     */
+    public function test_updateMetadata_called_tokenAndFolderAndIdAndParent_returnMetadataMove()
+    {
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":32565632156,"name":null,"parent":123456}}';
+        $metadataOut = '{"name":"Winter2012_renamed","path":"/documents/clients/Winter2012_renamed","id":32565632156,"status":"CHANGED","version":2,"parent":123456,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false}';
+        $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$metadataOut,false,32565632156,null,123456);
+    }
+
+    /**
+     * method: updateMetadata
+     * when: called
+     * with: tokenAndFolderAndId
+     * should: returnMetadataMove
+     */
+    public function test_updateMetadata_called_tokenAndFolderAndId_returnMetadataMove()
+    {
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":32565632156,"name":null,"parent":null}}';
+        $metadataOut = '{"name":"Winter2012_renamed","path":"/documents/clients/Winter2012_renamed","id":32565632156,"status":"CHANGED","version":2,"parent":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false}';
+        $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$metadataOut,false,32565632156);
+    }
+
+    /**
+     * method: updateMetadata
+     * when: called
+     * with: tokenAndFolderAndId
+     * should: returnException
+     */
+    public function test_updateMetadata_called_tokenAndFolderAndId_returnException()
+    {
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":32565632156,"name":null,"parent":null}}';
+        $metadataOut = 'false';
+        $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$this->exception,false,32565632156);
+    }
+
+    /**
+     * method: updateMetadata
+     * when: called
+     * with: tokenAndFolderAndId
+     * should: returnPermissionDenied()
+     */
+    public function test_updateMetadata_called_tokenAndFolderAndId_returnPermissionDenied()
+    {
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":32565632156,"name":null,"parent":null}}';
+        $metadataOut = '403';
+        $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$this->permission,false,32565632156);
+    }
+
+    /**
+     * method: createMetadata
+     * when: called
+     * with: tokenAndFileAndNameAndParent
+     * should: returnCorrectData
+     */
+    public function test_createMetadata_called_tokenAndFileAndNameAndParent_returnCorrectData()
+    {
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":true,"name":"Client1.pdf","parent":-348534824681}}';
+        $metadataOut = '{"name":"Client1.pdf","path":"/documents/clients/Client1.pdf","id":32565632156,"parent":-348534824681,"user":"eyeos"}';
+        $this->exerciseCreateMetadata($metadataIn,$metadataOut,$metadataOut,true,'Client1.pdf',-348534824681);
+    }
+
+    /**
+     * method: createMetadata
+     * when: called
+     * with: tokenAndFileAndName
+     * should: returnCorrectData
+     */
+    public function test_createMetadata_called_tokenAndFileAndName_returnCorrectData()
+    {
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":true,"name":"Client1.pdf","parent":null}}';
+        $metadataOut = '{"name":"Client1.pdf","path":"/documents/clients/Client1.pdf","id":32565632156,"parent":null,"user":"eyeos"}';
+        $this->exerciseCreateMetadata($metadataIn,$metadataOut,$metadataOut,true,'Client1.pdf');
+    }
+
+    /**
+     * method: createMetadata
+     * when: called
+     * with: tokenAndFolderAndNameAndParent
+     * should: returnCorrectData
+     */
+    public function test_createMetadata_called_tokenAndFolderAndNameAndParent_returnCorrectData()
+    {
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"name":"clients","parent":-348534824681}}';
+        $metadataOut = '{"name":"clients","path":"/documents/clients","id":9873615,"parent":-348534824681,"user":"eyeos","is_root":false}';
+        $this->exerciseCreateMetadata($metadataIn,$metadataOut,$metadataOut,false,"clients",-348534824681);
+    }
+
+    /**
+     * method: createMetadata
+     * when: called
+     * with: tokenAndFolderAndName
+     * should: returnCorrectData
+     */
+    public function test_createMetadata_called_tokenAndFolderAndName_returnCorrectData()
+    {
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"name":"clients","parent":null}}';
+        $metadataOut = '{"name":"clients","path":"/clients","id":9873615,"parent":null,"user":"eyeos","is_root":false}';
+        $this->exerciseCreateMetadata($metadataIn,$metadataOut,$metadataOut,false,"clients");
+    }
+
+    /**
+     * method: createMetadata
+     * when: called
+     * with: tokenAndFolderAndName
+     * should: returnException
+     */
+    public function test_createMetadata_called_tokenAndFolderAndName_returnException()
+    {
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"name":"clients","parent":null}}';
+        $metadataOut = 'false';
+        $this->exerciseCreateMetadata($metadataIn,$metadataOut,$this->exception,false,"clients");
+    }
+
+    /**
+     * method: createMetadata
+     * when: called
+     * with: tokenAndFolderAndName
+     * should: returnPermissionDenied
+     */
+    public function test_createMetadata_called_tokenAndFolderAndName_returnPermissionDenied()
+    {
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"name":"clients","parent":null}}';
+        $metadataOut = '403';
+        $this->exerciseCreateMetadata($metadataIn,$metadataOut,$this->permission,false,"clients");
+    }
+
+    /**
+     * method: uploadMetadata
+     * when: called
+     * with: tokenAndIdAndPath
      * should: returnCorrect
      */
-    public function test_createFile_called_urlAndTokenAndFilenameAndFileAndFilesize_returnCorrect()
+    public function test_uploadMetadata_called_tokenAndIdAndPath_returnCorrect()
     {
-        $metadata = '{"status": "CHANGED", "mimetype": "application/x-empty", "parent_file_version": null, "parent_file_id": "null", "root_id": "stacksync", "server_modified": "Fri Mar 07 11:55:32 CET 2014", "checksum": 694355124, "client_modified": "Fri Mar 07 11:55:32 CET 2014", "filename": "pruebas.txt", "version": 7, "file_id": -7705621709365758847, "is_folder": false, "chunks": ["A6960EF3C0B501B4C338DE32A6C8E9A5004FE350"], "path": "/hola/", "size": 15, "user": "web"}';
-        $this->exerciseCreateFile($metadata);
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"upload","id":1234561,"path":"\/var\/www\/eyeos\/client.pdf"}}';
+        $metadataOut = '{"status":true}';
+        $this->exerciseUploadMetadata($metadataIn,$metadataOut,$metadataOut,1234561,"/var/www/eyeos/client.pdf");
     }
 
     /**
-     *method: createFile
+     * method: uploadMetadata
      * when: called
-     * with: urlAndTokenAndFilenameAndFileAndFilesizeAndParent
-     * should: returnCorrect
+     * with: tokenAndIdAndPath
+     * should: returnException
      */
-    public function test_createFile_called_urlAndTokenAdnFilenameAndFileAndFilesizeAndParent_returnCorrect()
+    public function test_uploadMetadata_called_tokenAndIdAndPath_returnException()
     {
-        $parent = '3894030578176289733';
-        $metadata = '{"status": "CHANGED", "mimetype": "application/x-empty", "parent_file_version": null, "parent_file_id": 3894030578176289733, "root_id": "stacksync", "server_modified": "Fri Mar 07 11:55:32 CET 2014", "checksum": 694355124, "client_modified": "Fri Mar 07 11:55:32 CET 2014", "filename": "pruebas.txt", "version": 7, "file_id": -7705621709365758847, "is_folder": false, "chunks": ["A6960EF3C0B501B4C338DE32A6C8E9A5004FE350"], "path": "/hola/", "size": 15, "user": "web"}';
-        $this->exerciseCreateFile($metadata,$parent);
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"upload","id":1234561,"path":"\/var\/www\/eyeos\/client.pdf"}}';
+        $metadataOut = 'false';
+        $this->exerciseUploadMetadata($metadataIn,$metadataOut,$this->exception,1234561,"/var/www/eyeos/client.pdf");
     }
 
     /**
-     *method: createFolder
+     * method: uploadMetadata
      * when: called
-     * with: urlAndTokenAndFoldername
-     * should: returnCorrect
+     * with: tokenAndIdAndPath
+     * should: returnPermissionDenied
      */
-    public function test_createFolder_called_urlAndTokenAndFoldername_returnCorrect()
+    public function test_uploadMetadata_called_tokenAndIdAndPath_returnPermissionDenied()
     {
-        $metadata = '{"status": "NEW", "mimetype": "inode/directory", "parent_file_version": "", "parent_file_id": "null", "root_id": "stacksync", "server_modified": "Fri Mar 07 17:22:51 CET 2014", "checksum": 0, "client_modified": "Fri Mar 07 17:22:51 CET 2014", "filename": "TestFolder", "version": 1, "file_id": "-3243347967282172526", "is_folder": true, "path": "/", "size": 0, "user": "web"}';
-        $this->exerciseCreateFolder($metadata);
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"upload","id":1234561,"path":"\/var\/www\/eyeos\/client.pdf"}}';
+        $metadataOut = '403';
+        $this->exerciseUploadMetadata($metadataIn,$metadataOut,$this->permission,1234561,"/var/www/eyeos/client.pdf");
     }
 
     /**
-     *method: createFolder
+     * method: downloadMetadata
      * when: called
-     * with: urlAndTokenAndFoldernameAndParent
-     * should: returnCorrect
-     */
-    public function test_createFolder_called_urlAndTokenAndFoldernameAndParent_returnCorrect()
-    {
-        $metadata = '{"status": "NEW", "mimetype": "inode/directory", "parent_file_version": "", "parent_file_id": "3894030578176289733", "root_id": "stacksync", "server_modified": "Fri Mar 07 17:22:51 CET 2014", "checksum": 0, "client_modified": "Fri Mar 07 17:22:51 CET 2014", "filename": "TestFolder", "version": 1, "file_id": -3243347967282172526, "is_folder": true, "path": "/", "size": 0, "user": "web"}';
-        $parent = '3894030578176289733';
-        $this->exerciseCreateFolder($metadata,$parent);
-    }
-
-
-    /**
-     *method: deleteComponent
-     * when: called
-     * with: idFile
-     * should: returnCorrect
-     */
-    public function test_deleteComponent_called_idFile_returnCorrect()
-    {
-        $fileId = "-5763789518128894388";
-        $metadata = '{"status": "DELETED", "mimetype": "application/x-empty", "parent_file_version": "", "parent_file_id": "null", "root_id": "stacksync", "server_modified": "Mon Mar 10 14:10:12 CET 2014", "checksum": 701498804, "client_modified": "Mon Mar 10 14:10:12 CET 2014", "filename": "New File 1.txt", "version": 12, "file_id": "-5763789518128894388", "is_folder": false, "chunks": [], "path": "/", "size": 14, "user": "web"}';
-        $this->exerciseDeleteComponent($fileId,$metadata);
-    }
-
-    /**
-     *method: deleteComponent
-     * when: called
-     * with: idFolder
-     * should: returnCorrect
-     */
-    public function test_deleteComponent_called_idFolder_returnCorrect()
-    {
-        $folderId = "-5763789518128894388";
-        $metadata = '{"status": "DELETED", "mimetype": "application/x-empty", "parent_file_version": "", "parent_file_id": "null", "root_id": "stacksync", "server_modified": "Mon Mar 10 14:10:12 CET 2014", "checksum": 701498804, "client_modified": "Mon Mar 10 14:10:12 CET 2014", "filename": "New File 1.txt", "version": 12, "file_id": "-5763789518128894388", "is_folder": true, "chunks": [], "path": "/", "size": 14, "user": "web"}';
-        $this->exerciseDeleteComponent($folderId,$metadata);
-    }
-
-    /**
-     *method: downloadFile
-     * when: called
-     * with: idFile
+     * with: tokenAndId
      * should: returnContent
      */
-    public function test_downloadFile_called_idFile_returnContent()
+    public function test_downloadMetadata_called_tokenAndId_returnContent()
     {
-        $fileId = "5665565566";
-        $content = "Es una prueba";
-        $this->accessorProviderMock->expects($this->once())
-            ->method('sendMessage')
-            ->will($this->returnValue($content));
-
-        $result = $this->sut->downloadFile($this->url,$this->token,$fileId);
-        $this->assertEquals($content,$result);
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"download","id":1234561}}';
+        $metadataOut = 'Prueba';
+        $this->exerciseDownloadMetadata($metadataIn,$metadataOut,$metadataOut,1234561);
     }
 
     /**
-     * method: getToken
+     * method: downloadMetadata
      * when: called
-     * with: user
-     * should: returnToken
+     * with: tokenAndId
+     * should: returnException
      */
-    public function test_getToken_called_user_returnToken()
+    public function test_downloadMetadata_called_tokenAndId_returnException()
     {
-        $userId = 'eyeID_EyeosUser_453';
-        $token = new Token();
-        $token->setUserId($userId);
-        $this->daoMock->expects($this->once())
-            ->method("read")
-            ->with($token);
-
-        $this->sut->getToken($userId);
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"download","id":1234561}}';
+        $metadataOut = 'false';
+        $this->exerciseDownloadMetadata($metadataIn,$metadataOut,json_decode($this->exception),1234561);
     }
 
     /**
-     * method: insertToken
+     * method: downloadMetadata
      * when: called
-     * with: token
-     * should: returnCorrect
+     * with: tokenAndId
+     * should: returnPermissionDenied
      */
-    public function test_insertToken_called_token_returnCorrect()
+    public function test_downloadMetadata_called_tokenAndId_returnPermisssionDenied()
     {
-        $token = new Token();
-        $token->setUserID('eyeID_EyeosUser_453');
-        $token->setTkey('ABCD');
-        $token->setTsecret('EFGH');
-        $this->daoMock->expects($this->once())
-            ->method('create')
-            ->with($token);
-
-        $result = $this->sut->insertToken($token);
-        $this->assertEquals(true,$result);
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"download","id":1234561}}';
+        $metadataOut = '403';
+        $this->exerciseDownloadMetadata($metadataIn,$metadataOut,json_decode($this->permission),1234561);
     }
 
-    private function exerciseMetadata($metadataIn,$metadatOut,$fileId = NULL)
+    /**
+     * method: deleteMetadata
+     * when: called
+     * with: tokenAndFileAndId
+     * should: returnCorrectData
+     */
+    public function test_deleteMetadata_called_tokenAndFileAndId_returnCorrectData()
     {
-        $this->accessorProviderMock->expects($this->once())
-            ->method('sendMessage')
-            ->will($this->returnValue($metadataIn));
-
-        $result = $this->sut->getMetadata($this->url,$this->token,$fileId);
-        $this->assertEquals(json_decode($metadatOut),$result);
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"delete","file":true,"id":32565632156}}';
+        $metadataOut = '{"name":"Client1.pdf","path":"/documents/clients/Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"DELETED","version":3,"parent":-348534824681,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}';
+        $this->exerciseDeleteMetadata($metadataIn,$metadataOut,$metadataOut,true,32565632156);
     }
 
-    private function exerciseCreateFile($metadata,$parent = NULL)
+    /**
+     * method: deleteMetadata
+     * when: called
+     * with: tokenAndFolderAndId
+     * should: returnCorrectData
+     */
+    public function test_deleteMetadata_called_tokenAndFolderAndId_returnCorrectData()
     {
-        $path = "resources/pruebas.txt";
-        $file = fopen($path, "r");
-        $filename = "pruebas.txt";
-
-        $this->accessorProviderMock->expects($this->once())
-            ->method('sendMessage')
-            ->will($this->returnValue($metadata));
-
-        $result = $this->sut->createFile($this->url,$this->token,$filename,$file,filesize($path),$parent);
-        $this->assertEquals(json_decode($metadata),$result);
-        fclose($file);
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"delete","file":false,"id":9873615}}';
+        $metadataOut = '{"name":"clients","path":"/documents/clients","id":9873615,"status":"DELETED","version":3,"parent":-348534824681,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false}';
+        $this->exerciseDeleteMetadata($metadataIn,$metadataOut,$metadataOut,false,9873615);
     }
 
-    private function exerciseCreateFolder($metadata,$parent = NULL)
+    /**
+     * method: deleteMetadata
+     * when: called
+     * with: tokenAndFolderAndId
+     * should: returnException
+     */
+    public function test_deleteMetadata_called_tokenAndFolderAndId_returnException()
     {
-        $folderName = 'TestFolder';
-        $this->accessorProviderMock->expects($this->once())
-            ->method('sendMessage')
-            ->will($this->returnValue($metadata));
-
-        $result = $this->sut->createFolder($this->url,$this->token,$folderName,$parent);
-        $this->assertEquals(json_decode($metadata),$result);
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"delete","file":false,"id":9873615}}';
+        $metadataOut = 'false';
+        $this->exerciseDeleteMetadata($metadataIn,$metadataOut,$this->exception,false,9873615);
     }
 
-    private function exerciseDeleteComponent($idComponent,$metadata)
+    /**
+     * method: deleteMetadata
+     * when: called
+     * with: tokenAndFolderAndId
+     * should: returnPermissionDenied
+     */
+    public function test_deleteMetadata_called_tokenAndFolderAndId_returnPermissionDenied()
+    {
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"delete","file":false,"id":9873615}}';
+        $metadataOut = '403';
+        $this->exerciseDeleteMetadata($metadataIn,$metadataOut,$this->permission,false,9873615);
+    }
+
+    private function exerciseGetMetadata($metadataIn,$metadataOut,$check,$file,$id,$contents = null)
+    {
+        $this->exerciseMockMetadata($metadataIn,$metadataOut);
+        $result = $this->sut->getMetadata($this->token,$file,$id,$contents);
+        $this->assertEquals(json_decode($check),$result);
+    }
+
+    private function exerciseUpdateMetadata($metadataIn,$metadataOut,$check,$file,$id,$name = null,$parent = null)
+    {
+        $this->exerciseMockMetadata($metadataIn,$metadataOut);
+        $result = $this->sut->updateMetadata($this->token,$file,$id,$name,$parent);
+        $this->assertEquals(json_decode($check),$result);
+    }
+
+    private function exerciseCreateMetadata($metadataIn,$metadataOut,$check,$file,$name,$parent = null)
+    {
+        $this->exerciseMockMetadata($metadataIn,$metadataOut);
+        $result = $this->sut->createMetadata($this->token,$file,$name,$parent);
+        $this->assertEquals(json_decode($check),$result);
+    }
+
+    private function exerciseUploadMetadata($metadataIn,$metadataOut,$check,$id,$path)
+    {
+        $this->exerciseMockMetadata($metadataIn,$metadataOut);
+        $result = $this->sut->uploadMetadata($this->token,$id,$path);
+        $this->assertEquals(json_decode($check),$result);
+    }
+
+    private function exerciseDownloadMetadata($metadataIn,$metadataOut,$check,$id)
+    {
+        $this->exerciseMockMetadata($metadataIn,$metadataOut);
+        $result = $this->sut->downloadMetadata($this->token,$id);
+        $this->assertEquals($check,$result);
+    }
+
+    private function exerciseDeleteMetadata($metadataIn,$metadataOut,$check,$file,$id)
+    {
+        $this->exerciseMockMetadata($metadataIn,$metadataOut);
+        $result = $this->sut->deleteMetadata($this->token,$file,$id);
+        $this->assertEquals(json_decode($check),$result);
+    }
+
+    private function exerciseMockMetadata($metadataIn,$metadataOut)
     {
         $this->accessorProviderMock->expects($this->once())
-            ->method('sendMessage')
-            ->will($this->returnValue($metadata));
-
-        $result = $this->sut->deleteComponent($this->url,$this->token,$idComponent);
-        $this->assertEquals(true,$result);
+            ->method('getProcessOauthCredentials')
+            ->with($metadataIn)
+            ->will($this->returnValue($metadataOut));
     }
 }
-
 ?>

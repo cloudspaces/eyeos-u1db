@@ -6,7 +6,6 @@ import unittest
 from mock import Mock
 from Protocol import Protocol
 import json
-import u1db
 import os
 
 class ProtocolTest (unittest.TestCase):
@@ -14,24 +13,23 @@ class ProtocolTest (unittest.TestCase):
         self.protocol = Protocol(True)
 
     def tearDown(self):
-        os.remove("test.u1db")
-
+        print()
+        #os.remove("test.u1db")
 
     """
-    method: protocol
-    when: called
-    with: typeInsertAndList
-    should: insertCorrect
-    """
+   method: protocol
+   when: called
+   with: typeInsertAndList
+   should: insertCorrect
+   """
     def test_protocol_called_typeInsertAndList_insertCorrect(self):
-        params = '{"type":"insert","lista":[{"user_eyeos":"eyeos","file_id":"null","parent_file_id":"null","filename":"root","path":null,"is_folder":true,"status":null,"user":null,"version":null,"checksum":null,"size":null,"mimetype":null,"is_root":true},{"user_eyeos":"eyeos","file_id":-7755273878059615652,"parent_file_id":"null","filename":"helpFile","path":"/","is_folder":true,"status":"NEW","server_modified":"2013-11-11 15:40:45.784","client_modified":"2013-11-11 15:40:45.784","user":"web","version":1,"checksum":0,"size":0,"mimetype":"inode/directory","is_root":false}]}'
+        params = '{"type":"insert","lista":[{"user_eyeos":"eyeID_EyeosUser_2","status": "NEW", "is_root": false, "version": 1, "name": "clients", "parent": "null", "server_modified": "2013-03-08 10:36:41.997", "path": "/documents/clients", "client_modified": "2013-03-08 10:36:41.997", "id": 9873615, "user": "eyeos"}]}'
         aux = json.loads(params)
         self.protocol.insert = Mock()
         self.protocol.insert.return_value = True
         result = self.protocol.protocol(params)
         self.protocol.insert.assert_called_once_with(aux['lista'])
         self.assertEquals('true',result)
-
 
     """
     method: protocol
@@ -40,11 +38,11 @@ class ProtocolTest (unittest.TestCase):
     should: returnArray
     """
     def test_protocol_called_typeSelectAndList_returnArray(self):
-        params = '{"type":"select","lista":[{"file_id":"124568","user_eyeos":"eyeos"}]}'
+        params = '{"type":"select","lista":[{"id":"124568","user_eyeos":"eyeID_EyeosUser_2"}]}'
         self.protocol.select = Mock()
         self.protocol.select.return_value = []
         result = self.protocol.protocol(params)
-        self.protocol.select.assert_called_once_with("124568","eyeos")
+        self.protocol.select.assert_called_once_with("124568","eyeID_EyeosUser_2")
         self.assertEquals('[]',result)
 
     """
@@ -54,7 +52,7 @@ class ProtocolTest (unittest.TestCase):
     should: updateCorrect
     """
     def test_protocol_called_typeUpdateAndList_updateCorrect(self):
-        params = '{"type":"update","lista":[{"user_eyeos":"eyeos","file_id":"null","parent_file_id":"null","filename":"root","path":null,"is_folder":true,"status":null,"user":null,"version":null,"checksum":null,"size":null,"mimetype":null,"is_root":true},{"user_eyeos":"eyeos","file_id":-7755273878059615652,"parent_file_id":"null","filename":"helpFile","path":"/","is_folder":true,"status":"NEW","server_modified":"2013-11-11 15:40:45.784","client_modified":"2013-11-11 15:40:45.784","user":"web","version":1,"checksum":0,"size":0,"mimetype":"inode/directory","is_root":false}]}'
+        params = '{"type":"update","lista":[{"user_eyeos":"eyeID_EyeosUser_2","status": "NEW", "is_root": false, "version": 1, "name": "clients", "parent": "null", "server_modified": "2013-03-08 10:36:41.997", "path": "/documents/clients", "client_modified": "2013-03-08 10:36:41.997", "id": 9873615, "user": "eyeos"}]}'
         aux = json.loads(params)
         self.protocol.update = Mock()
         self.protocol.update.return_value = True
@@ -69,14 +67,13 @@ class ProtocolTest (unittest.TestCase):
     should: deleteCorrect
     """
     def test_protocol_called_typeDeleteAndList_deleteCorrect(self):
-        params = '{"type":"delete","lista":[{"file_id":1234,"user_eyeos":"eyeos"},{"file_id":8907,"user_eyeos":"eyeos"}]}'
+        params = '{"type":"delete","lista":[{"id":1234,"user_eyeos":"eyeID_EyeosUser_2"},{"id":8907,"user_eyeos":"eyeID_EyeosUser_2"}]}'
         aux = json.loads(params)
         self.protocol.delete = Mock()
         self.protocol.delete.return_value = True
         result = self.protocol.protocol(params)
         self.protocol.delete.assert_called_once_with(aux['lista'])
         self.assertEquals('true',result)
-
 
     """
     method: protocol
@@ -85,11 +82,11 @@ class ProtocolTest (unittest.TestCase):
     should: returnArray
     """
     def test_protocol_called_typeGetParentAndList_returnArray(self):
-        params = '{"type":"parent","lista":[{"path":"/Documents/prueba/","folder":"hola","user_eyeos":"eyeos"}]}'
+        params = '{"type":"parent","lista":[{"path":"/Documents/prueba/","folder":"hola","user_eyeos":"eyeID_EyeosUser_2"}]}'
         self.protocol.getParent = Mock()
         self.protocol.getParent.return_value = []
         result = self.protocol.protocol(params)
-        self.protocol.getParent.assert_called_once_with("/Documents/prueba/","hola","eyeos")
+        self.protocol.getParent.assert_called_once_with("/Documents/prueba/","hola","eyeID_EyeosUser_2")
         self.assertEquals('[]',result)
 
     """
@@ -99,11 +96,11 @@ class ProtocolTest (unittest.TestCase):
     should: deleteCorrect
     """
     def test_protocol_called_typeDeleteFolderAndList_deleteCorrect(self):
-        params = '{"type":"deleteFolder","lista":[{"file_id":"1234","user_eyeos":"eyeos"}]}'
+        params = '{"type":"deleteFolder","lista":[{"id":"1234","user_eyeos":"eyeID_EyeosUser_2"}]}'
         self.protocol.deleteFolder = Mock()
         self.protocol.deleteFolder.return_value = True
         result = self.protocol.protocol(params)
-        self.protocol.deleteFolder.assert_called_once_with("1234","eyeos")
+        self.protocol.deleteFolder.assert_called_once_with("1234","eyeID_EyeosUser_2")
         self.assertEquals('true',result)
 
     """
@@ -113,25 +110,25 @@ class ProtocolTest (unittest.TestCase):
     should: deleteCorrect
     """
     def test_protocol_called_typeDeleteMetadataUserAndList_deleteCorrect(self):
-        params = '{"type":"deleteMetadataUser","lista":[{"user_eyeos":"eyeos"}]}'
+        params = '{"type":"deleteMetadataUser","lista":[{"user_eyeos":"eyeID_EyeosUser_2"}]}'
         self.protocol.deleteMetadataUser = Mock()
         self.protocol.deleteMetadataUser.return_value = True
         result = self.protocol.protocol(params)
-        self.protocol.deleteMetadataUser.assert_called_once_with("eyeos")
+        self.protocol.deleteMetadataUser.assert_called_once_with("eyeID_EyeosUser_2")
         self.assertEquals('true',result)
 
     """
-    method: protocol
-    when: called
-    with: typeSelectMetatadataUserAndList
-    should: returnArray
-    """
+   method: protocol
+   when: called
+   with: typeSelectMetatadataUserAndList
+   should: returnArray
+   """
     def test_protocol_called_typeSelectMetadataUserAndList_returnArray(self):
-        params = '{"type":"selectMetadataUser","lista":[{"user_eyeos":"eyeos"}]}'
+        params = '{"type":"selectMetadataUser","lista":[{"user_eyeos":"eyeID_EyeosUser_2"}]}'
         self.protocol.selectMetadataUser = Mock()
         self.protocol.selectMetadataUser.return_value = []
         result = self.protocol.protocol(params)
-        self.protocol.selectMetadataUser.assert_called_once_with("eyeos")
+        self.protocol.selectMetadataUser.assert_called_once_with("eyeID_EyeosUser_2")
         self.assertEquals('[]',result)
 
     """
@@ -194,12 +191,13 @@ class ProtocolTest (unittest.TestCase):
         self.protocol.insertEvent.assert_called_once_with(aux['lista'])
         self.assertEquals("true",result)
 
+
     """
-    method: protocol
-    when: called
-    with: typeInsertCalendarAndList
-    should: insertCorrect
-    """
+   method: protocol
+   when: called
+   with: typeInsertCalendarAndList
+   should: insertCorrect
+   """
     def test_protocol_called_typeInsertCalendarAndList_insertCorrect(self):
         params = '{"type":"insertCalendar" , "lista":[{"type":"calendar","user_eyeos": "eyeos","name": "personal", "status":"NEW","description":"personal calendar","timezone":0}]}'
         aux = json.loads(params)
@@ -224,6 +222,7 @@ class ProtocolTest (unittest.TestCase):
         self.protocol.deleteCalendar.assert_called_once_with(aux['lista'])
         self.assertEquals("true",result)
 
+
     """
     method: protocol
     when: called
@@ -240,11 +239,11 @@ class ProtocolTest (unittest.TestCase):
         self.assertEquals("[]",result)
 
     """
-    method: protocol
-    when: called
-    with: typeUpdateCalendarAndList
-    should: updateCorrect
-    """
+   method: protocol
+   when: called
+   with: typeUpdateCalendarAndList
+   should: updateCorrect
+   """
     def test_protocol_called_typeUpdateCalendarAndList_updateCorrect(self):
         params = '{"type":"updateCalendar" , "lista":[{"type":"calendar","user_eyeos": "eyeos","name":"personal","description":"personal calendar","timezone":0,"status":"CHANGED"}]}'
         aux = json.loads(params)
@@ -269,11 +268,11 @@ class ProtocolTest (unittest.TestCase):
         self.assertEquals('true',result)
 
     """
-   method: protocol
-   when: called
-   with: selectCalendarsAndEventsAndList
-   should: returnArray
-   """
+    method: protocol
+    when: called
+    with: selectCalendarsAndEventsAndList
+    should: returnArray
+    """
     def test_protocol_called_selectCalendarsAndEventsAndList_returnArray(self):
         params = '{"type":"selectCalendarsAndEvents","lista":[{"user_eyeos":"eyeos"}]}'
         self.protocol.selectCalendarsAndEvents = Mock()

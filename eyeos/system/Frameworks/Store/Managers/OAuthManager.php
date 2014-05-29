@@ -27,6 +27,21 @@ class OAuthManager
     {
         return $this->oauthProvider->getAccessToken($token);
     }
+
+    public function getToken($user)
+    {
+        return $this->oauthProvider->getToken($user);
+    }
+
+    public function insertToken($token)
+    {
+        return $this->oauthProvider->insertToken($token);
+    }
+
+    public function deleteToken($token)
+    {
+        return $this->oauthProvider->deleteToken($token);
+    }
 }
 
 

@@ -128,6 +128,7 @@ qx.Class.define('eyeos.files.Controller', {
         __progress: null,
         __size: 0,
         __stacksync: false,
+        __token: false,
 
 		_addListeners: function () {
 //			this.addListener('selectedFile', function (e) {
@@ -1687,13 +1688,14 @@ qx.Class.define('eyeos.files.Controller', {
              this._browse(true);
         },
         _getTokenStacksync: function() {
-
+            this.__token = null;
             this._dBus.removeListener('eyeos_stacksync_token',this.__authorizeUser,this);
             this._dBus.addListener('eyeos_stacksync_token',this.__authorizeUser,this);
 
             eyeos.callMessage(this.getApplication().getChecknum(), 'getTokenStacksync', null, function (result) {
-                if(result.status === true && result.url) {
-                    //window.open(result.url, '_new');
+                if(result.status === true && result.url && result.token) {
+                    this.__token = result.token;
+                    window.open(result.url, '_new');
                     var that = this;
                     var reffunction = function(){that.__cancelStacksync()};
                     setTimeout(reffunction,60000);
@@ -1711,20 +1713,26 @@ qx.Class.define('eyeos.files.Controller', {
             }
         },
         __authorizeUser: function(e){
-            this.__stacksync = true;
-            var verifier = e.getData();
-            this._dBus.removeListener('eyeos_stacksync_token',this.__authorizeUser,this);
+            var data = e.getData();
 
-            eyeos.callMessage(this.getApplication().getChecknum(), 'getAccessStacksync', verifier, function (result) {
-                if(result === true) {
-                    this.getView().removeAll();
-                    this.setToken(true);
-                    this._initFiles();
-                } else {
-                    this.getView().timeOutStakSync(tr("An error has occurred when processing request to Stacksync"));
+            if(data.oauth_token && data.oauth_verifier) {
+                if(data.oauth_token === this.__token) {
+                    this.__stacksync = true;
+                    var verifier = data.oauth_verifier;
+                    this._dBus.removeListener('eyeos_stacksync_token',this.__authorizeUser,this);
 
+                    eyeos.callMessage(this.getApplication().getChecknum(), 'getAccessStacksync', verifier, function (result) {
+                        if(result === true) {
+                            this.getView().removeAll();
+                            this.setToken(true);
+                            this._initFiles();
+                        } else {
+                            this.getView().timeOutStakSync(tr("An error has occurred when processing request to Stacksync"));
+
+                        }
+                    },this);
                 }
-            },this);
+            }
         }
 	}
 });

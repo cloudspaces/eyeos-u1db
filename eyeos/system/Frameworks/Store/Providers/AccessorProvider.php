@@ -66,8 +66,11 @@ class AccessorProvider
         if($json) {
             $path .= " " .escapeshellarg($json);
         }
-
-        return exec($path);
+        Logger::getLogger('sebas')->error('PathPython:' . $path);
+        $result = exec($path);
+        Logger::getLogger('sebas')->error('Credenciales:' . $result);
+        //return exec($path);
+        return $result;
     }
 }
 

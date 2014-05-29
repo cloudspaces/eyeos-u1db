@@ -15,7 +15,7 @@ class MMapStacksync extends Kernel implements IMMap {
     }
 
     public function checkRequest(MMapRequest $request) {
-        if ($request->issetGET('userId')) {
+        if ($request->issetGET('token')) {
             return true;
         }
 
@@ -23,16 +23,19 @@ class MMapStacksync extends Kernel implements IMMap {
     }
 
     public function processRequest(MMapRequest $request, MMapResponse $response) {
-        $userId=$request->getGET('userId');
         $oauth_verifier = null;
+        $oauth_token = null;
         //eyeID_EyeosUser_453
 
-        if($request->issetGET('oauth_verifier')) {
-            $oauth_verifier = $request->getGET('oauth_verifier');
+        if($request->issetGET('verifier')) {
+            $oauth_verifier = $request->getGET('verifier');
         }
 
-        if($oauth_verifier) {
-            Logger::getLogger('sebas')->error('MMapStackSync.userId:' . $userId . "  ; oauthverifier:" . $oauth_verifier);
+        if($request->issetGET('token')) {
+            $oauth_token = $request->getGET('token');
+        }
+
+        if($oauth_verifier && $oauth_token) {
             $response->getHeaders()->append('Content-type: text/html');
 
             $body = '<html>
@@ -78,9 +81,27 @@ class MMapStacksync extends Kernel implements IMMap {
             /*$procManager = ProcManager::getInstance();
             $procManager->setProcessLoginContext($procManager->getCurrentProcess()->getPid(), $loginContext);*/
 
+            $token = new stdClass();
+            $token->oauth_verifier = $oauth_verifier;
+            $token->oauth_token = $oauth_token;
 
-            $NetSyncMessage = new NetSyncMessage('stacksync', 'token',$userId, $oauth_verifier);
-            NetSyncController::getInstance()->send($NetSyncMessage);
+            //$users = UMManager::getInstance()->getAllUsers();
+            $group = UMManager::getInstance()->getGroupByName('users');
+            $users = UMManager::getInstance()->getAllUsersFromGroup($group);
+
+            foreach ($users as $user) {
+                $NetSyncMessage = new NetSyncMessage('stacksync', 'token',$user->getId(), $token);
+                NetSyncController::getInstance()->send($NetSyncMessage);
+            }
+
+            /*foreach ($users as $user) {
+                if($user->getPrimaryGroupId() == 'eyeID_EyeosGroup_users') {
+                    Logger::getLogger('sebas')->error('Usuario:' . $user->getName() . ' ' . $user->getId());
+                }
+            }*/
+
+            /*$NetSyncMessage = new NetSyncMessage('stacksync', 'token',$userId, $token);
+            NetSyncController::getInstance()->send($NetSyncMessage);*/
 
             /*$message = new ClientBusMessage('stacksync', 'token', $token);
             ClientMessageBusController::getInstance()->queueMessage($message);

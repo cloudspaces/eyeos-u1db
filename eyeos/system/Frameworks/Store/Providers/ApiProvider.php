@@ -2,167 +2,111 @@
 /**
  * Created by PhpStorm.
  * User: root
- * Date: 5/03/14
- * Time: 10:44
+ * Date: 28/05/14
+ * Time: 10:43
  */
 
 class ApiProvider
 {
     private $accessorProvider;
-    private $dao;
 
-    public function __construct(AccessorProvider $accessorProvider = NULL,EyeosDAO $dao = NULL)
+    public function __construct(AccessorProvider $accessorProvider = NULL)
     {
         if(!$accessorProvider) $accessorProvider = new AccessorProvider();
         $this->accessorProvider = $accessorProvider;
-
-        if(!$dao) $dao = new EyeosDAO();
-        $this->dao = $dao;
     }
 
-    public function getMetadata($url, $tokenId, $fileId=NULL)
+    public function getMetadata($token,$file,$id,$contents = null)
     {
-        $url = $url . '/stacksync/metadata';
-        if($fileId) $url .= '?file_id=' . $fileId . '&list=true';
-        return $this->executeAccessor($url,$tokenId);
+        $request = $this->getRequest('get',$token);
+        $request->metadata->file = $file;
+        $request->metadata->id = $id;
+        $request->metadata->contents = $contents;
+        return $this->exerciseMetadata($request);
     }
 
-    public function createFile($url,$tokenId,$filename,$file,$filesize,$parent = NULL)
+    public function updateMetadata($token,$file,$id,$name = null,$parent = null)
     {
-        $url = $url . '/stacksync/files?file_name=' . urlencode($filename);
-        if($parent) $url .= '&parent=' . $parent;
-        return $this->executeAccessor($url,$tokenId,$file,$filesize);
+        $request = $this->getRequest('update',$token);
+        $request->metadata->file = $file;
+        $request->metadata->id = $id;
+        $request->metadata->name = $name;
+        $request->metadata->parent = $parent;
+        return $this->exerciseMetadata($request);
     }
 
-    public function createFolder($url,$tokenId,$foldername,$parent = NULL)
+    public function createMetadata($token,$file,$name,$parent = null)
     {
-        $url = $url .'/stacksync/files?folder_name=' . urlencode($foldername);
-        if($parent) $url .= '&parent=' . $parent;
-        return $this->executeAccessor($url,$tokenId,null,null,'POST');
+        $request = $this->getRequest('create',$token);
+        $request->metadata->file = $file;
+        $request->metadata->name = $name;
+        $request->metadata->parent = $parent;
+        return $this->exerciseMetadata($request);
     }
 
-    public function deleteComponent($url,$tokenId,$idComponent) {
-        $result = false;
-        $url .= '/stacksync/files?file_id=' . $idComponent;
-        $metadata = $this->executeAccessor($url,$tokenId,null,null,'DELETE');
-
-        if(array_key_exists("status",$metadata) && $metadata->status === 'DELETED') {
-            $result = true;
-        }
-
-        return $result;
-    }
-
-    public function downloadFile($url,$tokenId,$idFile)
+    public function uploadMetadata($token,$id,$path)
     {
-        $url .= '/stacksync/files?file_id=' . $idFile;
-        return $this->executeAccessor($url,$tokenId,null,null,null,true);
+        $request = $this->getRequest('upload',$token);
+        $request->metadata->id = $id;
+        $request->metadata->path = $path;
+        return $this->exerciseMetadata($request);
     }
 
-    public function replaceNull($json) {
-        if(array_key_exists("file_id",$json)) {
-            if($json->file_id === NULL || strlen($json->file_id) == 0) {
-                $json->file_id = 'null';
-            } else {
-                $json->file_id .= "";
-            }
-        }
-        if(array_key_exists("parent_file_id",$json)) {
-            if($json->parent_file_id === NULL || strlen($json->parent_file_id) == 0) {
-                $json->parent_file_id = 'null';
-            } else {
-                $json->parent_file_id .= '';
+    public function downloadMetadata($token,$id)
+    {
+        $resp = json_decode('{"error":-1}');
+        $request = $this->getRequest('download',$token);
+        $request->metadata->id = $id;
+        $result = $this->accessorProvider->getProcessOauthCredentials(json_encode($request));
+
+        if($result) {
+            if(!($result === 'false' || $result === '403')) {
+                $resp = $result;
+            }  else if($result === '403'){
+                $resp = json_decode('{"error":403}');
             }
         }
 
-        if(array_key_exists("path",$json)) {
-            if($json->path !== NULL && strlen($json->path) > 0 && $json->path[strlen($json->path) - 1] !== '/') {
-                $json->path .= '/';
+        return $resp;
+    }
+
+    public function deleteMetadata($token,$file,$id)
+    {
+        $request = $this->getRequest('delete',$token);
+        $request->metadata->file = $file;
+        $request->metadata->id = $id;
+        return $this->exerciseMetadata($request);
+    }
+
+    private function getRequest($type,$token)
+    {
+        $request = new stdClass();
+        $request->token = new stdClass();
+        $request->token->key = $token->key;
+        $request->token->secret = $token->secret;
+        $request->metadata = new stdClass();
+        $request->metadata->type = $type;
+        return $request;
+    }
+
+    private function exerciseMetadata($request)
+    {
+        $resp = json_decode('{"error":-1}');
+        $result = $this->accessorProvider->getProcessOauthCredentials(json_encode($request));
+        if($result) {
+            if($result !== 'false' && $result !== '403') {
+                $resp = json_decode($result);
+            } else if($result === '403'){
+                $resp = json_decode('{"error":403}');
+            } else if($result === 'true') {
+                $resp = json_decode('{"status":true}');
             }
         }
 
-        if(array_key_exists("contents",$json)) {
-            for($i = 0;$i < count($json->contents);$i++) {
-                if(array_key_exists("file_id",$json->contents[$i])) {
-                    if($json->contents[$i]->file_id === NULL || strlen($json->contents[$i]->file_id) == 0) {
-                        $json->contents[$i]->file_id = 'null';
-                    } else {
-                        $json->contents[$i]->file_id .= '';
-                    }
-                }
-                if(array_key_exists("parent_file_id",$json->contents[$i])) {
-                    if($json->contents[$i]->parent_file_id === NULL || strlen($json->contents[$i]->parent_file_id) == 0) {
-                        $json->contents[$i]->parent_file_id = 'null';
-                    } else {
-                        $json->contents[$i]->parent_file_id .= '';
-                    }
-                }
-                if(array_key_exists("path",$json->contents[$i])) {
-                    if($json->contents[$i]->path !== NULL && strlen($json->contents[$i]->path) > 0 && $json->contents[$i]->path[strlen($json->contents[$i]->path) - 1] !== '/') {
-                        $json->contents[$i]->path .= '/';
-                    }
-                }
-            }
-        }
-
-        return $json;
+        return $resp;
     }
 
-    public function executeAccessor($url,$tokenId,$file = NULL,$filesize = NULL,$request = NULL,$isDownload = false)
-    {
-        $settings = new Settings();
-        $settings->setUrl($url);
-        $header = array();
-        $header[0] = "X-Auth-Token: " . $tokenId;
-        $header[1] = "StackSync-api: true";
-        $settings->setSslVerifyPeer(false);
-        $settings->setHeader(false);
-        $settings->setReturnTransfer(true);
-        $settings->setHttpHeader($header);
-        if(isset($request))
-        {
-            $settings->setCustomRequest($request);
-        }
 
-        if($file) {
-            $settings->setPut(true);
-            $settings->setInFile($file);
-            $settings->setInFilesize($filesize);
-            $settings->setBinaryTransfer(true);
-        }
-
-        $result = $this->accessorProvider->sendMessage($settings);
-        if(!$isDownload) {
-            $result = json_decode($result);
-            if ($result) {
-                $result = $this->replaceNull($result);
-            }
-        }
-        return $result;
-    }
-
-    public function getToken($user)
-    {
-        $token = new Token();
-        $token->setUserId($user);
-        try {
-            $this->dao->read($token);
-        } catch(EyeResultNotFoundException $e) {}
-        return $token;
-    }
-
-    public function insertToken($token)
-    {
-        try {
-            $this->dao->create($token);
-            return true;
-        } catch (Exception $e)
-        {
-            Logger::getLogger('sebas')->error('DaoSebas:' . $e->getMessage());
-        }
-
-        return false;
-    }
 }
 
 ?>

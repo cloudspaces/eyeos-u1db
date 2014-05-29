@@ -9,16 +9,20 @@
 class OAuthProvider_
 {
     private $accessorProvider;
+    private $dao;
 
-    public function __construct(AccessorProvider $accessorProvider=NULL){
+    public function __construct(AccessorProvider $accessorProvider=NULL,EyeosDAO $dao = NULL){
         if(!$accessorProvider) $accessorProvider = new AccessorProvider();
         $this->accessorProvider = $accessorProvider;
+        if(!$dao)$dao = new EyeosDao();
+        $this->dao = $dao;
     }
 
     public function getRequestToken()
     {
         $token = null;
         $aux = $this->accessorProvider->getProcessOauthCredentials();
+        Logger::getLogger('sebas')->error('RequestToken1:' . $aux);
 
         if(strlen($aux) > 0) {
             $token = json_decode($aux);
@@ -38,6 +42,38 @@ class OAuthProvider_
 
         return $result;
     }
+
+    public function getToken($user)
+    {
+        $token = new Token();
+        $token->setUserId($user);
+        try {
+            $this->dao->read($token);
+        } catch(EyeResultNotFoundException $e) {}
+        return $token;
+    }
+
+    public function insertToken($token)
+    {
+        try {
+            $this->dao->create($token);
+            return true;
+        } catch (Exception $e){
+            Logger::getLogger('sebas')->error('insertToken:' . $e->getMessage());
+        }
+        return false;
+    }
+
+    public function deleteToken($token)
+    {
+        try {
+            $this->dao->delete($token);
+            return true;
+        } catch (Exception $e) {}
+        return false;
+    }
+
+
 }
 
 
