@@ -44,6 +44,15 @@ class FilesProvider
             return false;
         }
     }
+
+    public function putContents($path,$content) {
+        try {
+            $node = FSI::getFile($path);
+            $bytes = $node->getRealFile()->putContents($content);
+            if($bytes > 0) return true;
+        } catch (Exception $e) {}
+        return false;
+    }
 }
 
 ?>

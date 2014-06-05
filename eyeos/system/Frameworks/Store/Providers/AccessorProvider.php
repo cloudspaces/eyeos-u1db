@@ -68,7 +68,7 @@ class AccessorProvider
         }
         Logger::getLogger('sebas')->error('PathPython:' . $path);
         $result = exec($path);
-        Logger::getLogger('sebas')->error('Credenciales:' . $result);
+        Logger::getLogger('sebas')->error('Credenciales: ' . strlen($result) . ' :: ' . $result);
         //return exec($path);
         return $result;
     }

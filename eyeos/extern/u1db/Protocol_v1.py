@@ -1,10 +1,10 @@
 __author__ = 'root'
 
 import json
-from Metadata import Metadata
+from Metadata_v1 import Metadata_v1
 import sys
 
-class Protocol:
+class Protocol_v1:
     def __init__(self,test = None):
         self.test = False
         if test != None:
@@ -26,15 +26,15 @@ class Protocol:
         if type == "insert":
             result = self.insert(lista)
         elif type == "select":
-            result = self.select(lista[0]["id"],lista[0]['user_eyeos'],lista[0]['path'])
+            result = self.select(lista[0]["file_id"],lista[0]['user_eyeos'])
         elif type == "update":
             result = self.update(lista)
         elif type == "delete":
             result = self.delete(lista)
         elif type == "parent":
-            result = self.getParent(lista[0]['path'],lista[0]['filename'],lista[0]['user_eyeos'])
+            result = self.getParent(lista[0]['path'],lista[0]["folder"],lista[0]['user_eyeos'])
         elif type == "deleteFolder":
-            result = self.deleteFolder(lista[0]["id"],lista[0]['user_eyeos'],lista[0]['path'])
+            result = self.deleteFolder(lista[0]["file_id"],lista[0]['user_eyeos'])
         elif type == "deleteMetadataUser":
             result = self.deleteMetadataUser(lista[0]['user_eyeos'])
         elif type == "selectMetadataUser":
@@ -66,8 +66,8 @@ class Protocol:
         self.metadata.insert(lista)
         return True
 
-    def select(self,id,user,path):
-        return self.metadata.select(id,user,path)
+    def select(self,id,user):
+        return self.metadata.select(id,user)
 
     def update(self,lista):
         self.metadata.update(lista)
@@ -77,11 +77,11 @@ class Protocol:
         self.metadata.delete(lista)
         return True
 
-    def getParent(self,path,filename,user):
-        return self.metadata.getParent(path,filename,user)
+    def getParent(self,path,folder,user):
+        return self.metadata.getParent(path,folder,user)
 
-    def deleteFolder(self,idFolder,user,path):
-        self.metadata.deleteFolder(idFolder,user,path)
+    def deleteFolder(self,idFolder,user):
+        self.metadata.deleteFolder(idFolder,user)
         return True
 
     def deleteMetadataUser(self,user):
@@ -130,18 +130,17 @@ class Protocol:
 
     def configDb(self,type,creds = None):
         if self.test == True:
-            name = "test.u1db"
+            name = "test_v1.u1db"
         else:
-            name = "metadata.u1db"
+            name = "metadata_v1.u1db"
             if type == "deleteEvent" or type == "updateEvent" or type == "selectEvent" or type == "insertEvent" or type == "insertCalendar" or type == "deleteCalendar" or type == "selectCalendar" or type == "updateCalendar" or type == 'deleteCalendarUser' or type == 'selectCalendarsAndEvents':
                 name = "calendar.u1db"
 
-        self.metadata = Metadata(name,creds)
+        self.metadata = Metadata_v1(name,creds)
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
-        protocol = Protocol()
-        print (protocol.protocol(str(sys.argv[1])))
+         protocol = Protocol_v1()
+         print (protocol.protocol(str(sys.argv[1])))
     else:
         print ('false')
-

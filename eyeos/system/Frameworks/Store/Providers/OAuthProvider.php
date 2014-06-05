@@ -22,7 +22,6 @@ class OAuthProvider_
     {
         $token = null;
         $aux = $this->accessorProvider->getProcessOauthCredentials();
-        Logger::getLogger('sebas')->error('RequestToken1:' . $aux);
 
         if(strlen($aux) > 0) {
             $token = json_decode($aux);
@@ -58,9 +57,7 @@ class OAuthProvider_
         try {
             $this->dao->create($token);
             return true;
-        } catch (Exception $e){
-            Logger::getLogger('sebas')->error('insertToken:' . $e->getMessage());
-        }
+        } catch (Exception $e){}
         return false;
     }
 

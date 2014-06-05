@@ -419,16 +419,20 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 		$currentUser = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
 		$settings = MetaManager::getInstance()->retrieveMeta($currentUser);
 		$filesInfo = array();
-        $apiManager = new ApiManagerOld();
+        $apiManager = new ApiManager();
 		foreach ($params as $param) {
 			$fileToRemove = FSI::getFile($param['file']);
 			$filesInfo[] = $fileToRemove->getAbsolutePath();
-            $isFolder = $fileToRemove->isDirectory();
+            $isFile = !$fileToRemove->isDirectory();
 			if($fileToRemove->delete(true)) {
 			    self::removeUrlShareInfo($param['file']);
                 if(isset($param['id'])) {
-                    self::verifyToken();
-                    $apiManager->deleteComponent($param['id'],$isFolder);
+                    $result = $apiManager->deleteMetadata($_SESSION['access_token_v2'],$isFile,$param['id'],$currentUser->getId());
+                    if($result) {
+                        if(isset($result['error']) && $result['error'] == 403) {
+                            self::permissionDeniedStackSync($currentUser->getId());
+                        }
+                    }
                 }
             }
 		}
@@ -477,12 +481,18 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 		$dirToCreate->mkdir();
 
         if(count($params) === 3) {
-            self::verifyToken();
-            $apiManager = new ApiManagerOld();
-            $idParent = $params[2] === 'null'?NULL:$params[2];
-            $apiManager->createFolder($dirToCreate->getName(),$idParent);
-        }
+            $apiManager = new ApiManager();
+            $idParent = $params[2] == 0?'null':$params[2];
+            $path = self::getPathStacksync($dirToCreate);
+            $result = $apiManager->createMetadata($_SESSION['access_token_v2'],$currentUser->getId(),false,$dirToCreate->getName(),$idParent,$path);
+            if($result) {
+                if (isset($result['error']) && $result['error'] === 403) {
+                    self::permissionDeniedStackSync($currentUser->getId());
+                }
+                return $result;
+            }
 
+        }
 		$return = self::getFileInfo($dirToCreate, $settings);
 		return $return;
 	}
@@ -718,11 +728,19 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
     public static function getMetadata($params)
     {
-        self::verifyToken();
+        $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
         $path = $params['path'];
-        $fileId = isset($params['fileId'])?$params['fileId']:null;
-        $apiManager = new ApiManagerOld();
-        $result = $apiManager->getMetadata($path,$fileId);
+        $id = $params['id'];
+        $apiManager = new ApiManager();
+        $result = $apiManager->getMetadata($_SESSION['access_token_v2'],$id,$path,$user);
+
+        if($result) {
+            $valor = json_decode($result);
+
+            if (isset($valor->error) && $valor->error === 403) {
+                self::permissionDeniedStackSync($user);
+            }
+        }
         return $result;
     }
 
@@ -883,15 +901,21 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
     public static function downloadFileStacksync($params)
     {
-        if( !isset($params['file_id']) || !isset($params['path'])) {
+        if( !isset($params['id']) || !isset($params['path'])) {
             throw new EyeMissingArgumentException('Missing or invalid file.');
         }
 
-        $apiManager = new ApiManagerOld();
-        $source = FSI::getFile($params['path']);
-        $content = $apiManager->downloadFile($params['file_id']);
-        if(strlen($content) > 0) {
-            $source->getRealFile()->putContents($content);
+        $file = FSI::getFile($params['path']);
+        $path = AdvancedPathLib::getPhpLocalHackPath($file->getRealFile()->getAbsolutePath());
+        $apiManager = new ApiManager();
+        $result = $apiManager->downloadMetadata($_SESSION['access_token_v2'],$params['id'],$path);
+
+        if($result) {
+            if (isset($result['error']) && $result['error'] === 403) {
+                $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
+                self::permissionDeniedStackSync($user);
+                return $result;
+            }
         }
 
         return $params['path'];
@@ -899,13 +923,15 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
     public static function startProgress($params)
     {
-        $apiManager = new ApiManagerOld();
+        $apiManager = new ApiManager();
         $metadatas = array();
         $result = array();
 
         for($i = 0; $i < count($params['files']); $i++) {
             if(is_array($params['files'][$i])) {
-                $apiManager->getSkel($params['files'][$i]['id'],$metadatas);
+                $component = FSI::getFile($params['files'][$i]['path']);
+                $path = self::getPathStacksync($component);
+                $apiManager->getSkel($_SESSION['access_token_v2'],$params['files'][$i]['is_file'],$params['files'][$i]['id'],$metadatas,$path);
             } else {
                 self::getSkelLocal($params['files'][$i],$metadatas,null);
             }
@@ -956,11 +982,11 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
     public static function copyFile($params)
     {
-        $apiManager = new ApiManagerOld();
-        $userName = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
+        $apiManager = new ApiManager();
+        $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
         $stacksync = false;
 
-        $pathStackSync = "home://~" . $userName . "/Stacksync";
+        $pathStackSync = "home://~" . $user->getName() . "/Stacksync";
         $pathOrig = null;
 
         if(strpos($params['orig'],$pathStackSync) !== false) {
@@ -976,23 +1002,28 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         }
 
         $file = null;
-        $folder = true;
+        $isFolder = true;
         $tmpFile = null;
         $filename = null;
         $pathinfo = null;
+        $pathAbsolute = null;
 
         if(!$params['file']['is_folder']) {
-            $folder = false;
-            if(array_key_exists('file_id',$params['file'])) {
-                self::verifyToken();
-                $fileContent = $apiManager->downloadFile($params['file']['file_id']);
+            $isFolder = false;
+            $tmpFile = new LocalFile('/var/tmp/' . date('Y_m_d_H_i_s') . '_' . $user->getId());
+            $pathAbsolute = AdvancedPathLib::getPhpLocalHackPath($tmpFile->getAbsolutePath());
+            if(array_key_exists('id',$params['file'])) {
+                $metadata = $apiManager->downloadMetadata($_SESSION['access_token_v2'],$params['file']['id'],$pathAbsolute);
+                if($metadata['status'] == 'KO') {
+                    if($metadata['error'] == 403) {
+                        self::permissionDeniedStackSync($user->getId());
+                    }
+                    return $metadata;
+                }
             } else {
                 $file = FSI::getFile($params['file']['path']);
-                $fileContent = $file->getContents();
+                $tmpFile->putContents($file->getContents());
             }
-
-            $tmpFile = new LocalFile('/var/tmp/' . date('Y_m_d_H_i_s') . '_' . ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId());
-            $tmpFile->putContents($fileContent);
         }
 
         if($pathOrig) {
@@ -1054,34 +1085,42 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 }
             }
 
-            $nameFolder = NULL;
+            $folder = NULL;
             if ($pathParent !== '/') {
                 $pos=strrpos($pathParent,'/');
-                $nameFolder = substr($pathParent,$pos+1);
+                $folder = substr($pathParent,$pos+1);
                 $pathParent = substr($pathParent,0,$pos+1);
             }
 
-            Logger::getLogger('sebas')->error('StackSyncIdParent:' . $pathParent . "::" . $nameFolder);
+            $parentId = false;
 
             if($folder) {
-                self::verifyToken();
-                $file_id = $apiManager->getParentFileId($pathParent,$nameFolder);
-                Logger::getLogger('sebas')->error('StackSyncIdParent:IdFolder' . $file_id);
-                if($file_id != -1) {
-                    self::verifyToken();
-                    $apiManager->createFolder($filename,$file_id);
-                }
+                $path = $pathParent . $folder . '/';
+                $lista = new stdClass();
+                $lista->path = $pathParent;
+                $lista->filename = $folder;
+                $lista->user_eyeos = $user->getId();
+                $u1db = json_decode($apiManager->callProcessU1db('parent',$lista));
 
-            } else {
-                $f = fopen($tmpFile->getPath(), "r");
-                if($f) {
-                    $apiManager->createFile($filename,$f,filesize($tmpFile->getPath()),$pathParent,$nameFolder);
-                    fclose($f);
+                if($u1db !== NULL && count($u1db) > 0) {
+                    $parentId = $u1db[0]->id;
                 }
+            } else {
+                $parentId = 'null';
+                $path = $pathParent;
             }
 
-
+            if($parentId) {
+                $metadata = $apiManager->createMetadata($_SESSION['access_token_v2'],$user->getId(),!$isFolder,$filename,$parentId,$path,$pathAbsolute);
+                if($metadata['status'] == 'KO') {
+                    if($metadata['error'] == 403) {
+                        self::permissionDeniedStackSync($user->getId());
+                    }
+                    return $metadata;
+                }
+            }
         }
+
 
         $pathDest = null;
         if (array_key_exists('parent',$params['file'])) {
@@ -1094,16 +1133,13 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             if ($pathOrig == $params['file']['path']) {
                 $pathDest = $params['dest'] . '/';
             } else {
-                //$pathDest = $params['dest'] . $params['file']['path'];
                 $pathDest = $params['dest'] . '/' . substr($params['file']['path'],strlen($pathOrig));
             }
         }
 
-        Logger::getLogger('sebas')->error('PathDestino:' . $pathDest);
-
         $pathDest .= $filename;
         $newFile = FSI::getFile($pathDest);
-        if($folder) {
+        if($isFolder) {
             $newFile->mkdir();
         } else {
             $tmpFile->copyTo($newFile);
@@ -1114,6 +1150,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $tmpFile->delete();
         }
 
+
         return $params;
     }
 
@@ -1123,8 +1160,8 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         try {
             if(!isset( $_SESSION['access_token_v2'])) {
                 $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
-                $apiManager =  new ApiManagerOld();
-                $token = $apiManager->getTokenDB($user);
+                $oauthManager =  new OAuthManager();
+                $token = $oauthManager->getToken($user);
 
                 if(strlen($token->getTkey()) > 0) {
                     $aux = new stdClass();
@@ -1174,7 +1211,6 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $access_token = $oauthManager->getAccessToken($token);
 
             if($access_token) {
-                Logger::getLogger('sebas')->error('Token:' . json_encode($access_token));
                 $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
                 $tokenDB = new Token();
                 $tokenDB->setUserID($user);
@@ -1187,9 +1223,42 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 }
             }
         } catch (Exception $e) {}
-
         return 0;
+    }
 
+    public static function getPathStacksync($component)
+    {
+        $path = $component->getPath();
+        $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
+        $userName = $user->getName();
+        $len = strlen("home://~" . $userName . "/Stacksync");
+        $pathU1db = substr($path,$len);
+        $lenfinal = strrpos($pathU1db,$component->getName());
+        $posfinal = $lenfinal > 1?$lenfinal-strlen($pathU1db)-1:$lenfinal-strlen($pathU1db);
+        $pathParent = substr($pathU1db,0,$posfinal);
+        $folder = NULL;
+        if ($pathParent !== '/') {
+            $pos=strrpos($pathParent,'/');
+            $folder = substr($pathParent,$pos+1);
+            $pathParent = substr($pathParent,0,$pos+1);
+        }
+
+        if($folder !== NULL) {
+            $result = $pathParent . $folder . '/';
+        } else {
+            $result = $pathParent;
+        }
+
+        return $result;
+    }
+
+    public static function permissionDeniedStackSync($user)
+    {
+        unset($_SESSION['access_token_v2']);
+        $oauthManager = new OAuthManager();
+        $token = new Token();
+        $token->setUserID($user);
+        $oauthManager->deleteToken($token);
     }
 }
 ?>

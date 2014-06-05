@@ -5,16 +5,16 @@ __author__ = 'root'
 import unittest
 import u1db
 import os
-from Metadata import Metadata
+from Metadata_v1 import Metadata_v1
 
-class MetadataTest (unittest.TestCase):
+class Metadata_v1Test (unittest.TestCase):
 
     def setUp(self):
-        self.sut = Metadata("test.u1db",{'oauth':{'token_key':'NKKN8XVZLP5X23X','token_secret':'59ZN54UEUD3ULRU','consumer_key':'keySebas','consumer_secret':'secretSebas'}})
+        self.sut = Metadata_v1("test_v1.u1db",{'oauth':{'token_key':'NKKN8XVZLP5X23X','token_secret':'59ZN54UEUD3ULRU','consumer_key':'keySebas','consumer_secret':'secretSebas'}})
 
     def tearDown(self):
         self.sut.db.close()
-        os.remove("test.u1db")
+        os.remove("test_v1.u1db")
 
     """
     method: insert
@@ -25,42 +25,44 @@ class MetadataTest (unittest.TestCase):
     def test_insert_called_array_insertCorrect(self):
         array = self.getArrayInsert()
         self.sut.insert(array)
-        self.sut.db.create_index("by-id", "id", "user_eyeos")
-        results = self.sut.db.get_from_index("by-id", "32565632156","eyeID_EyeosUser_2")
+        self.sut.db.create_index("by-fileid", "file_id", "user_eyeos")
+        results = self.sut.db.get_from_index("by-fileid", "-7755273878059615652","eyeos")
         self.assertEquals(array[1],results[0].content)
 
     """
-   method: select
-   when: called
-   with: id
-   should: returnArray
-   """
+    method: select
+    when: called
+    with: id
+    should: returnArray
+    """
     def test_select_called_id_returnArray(self):
         array = self.getArrayInsert()
         self.sut.insert(array)
-        data = self.sut.select(9873615,"eyeID_EyeosUser_2","/")
+        data = self.sut.select("null","eyeos")
         data.sort()
-        self.assertEquals(2,len(data))
+        self.assertEquals(array,data)
 
     """
-   method: update
-   when: called
-   with: array
-   should: updateCorrect
-   """
+    method: update
+    when: called
+    with: array
+    should: updateCorrect
+    """
     def test_update_called_array_updateCorrect(self):
         array = self.getArrayInsert()
         update = self.getArrayUpdate()
         self.sut.insert(array)
         self.sut.update(update)
-        self.sut.db.create_index("by-id","id","user_eyeos")
-        files = self.sut.db.get_from_index("by-id",str(32565632156),"eyeID_EyeosUser_2")
-        results = []
-        if len(files) > 0:
-            for file in files:
-                results.append(file.content)
+        self.sut.db.create_index("by-user","user_eyeos")
+        files = self.sut.db.get_from_index("by-user","eyeos")
 
-        self.assertEquals(update[1],results[0])
+        results = []
+        for file in files:
+            results.append(file.content)
+
+        results.sort()
+        self.assertEquals(update,results)
+
 
     """
     method: delete
@@ -73,21 +75,22 @@ class MetadataTest (unittest.TestCase):
         self.sut.insert(array)
         list = self.getArrayDelete()
         self.sut.delete(list)
-        self.sut.db.create_index("by-user", "user_eyeos")
-        files = self.sut.db.get_from_index("by-user","eyeID_EyeosUser_2")
+        self.sut.db.create_index("by-user", "eyeos_user")
+        files = self.sut.db.get_from_index("by-user","eyeos")
         self.assertEquals(0,len(files))
+
 
     """
     method: getParent
     when: called
     with: path
     should: returnArray
-    """
+      """
     def test_getParent_called_path_returnArray(self):
         array = self.getArrayParent()
         self.sut.insert(array)
-        data = self.sut.getParent('/documents/',"clients","eyeID_EyeosUser_2")
-        self.assertEquals(array[0],data[0])
+        data = self.sut.getParent('/Documents/prueba/',"hola","eyeos")
+        self.assertEquals(array[2],data[0])
 
     """
     method: deleteFolder
@@ -98,9 +101,9 @@ class MetadataTest (unittest.TestCase):
     def test_deleteFolder_called_idFolder_returnCorrect(self):
         array = self.getArrayDeleteFolder()
         self.sut.insert(array)
-        self.sut.deleteFolder("9873615","eyeID_EyeosUser_2","/documents/")
+        self.sut.deleteFolder("754050","eyeos")
         docs = self.sut.db.get_all_docs()
-        self.assertEquals(1,len(docs[1]))
+        self.assertEquals(0,len(docs[1]))
 
     """
     method: deleteMetadataUser
@@ -111,7 +114,7 @@ class MetadataTest (unittest.TestCase):
     def test_deleteMetadataUser_called_user_deleteCorrect(self):
         array = self.getArrayInsert()
         self.sut.insert(array)
-        self.sut.deleteMetadataUser('eyeID_EyeosUser_2')
+        self.sut.deleteMetadataUser('eyeos')
         docs = self.sut.db.get_all_docs()
         self.assertEquals(0,len(docs[1]))
 
@@ -124,49 +127,10 @@ class MetadataTest (unittest.TestCase):
     def test_selectMetadataUser_called_user_returnArray(self):
         array = self.getArrayInsert()
         self.sut.insert(array)
-        files = self.sut.selectMetadataUser('eyeID_EyeosUser_2')
+        files = self.sut.selectMetadataUser('eyeos')
         files.sort()
         self.assertEquals(array,files)
 
-    def getArrayInsert(self):
-        array = [{u'user_eyeos':u'eyeID_EyeosUser_2',u'status': u'NEW', u'is_root': False, u'version': 1, u'filename': u'clients', u'parent_id': u'null', u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': 9873615, u'user': u'eyeID_EyeosUser_2',u'is_folder':True},
-                {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'Client1.pdf',u'path':u'/clients/',u'id':32565632156,u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':3,u'parent_id':9873615,u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False},
-                {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'Client1.pdf',u'path':u'/',u'id':32565632157,u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':3,u'parent_id':u'null',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False}]
-        array.sort()
-        return array
-
-
-    def getArrayUpdate(self):
-        array = [{u'parent_old':9873615},
-                {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'Client2.pdf',u'path':u'/clients/',u'id':32565632156,u'size':775412,u'mimetype':u'application/pdf',u'status':u'CHANGED',u'version':3,u'parent_id':9873615,u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False}]
-        return array
-
-    def getArrayDelete(self):
-        array = [{u'id': 9873615,u'user_eyeos': u'eyeID_EyeosUser_2',u'parent_id':u'null'},
-                 {u'id': 32565632156,u'user_eyeos': u'eyeID_EyeosUser_2',u'parent_id':9873615},
-                 {u'id': 32565632157,u'user_eyeos': u'eyeID_EyeosUser_2',u'parent_id':u'null'}]
-        array.sort()
-        return array
-
-    def getArrayParent(self):
-        array = [{u'user_eyeos':u'eyeID_EyeosUser_2',u'status': u'CHANGED', u'is_root': False, u'version': 1, u'filename':u'clients', u'parent_id': u'null', u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/documents/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': 9873615, u'user': u'eyeID_EyeosUser_2',u'is_folder':True},
-                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'Client1.pdf',u'path':u'/documents/clients/',u'id':32565632156,u'size':775412,u'mimetype':u'application/pdf',u'status':u'CHANGED',u'version':3,u'parent_id':u'null',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False}]
-        array.sort()
-        return array
-
-    def getArrayDeleteFolder(self):
-        array = [{u'user_eyeos':u'eyeID_EyeosUser_2',u'status': u'CHANGED', u'is_root': False, u'version': 1, u'filename':u'clients', u'parent_id': 474411411, u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/documents/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': 9873615, u'user': u'eyeID_EyeosUser_2',u'is_folder':True},
-                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'Client1.pdf',u'path':u'/documents/clients/',u'id':32565632156,u'size':775412,u'mimetype':u'application/pdf',u'status':u'CHANGED',u'version':3,u'parent_id':9873615,u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False},
-                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'status': u'CHANGED', u'is_root': False, u'version': 1, u'filename':u'datos', u'parent_id': 474411411, u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/documents/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': 1478526, u'user': u'eyeID_EyeosUser_2',u'is_folder':True}]
-        array.sort()
-        return array
-
-
-    """
-    ##################################################################################################################################################
-                                                                    TEST CALENDAR
-    ##################################################################################################################################################
-    """
 
     """
     method: deleteEvent
@@ -337,6 +301,43 @@ class MetadataTest (unittest.TestCase):
         files.sort()
         self.assertEquals(self.getArrayDeleteCalendarAndEvents("NEW"),files)
 
+
+    def getArrayInsert(self):
+        array = [{u'user_eyeos': u'eyeos',u'status': None, u'mimetype': None, u'parent_file_id': u'null', u'checksum': None, u'filename': u'Root', u'is_root': True, u'version': None, u'file_id': u'null', u'is_folder': True, u'path': None, u'size': None, u'user': None},
+                 {u'user_eyeos': u'eyeos',u'status': u'NEW', u'mimetype': u'inode/directory', u'parent_file_id': u'null', u'server_modified': u'2013-11-11 15:40:45.784', u'checksum': 0, u'client_modified': u'2013-11-11 15:40:45.784', u'filename': u'helpFolder', u'is_root': False, u'version': 1, u'file_id': -7755273878059615652, u'is_folder': True, u'path': u'/', u'size': 0, u'user': u'web'}]
+        array.sort()
+        return array
+
+    def getArrayUpdate(self):
+        array = [{u'user_eyeos': u'eyeos',u'status': None, u'mimetype': None, u'parent_file_id': u'null', u'checksum': None, u'filename': u'Documents', u'is_root': True, u'version': None, u'file_id': u'null', u'is_folder': True, u'path': None, u'size': None, u'user': None},
+                 {u'user_eyeos': u'eyeos',u'status': u'NEW', u'mimetype': u'inode/directory', u'parent_file_id': u'null', u'server_modified': u'2013-11-11 15:40:45.784', u'checksum': 0, u'client_modified': u'2013-11-11 15:40:45.784', u'filename': u'helpFile', u'is_root': False, u'version': 1, u'file_id': -7755273878059615652, u'is_folder': False, u'path': u'/', u'size': 0, u'user': u'web'}]
+        array.sort()
+        return array
+
+    def getArrayDelete(self):
+        array = [{u'file_id': u'null',u'user_eyeos': u'eyeos'},
+                 {u'file_id': -7755273878059615652,u'user_eyeos': u'eyeos'}]
+        array.sort()
+        return array
+
+    def getArrayParent(self):
+        array = [{u'user_eyeos': u'eyeos',u'status': None, u'mimetype': None, u'parent_file_id': u'null', u'checksum': None, u'filename': u'Documents', u'is_root': True, u'version': None, u'file_id': u'754050', u'is_folder': True, u'path': u'/', u'size': None, u'user': None},
+                 {u'user_eyeos': u'eyeos',u'status': None, u'mimetype': None, u'parent_file_id': u'754050', u'checksum': None, u'filename': u'prueba', u'is_root': True, u'version': None, u'file_id': u'123456', u'is_folder': True, u'path': u'/Documents/', u'size': None, u'user': None},
+                 {u'user_eyeos': u'eyeos',u'status': None, u'mimetype': None, u'parent_file_id': u'123456', u'checksum': None, u'filename': u'hola', u'is_root': True, u'version': None, u'file_id': u'77777', u'is_folder': True, u'path': u'/Documents/prueba/', u'size': None, u'user': None},
+                 {u'user_eyeos': u'eyeos',u'status': None, u'mimetype': None, u'parent_file_id': u'123456', u'checksum': None, u'filename': u'pepe', u'is_root': True, u'version': None, u'file_id': u'88888', u'is_folder': True, u'path': u'/Documents/prueba/', u'size': None, u'user': None}]
+        return array
+
+    def getArrayDeleteFolder(self):
+        array = [{u'user_eyeos': u'eyeos',u'status': None, u'mimetype': None, u'parent_file_id': u'null', u'checksum': None, u'filename': u'Documents', u'is_root': True, u'version': u'1', u'file_id': u'754050', u'is_folder': True, u'path': u'/', u'size': None, u'user': None},
+                 {u'user_eyeos': u'eyeos',u'status': None, u'mimetype': None, u'parent_file_id': u'754050', u'checksum': None, u'filename': u'prueba', u'is_root': False, u'version': u'1', u'file_id': u'123456', u'is_folder': True, u'path': u'/Documents/', u'size': None, u'user': None},
+                 {u'user_eyeos': u'eyeos',u'status': None, u'mimetype': None, u'parent_file_id': u'123456', u'checksum': None, u'filename': u'hola.txt', u'is_root': False, u'version': u'3', u'file_id': u'77777', u'is_folder': False, u'path': u'/Documents/prueba/', u'size': u'6', u'user': None},
+                 {u'user_eyeos': u'eyeos',u'status': None, u'mimetype': None, u'parent_file_id': u'123456', u'checksum': None, u'filename': u'pepe.txt', u'is_root': False, u'version': u'2', u'file_id': u'88888', u'is_folder': False, u'path': u'/Documents/prueba/', u'size': u'15', u'user': None},
+                 {u'user_eyeos': u'eyeos',u'status': None, u'mimetype': None, u'parent_file_id': u'123456', u'checksum': None, u'filename': u'folder', u'is_root': False, u'version': u'1', u'file_id': u'99999', u'is_folder': True, u'path': u'/Documents/prueba/', u'size': None, u'user': None},
+                 {u'user_eyeos': u'eyeos',u'status': None, u'mimetype': None, u'parent_file_id': u'123456', u'checksum': None, u'filename': u'folder2', u'is_root': False, u'version': u'1', u'file_id': u'11111', u'is_folder': True, u'path': u'/Documents/prueba/', u'size': None, u'user': None},
+                 {u'user_eyeos': u'eyeos',u'status': None, u'mimetype': None, u'parent_file_id': u'11111', u'checksum': None, u'filename': u'test.txt', u'is_root': False, u'version': u'4', u'file_id': u'22222', u'is_folder': False, u'path': u'/Documents/prueba/folder2/', u'size': u'46', u'user': None}]
+        return array
+
+
     def getArrayInsertEvent(self):
         array = [{u'type':u'event',u'user_eyeos': u'eyeos',u'calendar': u'personal',u'status':u'NEW', u'isallday': u'0', u'timestart': u'201419160000', u'timeend':u'201419170000', u'repetition': u'None', u'finaltype': u'1', u'finalvalue': u'0', u'subject': u'Visita Médico', u'location': u'Barcelona', u'description': u'Llevar justificante'},
                  {u'type':u'event',u'user_eyeos': u'eyeos',u'calendar': u'laboral', u'status':u'NEW',u'isallday': u'1', u'timestart': u'201420160000', u'timeend':u'201420170000', u'repetition': u'None', u'finaltype': u'1', u'finalvalue': u'0', u'subject': u'Excursión', u'location': u'Girona', u'description': u'Mochila'},
@@ -385,3 +386,8 @@ class MetadataTest (unittest.TestCase):
                 {u'type':u'event',u'user_eyeos': u'eyeos',u'calendar': u'personal', u'status':u'' + status +'',u'isallday': u'1', u'timestart': u'201420160000', u'timeend':u'201420170000', u'repetition': u'None', u'finaltype': u'1', u'finalvalue': u'0', u'subject': u'Excursión', u'location': u'Girona', u'description': u'Mochila'}]
         array.sort()
         return array
+
+
+
+
+

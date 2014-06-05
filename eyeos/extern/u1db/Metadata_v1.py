@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 __author__ = 'root'
 
 import json
@@ -5,9 +7,9 @@ import u1db
 import os
 from settings import settings
 
-class Metadata:
+class Metadata_v1:
     def __init__(self, name, creds=None):
-        if name == "test.u1db":
+        if name == "test_v1.u1db":
             db = name
         else:
             db =  os.getcwd() + "/extern/u1db/" + name
@@ -23,66 +25,65 @@ class Metadata:
         for data in lista:
             self.db.create_doc_from_json(json.dumps(data))
 
-    def select(self,id,user,path):
+    def select(self,id,user):
         results = []
         if id != "null":
-            self.db.create_index("by-id-path", "id","user_eyeos","path")
-            files = self.db.get_from_index("by-id-path",str(id),user,path)
+            self.db.create_index("by-fileid", "file_id","user_eyeos")
+            files = self.db.get_from_index("by-fileid",str(id),user)
             for file in files:
                 results.append(file.content)
 
-        self.db.create_index("by-parent-path", "parent_id","user_eyeos","path")
-        files = self.db.get_from_index("by-parent-path",str(id),user,path + "*")
+        self.db.create_index("by-parentfileid", "parent_file_id","user_eyeos")
+        files = self.db.get_from_index("by-parentfileid",str(id),user)
+
         for file in files:
             results.append(file.content)
+
         return results
 
     def update(self,lista):
-        self.db.create_index("by-id-parent", "id","user_eyeos","parent_id")
-        parent = ''
+        self.db.create_index("by-fileid", "file_id","user_eyeos")
         for data in lista:
-            if data.has_key("parent_old"):
-                parent = str(data['parent_old'])
-            else:
-                id = str(data["id"])
-                user = data['user_eyeos']
-                files = self.db.get_from_index("by-id-parent",id,user,parent)
-                if len(files) > 0:
-                    file = files[0];
-                    file.set_json(json.dumps(data))
-                    self.db.put_doc(file)
+            id = str(data["file_id"])
+            user = data['user_eyeos']
+            files = self.db.get_from_index("by-fileid",id,user)
+            if len(files) > 0:
+                file = files[0];
+                file.set_json(json.dumps(data))
+                self.db.put_doc(file)
 
     def delete(self,lista):
-        self.db.create_index("by-id-parent", "id","user_eyeos","parent_id")
+        self.db.create_index("by-fileid", "file_id","user_eyeos")
         for data in lista:
-            id = str(data["id"])
+            id = str(data["file_id"])
             user = data['user_eyeos']
-            parent = str(data['parent_id'])
-            files = self.db.get_from_index("by-id-parent",id,user,parent)
+            files = self.db.get_from_index("by-fileid",id,user)
             if len(files) > 0:
                 self.db.delete_doc(files[0])
 
-    def getParent(self,path,filename,user):
+    def getParent(self,path,folderParent,user):
         results = []
-        self.db.create_index("by-path-filename", "path","filename","user_eyeos")
-        files = self.db.get_from_index("by-path-filename",path,filename,user)
-        if len(files) > 0:
-            results.append(files[0].content)
+        self.db.create_index("by-path", "path","user_eyeos")
+        files = self.db.get_from_index("by-path",path,user)
+        for file in files:
+            if file.content['filename'] == folderParent:
+                results.append(file.content)
+                break
         return results
 
-    def deleteFolder(self,idFolder,user,path):
-        self.db.create_index("by-parent-path", "parent_id","user_eyeos","path")
-        files = self.db.get_from_index("by-parent-path",str(idFolder),user,path + "*")
+    def deleteFolder(self,idFolder,user):
+        self.db.create_index("by-parentfileid", "parent_file_id","user_eyeos")
+        files = self.db.get_from_index("by-parentfileid",str(idFolder),user)
 
         if len(files) > 0:
             for file in files:
                 if file.content["is_folder"] == True:
-                    self.deleteFolder(file.content['id'],user,file.content['path'])
+                    self.deleteFolder(file.content['file_id'],user)
                 else:
                     self.db.delete_doc(file)
 
-        self.db.create_index("by-id-path", "id","user_eyeos","path")
-        files = self.db.get_from_index("by-id-path",str(idFolder),user,path)
+        self.db.create_index("by-fileid", "file_id","user_eyeos")
+        files = self.db.get_from_index("by-fileid",str(idFolder),user)
         if len(files) > 0:
             self.db.delete_doc(files[0])
 
@@ -101,12 +102,6 @@ class Metadata:
             for file in files:
                 result.append(file.content)
         return result
-
-    """
-    ##################################################################################################################################################
-                                                                    CALENDAR
-    ##################################################################################################################################################
-    """
 
     def deleteEvent(self,lista):
         self.updateEvent(lista)
@@ -212,3 +207,4 @@ class Metadata:
             for file in files:
                 result.append(file.content)
         return result
+

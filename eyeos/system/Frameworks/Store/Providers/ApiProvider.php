@@ -35,12 +35,13 @@ class ApiProvider
         return $this->exerciseMetadata($request);
     }
 
-    public function createMetadata($token,$file,$name,$parent = null)
+    public function createMetadata($token,$file,$name,$parent = null,$path = null)
     {
         $request = $this->getRequest('create',$token);
         $request->metadata->file = $file;
-        $request->metadata->name = $name;
-        $request->metadata->parent = $parent;
+        $request->metadata->filename = $name;
+        $request->metadata->parent_id = $parent;
+        $request->metadata->path = $path;
         return $this->exerciseMetadata($request);
     }
 
@@ -52,11 +53,12 @@ class ApiProvider
         return $this->exerciseMetadata($request);
     }
 
-    public function downloadMetadata($token,$id)
+    public function downloadMetadata($token,$id,$path)
     {
         $resp = json_decode('{"error":-1}');
         $request = $this->getRequest('download',$token);
         $request->metadata->id = $id;
+        $request->metadata->path = $path;
         $result = $this->accessorProvider->getProcessOauthCredentials(json_encode($request));
 
         if($result) {
@@ -94,12 +96,12 @@ class ApiProvider
         $resp = json_decode('{"error":-1}');
         $result = $this->accessorProvider->getProcessOauthCredentials(json_encode($request));
         if($result) {
-            if($result !== 'false' && $result !== '403') {
+            if($result === 'true') {
+                $resp = json_decode('{"status":true}');
+            } else if($result !== 'false' && $result !== '403') {
                 $resp = json_decode($result);
             } else if($result === '403'){
                 $resp = json_decode('{"error":403}');
-            } else if($result === 'true') {
-                $resp = json_decode('{"status":true}');
             }
         }
 

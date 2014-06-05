@@ -362,10 +362,10 @@ qx.Class.define('eyeos.files.IconView', {
 					var checknum = this.getManager().getViewManager().getController().getApplication().getChecknum();
                     if(self.getViewManager().getController().__isStacksync(file.getPath())) {
                         var params = new Object();
-                        params.file_id = self.getViewManager().getController().__getFileId(file.getPath(),file.getName());
+                        params.id = self.getViewManager().getController().__getFileId(file.getPath(),file.getName());
                         params.path = absolutePath;
 
-                        if(params.file_id) {
+                        if(params.id) {
                             eyeos.callMessage(checknum,"downloadFileStacksync",params,function(e) {
                                 eyeos.openFile(absolutePath, checknum);
                             },this);

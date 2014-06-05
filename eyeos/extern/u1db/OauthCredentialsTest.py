@@ -5,6 +5,8 @@ from OauthCredentials import OauthCredentials
 from mock import Mock
 from requests_oauthlib import OAuth1Session
 import os
+import urllib
+import json
 
 class OauthCredentialsTest (unittest.TestCase):
     def setUp(self):
@@ -30,7 +32,7 @@ class OauthCredentialsTest (unittest.TestCase):
     should: returnToken
     """
     def test_getRequestToken_called_consumerAndCallback_returnToken(self):
-        expected = {"key":"HIJK","secret":"LMN"}
+        expected = '{"secret": "LMN", "key": "HIJK"}'
         oauth = OAuth1Session(self.key, client_secret=self.secret,callback_uri=self.callbackurl)
         oauth.fetch_request_token = Mock()
         oauth.fetch_request_token.return_value = {"oauth_token":"HIJK","oauth_token_secret":"LMN"}
@@ -45,7 +47,7 @@ class OauthCredentialsTest (unittest.TestCase):
     should: returnToken
     """
     def test_getAccessToken_called_consumerAndRequestTokenAndVerifier_returnToken(self):
-        expected = {"key":"MNOP","secret":"STVM"}
+        expected = '{"secret": "STVM", "key": "MNOP"}'
         oauth = OAuth1Session(self.key, client_secret=self.secret,resource_owner_key="ABCD",resource_owner_secret="EFG",verifier='verifier')
         oauth.fetch_access_token = Mock()
         oauth.fetch_access_token.return_value = {"oauth_token":"MNOP","oauth_token_secret":"STVM"}
@@ -57,46 +59,46 @@ class OauthCredentialsTest (unittest.TestCase):
     """
     method: getMetadata
     when: called
-    with: accessTokenAndFileAndFileId
+    with: accessTokenAndIsFileAndFileId
     should: returnJsonMetadata
     """
-    def test_getMetadata_called_accessTokenAndFileAndId_returnJsonMetadata(self):
+    def test_getMetadata_called_accessTokenAndIsFileAndId_returnJsonMetadata(self):
         fileId = 32565632156;
-        metadataIn = {"name":"Client1.pdf","path":"/documents/clients/Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"DELETED","version":3,"parent":None,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}
-        metadataOut = '{"status": "DELETED", "parent": "null", "user": "eyeos", "server_modified": "2013-03-08 10:36:41.997", "path": "/documents/clients/Client1.pdf", "id": 32565632156, "size": 775412, "mimetype": "application/pdf", "name": "Client1.pdf", "client_modified": "2013-03-08 10:36:41.997", "version": 3}'
+        metadataIn = {"filename":"Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"DELETED","version":3,"parent_id":None,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":False}
+        metadataOut = '{"status": "DELETED", "is_folder": false, "user": "eyeos", "server_modified": "2013-03-08 10:36:41.997", "id": 32565632156, "size": 775412, "mimetype": "application/pdf", "client_modified": "2013-03-08 10:36:41.997", "filename": "Client1.pdf", "parent_id": "null", "version": 3}'
         self.exerciseMetadata(metadataIn,metadataOut,True,fileId)
 
     """
     method: getMetadata
     when: called
-    with: accessTokenAndFolderAndId
+    with: accessTokenAndIsFolderAndId
     should: returnJsonMetadata
     """
-    def test_getMetadata_called_accessTokenAndFolderAndId_returnJsonMetadata(self):
+    def test_getMetadata_called_accessTokenAndIsFolderAndId_returnJsonMetadata(self):
         folderId = 9873615
-        metadataIn = {"name":"clients","path":"/documents/clients","id":9873615,"status":"NEW","version":1,"parent":None,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":False}
-        metadataOut = '{"status": "NEW", "is_root": false, "version": 1, "name": "clients", "parent": "null", "server_modified": "2013-03-08 10:36:41.997", "path": "/documents/clients", "client_modified": "2013-03-08 10:36:41.997", "id": 9873615, "user": "eyeos"}'
+        metadataIn = {"filename":"clients","id":9873615,"status":"NEW","version":1,"parent_id":None,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":False,"is_folder":True}
+        metadataOut = '{"status": "NEW", "parent_id": "null", "version": 1, "user": "eyeos", "server_modified": "2013-03-08 10:36:41.997", "client_modified": "2013-03-08 10:36:41.997", "is_root": false, "id": 9873615, "is_folder": true, "filename": "clients"}'
         self.exerciseMetadata(metadataIn,metadataOut,False,folderId)
 
     """
     method: getMetadata
     when: called
-    with: accessTokenAndFolderAndIdAndContents
+    with: accessTokenAndIsFolderAndIdAndContents
     should: returnJsonMetadata
     """
-    def test_getMetadata_called_accessTokenAndFolderAndIdAndContents_returnJsonMetadata(self):
+    def test_getMetadata_called_accessTokenAndIsFolderAndIdAndContents_returnJsonMetadata(self):
         folderId = 9873615
-        metadataIn = {"name":"clients","path":"/documents/clients","id":9873615,"status":"NEW","version":1,"parent":None,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","contents":[{"name":"Client1.pdf","path":"/documents/clients/Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"DELETED","version":3,"parent":-348534824681,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":False}]}
-        metadataOut = '{"status": "NEW", "version": 1, "name": "clients", "parent": "null", "server_modified": "2013-03-08 10:36:41.997", "path": "/documents/clients", "client_modified": "2013-03-08 10:36:41.997", "id": 9873615, "contents": [{"status": "DELETED", "parent": -348534824681, "is_root": false, "user": "eyeos", "server_modified": "2013-03-08 10:36:41.997", "path": "/documents/clients/Client1.pdf", "id": 32565632156, "size": 775412, "mimetype": "application/pdf", "name": "Client1.pdf", "client_modified": "2013-03-08 10:36:41.997", "version": 3}], "user": "eyeos"}'
+        metadataIn = {"filename":"clients","id":9873615,"status":"NEW","version":1,"parent_id":None,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":True,"contents":[{"filename":"Client1.pdf","path":"/documents/clients/Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"DELETED","version":3,"parent_id":-348534824681,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":False,"is_folder":False}]}
+        metadataOut = '{"status": "NEW", "parent_id": "null", "version": 1, "user": "eyeos", "server_modified": "2013-03-08 10:36:41.997", "contents": [{"status": "DELETED", "is_folder": false, "is_root": false, "user": "eyeos", "server_modified": "2013-03-08 10:36:41.997", "path": "/documents/clients/Client1.pdf", "id": 32565632156, "size": 775412, "mimetype": "application/pdf", "client_modified": "2013-03-08 10:36:41.997", "filename": "Client1.pdf", "parent_id": -348534824681, "version": 3}], "client_modified": "2013-03-08 10:36:41.997", "id": 9873615, "is_folder": true, "filename": "clients"}'
         self.exerciseMetadata(metadataIn,metadataOut,False,folderId,"/contents")
 
     """
     method: getMetadata
     when: called
-    with: accessTokenAndFolderAndId
+    with: accessTokenAndIsFolderAndId
     should: returnException
     """
-    def test_getMetadata_called_accessTokenAndFolderAndId_returnException(self):
+    def test_getMetadata_called_accessTokenAndIsFolderAndId_returnException(self):
         folderId = -1
         metadataIn =  {"error":404, "description": "File or folder not found."}
         metadataOut = 'false'
@@ -105,10 +107,10 @@ class OauthCredentialsTest (unittest.TestCase):
     """
    method: getMetadata
    when: called
-   with: accessTokenAndFolderAndId
+   with: accessTokenAndIsFolderAndId
    should: returnPermissionDenied
    """
-    def test_getMetadata_called_accessTokenAndFolderAndId_returnPermissionDenied(self):
+    def test_getMetadata_called_accessTokenAndIsFolderAndId_returnPermissionDenied(self):
         folderId = 9873615
         metadataIn =  {"error":403, "description": "Forbidden. The requester does not have permission to access the specified resource"}
         metadataOut = 403
@@ -117,100 +119,100 @@ class OauthCredentialsTest (unittest.TestCase):
     """
     method: accessTokenAndFileAndNameAndParent
     when: called
-    with: accessTokenAndFileAndIdAndNameAndParent
+    with: accessTokenAndIsFileAndIdAndNameAndParent
     should: returnJsonMetadataRename
     """
-    def test_updateMetadata_called_accessTokenAndFileAndIdAndNameAndParent_returnJsonMetadataRename(self):
+    def test_updateMetadata_called_accessTokenAndIsFileAndIdAndNameAndParent_returnJsonMetadataRename(self):
         fileId = 32565632156;
         parentId = 123456
         name = "prueba.pdf"
         data = {}
-        data['name'] = name
-        data['parent'] = parentId
-        metadataIn = {"name":"prueba.pdf","path":"/documents/clients/prueba.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":3,"parent":123456,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}
-        metadataOut = '{"status": "CHANGED", "parent": 123456, "user": "eyeos", "server_modified": "2013-03-08 10:36:41.997", "path": "/documents/clients/prueba.pdf", "id": 32565632156, "size": 775412, "mimetype": "application/pdf", "name": "prueba.pdf", "client_modified": "2013-03-08 10:36:41.997", "version": 3}'
+        data['filename'] = name
+        data['parent_id'] = parentId
+        metadataIn = {"filename":"prueba.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":3,"parent_id":123456,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":False}
+        metadataOut = '{"status": "CHANGED", "is_folder": false, "user": "eyeos", "server_modified": "2013-03-08 10:36:41.997", "id": 32565632156, "size": 775412, "mimetype": "application/pdf", "client_modified": "2013-03-08 10:36:41.997", "filename": "prueba.pdf", "parent_id": 123456, "version": 3}'
         self.exerciseUpdateMetadata(metadataIn,metadataOut,True,fileId,name,parentId,data)
 
     """
     method: updateMetadata
     when: called
-    with: accessTokenAndFileAndIdAndParent
+    with: accessTokenAndIsFileAndIdAndParent
     should: returnJsonMetadataMove
     """
-    def test_updateMetadata_called_accessTokenAndFileAndIdAndParent_returnJsonMetadataMove(self):
+    def test_updateMetadata_called_accessTokenAndIsFileAndIdAndParent_returnJsonMetadataMove(self):
         fileId = 32565632156;
         parentId = 789456
         data = {}
-        data['parent'] = parentId
-        metadataIn = {"name":"Client1.pdf","path":"/documents/clients/Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":3,"parent":789456,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}
-        metadataOut = '{"status": "CHANGED", "parent": 789456, "user": "eyeos", "server_modified": "2013-03-08 10:36:41.997", "path": "/documents/clients/Client1.pdf", "id": 32565632156, "size": 775412, "mimetype": "application/pdf", "name": "Client1.pdf", "client_modified": "2013-03-08 10:36:41.997", "version": 3}'
+        data['parent_id'] = parentId
+        metadataIn = {"filename":"Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":3,"parent_id":789456,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":False}
+        metadataOut = '{"status": "CHANGED", "is_folder": false, "user": "eyeos", "server_modified": "2013-03-08 10:36:41.997", "id": 32565632156, "size": 775412, "mimetype": "application/pdf", "client_modified": "2013-03-08 10:36:41.997", "filename": "Client1.pdf", "parent_id": 789456, "version": 3}'
         self.exerciseUpdateMetadata(metadataIn,metadataOut,True,fileId,None,parentId,data)
 
     """
     method: updateMetadata
     when: called
-    with: accessTokenAndFileAndId
+    with: accessTokenAndIsFileAndId
     should: returnJsonMetadataMove
     """
-    def test_updateMetadata_called_accessTokenAndFileAndId_returnJsonMetadataMove(self):
+    def test_updateMetadata_called_accessTokenAndIsFileAndId_returnJsonMetadataMove(self):
         fileId = 32565632156;
         data = {}
-        metadataIn = {"name":"Client1.pdf","path":"/documents/clients/Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":3,"parent":295830,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}
-        metadataOut = '{"status": "CHANGED", "parent": 295830, "user": "eyeos", "server_modified": "2013-03-08 10:36:41.997", "path": "/documents/clients/Client1.pdf", "id": 32565632156, "size": 775412, "mimetype": "application/pdf", "name": "Client1.pdf", "client_modified": "2013-03-08 10:36:41.997", "version": 3}'
+        metadataIn = {"filename":"Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":3,"parent_id":295830,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":False}
+        metadataOut = '{"status": "CHANGED", "is_folder": false, "user": "eyeos", "server_modified": "2013-03-08 10:36:41.997", "id": 32565632156, "size": 775412, "mimetype": "application/pdf", "client_modified": "2013-03-08 10:36:41.997", "filename": "Client1.pdf", "parent_id": 295830, "version": 3}'
         self.exerciseUpdateMetadata(metadataIn,metadataOut,True,fileId,None,None,data)
 
     """
     method: updateMeta
     when: called
-    with: accessTokenAndFolderAndIdNameAndParent
+    with: accessTokenAndIsFolderAndIdNameAndParent
     should: returnJsonMetadataRename
     """
-    def test_updateMetadata_called_accessTokenAndFolderAndIdAndNameAndParent_returnJsonMetadataRename(self):
+    def test_updateMetadata_called_accessTokenAndIsFolderAndIdAndNameAndParent_returnJsonMetadataRename(self):
         folderId = 9873615
         parentId = 32565632156
         name = "images"
         data = {}
-        data['name'] = name
-        data['parent'] = parentId
-        metadataIn = {"name":"images","path":"/documents/images","id":9873615,"status":"NEW","version":1,"parent":None,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":False}
-        metadataOut = '{"status": "NEW", "is_root": false, "version": 1, "name": "images", "parent": "null", "server_modified": "2013-03-08 10:36:41.997", "path": "/documents/images", "client_modified": "2013-03-08 10:36:41.997", "id": 9873615, "user": "eyeos"}'
+        data['filename'] = name
+        data['parent_id'] = parentId
+        metadataIn = {"filename":"images","id":9873615,"status":"NEW","version":1,"parent_id":None,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":False,"is_folder":True}
+        metadataOut = '{"status": "NEW", "parent_id": "null", "version": 1, "user": "eyeos", "server_modified": "2013-03-08 10:36:41.997", "client_modified": "2013-03-08 10:36:41.997", "is_root": false, "id": 9873615, "is_folder": true, "filename": "images"}'
         self.exerciseUpdateMetadata(metadataIn,metadataOut,False,folderId,name,parentId,data)
 
     """
     method: updateMetadata
     when: called
-    with: accessTokenAndFolderAndIdAndParent
+    with: accessTokenAndIsFolderAndIdAndParent
     should: returnJsonMetadataMove
     """
-    def test_updateMetadata_called_accessTokenAndFolderAndIdAndParent_returnJsonMetadataMove(self):
+    def test_updateMetadata_called_accessTokenAndIsFolderAndIdAndParent_returnJsonMetadataMove(self):
         folderId = 9873615
         parentId = 32565632156
         data = {}
-        data['parent'] = parentId
-        metadataIn = {"name":"images","path":"/documents/images","id":9873615,"status":"NEW","version":1,"parent":None,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":False}
-        metadataOut = '{"status": "NEW", "is_root": false, "version": 1, "name": "images", "parent": "null", "server_modified": "2013-03-08 10:36:41.997", "path": "/documents/images", "client_modified": "2013-03-08 10:36:41.997", "id": 9873615, "user": "eyeos"}'
+        data['parent_id'] = parentId
+        metadataIn = {"filename":"images","id":9873615,"status":"NEW","version":1,"parent_id":None,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":False,"is_folder":True}
+        metadataOut = '{"status": "NEW", "parent_id": "null", "version": 1, "user": "eyeos", "server_modified": "2013-03-08 10:36:41.997", "client_modified": "2013-03-08 10:36:41.997", "is_root": false, "id": 9873615, "is_folder": true, "filename": "images"}'
         self.exerciseUpdateMetadata(metadataIn,metadataOut,False,folderId,None,parentId,data)
 
     """
     method: updateMetadata
     when: called
-    with: accessTokenAndFolderAndId
+    with: accessTokenAndIsFolderAndId
     should: returnJsonMetadataRemove
     """
-    def test_updateMetadata_called_accessTokenAndFolderAndId_returnJsonMetadataRemove(self):
+    def test_updateMetadata_called_accessTokenAndIsFolderAndId_returnJsonMetadataRemove(self):
         folderId = 9873615
         data = {}
-        metadataIn = {"name":"images","path":"/documents/images","id":9873615,"status":"NEW","version":1,"parent":None,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":False}
-        metadataOut = '{"status": "NEW", "is_root": false, "version": 1, "name": "images", "parent": "null", "server_modified": "2013-03-08 10:36:41.997", "path": "/documents/images", "client_modified": "2013-03-08 10:36:41.997", "id": 9873615, "user": "eyeos"}'
+        metadataIn = {"filename":"images","path":"/documents/images","id":9873615,"status":"NEW","version":1,"parent_id":None,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":False,"is_folder":True}
+        metadataOut = '{"status": "NEW", "is_folder": true, "is_root": false, "user": "eyeos", "server_modified": "2013-03-08 10:36:41.997", "path": "/documents/images", "id": 9873615, "client_modified": "2013-03-08 10:36:41.997", "filename": "images", "parent_id": "null", "version": 1}'
         self.exerciseUpdateMetadata(metadataIn,metadataOut,False,folderId,None,None,data)
 
     """
     method: updateMetadata
     when: called
-    with: accessTokenAndFolderAndId
+    with: accessTokenAndIsFolderAndId
     should: returnException
     """
-    def test_updateMetadata_called_accessTokenAndFolderAndId_returnException(self):
+    def test_updateMetadata_called_accessTokenAndIsFolderAndId_returnException(self):
         folderId = 9873615
         data = {}
         metadataIn =  {"error":404, "description": "File or folder not found."}
@@ -220,10 +222,10 @@ class OauthCredentialsTest (unittest.TestCase):
     """
       method: updateMetadata
       when: called
-      with: accessTokenAndFolderAndId
+      with: accessTokenAndIsFolderAndId
       should: returnPermissionDenied
       """
-    def test_updateMetadata_called_accessTokenAndFolderAndId_returnPermissionDenied(self):
+    def test_updateMetadata_called_accessTokenAndIsFolderAndId_returnPermissionDenied(self):
         folderId = 9873615
         data = {}
         metadataIn =  {"error":403, "description": "Forbidden. The requester does not have permission to access the specified resource."}
@@ -233,89 +235,77 @@ class OauthCredentialsTest (unittest.TestCase):
     """
     method: createMetadata
     when: called
-    with: accessTokenAndFileAndNameAndParent
+    with: accessTokenAndIsFileAndNameAndParentAndPath
     should: returnJsonMetadata
     """
-    def test_createMetadata_called_accessTokenAndFileAndNameAndParent_returnJsonMetadata(self):
-        name = "Client1.pdf"
+    def test_createMetadata_called_accessTokenAndIsFileAndNameAndParentAndPath_returnJsonMetadata(self):
+        name = "Client1~prueba.pdf"
         parent = 32565632156
-        data = {}
-        data['name'] = name
-        data['parent'] = parent
-        metadataIn = {"name":"Client1.pdf","path":"/documents/clients/Client1.pdf","id":32565632156,"parent":-348534824681,"user":"eyeos"}
-        metadataOut = '{"path": "/documents/clients/Client1.pdf", "user": "eyeos", "name": "Client1.pdf", "parent": -348534824681, "id": 32565632156}'
-        self.exerciseCreateMetadata(metadataIn,metadataOut,True,name,parent,data)
+        metadataIn = {"filename":"Client1.pdf","id":32565632156,"parent_id":-348534824681,"user":"eyeos"}
+        metadataOut = '{"parent_id": -348534824681, "user": "eyeos", "id": 32565632156, "filename": "Client1.pdf"}'
+        self.exerciseCreateMetadata(metadataIn,metadataOut,True,name,parent)
 
     """
     method: createMetadata
     when: called
-    with: accessTokenAndFileAndName
+    with: accessTokenAndIsFileAndName
     should: returnJsonMetadata
     """
-    def test_createMetadata_called_accessTokenAndFileAndName_returnJsonMetadata(self):
+    def test_createMetadata_called_accessTokenAndIsFileAndName_returnJsonMetadata(self):
         name = "Client1.pdf"
-        data = {}
-        data['name'] = name
-        metadataIn = {"name":"Client1.pdf","path":"/documents/clients/Client1.pdf","id":32565632156,"parent":-348534824681,"user":"eyeos"}
-        metadataOut = '{"path": "/documents/clients/Client1.pdf", "user": "eyeos", "name": "Client1.pdf", "parent": -348534824681, "id": 32565632156}'
-        self.exerciseCreateMetadata(metadataIn,metadataOut,True,name,None,data)
+        metadataIn = {"filename":"Client1.pdf","id":32565632156,"parent_id":-348534824681,"user":"eyeos"}
+        metadataOut = '{"parent_id": -348534824681, "user": "eyeos", "id": 32565632156, "filename": "Client1.pdf"}'
+        self.exerciseCreateMetadata(metadataIn,metadataOut,True,name,None)
 
 
     """
     method: createMetadata
     when: called
-    with: accessTokenAndFolderAndNameAndParent
+    with: accessTokenAndIsFolderAndNameAndParent
     should: returnJsonMetadata
     """
-    def test_createMetadata_called_accessTokenAndFolderAndNameAndParent_returnJsonMetadata(self):
+    def test_createMetadata_called_accessTokenAndIsFolderAndNameAndParent_returnJsonMetadata(self):
         name = 'clients'
         parent = -348534824681
-        data = {}
-        data['name'] = name
-        data['parent'] = parent
-        metadataIn = {"name":"clients","path":"/documents/clients","id":9873615,"parent":-348534824681,"user":"eyeos"}
-        metadataOut = '{"path": "/documents/clients", "user": "eyeos", "name": "clients", "parent": -348534824681, "id": 9873615}'
-        self.exerciseCreateMetadata(metadataIn,metadataOut,False,name,parent,data)
+        metadataIn = {"filename":"clients","id":9873615,"parent_id":-348534824681,"user":"eyeos"}
+        metadataOut = '{"parent_id": -348534824681, "user": "eyeos", "id": 9873615, "filename": "clients"}'
+        self.exerciseCreateMetadata(metadataIn,metadataOut,False,name,parent)
 
     """
     method: createMetadata
     when: called
-    with: accessTokenAndFolderAndName
+    with: accessTokenAndIsFolderAndName
     should: returnJsonMetadata
     """
-    def test_createMetadata_called_accessTokenAndFolderAndName_returnJsonMetadata(self):
+    def test_createMetadata_called_accessTokenAndIsFolderAndName_returnJsonMetadata(self):
         name = 'clients'
-        data = {}
-        data['name'] = name
-        metadataIn = {"name":"clients","path":"/clients","id":9873615,"parent":None,"user":"eyeos"}
-        metadataOut = '{"path": "/clients", "user": "eyeos", "name": "clients", "parent": "null", "id": 9873615}'
-        self.exerciseCreateMetadata(metadataIn,metadataOut,False,name,None,data)
+        metadataIn = {"filename":"clients","id":9873615,"parent_id":None,"user":"eyeos"}
+        metadataOut = '{"parent_id": "null", "user": "eyeos", "id": 9873615, "filename": "clients"}'
+        self.exerciseCreateMetadata(metadataIn,metadataOut,False,name,None)
 
     """
     method: createMetadata
     when: called
-    with: accessTokenAndFolderAndName
+    with: accessTokenAndIsFolderAndName
     should: returnException
     """
-    def test_createMetadata_called_accessTokenAndFolderAndName_returnException(self):
-        name = None
-        data = {}
+    def test_createMetadata_called_accessTokenAndIsFolderAndName_returnException(self):
+        name = "prueba"
         metadataIn =  {"error":400, "description": "Bad input parameter"}
         metadataOut = 'false'
-        self.exerciseCreateMetadata(metadataIn,metadataOut,False,name,None,data)
+        self.exerciseCreateMetadata(metadataIn,metadataOut,False,name,None)
 
     """
    method: createMetadata
    when: called
-   with: accessTokenAndFolderAndName
+   with: accessTokenAndIsFolderAndName
    should: returnPermissionDenied
    """
-    def test_createMetadata_called_accessTokenAndFolderAndName_returnPermissionDenied(self):
-        name = None
-        data = {}
+    def test_createMetadata_called_accessTokenAndIsFolderAndName_returnPermissionDenied(self):
+        name = "prueba"
         metadataIn =  {"error":403, "description": "Forbidden. The requester does not have permission to access the specified resource."}
         metadataOut = 403
-        self.exerciseCreateMetadata(metadataIn,metadataOut,False,name,None,data)
+        self.exerciseCreateMetadata(metadataIn,metadataOut,False,name,None)
 
     """
     method: uploadFile
@@ -355,7 +345,7 @@ class OauthCredentialsTest (unittest.TestCase):
     """
     def test_downloadFile_called_accessTokenAndId_returnContent(self):
         fileId = 123456
-        data = 'Esto es una prueba'
+        data = 'true'
         self.exerciseDonwloadFile(fileId,data,data)
 
 
@@ -382,44 +372,44 @@ class OauthCredentialsTest (unittest.TestCase):
     """
     method: deleteMetadata
     when: called
-    with: accessTokenAndFileAndId
+    with: accessTokenAndIsFileAndId
     should: returnJsonMetadata
     """
-    def test_deleteMetadata_called_accessTokenAndFileAndId_returnJsonMetadata(self):
+    def test_deleteMetadata_called_accessTokenAndIsFileAndId_returnJsonMetadata(self):
         fileId = 32565632156
-        metadataIn = {"name":"Client1.pdf","path":"/documents/clients/Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"DELETED","version":3,"parent":-348534824681,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}
-        metadataOut = '{"status": "DELETED", "parent": -348534824681, "user": "eyeos", "server_modified": "2013-03-08 10:36:41.997", "path": "/documents/clients/Client1.pdf", "id": 32565632156, "size": 775412, "mimetype": "application/pdf", "name": "Client1.pdf", "client_modified": "2013-03-08 10:36:41.997", "version": 3}'
+        metadataIn = {"filename":"Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"DELETED","version":3,"parent_id":-348534824681,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":False}
+        metadataOut = '{"status": "DELETED", "is_folder": false, "user": "eyeos", "server_modified": "2013-03-08 10:36:41.997", "id": 32565632156, "size": 775412, "mimetype": "application/pdf", "client_modified": "2013-03-08 10:36:41.997", "filename": "Client1.pdf", "parent_id": -348534824681, "version": 3}'
         self.exerciseDeleteMetadata(metadataIn,metadataOut,True,fileId)
 
     """
     method: deleteMetadata
     when: called
-    with: accessTokenAndFolderAndId
+    with: accessTokenAndIsFolderAndId
     should: returnJsonMetadata
     """
-    def test_deleteMetadata_called_accessTokenAndFolderAndId_returnJsonMetadata(self):
+    def test_deleteMetadata_called_accessTokenAndIsFolderAndId_returnJsonMetadata(self):
         folderId = 9873615
-        metadataIn = {"name":"clients","path":"/documents/clients","id":9873615,"status":"DELETED","version":3,"parent":-348534824681,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}
-        metadataOut = '{"status": "DELETED", "version": 3, "name": "clients", "parent": -348534824681, "server_modified": "2013-03-08 10:36:41.997", "path": "/documents/clients", "client_modified": "2013-03-08 10:36:41.997", "id": 9873615, "user": "eyeos"}'
+        metadataIn = {"filename":"clients","id":9873615,"status":"DELETED","version":3,"parent_id":-348534824681,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":True}
+        metadataOut = '{"status": "DELETED", "parent_id": -348534824681, "version": 3, "user": "eyeos", "server_modified": "2013-03-08 10:36:41.997", "client_modified": "2013-03-08 10:36:41.997", "id": 9873615, "is_folder": true, "filename": "clients"}'
         self.exerciseDeleteMetadata(metadataIn,metadataOut,False,folderId)
 
     """
     method: deleteMetadata
     when: called
-    with: accessTokenAndFolderAndId
+    with: accessTokenAndIsFolderAndId
     should: returnException
     """
-    def test_deleteMetadata_called_accessTokenAndFolderAndId_returnException(self):
+    def test_deleteMetadata_called_accessTokenAndIsFolderAndId_returnException(self):
         folderId = -1
         self.exerciseDeleteMetadata({"error":404, "description": "File or folder not found"},'false',False,folderId)
 
     """
     method: deleteMetadata
     when: called
-    with: accessTokenAndFolderAndId
+    with: accessTokenAndIsFolderAndId
     should: returnException
     """
-    def test_deleteMetadata_called_accessTokenAndFolderAndId_returnException(self):
+    def test_deleteMetadata_called_accessTokenAndIsFolderAndId_returnException(self):
         folderId = -1
         self.exerciseDeleteMetadata({"error":403, "description": "Forbidden. The requester does not have permission to access the specified resource."},403,False,folderId)
 
@@ -443,12 +433,34 @@ class OauthCredentialsTest (unittest.TestCase):
         oauth.put.assert_called_once_with(self.resourceurl + self.getResource(file) + "/" + str(id),data)
         self.assertEquals(metadataOut,result)
 
-    def exerciseCreateMetadata(self,metadataIn,metadataOut,file,name,parent,data):
+    def exerciseCreateMetadata(self,metadataIn,metadataOut,file,name,parent):
+        path = None
+        dataFile = None
+        if file == True:
+            path = "prueba.txt"
+            self.file.write("Esto es una prueba")
+            self.file.close()
+            self.file = open(path,"r")
+            dataFile = self.file.read()
+
+        data = {}
+        data['name'] = name
+        if parent != None:
+            data['parent'] = str(parent)
+
+        url = self.resourceurl + self.getResource(file)
+
+        if file:
+            params = urllib.urlencode(data)
+            url += "?" + params
+        else:
+            dataFile = json.dumps(data)
+
         oauth = self.createOauthSession()
         oauth.post = Mock()
         oauth.post.return_value = metadataIn
-        result = self.oauthCredentials.createMetadata(oauth,file,name,parent)
-        oauth.post.assert_called_once_with(self.resourceurl + self.getResource(file),data)
+        result = self.oauthCredentials.createMetadata(oauth,file,name,parent,path)
+        oauth.post.assert_called_once_with(url ,dataFile)
         self.assertEquals(metadataOut,result)
 
     def exerciseUploadFile(self,fileId,check,returnValue):
@@ -457,17 +469,18 @@ class OauthCredentialsTest (unittest.TestCase):
         self.file.close()
         self.file = open(path,"r")
         oauth = self.createOauthSession()
-        oauth.post = Mock()
-        oauth.post.return_value = returnValue
+        oauth.put = Mock()
+        oauth.put.return_value = returnValue
         result = self.oauthCredentials.uploadFile(oauth,fileId,path)
-        oauth.post.assert_called_once_with(self.resourceurl + "file/" + str(fileId) + "/data",self.file.read())
+        oauth.put.assert_called_once_with(self.resourceurl + "file/" + str(fileId) + "/data",self.file.read())
         self.assertEquals(check,result)
 
     def exerciseDonwloadFile(self,fileId,check,returnValue):
+        path = "prueba.txt"
         oauth = self.createOauthSession()
         oauth.get = Mock()
         oauth.get.return_value = returnValue
-        result = self.oauthCredentials.downloadFile(oauth,fileId)
+        result = self.oauthCredentials.downloadFile(oauth,fileId,path)
         oauth.get.assert_called_once_with(self.resourceurl + "file/" + str(fileId) + "/data")
         self.assertEquals(check,result)
 

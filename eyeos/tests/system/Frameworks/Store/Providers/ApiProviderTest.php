@@ -204,39 +204,41 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     /**
      * method: createMetadata
      * when: called
-     * with: tokenAndFileAndNameAndParent
+     * with: tokenAndFileAndNameAndParentAndPathAbsolute
      * should: returnCorrectData
      */
-    public function test_createMetadata_called_tokenAndFileAndNameAndParent_returnCorrectData()
+    public function test_createMetadata_called_tokenAndFileAndNameAndParentAndPathAbsolute_returnCorrectData()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":true,"name":"Client1.pdf","parent":-348534824681}}';
-        $metadataOut = '{"name":"Client1.pdf","path":"/documents/clients/Client1.pdf","id":32565632156,"parent":-348534824681,"user":"eyeos"}';
-        $this->exerciseCreateMetadata($metadataIn,$metadataOut,$metadataOut,true,'Client1.pdf',-348534824681);
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":true,"filename":"Client1.pdf","parent_id":-348534824681,"path":"\/home\/eyeos\/Client1.pdf"}}';
+        $metadataOut = '{"filename":"Client1.pdf","id":32565632156,"parent_id":-348534824681,"user":"eyeos"}';
+        $pathAbsolute = '/home/eyeos/Client1.pdf';
+        $this->exerciseCreateMetadata($metadataIn,$metadataOut,$metadataOut,true,'Client1.pdf',-348534824681,$pathAbsolute);
     }
 
     /**
      * method: createMetadata
      * when: called
-     * with: tokenAndFileAndName
+     * with: tokenAndFileAndNameAndPathAbsolute
      * should: returnCorrectData
      */
-    public function test_createMetadata_called_tokenAndFileAndName_returnCorrectData()
+    public function test_createMetadata_called_tokenAndFileAndNameAndPathAbsolute_returnCorrectData()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":true,"name":"Client1.pdf","parent":null}}';
-        $metadataOut = '{"name":"Client1.pdf","path":"/documents/clients/Client1.pdf","id":32565632156,"parent":null,"user":"eyeos"}';
-        $this->exerciseCreateMetadata($metadataIn,$metadataOut,$metadataOut,true,'Client1.pdf');
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":true,"filename":"Client1.pdf","parent_id":null,"path":"\/home\/eyeos\/Client1.pdf"}}';
+        $metadataOut = '{"filename":"Client1.pdf","id":32565632156,"parent_id":"null","user":"eyeos"}';
+        $pathAbsolute = '/home/eyeos/Client1.pdf';
+        $this->exerciseCreateMetadata($metadataIn,$metadataOut,$metadataOut,true,'Client1.pdf',null,$pathAbsolute);
     }
 
     /**
      * method: createMetadata
      * when: called
-     * with: tokenAndFolderAndNameAndParent
+     * with: tokenAndFolderAndNameAndParentAndPathAbsolute
      * should: returnCorrectData
      */
-    public function test_createMetadata_called_tokenAndFolderAndNameAndParent_returnCorrectData()
+    public function test_createMetadata_called_tokenAndFolderAndNameAndParentAndPathAbsolute_returnCorrectData()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"name":"clients","parent":-348534824681}}';
-        $metadataOut = '{"name":"clients","path":"/documents/clients","id":9873615,"parent":-348534824681,"user":"eyeos","is_root":false}';
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"filename":"clients","parent_id":-348534824681,"path":null}}';
+        $metadataOut = '{"filename":"clients","id":9873615,"parent_id":-348534824681,"user":"eyeos","is_root":false}';
         $this->exerciseCreateMetadata($metadataIn,$metadataOut,$metadataOut,false,"clients",-348534824681);
     }
 
@@ -248,8 +250,8 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_createMetadata_called_tokenAndFolderAndName_returnCorrectData()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"name":"clients","parent":null}}';
-        $metadataOut = '{"name":"clients","path":"/clients","id":9873615,"parent":null,"user":"eyeos","is_root":false}';
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"filename":"clients","parent_id":null,"path":null}}';
+        $metadataOut = '{"filename":"clients","id":9873615,"parent_id":null,"user":"eyeos","is_root":false}';
         $this->exerciseCreateMetadata($metadataIn,$metadataOut,$metadataOut,false,"clients");
     }
 
@@ -261,7 +263,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_createMetadata_called_tokenAndFolderAndName_returnException()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"name":"clients","parent":null}}';
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"filename":"clients","parent_id":null,"path":null}}';
         $metadataOut = 'false';
         $this->exerciseCreateMetadata($metadataIn,$metadataOut,$this->exception,false,"clients");
     }
@@ -274,7 +276,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_createMetadata_called_tokenAndFolderAndName_returnPermissionDenied()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"name":"clients","parent":null}}';
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"filename":"clients","parent_id":null,"path":null}}';
         $metadataOut = '403';
         $this->exerciseCreateMetadata($metadataIn,$metadataOut,$this->permission,false,"clients");
     }
@@ -321,40 +323,40 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     /**
      * method: downloadMetadata
      * when: called
-     * with: tokenAndId
-     * should: returnContent
+     * with: tokenAndIdAndPath
+     * should: returnCorrectDonwloadFile
      */
-    public function test_downloadMetadata_called_tokenAndId_returnContent()
+    public function test_downloadMetadata_called_tokenAndIdAndPath_returnCorrectDownloadFile()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"download","id":1234561}}';
-        $metadataOut = 'Prueba';
-        $this->exerciseDownloadMetadata($metadataIn,$metadataOut,$metadataOut,1234561);
+        $path = "/home/eyeos/prueba1.pdf";
+        $metadataOut = 'true';
+        $this->exerciseDownloadMetadata($metadataOut,$metadataOut,1234561,$path);
     }
 
     /**
      * method: downloadMetadata
      * when: called
-     * with: tokenAndId
+     * with: tokenAndIdAndPath
      * should: returnException
      */
-    public function test_downloadMetadata_called_tokenAndId_returnException()
+    public function test_downloadMetadata_called_tokenAndIdAndPath_returnException()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"download","id":1234561}}';
+        $path = "/home/eyeos/prueba2.pdf";
         $metadataOut = 'false';
-        $this->exerciseDownloadMetadata($metadataIn,$metadataOut,json_decode($this->exception),1234561);
+        $this->exerciseDownloadMetadata($metadataOut,json_decode($this->exception),1234561,$path);
     }
 
     /**
      * method: downloadMetadata
      * when: called
-     * with: tokenAndId
+     * with: tokenAndIdAndPath
      * should: returnPermissionDenied
      */
-    public function test_downloadMetadata_called_tokenAndId_returnPermisssionDenied()
+    public function test_downloadMetadata_called_tokenAndIdAndPath_returnPermisssionDenied()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"download","id":1234561}}';
+        $path = "/home/eyeos/prueba3.pdf";
         $metadataOut = '403';
-        $this->exerciseDownloadMetadata($metadataIn,$metadataOut,json_decode($this->permission),1234561);
+        $this->exerciseDownloadMetadata($metadataOut,json_decode($this->permission),1234561,$path);
     }
 
     /**
@@ -423,10 +425,10 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(json_decode($check),$result);
     }
 
-    private function exerciseCreateMetadata($metadataIn,$metadataOut,$check,$file,$name,$parent = null)
+    private function exerciseCreateMetadata($metadataIn,$metadataOut,$check,$file,$name,$parent = null,$pathAbsolute = null)
     {
         $this->exerciseMockMetadata($metadataIn,$metadataOut);
-        $result = $this->sut->createMetadata($this->token,$file,$name,$parent);
+        $result = $this->sut->createMetadata($this->token,$file,$name,$parent,$pathAbsolute);
         $this->assertEquals(json_decode($check),$result);
     }
 
@@ -437,10 +439,13 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(json_decode($check),$result);
     }
 
-    private function exerciseDownloadMetadata($metadataIn,$metadataOut,$check,$id)
+    private function exerciseDownloadMetadata($metadataOut,$check,$id,$path)
     {
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"download","id":1234561,"path":"' . $path . '"}}';
+        $metadataIn = json_decode($metadataIn);
+        $metadataIn = json_encode($metadataIn);
         $this->exerciseMockMetadata($metadataIn,$metadataOut);
-        $result = $this->sut->downloadMetadata($this->token,$id);
+        $result = $this->sut->downloadMetadata($this->token,$id,$path);
         $this->assertEquals($check,$result);
     }
 

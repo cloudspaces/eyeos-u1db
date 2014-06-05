@@ -580,6 +580,9 @@ qx.Class.define('eyeos.files.Controller', {
                 }
             },this));
 
+            this._dBus.addListener('eyeos_file_permissionDenied',function(e){
+
+            },this);
 		},
 
 		_addSocialBarUpdaterListeners: function () {
@@ -634,15 +637,20 @@ qx.Class.define('eyeos.files.Controller', {
             if (this.__isStacksync(path)) {
                 var params = new Object();
                 params.path = path;
-                params.fileId = this.__getFileIdFolder(path);
+                params.id = this.__getFileIdFolder(path);
 
-                if(params.fileId !== null) {
+                if(params.id !== null) {
                     eyeos.callMessage(this.getApplication().getChecknum(), 'getMetadata', params, function (results) {
                         if(results) {
-                            if(this.__insertMetadata(JSON.parse(results),path) || !refresh) {
-                                this.__callBrowsePath(path,addToHistory,true);
+                            var metadata = JSON.parse(results);
+                            if(!metadata.error) {
+                                if(this.__insertMetadata(metadata,path) || !refresh) {
+                                    this.__callBrowsePath(path,addToHistory,true);
+                                } else {
+                                    this.__refreshFolder(path,addToHistory,true);
+                                }
                             } else {
-                                this.__refreshFolder(path,addToHistory,true);
+                                //Crear dialogo
                             }
                         } else {
                             this.__refreshFolder(path,addToHistory,true);
@@ -1144,6 +1152,7 @@ qx.Class.define('eyeos.files.Controller', {
                                         var file = new Object();
                                         file.id = idFile;
                                         file.path = filesToPaste[i].getAbsolutePath();
+                                        file.is_file = filesToPaste[i].getType() == "file"?true:false;
                                         filesAux.splice(filesAux.length,0,file);
                                     } else {
                                         filesAux.splice(filesAux.length,0,filesToPaste[i].getAbsolutePath());
@@ -1236,9 +1245,9 @@ qx.Class.define('eyeos.files.Controller', {
                 var pathFather = selected[0].getFile().getPath();
                 var filename = selected[0].getFile().getName();
                 var params = new Object();
-                params.file_id = this.__getFileId(pathFather,filename);
+                params.id = this.__getFileId(pathFather,filename);
                 params.path = path;
-                if (params.file_id) {
+                if (params.id) {
                     stacksync = true;
                     eyeos.callMessage(this.getApplication().getChecknum(),'downloadFileStacksync',params,function(){
                         eyeos.execute('download',this.getApplication().getChecknum(), [path]);
@@ -1302,7 +1311,7 @@ qx.Class.define('eyeos.files.Controller', {
                             if(this._metadatas[i].metadata.contents && this._metadatas[i].metadata.contents.length > 0) {
                                 for(var j in this._metadatas[i].metadata.contents) {
                                     if(this._metadatas[i].metadata.contents[j].filename === name) {
-                                        fileIdFolder = this._metadatas[i].metadata.contents[j].file_id;
+                                        fileIdFolder = this._metadatas[i].metadata.contents[j].id;
                                     }
                                 }
                             }
@@ -1311,7 +1320,7 @@ qx.Class.define('eyeos.files.Controller', {
                     }
                 }
             } else {
-                fileIdFolder = 'null';
+                fileIdFolder = 0;
             }
 
             return fileIdFolder;
@@ -1360,7 +1369,7 @@ qx.Class.define('eyeos.files.Controller', {
                   for(var i in metadataOld.contents) {
                       encontrado = false;
                       for(var j in metadataNew.contents) {
-                          if(metadataOld.contents[i].file_id == metadataNew.contents[j].file_id) {
+                          if(metadataOld.contents[i].id == metadataNew.contents[j].id) {
                               encontrado =  true;
                               if(metadataOld.contents[i].filename != metadataNew.contents[j].filename) {
                                 change = true;
@@ -1400,7 +1409,7 @@ qx.Class.define('eyeos.files.Controller', {
                         if(this._metadatas[i].metadata.contents && this._metadatas[i].metadata.contents.length > 0) {
                             for(var j in this._metadatas[i].metadata.contents) {
                                 if(this._metadatas[i].metadata.contents[j].filename === filename) {
-                                    fileId = this._metadatas[i].metadata.contents[j].file_id;
+                                    fileId = this._metadatas[i].metadata.contents[j].id;
                                     metadata = this._metadatas[i].metadata.contents[j];
                                     break;
                                 }
@@ -1421,7 +1430,7 @@ qx.Class.define('eyeos.files.Controller', {
         __getObjectDownloadStacksync: function(parent,path,name) {
             console.log(parent + "::" + path + "::" + name);
             var file = new Object();
-            file.file_id = this.__getFileId(parent, name);
+            file.id = this.__getFileId(parent, name);
             file.path = path;
             return file;
         },
@@ -1429,7 +1438,7 @@ qx.Class.define('eyeos.files.Controller', {
         __openFileStacksync: function(type,files) {
             var listFiles = new Array();
             for(var i in files) {
-                if(files[i].file_id) {
+                if(files[i].id) {
                     eyeos.callMessage(this.getApplication().getChecknum(),'downloadFileStacksync',files[i],function(path) {
                         listFiles.push(path);
                         if(listFiles.length == files.length) {
@@ -1514,6 +1523,7 @@ qx.Class.define('eyeos.files.Controller', {
                 var deleteFiles = [];
 
                 eyeos.callMessage(this.getApplication().getChecknum(),'startProgress',params,function(result) {
+                    console.log(result);
                     if(result && result.metadatas && result.metadatas.length > 0) {
                         if(action == 'move') {
                             deleteFiles = this.__getFilesDelete(result.metadatas,pathOrig);
@@ -1534,19 +1544,9 @@ qx.Class.define('eyeos.files.Controller', {
                 params.dest = dest;
                 params.orig = pathOrig;
                 eyeos.callMessage(this.getApplication().getChecknum(),'copyFile',params,function(result) {
-
                     if(result.filenameChange) {
                         this.__replacePath(params.file.filename,result.filenameChange,data.metadatas,pos-1,result.pathChange);
                     }
-                    /*if(data.size > 0) {
-                        if(!data.metadatas[pos].is_folder) {
-                            this.__size += data.metadatas[pos].size;
-                            this.__updateProgress(data.size);
-                        }
-                    } else {
-                        this.__size += 1;
-                        this.__updateProgress(data.metadatas.length);
-                    }*/
 
                     this.__size += 1;
                     this.__updateProgress(data.metadatas.length + deleteFiles.length);
@@ -1598,7 +1598,6 @@ qx.Class.define('eyeos.files.Controller', {
                 } else {
                     if(data[i].path.length >= filenameOld.length) {
                         var file = data[i].path.substring(0,filenameOld.length);
-                        console.log(file + "==" + filenameOld);
                         if(file === filenameOld) {
                             var path = filenameNew + data[i].path.substring(filenameOld.length);
                             data[i].path = path;
@@ -1623,12 +1622,10 @@ qx.Class.define('eyeos.files.Controller', {
         },
 
         __getFilesDelete: function(metadatas,pathOrig) {
-            console.log(metadatas);
-            console.log(pathOrig);
             var files = [];
 
             for(var i in metadatas) {
-                if(metadatas[i].file_id) {
+                if(metadatas[i].id) {
                     var path = pathOrig + "/";
                     var stacksync = 'home://~'+ eyeos.getCurrentUserName()+'/Stacksync';
                     path = path.substring(stacksync.length);
@@ -1636,7 +1633,7 @@ qx.Class.define('eyeos.files.Controller', {
                     if(path == metadatas[i].path) {
                         var file = new Object();
                         file.file = pathOrig + "/" + metadatas[i].filename;
-                        file.id = metadatas[i].file_id;
+                        file.id = metadatas[i].id;
                         files.push(file);
                     }
                 } else {

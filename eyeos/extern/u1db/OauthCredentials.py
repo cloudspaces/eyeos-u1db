@@ -1,11 +1,12 @@
 __author__ = 'root'
 
-from requests_oauthlib import OAuth1Session
 from settings import settings
 import sys
 import json
 from oauthlib.oauth1 import SIGNATURE_PLAINTEXT
 from OAuthRequest import OAuthRequest
+import urllib
+import types
 
 class OauthCredentials:
     def __init__(self,requesttokenurl,accesstokenurl,resourceurl,version):
@@ -48,21 +49,33 @@ class OauthCredentials:
         self.createHeader(oauth)
         data = {}
         if name:
-            data['name'] = name
+            data['filename'] = name
         if parent:
-            data['parent'] = parent
+            data['parent_id'] = parent
         result = oauth.put(url,data)
         return self.createRequest(result)
 
-    def createMetadata(self,oauth,file,name,parent = None):
+    def createMetadata(self,oauth,file,name,parent = None,path = None):
+        dataFile = None
         url = self.getUrl(file)
         self.createHeader(oauth)
+
         data = {}
-        if name:
-            data['name'] = name
-        if parent:
-            data['parent'] = parent
-        result = oauth.post(url,data)
+        data['name'] = name
+        if parent and parent != 'null':
+            data['parent'] = str(parent)
+
+        if file:
+            self.file = open(path,"r")
+            if self.file:
+                dataFile = self.file.read()
+                self.file.close()
+            params =  urllib.urlencode(data)
+            url += "?" + params
+        else:
+            dataFile = json.dumps(data)
+
+        result = oauth.post(url,dataFile)
         return self.createRequest(result)
 
     def uploadFile(self,oauth,id,path):
@@ -70,19 +83,25 @@ class OauthCredentials:
         self.file = open(path,"r")
         if self.file:
             self.createHeader(oauth)
-            result = oauth.post(self.resourceurl + "file/" + str(id) + "/data",self.file.read())
+            result = oauth.put(self.resourceurl + "file/" + str(id) + "/data",self.file.read())
             if(not(isinstance(result,dict) and result.has_key('error'))):
                 metadata = 'true'
             elif result ['error'] == 403:
                 metadata = result['error']
+            self.file.close()
         return metadata
 
-    def downloadFile(self,oauth,id):
+    def downloadFile(self,oauth,id,path):
         metadata = 'false'
         self.createHeader(oauth)
         result = oauth.get(self.resourceurl + "file/" + str(id) + "/data")
-        if type(result) is str or type(result) is bin:
-            metadata = result
+        #if type(result) is str or type(result) is bin:
+        if isinstance(result,types.StringTypes):
+            file = open(path,'w')
+            if file:
+                file.write(result)
+                file.close()
+            metadata = 'true'
         elif isinstance(result,dict) and result.has_key('error') and result['error'] == 403:
             metadata = result['error']
         return metadata
@@ -104,7 +123,7 @@ class OauthCredentials:
         else:
             url += "folder"
 
-        if id:
+        if id != None:
             url += "/" + str(id)
 
         if contents:
@@ -116,15 +135,24 @@ class OauthCredentials:
         for i, j in data.items():
             if j == None:
                 data[i] = "null"
+
+        if data.has_key('contents'):
+            for file in data['contents']:
+                self.replaceNull(file)
+
         return data
 
     def createRequest(self,result):
+        if not(isinstance(result,dict)):
+            result = json.loads(result)
+
         metadata = 'false'
         if isinstance(result,dict):
             if not result.has_key("error"):
                 metadata = json.dumps(self.replaceNull(result))
             elif result['error'] == 403:
                 metadata = result['error']
+
         return metadata
 
 
@@ -146,13 +174,13 @@ if __name__ == "__main__":
             if type == "get":
                 result = oauthCredentials.getMetadata(oauth,metadata['file'],metadata['id'],metadata['contents'])
             elif type == "update":
-                result = oauthCredentials.updateMetadata(oauth,metadata['file'],metadata['id'],metadata['name'],metadata['parent'])
+                result = oauthCredentials.updateMetadata(oauth,metadata['file'],metadata['id'],metadata['filename'],metadata['parent_id'])
             elif type == "create":
-                result = oauthCredentials.createMetadata(oauth,metadata['file'],metadata['name'],metadata['parent'])
+                result = oauthCredentials.createMetadata(oauth,metadata['file'],metadata['filename'],metadata['parent_id'],metadata['path'])
             elif type == 'upload':
                 result = oauthCredentials.uploadFile(oauth,metadata['id'],metadata['path'])
             elif type == 'download':
-                result = oauthCredentials.downloadFile(oauth,metadata['id'])
+                result = oauthCredentials.downloadFile(oauth,metadata['id'],metadata['path'])
             elif type == 'delete':
                 result = oauthCredentials.deleteMetadata(oauth,metadata['file'],metadata['id'])
         elif params.has_key("verifier") and params.has_key('token'):
@@ -165,6 +193,9 @@ if __name__ == "__main__":
         oauth = OAuthRequest(key, client_secret=secret,callback_uri=callbackurl,signature_method=SIGNATURE_PLAINTEXT)
         result = oauthCredentials.getRequestToken(oauth)
     if result:
-        print(str(result))
+        if type != 'download':
+            print(str(result))
+        else:
+            print(result)
     else:
         print('false')
