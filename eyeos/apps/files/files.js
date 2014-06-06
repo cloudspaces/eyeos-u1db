@@ -1236,7 +1236,11 @@ qx.Class.define('eyeos.files.Controller', {
 
 				eyeos.callMessage(this.getApplication().getChecknum(), 'rename',params, function (results) {
                     if(this.__isStacksync(currentPath)) {
-                        this._browsePath(currentPath);
+                        if(results.error != 403) {
+                            this._browsePath(currentPath);
+                        } else {
+                            this.__permissionDenied();
+                        }
                     } else {
                         object.setValue(rename);
                         this._dBus.send('files', 'rename', [absPath, currentPath, results]);
