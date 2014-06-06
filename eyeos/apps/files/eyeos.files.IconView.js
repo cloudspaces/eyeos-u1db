@@ -367,7 +367,11 @@ qx.Class.define('eyeos.files.IconView', {
 
                         if(params.id) {
                             eyeos.callMessage(checknum,"downloadFileStacksync",params,function(e) {
-                                eyeos.openFile(absolutePath, checknum);
+                                if(!e.error) {
+                                    eyeos.openFile(absolutePath, checknum);
+                                } else if(e.error == 403) {
+                                    this.getManager().getViewManager().getController().__permissionDenied();
+                                }
                             },this);
                         } else {
                             eyeos.openFile(absolutePath, checknum);

@@ -11,9 +11,8 @@ class ApiManager
     private $accessorProvider;
     private $apiProvider;
     private $filesProvider;
-    private $calendarManager;
 
-    public function __construct(AccessorProvider $accessorProvider = NULL, ApiProvider $apiProvider = NULL, FilesProvider $filesProvider = NULL,ICalendarManager $calendarManager = NULL)
+    public function __construct(AccessorProvider $accessorProvider = NULL, ApiProvider $apiProvider = NULL, FilesProvider $filesProvider = NULL)
     {
         if(!$accessorProvider) $accessorProvider = new AccessorProvider();
         $this->accessorProvider = $accessorProvider;
@@ -23,9 +22,6 @@ class ApiManager
 
         if(!$filesProvider) $filesProvider = new FilesProvider();
         $this->filesProvider = $filesProvider;
-
-        if(!$calendarManager) $calendarManager = CalendarManager::getInstance();
-        $this->calendarManager = $calendarManager;
     }
 
     public function getMetadata($token,$id,$path,$user)
@@ -107,14 +103,16 @@ class ApiManager
     public function getSkel($token,$file,$id,&$metadatas,$path) {
         $contents = $file == false?true:null;
         $metadata = $this->apiProvider->getMetadata($token,$file,$id,$contents);
-        $metadata->path = $path;
-        if($metadata->is_folder) {
-            $path = $metadata->id == 'null'?'/':$path . $metadata->filename . '/';
-            for ($i=0;$i<count($metadata->contents);$i++){
-                $this->getSkel($token,!$metadata->contents[$i]->is_folder,$metadata->contents[$i]->id,$metadatas,$path);
+        if(!isset($metadata->error)) {
+            $metadata->path = $path;
+            if($metadata->is_folder) {
+                $path = $metadata->id == 'null'?'/':$path . $metadata->filename . '/';
+                for ($i=0;$i<count($metadata->contents);$i++){
+                    $this->getSkel($token,!$metadata->contents[$i]->is_folder,$metadata->contents[$i]->id,$metadatas,$path);
+                }
             }
+            unset($metadata->contents);
         }
-        unset($metadata->contents);
         array_push($metadatas,$metadata);
     }
 

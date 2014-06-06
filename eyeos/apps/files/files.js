@@ -581,7 +581,7 @@ qx.Class.define('eyeos.files.Controller', {
             },this));
 
             this._dBus.addListener('eyeos_file_permissionDenied',function(e){
-
+                this.__permissionDenied();
             },this);
 		},
 
@@ -649,8 +649,8 @@ qx.Class.define('eyeos.files.Controller', {
                                 } else {
                                     this.__refreshFolder(path,addToHistory,true);
                                 }
-                            } else {
-                                //Crear dialogo
+                            } else if (metadata.error == 403) {
+                                this.__permissionDenied();
                             }
                         } else {
                             this.__refreshFolder(path,addToHistory,true);
@@ -1042,7 +1042,11 @@ qx.Class.define('eyeos.files.Controller', {
 
 				eyeos.callMessage(this.getApplication().getChecknum(), 'mkdir',params, function (results) {
                     if(this.__isStacksync(currentPath)) {
-                        this._browsePath(currentPath);
+                        if(!results.error) {
+                            this._browsePath(currentPath);
+                        } else if(results.error == 403) {
+                            this.__permissionDenied();
+                        }
                     } else {
 					    this._dBus.send('files', 'new', [currentPath, results]);
                     }
@@ -1077,7 +1081,11 @@ qx.Class.define('eyeos.files.Controller', {
 
 				eyeos.callMessage(this.getApplication().getChecknum(), 'delete', files, function (results) {
                     if(this.__isStacksync(currentPath)) {
-                        this._browsePath(currentPath);
+                        if(results.error == 403) {
+                            this.__permissionDenied();
+                        } else {
+                            this._browsePath(currentPath);
+                        }
                     } else {
 					    this._dBus.send('files', 'delete', [currentPath, results]);
                     }
@@ -1249,8 +1257,12 @@ qx.Class.define('eyeos.files.Controller', {
                 params.path = path;
                 if (params.id) {
                     stacksync = true;
-                    eyeos.callMessage(this.getApplication().getChecknum(),'downloadFileStacksync',params,function(){
-                        eyeos.execute('download',this.getApplication().getChecknum(), [path]);
+                    eyeos.callMessage(this.getApplication().getChecknum(),'downloadFileStacksync',params,function(result){
+                        if(!result.error) {
+                            eyeos.execute('download',this.getApplication().getChecknum(), [path]);
+                        } else if(result.error == 403) {
+                            this.__permissionDenied();
+                        }
                     },this);
                 }
             }
@@ -1440,9 +1452,13 @@ qx.Class.define('eyeos.files.Controller', {
             for(var i in files) {
                 if(files[i].id) {
                     eyeos.callMessage(this.getApplication().getChecknum(),'downloadFileStacksync',files[i],function(path) {
-                        listFiles.push(path);
-                        if(listFiles.length == files.length) {
-                            eyeos.execute(type, this.getApplication().getChecknum(), listFiles);
+                        if(!path.error) {
+                            listFiles.push(path);
+                            if(listFiles.length == files.length) {
+                                eyeos.execute(type, this.getApplication().getChecknum(), listFiles);
+                            }
+                        } else if(path.error == 403) {
+                            this.__permissionDenied();
                         }
                     },this);
                 } else {
@@ -1523,13 +1539,16 @@ qx.Class.define('eyeos.files.Controller', {
                 var deleteFiles = [];
 
                 eyeos.callMessage(this.getApplication().getChecknum(),'startProgress',params,function(result) {
-                    console.log(result);
                     if(result && result.metadatas && result.metadatas.length > 0) {
                         if(action == 'move') {
                             deleteFiles = this.__getFilesDelete(result.metadatas,pathOrig);
                         }
-
                         this.__copyFile(result,result.metadatas.length - 1,params.folder,pathOrig,deleteFiles);
+                    } else {
+                        this.closeProgress();
+                        if(result.error == 403) {
+                            this.__permissionDenied();
+                        }
                     }
                 },this);
 
@@ -1544,15 +1563,22 @@ qx.Class.define('eyeos.files.Controller', {
                 params.dest = dest;
                 params.orig = pathOrig;
                 eyeos.callMessage(this.getApplication().getChecknum(),'copyFile',params,function(result) {
-                    if(result.filenameChange) {
-                        this.__replacePath(params.file.filename,result.filenameChange,data.metadatas,pos-1,result.pathChange);
+                    if(!result.error) {
+                        if(result.filenameChange) {
+                            this.__replacePath(params.file.filename,result.filenameChange,data.metadatas,pos-1,result.pathChange);
+                        }
+
+                        this.__size += 1;
+                        this.__updateProgress(data.metadatas.length + deleteFiles.length);
+
+                        pos--;
+                        this.__copyFile(data,pos,dest,pathOrig,deleteFiles);
+                    } else {
+                        this.closeProgress();
+                        if(result.error == 403) {
+                            this.__permissionDenied();
+                        }
                     }
-
-                    this.__size += 1;
-                    this.__updateProgress(data.metadatas.length + deleteFiles.length);
-
-                    pos--;
-                    this.__copyFile(data,pos,dest,pathOrig,deleteFiles);
                 },this);
             } else {
                 if(deleteFiles.length == 0) {
@@ -1704,7 +1730,7 @@ qx.Class.define('eyeos.files.Controller', {
         },
 
         __cancelStacksync: function() {
-            if(!this.__stacksync) {
+            if(!this.__stacksync && this.__token) {
                 this.getView().timeOutStakSync(tr("Time out"));
                 this._dBus.removeListener('eyeos_stacksync_token',this.__authorizeUser,this);
             }
@@ -1730,6 +1756,17 @@ qx.Class.define('eyeos.files.Controller', {
                     },this);
                 }
             }
+        },
+        __permissionDenied:function() {
+            this.closeTimer();
+            this._browsePath('home://~'+eyeos.getCurrentUserName()+'/');
+            this.__stacksync = false;
+            this.__token = null;
+            this.setToken(false);
+            this.getView().removeAll();
+            this.getView().setShowStatusbar(false);
+            this.getView().setCaption('Files');
+            this.getView()._permissionDenied();
         }
 	}
 });

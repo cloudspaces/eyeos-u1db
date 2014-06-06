@@ -31,3 +31,5 @@ lang['Cancel'] = 'Cancel';
 lang['Yes'] = 'Yes';
 lang['No'] = 'No';
 lang['An error has occurred when processing request to stacksync'] = 'An error has occurred when processing request to stacksync';
+lang['Access denied.'] = 'Access denied.';
+lang['Continue'] = 'Continue';

@@ -23,8 +23,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->accessorProviderMock = $this->getMock('AccessorProvider');
         $this->apiProviderMock = $this->getMock('ApiProvider');
         $this->filesProviderMock = $this->getMock("FilesProvider");
-        $this->calendarManagerMock = $this->getMock('ICalendarManager');
-        $this->sut = new ApiManager($this->accessorProviderMock,$this->apiProviderMock,$this->filesProviderMock,$this->calendarManagerMock);
+        $this->sut = new ApiManager($this->accessorProviderMock,$this->apiProviderMock,$this->filesProviderMock);
         $this->credentials = '{"credentials":{"token_key":"1234","token_secret":"ABCD","consumer_key":"keySebas","consumer_secret":"secretSebas"},"request_token":{"key":"HIJK","secret":"ABCD"},"verifier":"verifier"}';
         $this->token = new stdClass();
         $this->token->key = '1234';
@@ -373,6 +372,41 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->method('getMetadata')
             ->with($this->token,true,142555444,null)
             ->will($this->returnValue(json_decode($metadataFile2)));
+
+        $this->sut->getSkel($this->token,false,$id,$metadatas,$path);
+        $this->assertEquals($expected,$metadatas);
+    }
+
+    /**
+     * method: getSkel
+     * when: called
+     * with:tokenAndIsFileAndIdAndMetadatas
+     * should: returnPermissionDenied
+     */
+    public function test_getSkel_called_tokenAndIsFolderAndIdAndMetadatas_returnPermissionDenied()
+    {
+        $metadata='{"id":-8090905582480578692,"parent_id":null,"filename":"Cloudspaces","is_folder":true,"status":"NEW","server_modified":"2014-03-11 14:22:45.757","client_modified":"2014-03-11 14:22:45.757","user":"web","version":1,"checksum":589445744,"size":166,"mimetype":"text/plain","chunks":[],"is_root":false,
+                    "contents":[
+                        {"id":32565632156,"parent_id":-8090905582480578692,"filename":"a","is_folder":true,"status":"NEW","server_modified":"2014-03-11 14:22:45.757","client_modified":"2014-03-11 14:22:45.757","user":"web","version":1,"checksum":589445744,"size":166,"mimetype":"text/plain","chunks":[],"is_root":false}
+                    ]}';
+
+        $metadataError = '{"error":403}';
+        $id = -8090905582480578692;
+        $path = '/';
+        $metadatas = array();
+        $expected = array();
+        array_push($expected,json_decode($metadataError));
+        array_push($expected,json_decode('{"id":-8090905582480578692,"parent_id":null,"filename":"Cloudspaces","is_folder":true,"status":"NEW","server_modified":"2014-03-11 14:22:45.757","client_modified":"2014-03-11 14:22:45.757","user":"web","version":1,"checksum":589445744,"size":166,"mimetype":"text/plain","chunks":[],"is_root":false,"path":"/"}'));
+
+        $this->apiProviderMock->expects($this->at(0))
+            ->method('getMetadata')
+            ->with($this->token,false,$id,true)
+            ->will($this->returnValue(json_decode($metadata)));
+
+        $this->apiProviderMock->expects($this->at(1))
+            ->method('getMetadata')
+            ->with($this->token,false,32565632156,true)
+            ->will($this->returnValue(json_decode($metadataError)));
 
         $this->sut->getSkel($this->token,false,$id,$metadatas,$path);
         $this->assertEquals($expected,$metadatas);

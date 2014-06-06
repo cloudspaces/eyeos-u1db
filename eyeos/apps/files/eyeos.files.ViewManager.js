@@ -574,9 +574,66 @@ qx.Class.define('eyeos.files.ViewManager', {
 
             this.add(containerTimeout);
 
+        },
+
+        _permissionDenied: function() {
+            var permissionDialog = new qx.ui.container.Composite().set({
+                layout: new qx.ui.layout.VBox(),
+                width: this.getWidth(),
+                allowGrowY: false
+            });
+
+            permissionDialog.addListener('appear',function(e) {
+                var heightParent = this.getBounds()?this.getBounds().height:this.getHeight();
+                var heightDialog = e.getCurrentTarget().getBounds().height;
+                var top = (heightParent / 2) - (heightDialog / 2) - 80;
+                e.getCurrentTarget().setMarginTop(top);
+            },this);
+
+            var logo = new qx.ui.basic.Image().set({
+                source:  "index.php?extern=images/stacksync.png",
+                width: 100,
+                height: 100,
+                scale: true,
+                alignX: 'center'
+            });
+            permissionDialog.add(logo);
+
+            var label = new qx.ui.basic.Label().set({
+                value: tr("Access denied."),
+                font:  new qx.bom.Font(18, ['Arial', 'sans-serif']),
+                alignX: 'center',
+                marginTop: 20
+            });
+
+            permissionDialog.add(label);
+
+            var containerButtons = new qx.ui.container.Composite().set({
+                layout: new qx.ui.layout.HBox(),
+                allowGrowX: false,
+                alignX: 'center',
+                marginTop: 20
+            });
+
+            var buttonOK = new qx.ui.form.Button().set({
+                label: tr('Continue'),
+                font:  new qx.bom.Font(12, ['Arial', 'sans-serif']),
+                width: 100,
+                height: 30
+            });
+
+            buttonOK.addListener('execute',function() {
+                this.removeAll();
+                this.createDialogStacksync();
+            },this);
+
+            containerButtons.add(buttonOK);
+
+            permissionDialog.add(containerButtons);
+
+            this.add(permissionDialog);
         }
 	},
-
 	// function tr() to translate menus and toolbar isn't need here, because apply translate when items is constructing.
 	statics: {
 		MENUBAR_BUTTONS: [
