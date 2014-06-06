@@ -49,9 +49,9 @@ class OauthCredentials:
         self.createHeader(oauth)
         data = {}
         if name:
-            data['filename'] = name
+            data['name'] = name
         if parent:
-            data['parent_id'] = parent
+            data['parent'] = parent
         result = oauth.put(url,data)
         return self.createRequest(result)
 

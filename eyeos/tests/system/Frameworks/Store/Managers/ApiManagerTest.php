@@ -743,6 +743,59 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->sut->deleteMetadata($this->token,false,$id,$this->user);
     }
 
+    /**
+     * metho: renameMetadata
+     * when: called
+     * with: tokenAndIsFileAndIdAndNameAndPathAndUserAndParentId
+     * should: returnU1dbRename
+     */
+    public function test_renameMetadata_called_tokenAndIsFileAndIdAndNameAndPathAndUserAndParentId_returnU1dbRename()
+    {
+        $id = 8339393;
+        $name = "b.txt";
+        $parent = 99999;
+        $path = '/A/';
+        $this->exerciseRenameMetadata(true,$id,$parent,$path,$name);
+    }
+
+    /**
+     * method: renameMetadata
+     * when: called
+     * with: tokenAndIsFolderAndIdAndNameAndPathAndUserAndParentId
+     * should: returnU1dbRename
+     */
+    public function test_renameMetadata_called_tokenAndIsFolderAndIdAndNameAndPathAndUserAndParentId_returnU1dbRename()
+    {
+        $id = 8983444;
+        $name = "F";
+        $parent = 1333555;
+        $path = '/D/';
+        $this->exerciseRenameMetadata(false,$id,$parent,$path,$name);
+    }
+
+    /**
+     * method: renameMetadata
+     * when: called
+     * with: tokenAndIsFolderAndIdAndNameAndPathAndUserAndParentId
+     * should: returnPermissionDenied
+     */
+    public function test_renameMetadata_called_tokenAndIsFolderAndIdAndNameAndPathAndUserAndParentId_returnPermissionDenied()
+    {
+        $id = 8983444;
+        $name = "F";
+        $parent = 1333555;
+        $path = '/D/';
+        $metadata = '{"error":403}';
+        $this->apiProviderMock->expects($this->at(0))
+            ->method('updateMetadata')
+            ->with($this->token,false,$id,$name,$parent)
+            ->will($this->returnValue(json_decode($metadata)));
+
+        $this->accessorProviderMock->expects($this->never())
+            ->method('getProcessDataU1db');
+
+        $this->sut->renameMetadata($this->token,false,$id,$name,$path,$this->user,$parent);
+    }
 
     private function exerciseCreateMetadata($file,$name,$parent_id,$path,$pathAbsolute,$metadataOut)
     {
@@ -792,6 +845,30 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->will($this->returnValue('true'));
 
         $this->sut->deleteMetadata($this->token,$file,$id,$this->user);
+    }
+
+    private function exerciseRenameMetadata($file,$id,$parent,$path,$name)
+    {
+        $type = $file?'false':'true';
+        $metadata = '{"filename":"' . $name .'","id":' . $id . ',"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":4,"parent_id":"'. $parent . '","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":' . $type . '}';
+        $metadataU1db = json_decode('{"user_eyeos":"' . $this->user . '","filename":"' . $name . '","id":' . $id . ',"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":4,"parent_id":"'. $parent . '","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":' . $type . ',"path":"' . $path . '"}');
+
+        $this->apiProviderMock->expects($this->at(0))
+            ->method('updateMetadata')
+            ->with($this->token,$file,$id,$name,$parent)
+            ->will($this->returnValue(json_decode($metadata)));
+
+        $u1dbIn = new stdClass();
+        $u1dbIn->type = 'rename';
+        $u1dbIn->lista = array();
+        array_push($u1dbIn->lista,$metadataU1db);
+
+        $this->accessorProviderMock->expects($this->at(0))
+            ->method('getProcessDataU1db')
+            ->with(json_encode($u1dbIn))
+            ->will($this->returnValue('true'));
+
+        $this->sut->renameMetadata($this->token,$file,$id,$name,$path,$this->user,$parent);
     }
 
 }

@@ -29,7 +29,7 @@ class OAuthRequest(OAuth1Session):
     def delete(self, url, **kwargs):
         return self.createRequest(self.request('DELETE', url, **kwargs))
 
-    def createRequest(self,request,download = None):
+    def createRequest(self,request):
         if request.status_code == 200 or request.status_code == 201 or request.status_code == 202:
             return request.content
         else:

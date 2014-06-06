@@ -128,6 +128,42 @@ class MetadataTest (unittest.TestCase):
         files.sort()
         self.assertEquals(array,files)
 
+    """
+    method: renameMetadata
+    when: called
+    with: userAndIdAndPathAndName
+    should: renameFolderCorrect
+    """
+    def test_renameMetadata_called_userAndIdAndPathAndName_renameFolderCorrect(self):
+        array = self.getArrayInsertRename()
+        self.sut.insert(array)
+        expected = self.getArrayRenameFolder('/A 1/','A 1')
+        self.sut.renameMetadata({u'user_eyeos':u'eyeID_EyeosUser_2',u'status': u'CHANGED', u'is_root': False, u'version': 2, u'filename': u'A 1', u'parent_id': u'null', u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': 9873615, u'user': u'eyeID_EyeosUser_2', u'is_root':False, u'is_folder':True})
+        files = self.sut.db.get_all_docs()
+        results = []
+        for file in files[1]:
+            results.append(file.content)
+        results.sort()
+        self.assertEquals(expected,results)
+
+    """
+    method: renameMetadata
+    when: called
+    with: userAndIdAndPathAndName
+    should: renameFileCorrect
+    """
+    def test_renameMetadata_called_userAndIdAndPathAndName_renameFileCorrect(self):
+        array = self.getArrayInsertRename()
+        self.sut.insert(array)
+        expected = self.getArrayRenameFile('B 1.txt')
+        self.sut.renameMetadata({u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'B 1.txt',u'path':u'/A/',u'id':32565632156,u'size':775412,u'mimetype':u'application/pdf',u'status':u'CHANGED',u'version':2,u'parent_id':9873615,u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False})
+        files = self.sut.db.get_all_docs()
+        results = []
+        for file in files[1]:
+            results.append(file.content)
+        results.sort()
+        self.assertEquals(expected,results)
+
     def getArrayInsert(self):
         array = [{u'user_eyeos':u'eyeID_EyeosUser_2',u'status': u'NEW', u'is_root': False, u'version': 1, u'filename': u'clients', u'parent_id': u'null', u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': 9873615, u'user': u'eyeID_EyeosUser_2',u'is_folder':True},
                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'Client1.pdf',u'path':u'/clients/',u'id':32565632156,u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':3,u'parent_id':9873615,u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False},
@@ -161,6 +197,32 @@ class MetadataTest (unittest.TestCase):
         array.sort()
         return array
 
+    def getArrayInsertRename(self):
+        array = [{u'user_eyeos':u'eyeID_EyeosUser_2',u'status': u'NEW', u'is_root': False, u'version': 1, u'filename': u'A', u'parent_id': u'null', u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': 9873615, u'user': u'eyeID_EyeosUser_2', u'is_root':False, u'is_folder':True},
+                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'B.txt',u'path':u'/A/',u'id':32565632156,u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':1,u'parent_id':9873615,u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False},
+                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'D.txt',u'path':u'/A/',u'id':444441714,u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':1,u'parent_id':9873615,u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False},
+                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'C',u'path':u'/A/',u'id':32565632157,u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':1,u'parent_id':9873615,u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_root':False, u'is_folder':True},
+                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'E.txt',u'path':u'/A/C/',u'id':4415512,u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':1,u'parent_id':32565632157,u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_root':False, u'is_folder':False}]
+        array.sort()
+        return array
+
+    def getArrayRenameFolder(self, path, foldername):
+        array = [{u'user_eyeos':u'eyeID_EyeosUser_2',u'status': u'CHANGED', u'is_root': False, u'version': 2, u'filename': u'' + foldername + '', u'parent_id': u'null', u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': 9873615, u'user': u'eyeID_EyeosUser_2', u'is_root':False, u'is_folder':True},
+                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'B.txt',u'path':u'' + path + '',u'id':32565632156,u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':1,u'parent_id':9873615,u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False},
+                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'D.txt',u'path':u'' + path + '',u'id':444441714,u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':1,u'parent_id':9873615,u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False},
+                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'C',u'path':u'' + path + '',u'id':32565632157,u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':1,u'parent_id':9873615,u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_root':False, u'is_folder':True},
+                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'E.txt',u'path':u'' + path + 'C/',u'id':4415512,u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':1,u'parent_id':32565632157,u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_root':False, u'is_folder':False}]
+        array.sort()
+        return array
+
+    def getArrayRenameFile(self, filename):
+        array = [{u'user_eyeos':u'eyeID_EyeosUser_2',u'status': u'NEW', u'is_root': False, u'version': 1, u'filename': u'A', u'parent_id': u'null', u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': 9873615, u'user': u'eyeID_EyeosUser_2', u'is_root':False, u'is_folder':True},
+                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'' + filename + '',u'path':u'/A/',u'id':32565632156,u'size':775412,u'mimetype':u'application/pdf',u'status':u'CHANGED',u'version':2,u'parent_id':9873615,u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False},
+                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'D.txt',u'path':u'/A/',u'id':444441714,u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':1,u'parent_id':9873615,u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False},
+                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'C',u'path':u'/A/',u'id':32565632157,u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':1,u'parent_id':9873615,u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_root':False, u'is_folder':True},
+                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'E.txt',u'path':u'/A/C/',u'id':4415512,u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':1,u'parent_id':32565632157,u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_root':False, u'is_folder':False}]
+        array.sort()
+        return array
 
     """
     ##################################################################################################################################################

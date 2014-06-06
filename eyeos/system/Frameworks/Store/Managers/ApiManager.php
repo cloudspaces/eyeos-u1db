@@ -209,6 +209,24 @@ class ApiManager
         return $result;
     }
 
+
+    public function renameMetadata($token,$file,$id,$name,$path,$user,$parent=NULL)
+    {
+        $result['status'] = 'KO';
+        $result['error'] = -1;
+        $metadata = $this->apiProvider->updateMetadata($token,$file,$id,$name,$parent);
+        if (!isset($metadata->error)) {
+            $this->addPathMetadata($metadata,$path);
+            if($this->callProcessU1db('rename',$this->setUserEyeos($metadata,$user)) == 'true') {
+                $result['status'] = 'OK';
+                unset($result['error']);
+            }
+        } else {
+            $result['error'] = $metadata->error;
+        }
+        return $result;
+    }
+
     public function callProcessU1db($type,$lista,$credentials=NULL)
     {
         $json = new stdClass();

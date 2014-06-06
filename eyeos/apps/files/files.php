@@ -637,15 +637,19 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 		$currentUser = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
 		$settings = MetaManager::getInstance()->retrieveMeta($currentUser);
 		$fileToRename = FSI::getFile($params[0]);
-        $apiManager = new ApiManagerOld();
+        $apiManager = new ApiManager();
         $stacksync = count($params) == 5?true:false;
 
         if($stacksync) {
+            $parent = $params[4] === 0?'null':$params[4];
             if(!$fileToRename->isDirectory()) {
-                self::verifyToken();
-                $content = $apiManager->downloadFile($params[3]);
-                if(strlen($content) > 0) {
-                    $fileToRename->getRealFile()->putContents($content);
+                $pathAbsolute = AdvancedPathLib::getPhpLocalHackPath($fileToRename->getRealFile()->getAbsolutePath());
+                $metadata = $apiManager->downloadMetadata($_SESSION['access_token_v2'],$params[3],$pathAbsolute);
+                if(isset($metadata['error'])) {
+                    if ($metadata['error'] == 403) {
+                        self::permissionDeniedStackSync($currentUser->getId());
+                    }
+                    return $metadata;
                 }
             }
 
@@ -665,31 +669,16 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 $renamed = FSI::getFile($params[1] . '/' . $nameForCheck);
             }
 
-            if(!$fileToRename->isDirectory()) {
-                if($fileToRename->renameTo($nameForCheck)) {
-                    $pathReal =  AdvancedPathLib::parse_url($renamed->getRealFile()->getPath());
-                    $file = fopen($pathReal['path'],"r");
-                    if($file !== false) {
-                       self::verifyToken();
-                       $apiManager->renameFile($params[3],$nameForCheck,$file,filesize($pathReal['path']),$params[4]);
-                       fclose($file);
+            if($fileToRename->renameTo($nameForCheck)) {
+                $path = self::getPathStacksync($renamed);
+                $resultado = $apiManager->renameMetadata($_SESSION['access_token_v2'],!$fileToRename->isDirectory(),$params[3],$renamed->getName(),$path,$currentUser->getId(),$parent);
+                if (isset($resultado['error'])) {
+                    if ($resultado['error'] == 403) {
+                        self::permissionDeniedStackSync($currentUser->getId());
                     }
+                    return $resultado;
                 }
-
-                self::updateUrlShare($params[0], $renamed->getPath());
-                $return = self::getFileInfo($fileToRename, $settings);
-                return $return;
-
-            } else {
-                if($fileToRename->delete(true) && $renamed->mkdir()) {
-                    self::verifyToken();
-                    $apiManager->renameFolder($params[3],$nameForCheck,$params[4]);
-
-                }
-
-                return true;
             }
-
         } else {
             $i = 1;
             $nameForCheck = $params[2];
@@ -708,10 +697,11 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             }
 
             $fileToRename->renameTo($nameForCheck);
-            self::updateUrlShare($params[0], $renamed->getPath());
-            $return = self::getFileInfo($fileToRename, $settings);
-            return $return;
         }
+
+        self::updateUrlShare($params[0], $renamed->getPath());
+        $return = self::getFileInfo($fileToRename, $settings);
+        return $return;
 	}
 
 	

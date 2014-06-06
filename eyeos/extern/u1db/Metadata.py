@@ -102,6 +102,31 @@ class Metadata:
                 result.append(file.content)
         return result
 
+    def renameMetadata(self,metadata):
+        self.db.create_index("by-id-path", "id","user_eyeos","path")
+        files = self.db.get_from_index("by-id-path",str(metadata['id']),metadata['user_eyeos'],metadata['path'])
+        if len(files) > 0:
+            filenameOld = files[0].content['filename']
+            files[0].set_json(json.dumps(metadata))
+            self.db.put_doc(files[0])
+            if files[0].content['is_folder'] == True:
+                pathOld = metadata['path'] + filenameOld + '/'
+                pathNew = metadata['path'] + metadata['filename'] + '/'
+                self.renamePath(metadata['id'],metadata['user_eyeos'],pathOld,pathNew)
+
+    def renamePath(self,id,user,pathOld,pathNew):
+        self.db.create_index("by-parent-path", "parent_id","user_eyeos","path")
+        files = self.db.get_from_index("by-parent-path",str(id),user,pathOld)
+        if len(files) > 0:
+            for file in files:
+                file.content['path'] = pathNew
+                self.db.put_doc(file)
+                if file.content['is_folder'] == True:
+                    _pathOld = pathOld + file.content['filename'] + '/'
+                    _pathNew = pathNew + file.content['filename'] + '/'
+                    self.renamePath(file.content['id'],user,_pathOld,_pathNew)
+
+
     """
     ##################################################################################################################################################
                                                                     CALENDAR

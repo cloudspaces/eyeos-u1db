@@ -30,8 +30,8 @@ class ApiProvider
         $request = $this->getRequest('update',$token);
         $request->metadata->file = $file;
         $request->metadata->id = $id;
-        $request->metadata->name = $name;
-        $request->metadata->parent = $parent;
+        $request->metadata->filename = $name;
+        $request->metadata->parent_id = $parent;
         return $this->exerciseMetadata($request);
     }
 

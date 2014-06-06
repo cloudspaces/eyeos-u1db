@@ -105,8 +105,8 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_updateMetadata_called_tokenAndFileAndIdAndNameAndParent_returnMetadataRename()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":32565632156,"name":"Winter2012_renamed.jpg","parent":12386548974}}';
-        $metadataOut = '{"name":"Winter2012_renamed.jpg","path":"/documents/clients/Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent":12386548974,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}';
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":32565632156,"filename":"Winter2012_renamed.jpg","parent_id":12386548974}}';
+        $metadataOut = '{"name":"Winter2012_renamed.jpg","path":"/documents/clients/","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"RENAMED","version":2,"parent":12386548974,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}';
         $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$metadataOut,true,32565632156,"Winter2012_renamed.jpg",12386548974);
     }
 
@@ -118,8 +118,8 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_updateMetadata_called_tokenAndFileAndIdAndParent_returnMetadataMove()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":32565632156,"name":null,"parent":123456}}';
-        $metadataOut = '{"name":"Winter2012_renamed.jpg","path":"/documents/clients/Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent":123456,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}';
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":32565632156,"filename":null,"parent_id":123456}}';
+        $metadataOut = '{"name":"Winter2012_renamed.jpg","path":"/documents/clients/","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent":123456,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}';
         $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$metadataOut,true,32565632156,null,123456);
     }
 
@@ -131,8 +131,8 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_updateMetadata_called_tokenAndFileAndId_returnMetadataMove()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":32565632156,"name":null,"parent":null}}';
-        $metadataOut = '{"name":"Winter2012_renamed.jpg","path":"/documents/clients/Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}';
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":32565632156,"filename":null,"parent_id":null}}';
+        $metadataOut = '{"name":"Winter2012_renamed.jpg","path":"/documents/clients/","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}';
         $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$metadataOut,true,32565632156);
     }
 
@@ -144,8 +144,8 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_updateMeta_called_tokenAndFolderAndIdAndNameAndParent_returnMetadataRename()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":32565632156,"name":"Winter2012_renamed","parent":12386548974}}';
-        $metadataOut = '{"name":"Winter2012_renamed","path":"/documents/clients/Winter2012_renamed","id":32565632156,"status":"CHANGED","version":2,"parent":12386548974,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false}';
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":32565632156,"filename":"Winter2012_renamed","parent_id":12386548974}}';
+        $metadataOut = '{"name":"Winter2012_renamed","path":"/documents/clients/","id":32565632156,"status":"CHANGED","version":2,"parent":12386548974,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false}';
         $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$metadataOut,false,32565632156,"Winter2012_renamed",12386548974);
     }
 
@@ -157,8 +157,8 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_updateMetadata_called_tokenAndFolderAndIdAndParent_returnMetadataMove()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":32565632156,"name":null,"parent":123456}}';
-        $metadataOut = '{"name":"Winter2012_renamed","path":"/documents/clients/Winter2012_renamed","id":32565632156,"status":"CHANGED","version":2,"parent":123456,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false}';
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":32565632156,"filename":null,"parent_id":123456}}';
+        $metadataOut = '{"name":"Winter2012_renamed","path":"/documents/clients/","id":32565632156,"status":"CHANGED","version":2,"parent":123456,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false}';
         $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$metadataOut,false,32565632156,null,123456);
     }
 
@@ -170,8 +170,8 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_updateMetadata_called_tokenAndFolderAndId_returnMetadataMove()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":32565632156,"name":null,"parent":null}}';
-        $metadataOut = '{"name":"Winter2012_renamed","path":"/documents/clients/Winter2012_renamed","id":32565632156,"status":"CHANGED","version":2,"parent":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false}';
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":32565632156,"filename":null,"parent_id":null}}';
+        $metadataOut = '{"name":"Winter2012_renamed","path":"/documents/clients/","id":32565632156,"status":"CHANGED","version":2,"parent":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false}';
         $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$metadataOut,false,32565632156);
     }
 
@@ -183,7 +183,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_updateMetadata_called_tokenAndFolderAndId_returnException()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":32565632156,"name":null,"parent":null}}';
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":32565632156,"filename":null,"parent_id":null}}';
         $metadataOut = 'false';
         $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$this->exception,false,32565632156);
     }
@@ -196,7 +196,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_updateMetadata_called_tokenAndFolderAndId_returnPermissionDenied()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":32565632156,"name":null,"parent":null}}';
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":32565632156,"filename":null,"parent_id":null}}';
         $metadataOut = '403';
         $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$this->permission,false,32565632156);
     }

@@ -39,6 +39,8 @@ class Protocol:
             result = self.deleteMetadataUser(lista[0]['user_eyeos'])
         elif type == "selectMetadataUser":
             result = self.selectMetadataUser(lista[0]['user_eyeos'])
+        elif type == "rename":
+            result = self.renameMetadata(lista[0])
         elif type == "deleteEvent":
             result = self.deleteEvent(lista)
         elif type == "updateEvent":
@@ -90,6 +92,10 @@ class Protocol:
 
     def selectMetadataUser(self,user):
         return self.metadata.selectMetadataUser(user)
+
+    def renameMetadata(self,metadata):
+        self.metadata.renameMetadata(metadata)
+        return True
 
     def deleteEvent(self,lista):
         self.metadata.deleteEvent(lista)
