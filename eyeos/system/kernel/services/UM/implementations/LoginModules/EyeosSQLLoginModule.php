@@ -92,9 +92,9 @@ class EyeosSQLLoginModule implements ILoginModule {
 		}
 
         try {
-            if($cred->getUsername() !== 'root') {
+            /*if($cred->getUsername() !== 'root') {
                 $user = $this->getCredentials($cred->getUsername(),$cred->getPasswordNoEncrypt());
-            } else {
+            } else {*/
                 try {
                     $user = UMManager::getInstance()->getUserByName($cred->getUsername());
                 } catch(EyeNoSuchUserException $e) {
@@ -104,7 +104,7 @@ class EyeosSQLLoginModule implements ILoginModule {
                 if ($user->getPassword() != $cred->getPassword()) {
 			        throw new EyeInvalidLoginPasswordException('Invalid login/password (user "' . $cred->getUsername() . '").');
 		        }
-            }
+            //}
 
         } catch(EyeCurlException $e) {
             throw new EyeFailedLoginException('Unknown user "' . $cred->getUsername() . '". Cannot proceed to login.', 0, $e);

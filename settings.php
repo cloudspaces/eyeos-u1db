@@ -450,7 +450,8 @@ if(!defined('SYSTEM_TYPE'))
 	define('SYSTEM_TYPE', 'release');
 
 if(!defined('URL_CLOUDSPACE'))
-    define('URL_CLOUDSPACE','http://cloudspaces.urv.cat:5000/v2.0/tokens');
+    define('URL_CLOUDSPACE','http://api.stacksync.com:8080/oauth/authorize?oauth_token=');
+    //define('URL_CLOUDSPACE','http://cloudspaces.urv.cat:5000/v2.0/tokens');
 if(!defined('U1DB'))
     define('U1DB','u1db');
 if(!defined('BACK_TO_REAL_EYE_ROOT'))

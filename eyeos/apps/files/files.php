@@ -1207,10 +1207,8 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $request_token = $oautManager->getRequestToken();
             if($request_token) {
                  $_SESSION['request_token_v2'] = $request_token;
-                 $url = URL_CLOUDSPACE ;
-                 $url =  'http://api.stacksync.com:8080/oauth/authorize?oauth_token=';
                  $result['status'] = true;
-                 $result['url'] = $url . $request_token->key;
+                 $result['url'] = URL_CLOUDSPACE . $request_token->key;
                  $result['token'] = $request_token->key;
             }
         } catch (Exception $e) {}
