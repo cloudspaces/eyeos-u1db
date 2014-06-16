@@ -127,8 +127,8 @@ class OauthCredentialsTest (unittest.TestCase):
         parentId = 123456
         name = "prueba.pdf"
         data = {}
-        data['filename'] = name
-        data['parent_id'] = parentId
+        data['name'] = name
+        data['parent'] = parentId
         metadataIn = {"filename":"prueba.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":3,"parent_id":123456,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":False}
         metadataOut = '{"status": "CHANGED", "is_folder": false, "user": "eyeos", "server_modified": "2013-03-08 10:36:41.997", "id": 32565632156, "size": 775412, "mimetype": "application/pdf", "client_modified": "2013-03-08 10:36:41.997", "filename": "prueba.pdf", "parent_id": 123456, "version": 3}'
         self.exerciseUpdateMetadata(metadataIn,metadataOut,True,fileId,name,parentId,data)
@@ -143,7 +143,7 @@ class OauthCredentialsTest (unittest.TestCase):
         fileId = 32565632156;
         parentId = 789456
         data = {}
-        data['parent_id'] = parentId
+        data['parent'] = parentId
         metadataIn = {"filename":"Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":3,"parent_id":789456,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":False}
         metadataOut = '{"status": "CHANGED", "is_folder": false, "user": "eyeos", "server_modified": "2013-03-08 10:36:41.997", "id": 32565632156, "size": 775412, "mimetype": "application/pdf", "client_modified": "2013-03-08 10:36:41.997", "filename": "Client1.pdf", "parent_id": 789456, "version": 3}'
         self.exerciseUpdateMetadata(metadataIn,metadataOut,True,fileId,None,parentId,data)
@@ -172,8 +172,8 @@ class OauthCredentialsTest (unittest.TestCase):
         parentId = 32565632156
         name = "images"
         data = {}
-        data['filename'] = name
-        data['parent_id'] = parentId
+        data['name'] = name
+        data['parent'] = parentId
         metadataIn = {"filename":"images","id":9873615,"status":"NEW","version":1,"parent_id":None,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":False,"is_folder":True}
         metadataOut = '{"status": "NEW", "parent_id": "null", "version": 1, "user": "eyeos", "server_modified": "2013-03-08 10:36:41.997", "client_modified": "2013-03-08 10:36:41.997", "is_root": false, "id": 9873615, "is_folder": true, "filename": "images"}'
         self.exerciseUpdateMetadata(metadataIn,metadataOut,False,folderId,name,parentId,data)
@@ -188,7 +188,7 @@ class OauthCredentialsTest (unittest.TestCase):
         folderId = 9873615
         parentId = 32565632156
         data = {}
-        data['parent_id'] = parentId
+        data['parent'] = parentId
         metadataIn = {"filename":"images","id":9873615,"status":"NEW","version":1,"parent_id":None,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":False,"is_folder":True}
         metadataOut = '{"status": "NEW", "parent_id": "null", "version": 1, "user": "eyeos", "server_modified": "2013-03-08 10:36:41.997", "client_modified": "2013-03-08 10:36:41.997", "is_root": false, "id": 9873615, "is_folder": true, "filename": "images"}'
         self.exerciseUpdateMetadata(metadataIn,metadataOut,False,folderId,None,parentId,data)
@@ -430,7 +430,7 @@ class OauthCredentialsTest (unittest.TestCase):
         oauth.put = Mock()
         oauth.put.return_value = metadataIn
         result = self.oauthCredentials.updateMetadata(oauth,file,id,name,parent)
-        oauth.put.assert_called_once_with(self.resourceurl + self.getResource(file) + "/" + str(id),data)
+        oauth.put.assert_called_once_with(self.resourceurl + self.getResource(file) + "/" + str(id),json.dumps(data))
         self.assertEquals(metadataOut,result)
 
     def exerciseCreateMetadata(self,metadataIn,metadataOut,file,name,parent):

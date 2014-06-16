@@ -52,6 +52,7 @@ class OauthCredentials:
             data['name'] = name
         if parent:
             data['parent'] = parent
+        data = json.dumps(data)
         result = oauth.put(url,data)
         return self.createRequest(result)
 

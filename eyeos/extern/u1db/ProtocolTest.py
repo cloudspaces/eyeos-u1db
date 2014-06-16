@@ -133,6 +133,26 @@ class ProtocolTest (unittest.TestCase):
     """
     method: protocol
     when: called
+    with: typeRenameMetadataAndUserAndList
+    """
+    def test_protocol_called_typeRenameMetadataAndUserAndList_renameCorrect(self):
+        params = '{"type":"rename","lista":[{"user_eyeos":"eyeID_EyeosUser_2","status": "NEW", "version": 1, "filename": "prueba.txt", "parent_id": "null", "server_modified": "2013-03-08 10:36:41.997", "path": "/", "client_modified": "2013-03-08 10:36:41.997", "id": 9873615, "user": "eyeos","is_folder":false}]}'
+        self.protocol.renameMetadata = Mock()
+        self.protocol.renameMetadata.return_value = True
+        result = self.protocol.protocol(params)
+        self.protocol.renameMetadata.assert_called_once_with({"user_eyeos":"eyeID_EyeosUser_2","status": "NEW", "version": 1, "filename": "prueba.txt", "parent_id": "null", "server_modified": "2013-03-08 10:36:41.997", "path": "/", "client_modified": "2013-03-08 10:36:41.997", "id": 9873615, "user": "eyeos","is_folder":False})
+        self.assertEquals('true',result)
+
+
+    """
+   ##################################################################################################################################################
+                                                                   TEST CALENDAR
+   ##################################################################################################################################################
+   """
+
+    """
+    method: protocol
+    when: called
     with: typeDeleteEventAndList
     should: deleteCorrect
     """

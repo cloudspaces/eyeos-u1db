@@ -100,15 +100,16 @@ class ApiManager
         return $respuesta;
     }
 
-    public function getSkel($token,$file,$id,&$metadatas,$path) {
+    public function getSkel($token,$file,$id,&$metadatas,$path,$pathAbsolute) {
         $contents = $file == false?true:null;
         $metadata = $this->apiProvider->getMetadata($token,$file,$id,$contents);
         if(!isset($metadata->error)) {
+            $metadata->pathAbsolute = $pathAbsolute;
             $metadata->path = $path;
             if($metadata->is_folder) {
                 $path = $metadata->id == 'null'?'/':$path . $metadata->filename . '/';
                 for ($i=0;$i<count($metadata->contents);$i++){
-                    $this->getSkel($token,!$metadata->contents[$i]->is_folder,$metadata->contents[$i]->id,$metadatas,$path);
+                    $this->getSkel($token,!$metadata->contents[$i]->is_folder,$metadata->contents[$i]->id,$metadatas,$path,null);
                 }
             }
             unset($metadata->contents);
@@ -225,6 +226,36 @@ class ApiManager
             $result['error'] = $metadata->error;
         }
         return $result;
+    }
+
+    public function moveMetadata($token,$file,$id,$pathOrig,$pathDest,$user,$parent,$filenameOld,$filenameNew = null)
+    {
+        $result['status'] = 'KO';
+        $result['error'] = -1;
+        $metadata = $this->apiProvider->updateMetadata($token,$file,$id,$filenameNew?$filenameNew:$filenameOld,$parent);
+
+        if(!isset($metadata->error)) {
+            $delete = new stdClass();
+            $delete->id = $id;
+            $delete->user_eyeos = $user;
+            $delete ->path = $this->getPathU1db($pathOrig);
+
+            if($this->callProcessU1db('deleteFolder',$delete) == 'true') {
+                $delete = $this->filesProvider->deleteFile($pathOrig . '/' . $filenameOld, !$file);
+                if($delete) {
+                    $metadata = $this->setUserEyeos($metadata,$user);
+                    $this->addPathMetadata($metadata,$this->getPathU1db($pathDest));
+                    if($this->callProcessU1db('insert',$metadata) == 'true') {
+                        $this->filesProvider->createFile($pathDest . '/' . $metadata->filename,!$file);
+                        $result['status'] = 'OK';
+                        unset($result['error']);
+                    }
+                }
+            }
+        }
+
+        return $result;
+
     }
 
     public function callProcessU1db($type,$lista,$credentials=NULL)

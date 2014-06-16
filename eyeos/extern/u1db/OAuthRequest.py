@@ -8,7 +8,7 @@ class OAuthRequest(OAuth1Session):
 
     def _fetch_token(self, url):
         request = self.get(url);
-
+        print(request)
         if(not(isinstance(request,dict) and request.has_key('error'))):
             token = dict(urldecode(request))
             self._populate_attributes(token)

@@ -504,104 +504,86 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 	 * TODO: Will need to be moved/merged to/with FileSystemExecModule
 	 */
 	public static function move($params) {
-		/*$target = FSI::getFile($params['folder']);
         $apiManager = new ApiManager();
-        $userName = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
-        $stacksync = false;
+        $currentUser = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
+        $settings = MetaManager::getInstance()->retrieveMeta($currentUser);
+        $pathOrig = $params['orig'];
+        $pathDest = $params['dest'];
+        $stacksyncDest = $params['stacksyncDest'];
+        $stacksyncOrig = $params['stacksyncOrig'];
 
-        $pathStackSync = "home://~" . $userName . "/Stacksync";
+        if ($stacksyncOrig === $stacksyncDest) {
 
-        if(strpos($params['folder'],$pathStackSync) !== false) {
-            $stacksync = true;
-        }
+            $file = null;
 
-		for($i = 0; $i < count($params['files']); $i++) {
-            if(is_array($params['files'][$i])) {
-                self::verifyToken();
-                $source = FSI::getFile($params['files'][$i]['path']);
-                $content = $apiManager->downloadFile($params['files'][$i]['id']);
-                if(strlen($content) > 0) {
-                    $source->getRealFile()->putContents($content);
-                }
-
-
+            if(is_array($params['file']) && array_key_exists('pathAbsolute',$params['file']))  {
+                $file = FSI::getFile($params['file']['pathAbsolute']);
             } else {
-                $source = FSI::getFile($params['files'][$i]);
+               $file = FSI::getFile($params['file']['path']);
             }
-            if (!$source->isDirectory()) {
-                $name = explode(".", $source->getName());
+
+            $isDirectory = $file->isDirectory();
+
+            if (!$isDirectory) {
+                $name = explode(".", $file->getName());
                 $extension = (string) $name[count($name) - 1];
-                $theName = substr($source->getName(), 0, strlen($source->getName()) - strlen($extension) - 1);
+                $theName = substr($file->getName(), 0, strlen($file->getName()) - strlen($extension) - 1);
             } else {
-                $theName = $source->getName();
+                $theName = $file->getName();
             }
 
             $nameForCheck = $theName;
 
-            if (!$source->isDirectory()) {
+            if (!$isDirectory) {
                 $nameForCheck .= '.' . $extension;
             }
 
             $number = 1;
-            $newFile = FSI::getFile($params['folder'] . "/" . $nameForCheck);
+            $newFile = FSI::getFile($pathDest . "/" . $nameForCheck);
+            $change = false;
 
             while ($newFile->exists()) {
                 $futureName = Array($theName, $number);
                 $nameForCheck = implode(' ', $futureName);
-                if (!$source->isDirectory()) {
+                if (!$isDirectory) {
                     $nameForCheck .= '.' . $extension;
                 }
                 $number++;
-                $newFile = FSI::getFile($params['folder'] . "/" . $nameForCheck);
+                $newFile = FSI::getFile($pathDest . "/" . $nameForCheck);
+                $change = true;
             }
 
-			//$source = FSI::getFile($params['files'][$i]);
-			$isMove = $source->moveTo($newFile);
-
-
-            if($isMove === true && $stacksync === true) {
-                // upload cloudspaces destination
-                $pathReal =  AdvancedPathLib::parse_url($newFile->getRealFile()->getPath());
-                $file = fopen($pathReal['path'],"r");
-                if($file !== false) {
-                    $len = strlen($pathStackSync);
-                    $pathU1db = substr($newFile->getAbsolutePath(),$len);
-                    $lenfinal = strrpos($pathU1db, $newFile->getName());
-                    $posfinal = $lenfinal > 1?$lenfinal-strlen($pathU1db)-1:$lenfinal-strlen($pathU1db);
-                    $pathParent = substr($pathU1db,0,$posfinal);
-                    $folder = NULL;
-                    if ($pathParent !== '/') {
-                        $pos=strrpos($pathParent,'/');
-                        $folder = substr($pathParent,$pos+1);
-                        $pathParent = substr($pathParent,0,$pos+1);
+            if($stacksyncOrig && $stacksyncDest) {
+                if($isDirectory) {
+                    $filename = $theName;
+                } else {
+                    $filename = $theName . '.' . $extension;
+                }
+                $result = $apiManager->moveMetadata($_SESSION['access_token_v2'],!$isDirectory,$params['file']['id'],$pathOrig,$pathDest,$currentUser->getId(),$params['idParent'],$filename,$change == true?$nameForCheck:null);
+                if($result['status'] == 'KO') {
+                    if($result['error'] == 403) {
+                        self::permissionDeniedStackSync($currentUser->getId());
                     }
-                    self::verifyToken();
-                    $apiManager->createFile($nameForCheck,$file,filesize($pathReal['path']),$pathParent,$folder);
-                    fclose($file);
+                    return $result;
                 }
-
-                // delete origin cloudspaces
-                if(is_array($params['files'][$i])) {
-                    $apiManager->deleteComponent($params['files'][$i]['id'],$source->isDirectory());
-                }
+            } else {
+                $file->moveTo($newFile);
             }
 
+            self::updateUrlShare($file->getPath(), $newFile->getPath());
+            $return = self::getFileInfo($newFile, $settings);
+            return $return;
 
-            $pathFile = is_array($params['files'][$i])?$params['files'][$i]['path']:$params['files'][$i];
-            $filename = basename($pathFile);
-			//TODO24: it should use fsi listeners
-			self::updateUrlShare($pathFile, $target->getPath() . '/' . $filename);
-			/*
-			if(get_class($target) == 'EyeWorkgroupFile'){
-				$meta = $target->getMeta();
-				$meta->set('id', null);
-				$meta->set('listeners', null);
-				$target->setMeta($meta);
-			}
+        } else {
+            $result = self::copyFile($params);
+            if (array_key_exists('error',$result)) {
+                if($result['error'] == 403) {
+                    self::permissionDeniedStackSync($currentUser->getId());
+                }
+            }
+            return $result;
+        }
 
-		}*/
-
-        Logger::getLogger('sebas')->error('MoverFicheros:' .json_encode($params));
 	}
 
 	/**
@@ -928,33 +910,46 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         $result = array();
         $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
 
-        for($i = 0; $i < count($params['files']); $i++) {
-            if(is_array($params['files'][$i])) {
-                $component = FSI::getFile($params['files'][$i]['path']);
-                $path = self::getPathStacksync($component);
-                $apiManager->getSkel($_SESSION['access_token_v2'],$params['files'][$i]['is_file'],$params['files'][$i]['id'],$metadatas,$path);
-            } else {
-                self::getSkelLocal($params['files'][$i],$metadatas,null);
+        if($params['action'] == 'copy' || !(($params['stacksyncOrig'] == true && $params['stacksyncDest'] == true) || ($params['stacksyncOrig'] == false && $params['stacksyncDest'] == false))) {
+            for($i = 0; $i < count($params['files']); $i++) {
+                if(is_array($params['files'][$i])) {
+                    $component = FSI::getFile($params['files'][$i]['path']);
+                    $path = self::getPathStacksync($component);
+                    $apiManager->getSkel($_SESSION['access_token_v2'],$params['files'][$i]['is_file'],$params['files'][$i]['id'],$metadatas,$path,$params['files'][$i]['path']);
+                } else {
+                    self::getSkelLocal($params['files'][$i],$metadatas,null);
+                }
+            }
+
+            for($i = 0;$i < count($metadatas);$i++) {
+                if(isset($metadatas[$i]->error)) {
+                    if($metadatas[$i]->error == 403) {
+                        self::permissionDeniedStackSync($user);
+                    }
+                    $result['error'] = $metadatas[$i]->error;
+                    return $result;
+                }
+            }
+        } else {
+            for($i = 0; $i < count($params['files']); $i++) {
+                $object = new stdClass();
+                if(is_array($params['files'][$i]) && array_key_exists('id',$params['files'][$i])){
+                    $object->id = $params['files'][$i]['id'];
+                    $object->is_folder = $params['files'][$i]['is_file']?false:true;
+                    $component = FSI::getFile($params['files'][$i]['path']);
+                    $path = self::getPathStacksync($component);
+                    $object->path = $path;
+                    $object->pathAbsolute = $params['files'][$i]['path'];
+                } else {
+                    $object->path = $params['files'][$i];
+                }
+
+                array_push($metadatas,$object);
             }
         }
 
-        $size = 0;
-
-        for($i = 0;$i < count($metadatas);$i++) {
-            if(!isset($metadatas[$i]->error)) {
-                if(!$metadatas[$i]->is_folder) {
-                    $size += $metadatas[$i]->size;
-                }
-            } else {
-                if($metadatas[$i]->error == 403) {
-                    self::permissionDeniedStackSync($user);
-                }
-                $result['error'] = $metadatas[$i]->error;
-                return $result;
-            }
-        }
-
-        $result['size'] = $size;
+        //$size = 0;
+        //$result['size'] = $size;
         $result['metadatas'] = $metadatas;
         return $result;
     }

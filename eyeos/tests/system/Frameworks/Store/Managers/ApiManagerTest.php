@@ -312,6 +312,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $path = '/documents/';
         $metadata = '{"filename":"Client1.pdf","id":142555444,"size":775412,"mimetype":"application/pdf","status":"DELETED","version":3,"parent_id":32565632156,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false}';
         $newmetadata = json_decode($metadata);
+        $newmetadata->pathAbsolute = $this->path . $path . 'Client1.pdf';
         $newmetadata->path = $path;
         $expected = array($newmetadata);
         $this->apiProviderMock->expects($this->once())
@@ -319,7 +320,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->with($this->token,true,$id)
             ->will($this->returnValue(json_decode($metadata)));
 
-        $this->sut->getSkel($this->token,true,$id,$metadatas,$path);
+        $this->sut->getSkel($this->token,true,$id,$metadatas,$path,$newmetadata->pathAbsolute);
         $this->assertEquals($expected,$metadatas);
     }
 
@@ -347,13 +348,16 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $expected = array();
         $data2 = json_decode($metadataFile2);
         $data2->path = "/Cloudspaces/a/";
+        $data2->pathAbsolute = null;
         array_push($expected,$data2);
         $data1 = json_decode($metadataFile);
         unset($data1->contents);
         $data1->path = "/Cloudspaces/";
+        $data1->pathAbsolute = null;
         array_push($expected,$data1);
         $data = json_decode($metadata);
         $data->path = "/";
+        $data->pathAbsolute = $this->path . "/Cloudspaces";
         unset($data->contents);
         array_push($expected,$data);
 
@@ -373,7 +377,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->with($this->token,true,142555444,null)
             ->will($this->returnValue(json_decode($metadataFile2)));
 
-        $this->sut->getSkel($this->token,false,$id,$metadatas,$path);
+        $this->sut->getSkel($this->token,false,$id,$metadatas,$path,$data->pathAbsolute);
         $this->assertEquals($expected,$metadatas);
     }
 
@@ -396,7 +400,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $metadatas = array();
         $expected = array();
         array_push($expected,json_decode($metadataError));
-        array_push($expected,json_decode('{"id":-8090905582480578692,"parent_id":null,"filename":"Cloudspaces","is_folder":true,"status":"NEW","server_modified":"2014-03-11 14:22:45.757","client_modified":"2014-03-11 14:22:45.757","user":"web","version":1,"checksum":589445744,"size":166,"mimetype":"text/plain","chunks":[],"is_root":false,"path":"/"}'));
+        array_push($expected,json_decode('{"id":-8090905582480578692,"parent_id":null,"filename":"Cloudspaces","is_folder":true,"status":"NEW","server_modified":"2014-03-11 14:22:45.757","client_modified":"2014-03-11 14:22:45.757","user":"web","version":1,"checksum":589445744,"size":166,"mimetype":"text/plain","chunks":[],"is_root":false,"path":"/","pathAbsolute":null}'));
 
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
@@ -408,7 +412,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->with($this->token,false,32565632156,true)
             ->will($this->returnValue(json_decode($metadataError)));
 
-        $this->sut->getSkel($this->token,false,$id,$metadatas,$path);
+        $this->sut->getSkel($this->token,false,$id,$metadatas,$path,null);
         $this->assertEquals($expected,$metadatas);
     }
 
@@ -797,6 +801,90 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->sut->renameMetadata($this->token,false,$id,$name,$path,$this->user,$parent);
     }
 
+    /**
+     * method: moveMetadata
+     * when: called
+     * with: tokenAndIsFileAndIdAndPathOrigAndPathDestAndUserAndParentId
+     * should: returnU1dbMove
+     */
+    public function test_moveMetadata_called_tokenAndIsFileAndIdAndPathOrigAndPathDestAndUserAndParentId_returnU1dbMove()
+    {
+        $id = 8983444;
+        $parent = 1333555;
+        $pathOrig = '/';
+        $pathNew = "/documents/";
+        $filename = "prueba.pdf";
+        $metadataMove = '{"filename":"' . $filename . '","id":' . $id . ',"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":' . $parent . ',"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false}';
+        $metadataDelete = '{"id":' . $id . ',"user_eyeos":"' . $this->user . '","path":"' . $pathOrig. '"}';
+        $metadataInsert = json_decode('{"user_eyeos":"' . $this->user . '","filename":"' . $filename . '","id":' . $id . ',"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":'. $parent . ',"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false,"path":"' . $pathNew . '"}');
+        $this->exerciseMoveMetadata($id,$filename,$parent,true,$pathOrig,$pathNew,$metadataMove,$metadataDelete, $metadataInsert);
+    }
+
+    /**
+     * method: moveMetadata
+     * when: called
+     * with: tokenAndIsFileAndIdAndPathOrigAndPathDestAndUserAndParentIdAndName
+     * should: returnU1dbMove
+     */
+    public function test_moveMetadata_called_tokenAndIsFileAndIdAndPathOrigAndPathDestAndUserAndParentIdAndName_returnU1dbMove()
+    {
+        $id = 8983444;
+        $parent = 1333555;
+        $pathOrig = '/';
+        $pathNew = "/documents/";
+        $filename = "prueba.pdf";
+        $fileDest = "prueba 1.pdf";
+        $metadataMove = '{"filename":"' . $fileDest . '","id":' . $id . ',"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":' . $parent . ',"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false}';
+        $metadataDelete = '{"id":' . $id . ',"user_eyeos":"' . $this->user . '","path":"' . $pathOrig. '"}';
+        $metadataInsert = json_decode('{"user_eyeos":"' . $this->user . '","filename":"' . $fileDest . '","id":' . $id . ',"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":'. $parent . ',"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false,"path":"' . $pathNew . '"}');
+        $this->exerciseMoveMetadata($id,$filename,$parent,true,$pathOrig,$pathNew,$metadataMove,$metadataDelete, $metadataInsert,$fileDest);
+    }
+
+    /**
+     * method: moveMetadata
+     * when: called
+     * with: tokenAndIsFolderAndIdAndPathOrigAndPathDestAndUserAndParentId
+     * should: returnU1dbMove
+     */
+    public function test_moveMetadata_called_tokenAndIsFolderAndIdAndPathOrigAndPathDestAndUserAndParentID_returnU1dbMove()
+    {
+        $id = 8983444;
+        $parent = 1333555;
+        $pathOrig = '/';
+        $pathNew = "/documents/";
+        $filename = "prueba";
+        $metadataMove = '{"filename":"' . $filename . '","id":' . $id . ',"size":0,"status":"CHANGED","version":2,"parent_id":' . $parent . ',"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":true,"is_root":false}';
+        $metadataDelete = '{"id":' . $id . ',"user_eyeos":"' . $this->user . '","path":"' . $pathOrig. '"}';
+        $metadataInsert = json_decode('{"user_eyeos":"' . $this->user . '","filename":"' . $filename . '","id":' . $id . ',"size":0,"status":"CHANGED","version":2,"parent_id":'. $parent . ',"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":true,"is_root":false,"path":"' . $pathNew . '"}');
+        $this->exerciseMoveMetadata($id,$filename,$parent,false,$pathOrig,$pathNew,$metadataMove,$metadataDelete,$metadataInsert);
+
+    }
+
+    /**
+     * method: moveMetadata
+     * when: called
+     * with: tokenAndIsFolderAndIdAndPathOrigAndPathDestAndUserAndParentId
+     * should: returnPermissionDenied
+     */
+    public function test_moveMetadata_called_tokenAndIsFolderAndIdAndPathOrigAndPathDestAndUserAndParentID_returnPermissionDenied()
+    {
+        $id = 8983444;
+        $parent = 1333555;
+
+        $this->apiProviderMock->expects($this->at(0))
+            ->method('updateMetadata')
+            ->with($this->token,false,$id,null,$parent)
+            ->will($this->returnValue(json_decode('{"error":403}')));
+
+        $this->accessorProviderMock->expects($this->never())
+            ->method('getProcessDataU1db');
+
+        $this->filesProviderMock->expects($this->never())
+            ->method('deleteFile');
+
+        $this->sut->moveMetadata($this->token,false,$id,$this->path,$this->path . "/documents",$this->user,$parent,null);
+    }
+
     private function exerciseCreateMetadata($file,$name,$parent_id,$path,$pathAbsolute,$metadataOut)
     {
         $type = $file?'false':'true';
@@ -869,6 +957,55 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->will($this->returnValue('true'));
 
         $this->sut->renameMetadata($this->token,$file,$id,$name,$path,$this->user,$parent);
+    }
+
+    private function exerciseMoveMetadata($id,$filename,$parent,$file,$pathOrig,$pathNew,$metadataMove,$metadataDelete,$metadataInsert,$fileDest = null)
+    {
+        $this->apiProviderMock->expects($this->at(0))
+            ->method('updateMetadata')
+            ->with($this->token,$file,$id,$fileDest?$fileDest:$filename,$parent)
+            ->will($this->returnValue(json_decode($metadataMove)));
+
+        $u1dbIn = new stdClass();
+        $u1dbIn->type = 'deleteFolder';
+        $u1dbIn->lista = array();
+        array_push($u1dbIn->lista,json_decode($metadataDelete));
+
+        $this->accessorProviderMock->expects($this->at(0))
+            ->method('getProcessDataU1db')
+            ->with(json_encode($u1dbIn))
+            ->will($this->returnValue('true'));
+
+        $this->accessorProviderMock->expects($this->at(0))
+            ->method('getProcessDataU1db')
+            ->with(json_encode($u1dbIn))
+            ->will($this->returnValue('true'));
+
+        $this->filesProviderMock->expects($this->at(0))
+            ->method('deleteFile')
+            ->with($this->path . $pathOrig . $filename,!$file)
+            ->will($this->returnValue(true));
+
+
+        $u1dbIn = new stdClass();
+        $u1dbIn->type = 'insert';
+        $u1dbIn->lista = array();
+        array_push($u1dbIn->lista,$metadataInsert);
+
+        $this->accessorProviderMock->expects($this->at(1))
+            ->method('getProcessDataU1db')
+            ->with(json_encode($u1dbIn))
+            ->will($this->returnValue('true'));
+
+        $fileNew = $fileDest?$fileDest:$filename;
+
+        $this->filesProviderMock->expects($this->at(1))
+            ->method('createFile')
+            ->with($this->path . $pathNew . $fileNew,!$file)
+            ->will($this->returnValue(true));
+
+        $this->sut->moveMetadata($this->token,$file,$id,$this->path,$this->path . "/documents",$this->user,$parent,$filename,$fileDest);
+
     }
 
 }

@@ -21,7 +21,7 @@ settings = {
         "urls": {
             "REQUEST_TOKEN_URL": "http://api.stacksync.com:8080/oauth/request_token",
             "ACCESS_TOKEN_URL": "http://api.stacksync.com:8080/oauth/access_token",
-            "CALLBACK_URL": "http://192.168.3.164",
+            "CALLBACK_URL": "http://sebasvm.eyeosbcn.com",
             "RESOURCE_URL": "http://api.stacksync.com:8080/v1/"
         },
         "consumer": {
