@@ -879,7 +879,6 @@ qx.Class.define('eyeos.files.Controller', {
 				if (type == 'folder') {
 					foldersToOpen.push(filesToOpen[i].getFile().getAbsolutePath());
 				} else {
-                    console.log(filesToOpen[i].getFile().getName());
 					if (extensionsForViewer.indexOf(extension) != -1) {
                         if(parent) {
                             filesForViewer.push(this.__getObjectDownloadStacksync(parent,filesToOpen[i].getFile().getAbsolutePath(),filesToOpen[i].getFile().getName()));
@@ -1147,7 +1146,7 @@ qx.Class.define('eyeos.files.Controller', {
                             var idParent = this.__getFileIdFolder(params.folder);
                             var filesAux = [];
 
-                            if(!idParent) {
+                            if(idParent === null) {
                                 idParent = this.__getFileIdFolder(files[0]);
                             }
 
@@ -1570,8 +1569,6 @@ qx.Class.define('eyeos.files.Controller', {
                 length += listDelete.length;
                 deleteFiles = true;
             }
-
-            console.log(listDelete);
 
             if(pos > -1) {
                 var params = new Object();
