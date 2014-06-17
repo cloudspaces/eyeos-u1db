@@ -137,7 +137,11 @@ qx.Class.define('eyeos.application.Documents', {
 		EnableSocialBar: {
 			init: true,
 			event: 'changeEnableSocialBar'
-		}
+		},
+        permissionDenied: {
+            init: false,
+            check: 'Boolean'
+        }
 	},
 
 	members: {
@@ -254,65 +258,76 @@ qx.Class.define('eyeos.application.Documents', {
 			}, this);
 
 			this.getWindow().addListener('beforeClose', function(e) {
-				var tinymceId = 'tinymce_editor' + this.getPid();
-                
-				if(!this.isExplorer()) {
-					removeSelector(this.getCurrentUser());
-				}
 
-				var ed = tinyMCE.get('tinymce_editor' + this.getPid());
-				eyeos.application.documents.Utils.sendChanges(this.isExplorer(), this.getPid(),this.getDuid());
-				// if the file is not saved...
-				if(!this.isDisposed()) {
-					if (!this.getMenuBar().getActions().isFileSaved()) {
-						e.preventDefault();
-						// we ask the user if he want to save the file...
-						var optionPane = new eyeos.dialogs.OptionPane(
-							"<b>"+tr("Do you want to save the file before closing?")+"</b>",
-							eyeos.dialogs.OptionPane.QUESTION_MESSAGE,
-							eyeos.dialogs.OptionPane.YES_NO_CANCEL_OPTION);
-						var dialog = optionPane.createDialog(this.getWindow(), "Documents", function(result) {
-							// if the user does not want to save the file, we reset the needed intervals
-							// for the collaborative plugin, we save the openRecent entries, and we close the application...
-							if (result == 0) {
-								//unsubscribe here
-								var object = this.getMenuBar().getActions();
-								/*var netSync = eyeos.netSync.NetSync.getInstance();
-								clearInterval(tinyMCE.getInstanceById(tinymceId).interval);
-								clearInterval(tinyMCE.getInstanceById(tinymceId).intervalPing);
-								clearInterval(this.getMenuBar().getActions().interval);
-								clearInterval(this.getMenuBar().getActions().intervalGet);*/
+                if(!this.getPermissionDenied()) {
 
-								this.getMenuBar().getActions().__currentDoc.checksum =
-								eyeos.application.documents.Utils.crc32(tinyMCE.getInstanceById(tinymceId).getContent());
-								this.getMenuBar().getActions().dynamicsWriteOpenRecent();
-								this.getWindow().close();
-							}
-							// if the user does want to save the file, we save it...
-							else if (result == 1) {
-								this.getMenuBar().getActions().__closeFlag = true;
-								this.getMenuBar().getActions().fileSave();
-							}
-						}, this);
+                    var tinymceId = 'tinymce_editor' + this.getPid();
 
-						dialog.open();
-					}
-					// if the file is saved, we reset the needed intervals
-					// for the collaborative plugin, and we save the openRecent entries,
-					// without saving the current file...
-					else {
-						//unsubscribe here
-						var object = this.getMenuBar().getActions();
-						/*var netSync = eyeos.netSync.NetSync.getInstance();
-						netSync.unsubscribe('document_'+object.__currentDoc.duid);
-						clearInterval(tinyMCE.getInstanceById(tinymceId).interval);
-						clearInterval(tinyMCE.getInstanceById(tinymceId).intervalPing);
-						clearInterval(this.getMenuBar().getActions().interval);
-						clearInterval(this.getMenuBar().getActions().intervalGet);*/
-						this.getMenuBar().getActions().dynamicsWriteOpenRecent();
-					}
-				}
+                    if(!this.isExplorer()) {
+                        removeSelector(this.getCurrentUser());
+                    }
+
+                    var ed = tinyMCE.get('tinymce_editor' + this.getPid());
+                    eyeos.application.documents.Utils.sendChanges(this.isExplorer(), this.getPid(),this.getDuid());
+                    // if the file is not saved...
+                    if(!this.isDisposed()) {
+                        if (!this.getMenuBar().getActions().isFileSaved()) {
+                            e.preventDefault();
+                            // we ask the user if he want to save the file...
+                            var optionPane = new eyeos.dialogs.OptionPane(
+                                "<b>"+tr("Do you want to save the file before closing?")+"</b>",
+                                eyeos.dialogs.OptionPane.QUESTION_MESSAGE,
+                                eyeos.dialogs.OptionPane.YES_NO_CANCEL_OPTION);
+                            var dialog = optionPane.createDialog(this.getWindow(), "Documents", function(result) {
+                                // if the user does not want to save the file, we reset the needed intervals
+                                // for the collaborative plugin, we save the openRecent entries, and we close the application...
+                                if (result == 0) {
+                                    //unsubscribe here
+                                    var object = this.getMenuBar().getActions();
+                                    /*var netSync = eyeos.netSync.NetSync.getInstance();
+                                    clearInterval(tinyMCE.getInstanceById(tinymceId).interval);
+                                    clearInterval(tinyMCE.getInstanceById(tinymceId).intervalPing);
+                                    clearInterval(this.getMenuBar().getActions().interval);
+                                    clearInterval(this.getMenuBar().getActions().intervalGet);*/
+
+                                    this.getMenuBar().getActions().__currentDoc.checksum =
+                                    eyeos.application.documents.Utils.crc32(tinyMCE.getInstanceById(tinymceId).getContent());
+                                    this.getMenuBar().getActions().dynamicsWriteOpenRecent();
+                                    this.getWindow().close();
+                                }
+                                // if the user does want to save the file, we save it...
+                                else if (result == 1) {
+                                    this.getMenuBar().getActions().__closeFlag = true;
+                                    this.getMenuBar().getActions().fileSave();
+                                }
+                            }, this);
+
+                            dialog.open();
+                        }
+                        // if the file is saved, we reset the needed intervals
+                        // for the collaborative plugin, and we save the openRecent entries,
+                        // without saving the current file...
+                        else {
+                            //unsubscribe here
+                            var object = this.getMenuBar().getActions();
+                            /*var netSync = eyeos.netSync.NetSync.getInstance();
+                            netSync.unsubscribe('document_'+object.__currentDoc.duid);
+                            clearInterval(tinyMCE.getInstanceById(tinymceId).interval);
+                            clearInterval(tinyMCE.getInstanceById(tinymceId).intervalPing);
+                            clearInterval(this.getMenuBar().getActions().interval);
+                            clearInterval(this.getMenuBar().getActions().intervalGet);*/
+                            this.getMenuBar().getActions().dynamicsWriteOpenRecent();
+                        }
+                    }
+                }
 			}, this);
+
+            var bus = eyeos.messageBus.getInstance();
+            bus.addListener('eyeos_file_permissionDenied',function(e){
+                this.setPermissionDenied(true);
+                this.getMenuBar().getActions().__closeFlag = true;
+                this.getWindow().close();
+            },this);
 
 			this.getWindow().maximize();
 			this.getWindow().setAllowClose(false);

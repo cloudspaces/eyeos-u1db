@@ -115,6 +115,12 @@ qx.Class.define('eyeos.application.notepad', {
 					}
 				}
 			}, this);
+
+            var bus = eyeos.messageBus.getInstance();
+            bus.addListener('eyeos_file_permissionDenied',function(e){
+                this._exitConfirmed = true;
+                this._window.close();
+            },this);
 		},
     
     members: {

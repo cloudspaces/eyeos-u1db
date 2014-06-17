@@ -131,12 +131,7 @@ class StoreListener extends AbstractFileAdapter implements ISharingListener {
                 }
             }
 
-            /*unset($_SESSION['access_token_v2']);
-            $oauthManager = new OAuthManager();
-            $token = new Token();
-            $token->setUserID($user->getId());
-            $oauthManager->deleteToken($token);
-            $message = new ClientBusMessage('file', 'permissionDenied',$e->getSource()->getPath());
+            /*$message = new ClientBusMessage('file', 'permissionDenied',$e->getSource()->getPath());
             ClientMessageBusController::getInstance()->queueMessage($message);*/
         }
 
