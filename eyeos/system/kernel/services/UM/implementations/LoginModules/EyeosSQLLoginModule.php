@@ -129,43 +129,6 @@ class EyeosSQLLoginModule implements ILoginModule {
 		$this->succeeded = true;
 		return true;
 	}
-
-    private function getCredentials($user,$password)
-    {
-        $oauthManager = new OAuthManagerOld();
-        $settings = new Settings();
-        $settings->setUrl(URL_CLOUDSPACE);
-        $settings->setCustomRequest("POST");
-
-        $postfields = array();
-        $postfields['auth'] = array();
-        $postfields['auth']['passwordCredentials'] = array();
-        $postfields['auth']['passwordCredentials']['username'] = $user;
-        $postfields['auth']['passwordCredentials']['password'] = $password;
-        $postfields['auth']['tenantName'] = $user;
-
-        $settings->setPostFields(json_encode($postfields));
-        $settings->setReturnTransfer(true);
-        $settings->setHttpHeader(array("Content-Type: application/json"));
-        $settings->setHeader(false);
-        $settings->setSslVerifyPeer(false);
-
-        $token = $oauthManager->verifyUser($settings);
-
-        $_SESSION['token'] = $this->encryptData($token->getId());
-        $_SESSION['url'] = $this->encryptData($token->getUrl());
-        $_SESSION['dateExpires'] = $token->getExpire();
-        $_SESSION['user'] = $this->encryptData($user);
-        $_SESSION['password'] = $this->encryptData($password);
-
-        try {
-            $user = UMManager::getInstance()->getUserByName($user);
-        } catch(EyeNoSuchUserException $e) {
-            $user = $this->createUser($user,$password);
-        }
-
-        return $user;
-    }
 	
 	public function logout() {
 		$this->subject->getPrincipals()->removeAll($this->loadedPrincipals);
@@ -190,11 +153,6 @@ class EyeosSQLLoginModule implements ILoginModule {
         }
 
         return $dateExpires;
-    }
-
-    private function encryptData($data) {
-        $codeManager = new CodeManager();
-        return $codeManager->getEncryption($data);
     }
 
     private function createUser($username,$password)

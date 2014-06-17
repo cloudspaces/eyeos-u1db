@@ -45,7 +45,9 @@ class AccessorProvider
     {
         $path = "python '" . EXTERN_DIR . '/' . U1DB . "/Protocol.py' " . escapeshellarg($json);
         Logger::getLogger('sebas')->error('PathPython:' . $path);
-        return exec($path);
+        $result = exec($path);
+        Logger::getLogger('sebas')->error('Calendar: ' . strlen($result) . ' :: ' . $result);
+        return $result;
     }
 
     public function getProcessCredentials($token,$verifier)

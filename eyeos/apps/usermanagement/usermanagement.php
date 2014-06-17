@@ -271,8 +271,7 @@ abstract class UserManagementApplication extends EyeosApplicationExecutable {
         $user = $myUManager->getUserById($params);
 		$myUManager->deletePrincipal($user);
         $apiManager = new ApiManager();
-        $codeManager = new CodeManager();
-        $apiManager->deleteMetadataUser($codeManager->getEncryption($user->getName()));
+        $apiManager->deleteMetadataUser($user->getName());
         $oauthManager = new OAuthManager();
         $token = new Token();
         $token->setUserID($user->getId());

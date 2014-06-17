@@ -273,7 +273,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 	/**
 	 * TODO: Will need to be moved/merged to/with FileSystemExecModule
 	 */
-	public static function copy($params) {
+	/*public static function copy($params) {
 		$currentUser = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
 		$settings = MetaManager::getInstance()->retrieveMeta($currentUser);
 		$target = FSI::getFile($params['folder']);
@@ -356,7 +356,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
 
 
-	}
+	}*/
 
 	/**
 	 * TODO: Will need to be moved/merged to/with FileSystemExecModule
@@ -850,33 +850,6 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 		}
 
 	}
-
-    public static function verifyToken()
-    {
-        $oauthManager = new OAuthManagerOld();
-        $codeManager = new CodeManager();
-        $settings = new Settings();
-        $settings->setUrl(URL_CLOUDSPACE);
-        $settings->setCustomRequest("POST");
-        $postfields = array();
-        $postfields['auth'] = array();
-        $postfields['auth']['passwordCredentials'] = array();
-        $postfields['auth']['passwordCredentials']['username'] = $codeManager->getDecryption($_SESSION['user']);
-        $postfields['auth']['passwordCredentials']['password'] = $codeManager->getDecryption($_SESSION['password']);
-        $postfields['auth']['tenantName'] = $codeManager->getDecryption($_SESSION['user']);
-        $settings->setPostFields(json_encode($postfields));
-        $settings->setReturnTransfer(true);
-        $settings->setHttpHeader(array("Content-Type: application/json"));
-        $settings->setHeader(false);
-        $settings->setSslVerifyPeer(false);
-        $date = new DateTime();
-        $token = $oauthManager->verifyDateExpireToken($_SESSION['dateExpires'],date_format($date, 'Y-m-d H:i:s'),$settings);
-        if($token !== false) {
-            $_SESSION['token'] = $codeManager->getEncryption($token->getId());
-            $_SESSION['url'] = $codeManager->getEncryption($token->getUrl());
-            $_SESSION['dateExpires'] = $token->getExpire();
-        }
-    }
 
     public static function downloadFileStacksync($params)
     {

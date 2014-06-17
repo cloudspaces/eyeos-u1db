@@ -678,7 +678,7 @@ class OAuthSignatureMethod_HMAC_SHA1(OAuthSignatureMethod):
             key += escape(token.secret)
         raw = '&'.join(sig)
 
-        return key, raw
+        return key.encode('utf-8'), raw.encode('utf-8')
 
     def build_signature(self, oauth_request, consumer, token):
         """Builds the base signature string."""
@@ -694,7 +694,7 @@ class OAuthSignatureMethod_HMAC_SHA1(OAuthSignatureMethod):
             hashed = hmac.new(key, raw, sha)
 
         # Calculate the digest base 64.
-        return binascii.b2a_base64(hashed.digest())[:-1]
+        return binascii.b2a_base64(hashed.digest())[:-1].decode('utf-8')
 
 
 class OAuthSignatureMethod_PLAINTEXT(OAuthSignatureMethod):
