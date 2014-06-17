@@ -274,6 +274,13 @@ class ApiManager
         return $this->accessorProvider->getProcessDataU1db(json_encode($json));
     }
 
+    public function deleteMetadataUser($user)
+    {
+        $file = array();
+        $file['user_eyeos'] = $user;
+        return json_decode($this->callProcessU1db("deleteMetadataUser",$file));
+    }
+
     private function setUserEyeos($metadata,$user)
     {
         $aux = new stdClass();
