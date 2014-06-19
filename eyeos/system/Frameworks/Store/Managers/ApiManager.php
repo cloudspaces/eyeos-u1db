@@ -198,6 +198,8 @@ class ApiManager
         $result['error'] = -1;
         $metadata = $this->apiProvider->deleteMetadata($token,$file,$id);
         if(!isset($metadata->error)) {
+            $result['status'] = 'OK';
+            unset($result['error']);
             $data = new stdClass();
             $data->id = $id;
             $data->user_eyeos = $user;
