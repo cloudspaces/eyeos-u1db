@@ -986,9 +986,13 @@ qx.Class.define('eyeos.files.Controller', {
                 }
 			}
 
-			for (var i = 0; i < foldersToOpen.length; ++i) {
+			/*for (var i = 0; i < foldersToOpen.length; ++i) {
 				eyeos.execute('files', this.getApplication().getChecknum(), [foldersToOpen[i]]);
-			}
+			}*/
+
+            if(foldersToOpen.length > 0) {
+                this.getView().getController()._browsePath(foldersToOpen[0], true);
+            }
 		},
 
 		newFile: function (extension) {
