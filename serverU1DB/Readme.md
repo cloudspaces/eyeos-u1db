@@ -1,15 +1,15 @@
 Installation U1DB server & Oauth server
-========================================
+================================================================
 
 **Table contents**
 
-- [Requirements](#Requirements)
-- [Step by step](#Step by step)
+- [Requirements](#requirements)
+- [Step by step](#step-by-step)
 
 
 The installation will be done on a Ubuntu 12.04 operating system, you can choose a higher version, but then the requirements might be different.
 
-#Requirements
+# Requirements
 
 +    **MongoDb**
 
@@ -89,7 +89,7 @@ The installation will be done on a Ubuntu 12.04 operating system, you can choose
     
     ![](../img/Step4_u1dbPython.jpg)
 
-#Step by step
+# Step by step
 
 Check the following files are present in the folder '/var/www/eyeos/serverU1DB':  
     
