@@ -4,8 +4,8 @@ Installation U1DB server & Oauth server
 **Table contents**
 
 - [Introduction](#introduction)
-- [Requirements](#requirements)
-- [Step by step](#step-by-step)
+    - [Requirements](#requirements)
+    - [Step by step](#step-by-step)
 
 
 ## Introduction
@@ -93,7 +93,7 @@ The installation will be done on a Ubuntu 12.04 operating system, you can choose
     ![](../img/Step4_u1dbPython.jpg)
 
 
-# Step by step
+### Step by step
 
 Check the following files are present in the folder '/var/www/eyeos/serverU1DB':  
     
