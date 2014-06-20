@@ -3,17 +3,11 @@ Installation U1DB server & Oauth server
 
 **Table contents**
 
-* [Installation](#Instalacion)
-    * [Requirements](#Requisitos)
-    * [Step by step](#Pasos)
-
-
-
-#Installation
+- [Requirements](#Requisitos)
+- [Step by step](#Pasos)
 
 
 The installation will be done on a Ubuntu 12.04 operating system, you can choose a higher version, but then the requirements might be different.
-
 
 
 ##Requirements
