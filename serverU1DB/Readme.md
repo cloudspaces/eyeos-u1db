@@ -8,11 +8,11 @@ Installation U1DB server & Oauth server
 - [Step by step](#step-by-step)
 
 
-# Introduction
+## Introduction
 
 The installation will be done on a Ubuntu 12.04 operating system, you can choose a higher version, but then the requirements might be different.
 
-# Requirements
+### Requirements
 
 +    **MongoDb**
 
