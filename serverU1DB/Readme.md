@@ -3,9 +3,12 @@ Installation U1DB server & Oauth server
 
 **Table contents**
 
+- [Introduction](#introduction)
 - [Requirements](#requirements)
 - [Step by step](#step-by-step)
 
+
+# Introduction
 
 The installation will be done on a Ubuntu 12.04 operating system, you can choose a higher version, but then the requirements might be different.
 
@@ -88,6 +91,7 @@ The installation will be done on a Ubuntu 12.04 operating system, you can choose
     \# dpkg -i python-u1db_0.1.4-0ubuntu1_all.deb  
     
     ![](../img/Step4_u1dbPython.jpg)
+
 
 # Step by step
 
