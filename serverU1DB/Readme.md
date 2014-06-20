@@ -9,14 +9,14 @@
 
 
 
-##Installation{#Instalacion}
+##Installation
 
 
 The installation will be done on a Ubuntu 12.04 operating system, you can choose a higher version, but then the requirements might be different.
 
 
 
-###Requirements{#Requisitos}
+###Requirements
                  
                     
 +    **MongoDb**
@@ -97,7 +97,7 @@ The installation will be done on a Ubuntu 12.04 operating system, you can choose
     
     ![](../img/Step4_u1dbPython.jpg)
 
-###Step by step{#Pasos}
+###Step by step
 
 Check the following files are present in the folder '/var/www/eyeos/serverU1DB':  
     
