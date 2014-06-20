@@ -3,16 +3,14 @@ Installation U1DB server & Oauth server
 
 **Table contents**
 
-- [Requirements](#Requisitos)
-- [Step by step](#Pasos)
+- [Requirements](#Requirements)
+- [Step by step](#Step by step)
 
 
 The installation will be done on a Ubuntu 12.04 operating system, you can choose a higher version, but then the requirements might be different.
 
-
 #Requirements
-                 
-                    
+
 +    **MongoDb**
 
     \# sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
