@@ -640,6 +640,7 @@ qx.Class.define('eyeos.files.Controller', {
 
                 if(params.id !== null) {
                     eyeos.callMessage(this.getApplication().getChecknum(), 'getMetadata', params, function (results) {
+                        this.closeCursorLoad();
                         if(results) {
                             var metadata = JSON.parse(results);
                             if(!metadata.error) {
@@ -991,6 +992,9 @@ qx.Class.define('eyeos.files.Controller', {
 			}*/
 
             if(foldersToOpen.length > 0) {
+                if(this.__isStacksync(foldersToOpen[0])) {
+                    this.openCursorLoad();
+                }
                 this.getView().getController()._browsePath(foldersToOpen[0], true);
             }
 		},
@@ -1080,8 +1084,13 @@ qx.Class.define('eyeos.files.Controller', {
 				}
 
                 this.closeTimer();
+                if(this.__isStacksync(currentPath)) {
+                    console.log('ha entrado');
+                    this.openCursorLoad();
+                }
 
 				eyeos.callMessage(this.getApplication().getChecknum(), 'delete', files, function (results) {
+                    this.closeCursorLoad();
                     if(this.__isStacksync(currentPath)) {
                         if(results.error == 403) {
                             this.__permissionDenied();
@@ -1263,7 +1272,9 @@ qx.Class.define('eyeos.files.Controller', {
                 params.path = path;
                 if (params.id) {
                     stacksync = true;
+                    this.openCursorLoad();
                     eyeos.callMessage(this.getApplication().getChecknum(),'downloadFileStacksync',params,function(result){
+                        this.closeCursorLoad();
                         if(!result.error) {
                             eyeos.execute('download',this.getApplication().getChecknum(), [path]);
                         } else if(result.error == 403) {
@@ -1285,6 +1296,9 @@ qx.Class.define('eyeos.files.Controller', {
 					this.getModel().setHistoryIndex(this.getModel().getHistoryIndex() - 1);
 					this.getModel().setCurrentPath(this.getModel().getHistory()[parseInt(this.getModel().getHistoryIndex() - 1)]);
 				}
+                if(this.__isStacksync(this.getModel().getCurrentPath()[1])) {
+                    this.openCursorLoad();
+                }
 				this._browse(false);
 			} else {
 				this.getModel().setHistoryIndex(0);
@@ -1292,13 +1306,20 @@ qx.Class.define('eyeos.files.Controller', {
 		},
 
 		toolBarForward: function () {
-			if (parseInt(this.getModel().getHistoryIndex()+1) <= this.getModel().getHistory().length) {
+			/*if (parseInt(this.getModel().getHistoryIndex()+1) <= this.getModel().getHistory().length) {
 				this.getModel().setHistoryIndex(this.getModel().getHistoryIndex() + 1);
 			} else {
 				this.getModel().setHistoryIndex(this.getModel().getHistory().length);
-			}
-			this.getModel().setCurrentPath(this.getModel().getHistory()[this.getModel().getHistoryIndex()]);
-			this._browse(false);
+			}*/
+            var currentPath = this.getModel().getHistory()[this.getModel().getHistoryIndex()];
+            if(currentPath) {
+                this.getModel().setHistoryIndex(this.getModel().getHistoryIndex() + 1);
+			    this.getModel().setCurrentPath(currentPath);
+                if(this.__isStacksync(this.getModel().getCurrentPath()[1])) {
+                    this.openCursorLoad();
+                }
+			    this._browse(false);
+            }
 		},
 
 		toolBarUpload: function () {
@@ -1454,21 +1475,25 @@ qx.Class.define('eyeos.files.Controller', {
 
         __openFileStacksync: function(type,files) {
             var listFiles = new Array();
+            this.openCursorLoad();
             for(var i in files) {
                 if(files[i].id) {
                     eyeos.callMessage(this.getApplication().getChecknum(),'downloadFileStacksync',files[i],function(path) {
                         if(!path.error) {
                             listFiles.push(path);
                             if(listFiles.length == files.length) {
+                                this.closeCursorLoad();
                                 eyeos.execute(type, this.getApplication().getChecknum(), listFiles);
                             }
                         } else if(path.error == 403) {
+                            this.closeCursorLoad();
                             this.__permissionDenied();
                         }
                     },this);
                 } else {
                     listFiles.push(files[i].path);
                     if(listFiles.length == files.length) {
+                        this.closeCursorLoad();
                         eyeos.execute(type, this.getApplication().getChecknum(), listFiles);
                     }
                 }
@@ -1802,6 +1827,22 @@ qx.Class.define('eyeos.files.Controller', {
             this.getView().setShowStatusbar(false);
             this.getView().setCaption('Files');
             this.getView()._permissionDenied();
+        },
+
+        openCursorLoad: function() {
+            if(this.getView().getCursorLoad() == null) {
+                this.getView().enabledFiles(false);
+                this.getView().setCursorLoad(new eyeos.files.Cursor(this.getView()));
+                this.getView().getCursorLoad().open();
+            }
+        },
+
+        closeCursorLoad: function() {
+            if(this.getView().getCursorLoad() !== null) {
+                this.getView().enabledFiles(true);
+                this.getView().getCursorLoad().close();
+                this.getView().setCursorLoad(null);
+            }
         }
 	}
 });

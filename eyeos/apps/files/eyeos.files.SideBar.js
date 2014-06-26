@@ -142,6 +142,9 @@ qx.Class.define('eyeos.files.Sidebar', {
 			item.addListener('click', function () {
 				if (!self.isDragging()) {
 					self.getController().getModel().setCurrentPath(['path', this.getPath()]);
+                    if(self.getController().__isStacksync(this.getPath())) {
+                        self.getController().openCursorLoad();
+                    }
 					self.getController()._browse(true);
 				}
 			});
