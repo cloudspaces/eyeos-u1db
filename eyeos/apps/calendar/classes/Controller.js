@@ -788,7 +788,7 @@ qx.Class.define('eyeos.calendar.Controller', {
 
                 if(params.calendar.length > 0) {
                     eyeos.callMessage(this.__checknum,'getAllEventsFromPeriod',params,function(calendars) {
-                        if(calendars && calendars.length > 0) {
+                        if(calendars && calendars.length > 0 && this.__tieneEventos(calendars)) {
                             this.__eventModels =  {};
                             var change = false;
                             var events = [];
@@ -822,6 +822,9 @@ qx.Class.define('eyeos.calendar.Controller', {
                                 this.fireDataEvent('refreshEventsCalendar',events);
                             }
 
+                            this.__refresh(true);
+                        } else {
+                            this.fireDataEvent('refreshEventsCalendar',[]);
                             this.__refresh(true);
                         }
                     },this);
@@ -937,6 +940,18 @@ qx.Class.define('eyeos.calendar.Controller', {
             }
 
             return changed;
+        },
+        __tieneEventos: function(calendars) {
+           var resp = false;
+
+           for(var i in calendars) {
+               if(calendars[i].length > 0) {
+                   resp = true;
+                   break;
+               }
+           }
+
+            return resp;
         }
 	}
 });

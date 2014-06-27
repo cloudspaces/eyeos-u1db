@@ -109,6 +109,9 @@ qx.Class.define('eyeos.files.HeaderBar', {
 				
 				item.addListener('click',  function () {
 					if (!this._dropped) {
+                        if(this.getManager().getViewManager().getController().__isStacksync(this.getPath())) {
+                            this.getManager().getViewManager().getController().openCursorLoad();
+                        }
 						this.getManager().getViewManager().getController().getModel().setCurrentPath(['path', this.getPath()]);
 						this.getManager().getViewManager().getController()._browse(true);
 					} else {
@@ -251,7 +254,13 @@ qx.Class.define('eyeos.files.HeaderBar', {
 
 		setTitle: function (title) {
 			this._mainTitle.setValue(tr(title));
-		}
+		},
+
+        enabledItems: function(enabled) {
+            for(var i = 0;i < this._layoutBase.getChildren().length;i++) {
+                this._layoutBase.getChildren()[i].setEnabled(enabled);
+            }
+        }
 	}
 });
 

@@ -58,6 +58,12 @@ qx.Class.define('eyeos.files.ViewManager', {
              if(this._cursor) {
                  this.centerCursor();
              }
+             this.__centerCursorLoad();
+
+        },this);
+
+        this.addListener('move',function(e) {
+            this.__centerCursorLoad();
         },this);
 	},
 
@@ -72,7 +78,12 @@ qx.Class.define('eyeos.files.ViewManager', {
 
 		keyPress: {
 			check: 'Boolean'
-		}
+		},
+
+        cursorLoad: {
+            check: 'Object',
+            init: null
+        }
 	},
 
 	members: {
@@ -181,6 +192,9 @@ qx.Class.define('eyeos.files.ViewManager', {
             this.addListener('beforeClose',function() {
                 this.getController().closeTimer();
                 this.getController().closeProgress();
+                if(this.getCursorLoad() !== null) {
+                    this.getCursorLoad().close();
+                }
             },this);
 		},
 
@@ -632,6 +646,20 @@ qx.Class.define('eyeos.files.ViewManager', {
             permissionDialog.add(containerButtons);
 
             this.add(permissionDialog);
+        },
+        __centerCursorLoad: function() {
+            if(this.getCursorLoad() !== null) {
+                this.getCursorLoad().centerCursor(this);
+            }
+        },
+        enabledFiles: function(enabled) {
+            this._header.enabledItems(enabled);
+            this._menuBar.setEnabled(enabled);
+            this._toolBar.setEnabled(enabled);
+            this._searchBox.setEnabled(enabled);
+            this._sideBar.setEnabled(enabled);
+            this._socialBar.setEnabled(enabled);
+            this._view.enabledFiles(enabled);
         }
 	},
 	// function tr() to translate menus and toolbar isn't need here, because apply translate when items is constructing.

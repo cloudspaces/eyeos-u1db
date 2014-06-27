@@ -180,6 +180,11 @@ class Metadata:
             calendar = self.getCalendar(data)
             if len(calendar) == 0:
                 self.db.create_doc_from_json(json.dumps(data))
+            elif calendar[0].content['status'] == 'DELETED':
+                file = calendar[0]
+                file.set_json(json.dumps(data))
+                self.db.put_doc(file)
+
 
 
     def getCalendar(self,data):

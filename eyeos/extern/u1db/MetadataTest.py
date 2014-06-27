@@ -318,6 +318,24 @@ class MetadataTest (unittest.TestCase):
             results.append(file.content)
         results.sort()
         self.assertEquals(array,results)
+    """
+    method: insertCalendar
+    when: called
+    with: array
+    should: updateCorrect
+    """
+    def test_insertCalendar_called_array_updateCorrect(self):
+        array =[{u'type':u'calendar',u'user_eyeos':u'eyeos',u'name':u'school',u'status':u'DELETED',u'description':u'school calendar',u'timezone':0}]
+        self.sut.insertCalendar(array)
+        array2 = [{u'type':u'calendar',u'user_eyeos':u'eyeos',u'name':u'school',u'status':u'NEW',u'description':u'school calendar',u'timezone':0}]
+        self.sut.insertCalendar(array2)
+        files = self.sut.db.get_all_docs()
+        results = []
+        for file in files[1]:
+            results.append(file.content)
+        results.sort()
+        self.assertEquals(array2,results)
+
 
     """
     method: deleteCalendar

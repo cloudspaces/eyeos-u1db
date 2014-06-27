@@ -357,6 +357,9 @@ qx.Class.define('eyeos.files.IconView', {
 				var file = this.getFile();
 				var absolutePath = file.getAbsolutePath();
 				if (file.getType() == 'folder') {
+                    if(self.getViewManager().getController().__isStacksync(file.getAbsolutePath())) {
+                        this.getManager().getViewManager().getController().openCursorLoad();
+                    }
 					this.getManager().getViewManager().getController()._browsePath(absolutePath, true);
 				} else {
 					var checknum = this.getManager().getViewManager().getController().getApplication().getChecknum();
@@ -366,7 +369,9 @@ qx.Class.define('eyeos.files.IconView', {
                         params.path = absolutePath;
 
                         if(params.id) {
+                            this.getManager().getViewManager().getController().openCursorLoad();
                             eyeos.callMessage(checknum,"downloadFileStacksync",params,function(e) {
+                                this.getManager().getViewManager().getController().closeCursorLoad();
                                 if(!e.error) {
                                     eyeos.openFile(absolutePath, checknum);
                                 } else if(e.error == 403) {
@@ -621,6 +626,12 @@ qx.Class.define('eyeos.files.IconView', {
 
 			}
 		},
+
+        enabledFiles: function(enabled) {
+           for(var i = 0;i < this._layoutBase.getChildren().length;i++) {
+               this._layoutBase.getChildren()[i].setEnabled(enabled);
+           }
+        },
 
 		filterBrowse: function(filter) {
 			this._layoutBase.removeAll();
