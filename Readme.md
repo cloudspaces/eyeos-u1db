@@ -2000,5 +2000,4 @@ During the previous process some exceptions could be thrown, which are listed be
 
 
 The access token is permanently stored in eyeOS and has no expiration. If the user wants to delete the link, must do it from his StackSync intranet, after that, once it is done the first call to StackSync API a 403 error will be received, that indicates access denied.  
-
     ![](img/Stacksync_exc_4.png)
