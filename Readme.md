@@ -285,9 +285,9 @@ Creates a document from JSON data.
 Alternatively can be especified the document's identifier. The identifier mustn't exist in the database. If database especifies a maximum document size and the document exceeds, the exception DocumentTooBig will be thrown.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td>
                 <ul>
                     <li><b>json</b> – JSON data</li>
@@ -296,7 +296,7 @@ Alternatively can be especified the document's identifier. The identifier mustn'
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">Document</td>
         </tr>
     </table>
@@ -308,13 +308,13 @@ Alternatively can be especified the document's identifier. The identifier mustn'
 Document update. If database especifies a maximum document size and the document exceeds, the exception DocumentTooBig will be thrown.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px"><b>doc</b> – Document with new content</td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">Document</td>
         </tr>
     </table>
@@ -326,9 +326,9 @@ Document update. If database especifies a maximum document size and the document
 Updates document's JSON data.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px"><b>json</b> – JSON data</td>
         </tr>
     </table>
@@ -340,9 +340,9 @@ Updates document's JSON data.
 Mark a document as deleted.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px"><b>doc</b> – Document to delete</td>
         </tr>
     </table>
@@ -358,9 +358,9 @@ Quering in U1DB is performed by means of indexes. To recover some documents from
 Creates an index that will be used to make queries in the database. The creation of an existing index  will not throw any exception. The creation of an existing index with different index_expressions than the original one will throw an exception.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td>
                 <ul>
                     <li><b>index_name</b> – Unique index identifier</li>
@@ -379,9 +379,9 @@ Creates an index that will be used to make queries in the database. The creation
 Returns the documents that match the specified keys.  It must be specified the same number of values than keys defined in the index.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td>
                 <ul>
                     <li><b>index_name</b> – Name of index</li>
@@ -390,7 +390,7 @@ Returns the documents that match the specified keys.  It must be specified the s
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">List of documents</td>
         </tr>
     </table>
@@ -412,9 +412,9 @@ Synchronizes documents with a remote backup by means of an url.
 
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td>
                 <ul>
                     <li><b>url</b> – url of remote backup the synchronization is going to take place with</li>
@@ -429,7 +429,7 @@ Synchronizes documents with a remote backup by means of an url.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">local_gen_before_sync – It's a local generation key to control the synchronization. It's useful to use with the function whats_changed, if an aplication wants to know the documents that have changed during synchronization</td>
         </tr>
     </table>
@@ -443,7 +443,7 @@ EyeOS storages the user's calendars and events into U1DB synchronized database. 
 ![](img/Settings_Calendars.jpg)
 
 <div style="margin-top:45px;margin-bottom:10px;margin-left:40px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td width="15%">Server</td>
             <td width="45%" style="padding-left:15px">IP address where the Oauth server is active</td>
@@ -480,15 +480,15 @@ Next is detailed the APIs contained in the script Protocol.py:
 Get all calendars of the user.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px"><b>data</b> – Contains the type and the user.<br>
                 Example: {“type”:”calendar”,”user_eyeos”:”eyeos”}
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">Array in JSON format<br>
                 Example:<br>
                 [{“type”:”calendar”,”user_eyeos”:”eyeos”,”name”:”personal”,”description”:”personal calendar”,”timezone”: 0,”status”:”NEW”}]
@@ -503,16 +503,16 @@ Get all calendars of the user.
 Introduce the new calendar created by the eyeOS user.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px"><b>lista</b> – Contains an array of the calendars pending to insert.<br>
                 Example:<br>
                 [{“type”:”calendar”,”user_eyeos”:”eyeos”,”name”:”personal”,”description”:”personal calendar”,”timezone”:0,”status”:”NEW”}]
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">'true' or exception in case of error</td>
         </tr>
     </table>
@@ -524,16 +524,16 @@ Introduce the new calendar created by the eyeOS user.
 Identifies the status of the calendar as deleted (STATUS=”DELETED”) of a particular eyeOS user.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px"><b>lista</b> – Contains an array of the calendars identied as deleted.<br>
                 Example:<br>
                 [{“type”:”calendar”,”user_eyeos”:”eyeos”,”name”:”personal”}]
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">'true' or exception in case of error</td>
         </tr>
     </table>
@@ -544,9 +544,9 @@ Identifies the status of the calendar as deleted (STATUS=”DELETED”) of a par
 
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td>
                 <ul>
                     <li><b>type</b> – Fixed value “event”</li>
@@ -556,7 +556,7 @@ Identifies the status of the calendar as deleted (STATUS=”DELETED”) of a par
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">
                 Array in JSON format<br>
                 Example:<br>
@@ -572,9 +572,9 @@ Identifies the status of the calendar as deleted (STATUS=”DELETED”) of a par
 Introduce a new event into the especified user's calendar.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px">
                 <b>lista</b> – Contains an array with the news events.<br>
                 Example:<br>
@@ -582,7 +582,7 @@ Introduce a new event into the especified user's calendar.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">'true' or exception in case of error</td>
         </tr>
     </table>
@@ -594,9 +594,9 @@ Introduce a new event into the especified user's calendar.
 Identifies the status of the event as deleted (STATUS=”DELETED”) of a particular eyeOS user.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px">
                 <b>lista</b> – Contains an array with the events identified as deleted.<br>
                 Example:<br>
@@ -604,7 +604,7 @@ Identifies the status of the event as deleted (STATUS=”DELETED”) of a partic
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">'true' or exception in case of error</td>
         </tr>
     </table>
@@ -616,9 +616,9 @@ Identifies the status of the event as deleted (STATUS=”DELETED”) of a partic
 Update the data of an event.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px">
                 <b>lista</b> – Contains an array with the events to update.<br>
                 Example:<br>
@@ -626,7 +626,7 @@ Update the data of an event.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">'true' or exception in case of error</td>
         </tr>
     </table>
@@ -640,9 +640,9 @@ To see correctly the calendars into eyeOS platform it must be respected the estr
 To use the Python APIs into eyeOS it has been generated the framework Store, containing some APIs with an uniform structure:
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td>
                 <ul>
                     <li><b>type</b> – Python API name</li>
@@ -661,15 +661,15 @@ Next these APIs are listed:
 Synchronize all calendars of the user connected in eyeOS platform.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px">
                 <b>user</b> – Contains the eyeOS user's identifier and name
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
+            <td>Script call:</td>
             <td width="60%" style="padding-left:30px">
                 Example:<br>
                 {<br>
@@ -690,7 +690,7 @@ Synchronize all calendars of the user connected in eyeOS platform.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">List of calendars</td>
         </tr>
     </table>
@@ -702,9 +702,9 @@ Synchronize all calendars of the user connected in eyeOS platform.
 Create a new calendar.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px">
                 <ul>
                     <li><b>user</b> – User name</li>
@@ -713,7 +713,7 @@ Create a new calendar.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
+            <td>Script call:</td>
             <td width="60%" style="padding-left:30px">
                 Example:<br>
                 {<br>
@@ -738,7 +738,7 @@ Create a new calendar.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">True or in case of error null</td>
         </tr>
     </table>
@@ -750,9 +750,9 @@ Create a new calendar.
 Delete an existing calendar.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px">
                 <ul>
                     <li><b>user</b> – User name</li>
@@ -761,7 +761,7 @@ Delete an existing calendar.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
+            <td>Script call:</td>
             <td width="60%" style="padding-left:30px">
                 Example:<br>
                 {<br>
@@ -783,7 +783,7 @@ Delete an existing calendar.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">True or in case of error null</td>
         </tr>
     </table>
@@ -796,9 +796,9 @@ Synchronize all the events of the especified calendar of the user connected in e
 
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px">
                 <ul>
                     <li><b>calendarId</b> – Calendar identifier in eyeOS</li>
@@ -807,7 +807,7 @@ Synchronize all the events of the especified calendar of the user connected in e
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
+            <td>Script call:</td>
             <td width="60%" style="padding-left:30px">
                 Example:<br>
                 {<br>
@@ -829,7 +829,7 @@ Synchronize all the events of the especified calendar of the user connected in e
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">List of events</td>
         </tr>
     </table>
@@ -841,15 +841,15 @@ Synchronize all the events of the especified calendar of the user connected in e
 Create a new event
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px">
                 <b>event</b> – Contains the event's U1DB estructure
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
+            <td>Script call:</td>
             <td width="60%" style="padding-left:30px">
                 Example:<br>
                 {<br>
@@ -881,7 +881,7 @@ Create a new event
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">True or in case of error null</td>
         </tr>
     </table>
@@ -894,15 +894,15 @@ Delete an existing event.
 
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px">
                 <b>event</b> – Contains the event's U1DB structure
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
+            <td>Script call:</td>
             <td width="60%" style="padding-left:30px">
                 Example:<br>
                 {<br>
@@ -934,7 +934,7 @@ Delete an existing event.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">True or in case of error null</td>
         </tr>
     </table>
@@ -946,15 +946,15 @@ Delete an existing event.
 Update an existing event.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px">
                 <b>event</b> – Contains the event's U1DB structure
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
+            <td>Script call:</td>
             <td width="60%" style="padding-left:30px">
                 Example:<br>
                 {<br>
@@ -986,7 +986,7 @@ Update an existing event.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">True or in case of error null</td>
         </tr>
     </table>
@@ -1048,7 +1048,7 @@ The StackSync API calls are made via a Python script called OAuthCredentials.py.
 ![](img/settings_connectStacksync.jpg)
 
 <div style="margin-top:45px;margin-bottom:10px;margin-left:40px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td colspan="2">Urls</td>
         </tr>
@@ -1078,33 +1078,33 @@ Next are detailed the APIs contained in the script OAuthCredentials.py:
 Ask for the consumer eyeos's request token.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Url:</td>
+            <td>Url:</td>
             <td style="padding-left:30px">
                 Use REQUEST_TOKEN_URL from the configuration file.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Method:</td>
+            <td>Method:</td>
             <td style="padding-left:30px">
                 GET
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Signature:</td>
+            <td>Signature:</td>
             <td style="padding-left:30px">
                 Plaintext
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px">
                 <b>oauth</b> – Object OauthRequest. Contains the values key, secret and CALLBACK_URL from the configuration file
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">
             Key and secret of the request token or in case of error returns an error structure:<br>
             - error: Error number<br>
@@ -1122,33 +1122,33 @@ Ask for the consumer eyeos's request token.
 Ask for the consumer eyeos's access token from the storaged request token.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Url:</td>
+            <td>Url:</td>
             <td style="padding-left:30px">
                 Use ACCESS_TOKEN_URL from the configuration file.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Method:</td>
+            <td>Method:</td>
             <td style="padding-left:30px">
                 GET
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Signature:</td>
+            <td>Signature:</td>
             <td style="padding-left:30px">
                 Plaintext
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px">
                 <b>oauth</b> – Object OauthRequest. Contains the values key and secret from the configuration file. Also the request token and verifier.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">
             Key and secret of the access token or in case of error returns an error structure:<br>
             - error: Error number<br>
@@ -1166,27 +1166,27 @@ Ask for the consumer eyeos's access token from the storaged request token.
 Get the metadata of a directory and/or files.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Url:</td>
+            <td>Url:</td>
             <td style="padding-left:30px">
                 Use RESOURCE_URL from the configuration file.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Method:</td>
+            <td>Method:</td>
             <td style="padding-left:30px">
                 GET
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Signature:</td>
+            <td>Signature:</td>
             <td style="padding-left:30px">
                 HMAC-SHA1
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px">
                 <b>oauth</b> – Object OauthRequest. Contains the values key and secret from the configuration file. Also the access token<br>
                 <b>file</b> – True, if it is a file or False, is it a directory<br>
@@ -1195,7 +1195,7 @@ Get the metadata of a directory and/or files.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">
             Metadata/s of the element or in case of error returns an error structure:<br>
             - error: Error number<br>
@@ -1237,27 +1237,27 @@ Get the metadata of a directory and/or files.
 Update the metadata of the element in the actions rename and move.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Url:</td>
+            <td>Url:</td>
             <td style="padding-left:30px">
                 Use RESOURCE_URL from the configuration file.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Method:</td>
+            <td>Method:</td>
             <td style="padding-left:30px">
                 PUT
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Signature:</td>
+            <td>Signature:</td>
             <td style="padding-left:30px">
                 HMAC-SHA1
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px">
                 <b>oauth</b> – Object OauthRequest. Contains the values key and secret from the configuration file. Also the access token<br>
                 <b>file</b> – True, if it is a file or False, is it a directory<br>
@@ -1267,7 +1267,7 @@ Update the metadata of the element in the actions rename and move.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">
             Metadata of the element or in case of error returns an error structure:<br>
             - error: Error number<br>
@@ -1296,27 +1296,27 @@ Update the metadata of the element in the actions rename and move.
 Create a new element (file or directory)
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Url:</td>
+            <td>Url:</td>
             <td style="padding-left:30px">
                 Use RESOURCE_URL from the configuration file.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Method:</td>
+            <td>Method:</td>
             <td style="padding-left:30px">
                 POST
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Signature:</td>
+            <td>Signature:</td>
             <td style="padding-left:30px">
                 HMAC-SHA1
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px">
                 <b>oauth</b> – Object OAuthRequest. Contains the values key and secret from the configuration file. Also the access token.<br>
                 <b>file</b> – True, if it is a file or False, is it a directory<br>
@@ -1326,7 +1326,7 @@ Create a new element (file or directory)
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">
             Metadata of the element or in case of error returns an error structure:<br>
             - error: Error number<br>
@@ -1355,27 +1355,27 @@ Create a new element (file or directory)
 Upload the contents of an existing file.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Url:</td>
+            <td>Url:</td>
             <td style="padding-left:30px">
                 Use RESOURCE_URL from the configuration file.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Method:</td>
+            <td>Method:</td>
             <td style="padding-left:30px">
                 PUT
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Signature:</td>
+            <td>Signature:</td>
             <td style="padding-left:30px">
                 HMAC-SHA1
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px">
                 <b>oauth</b> – Object OauthRequest. Contains the values key and secret from the configuration file<br>
                 <b>id</b> – File identifier number<br>
@@ -1383,7 +1383,7 @@ Upload the contents of an existing file.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">
             Metadata of the element or in case of error returns an error structure:<br>
             - error: Error number<br>
@@ -1400,27 +1400,27 @@ Upload the contents of an existing file.
 Download the contents of an existing file.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Url:</td>
+            <td>Url:</td>
             <td style="padding-left:30px">
                 Use RESOURCE_URL from the configuration file.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Method:</td>
+            <td>Method:</td>
             <td style="padding-left:30px">
                 GET
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Signature:</td>
+            <td>Signature:</td>
             <td style="padding-left:30px">
                 HMAC-SHA1
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px">
                 <b>oauth</b> – Object OauthRequest. Contains the values key and secret from the configuration file. Also the access token<br>
                 <b>id</b> – File identifier number<br>
@@ -1428,7 +1428,7 @@ Download the contents of an existing file.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">
             True or in case of error returns an error structure:<br>
             - error: Error number<br>
@@ -1445,27 +1445,27 @@ Download the contents of an existing file.
 Delete an element (file or directory)
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Url:</td>
+            <td>Url:</td>
             <td style="padding-left:30px">
                 Use RESOURCE_URL from the configuration file.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Method:</td>
+            <td>Method:</td>
             <td style="padding-left:30px">
                 DELETE
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Signature:</td>
+            <td>Signature:</td>
             <td style="padding-left:30px">
                 HMAC-SHA1
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px">
                 <b>oauth</b> – Object OauthRequest. Contains the values key and secret from the configuration file. Also the access token.<br>
                 <b>file</b> – True, if it is a file or False, is it a directory<br>
@@ -1473,7 +1473,7 @@ Delete an element (file or directory)
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">
             Metadata of the element or in case of error returns an error structure:<br>
             - error: Error number<br>
@@ -1505,15 +1505,15 @@ Next are listed the APIs contained in the framework Store, which comunicate with
 Ask for the consumer eyeos's request token.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
+            <td>Script call:</td>
             <td style="padding-left:30px">
                 No parameters
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">
             Object token or in case of error null<br>
             Example:<br>
@@ -1531,15 +1531,15 @@ Ask for the consumer eyeos's request token.
 Ask for the consumer eyeos's access token from the request token.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px">
                 <b>token</b> – Contains the request token and user verification
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
+            <td>Script call:</td>
             <td style="padding-left:30px">
                 Example:<br>
                 {<br>
@@ -1552,7 +1552,7 @@ Ask for the consumer eyeos's access token from the request token.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">
             Object token or in case of error null<br>
             Example:<br>
@@ -1570,9 +1570,9 @@ Ask for the consumer eyeos's access token from the request token.
 Get the metadatas of the current element. Generate its file and/or directory structure in eyeOS.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px">
                 <b>token</b> – Contains the access token's key and secret<br>
                 <b>id</b> – Element identifier number in StackSync<br>
@@ -1581,7 +1581,7 @@ Get the metadatas of the current element. Generate its file and/or directory str
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
+            <td>Script call:</td>
             <td style="padding-left:30px">
                 Example:<br>
                 {<br>
@@ -1599,7 +1599,7 @@ Get the metadatas of the current element. Generate its file and/or directory str
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">
             Metadata or in case of error returns an error structure:<br>
             - error: Error number<br>
@@ -1640,9 +1640,9 @@ Get the metadatas of the current element. Generate its file and/or directory str
 Get recursively the metadatas depending of the current element. Used in the copy and move action in eyeOS.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px">
                 <b>token</b> – Contains the access token's key and secret<br>
                 <b>file</b> – True, if it is a file or False, if it is a directory<br>                
@@ -1653,7 +1653,7 @@ Get recursively the metadatas depending of the current element. Used in the copy
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
+            <td>Script call:</td>
             <td style="padding-left:30px">
                 Example:<br>
                 {<br>
@@ -1671,7 +1671,7 @@ Get recursively the metadatas depending of the current element. Used in the copy
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">
             Metadatas array or in case of error returns an error structure:<br>
             - error: Error number<br>
@@ -1709,9 +1709,9 @@ Get recursively the metadatas depending of the current element. Used in the copy
 Create a new file or directory.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px">
                 <b>token</b> – Contains the access token's key and secret<br>
                 <b>user</b> – User identifier in eyeOS<br>
@@ -1723,7 +1723,7 @@ Create a new file or directory.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
+            <td>Script call:</td>
             <td style="padding-left:30px">
                 Example:<br>
                 {<br>
@@ -1742,7 +1742,7 @@ Create a new file or directory.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">
             Metadata or in case of error returns an error structure:<br>
             - error: Error number<br>
@@ -1770,9 +1770,9 @@ Create a new file or directory.
 Download the contents of a file.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px">
                 <b>token</b> – Contains the access token's key and secret<br>
                 <b>id</b> – File identifier number in Stacksync<br>
@@ -1780,7 +1780,7 @@ Download the contents of a file.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
+            <td>Script call:</td>
             <td style="padding-left:30px">
                 Example:<br>
                 {<br>
@@ -1797,7 +1797,7 @@ Download the contents of a file.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">
             Result structure:<br>
             - status: 'OK' correct case or 'KO' error case<br>
@@ -1815,9 +1815,9 @@ Download the contents of a file.
 Delete an existing file or directory.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px">
                 <b>token</b> – Contains the access token's key and secret<br>
                 <b>file</b> – True, if it is a file or False, if it is a directory<br>
@@ -1826,7 +1826,7 @@ Delete an existing file or directory.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
+            <td>Script call:</td>
             <td style="padding-left:30px">
                 Example:<br>
                 {<br>
@@ -1843,7 +1843,7 @@ Delete an existing file or directory.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">
             Result structure:<br>
             - status: 'OK' correct case or 'KO' error case<br>
@@ -1861,9 +1861,9 @@ Delete an existing file or directory.
 Rename a file or directory.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px">
                 <b>token</b> – Contains the access token's key and secret<br>
                 <b>file</b> – True, if it is a file or False, if it is a directory<br>
@@ -1875,7 +1875,7 @@ Rename a file or directory.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
+            <td>Script call:</td>
             <td style="padding-left:30px">
                 Example:<br>
                 {<br>
@@ -1894,7 +1894,7 @@ Rename a file or directory.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">
             Result structure:<br>
             - status: 'OK' correct case or 'KO' error case<br>
@@ -1912,9 +1912,9 @@ Rename a file or directory.
 Move a file or directory.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>Parameters:</td>
             <td style="padding-left:30px">
                 <b>token</b> – Contains the access token's key and secret<br>
                 <b>file</b> – True, if it is a file or False, if it is a directory<br>
@@ -1928,7 +1928,7 @@ Move a file or directory.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
+            <td>Script call:</td>
             <td style="padding-left:30px">
                 Example:<br>
                 {<br>
@@ -1947,7 +1947,7 @@ Move a file or directory.
             </td>
         </tr>
         <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
+            <td>Return:</td>
             <td style="padding-left:30px">
             Result structure:<br>
             - status: 'OK' correct case or 'KO' error case<br>
@@ -2000,5 +2000,4 @@ During the previous process some exceptions could be thrown, which are listed be
 
 
 The access token is permanently stored in eyeOS and has no expiration. If the user wants to delete the link, must do it from his StackSync intranet, after that, once it is done the first call to StackSync API a 403 error will be received, that indicates access denied.  
-
     ![](img/Stacksync_exc_4.png)
