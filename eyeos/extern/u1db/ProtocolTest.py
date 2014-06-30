@@ -51,7 +51,7 @@ class ProtocolTest (unittest.TestCase):
     should: updateCorrect
     """
     def test_protocol_called_typeUpdateAndList_updateCorrect(self):
-        params = '{"type":"update","lista":[{"parent_old":"null"},{"user_eyeos":"eyeID_EyeosUser_2","status": "NEW", "is_root": false, "version": 1, "filename": "clients", "parent_id": "null", "server_modified": "2013-03-08 10:36:41.997", "path": "/documents/clients", "client_modified": "2013-03-08 10:36:41.997", "id": 9873615, "user": "eyeos","is_folder":true}]}'
+        params = '{"type":"update","lista":[{"parent_old":"null"},{"user_eyeos":"eyeID_EyeosUser_2","status": "NEW", "is_root": false, "version": 1, "filename": "clients", "parent_id": "null", "server_modified": "2013-03-08 10:36:41.997", "path": "/documents/clients", "client_modified": "2013-03-08 10:36:41.997", "id": "9873615", "user": "eyeos","is_folder":true}]}'
         aux = json.loads(params)
         self.protocol.update = Mock()
         self.protocol.update.return_value = True
@@ -66,7 +66,7 @@ class ProtocolTest (unittest.TestCase):
     should: deleteCorrect
     """
     def test_protocol_called_typeDeleteAndList_deleteCorrect(self):
-        params = '{"type":"delete","lista":[{"id":1234,"user_eyeos":"eyeID_EyeosUser_2","parent_id":3456},{"id":8907,"user_eyeos":"eyeID_EyeosUser_2","parent_id":3456}]}'
+        params = '{"type":"delete","lista":[{"id":1234,"user_eyeos":"eyeID_EyeosUser_2","parent_id":"3456"},{"id":"8907","user_eyeos":"eyeID_EyeosUser_2","parent_id":"3456"}]}'
         aux = json.loads(params)
         self.protocol.delete = Mock()
         self.protocol.delete.return_value = True
@@ -136,11 +136,11 @@ class ProtocolTest (unittest.TestCase):
     with: typeRenameMetadataAndUserAndList
     """
     def test_protocol_called_typeRenameMetadataAndUserAndList_renameCorrect(self):
-        params = '{"type":"rename","lista":[{"user_eyeos":"eyeID_EyeosUser_2","status": "NEW", "version": 1, "filename": "prueba.txt", "parent_id": "null", "server_modified": "2013-03-08 10:36:41.997", "path": "/", "client_modified": "2013-03-08 10:36:41.997", "id": 9873615, "user": "eyeos","is_folder":false}]}'
+        params = '{"type":"rename","lista":[{"user_eyeos":"eyeID_EyeosUser_2","status": "NEW", "version": 1, "filename": "prueba.txt", "parent_id": "null", "server_modified": "2013-03-08 10:36:41.997", "path": "/", "client_modified": "2013-03-08 10:36:41.997", "id": "9873615", "user": "eyeos","is_folder":false}]}'
         self.protocol.renameMetadata = Mock()
         self.protocol.renameMetadata.return_value = True
         result = self.protocol.protocol(params)
-        self.protocol.renameMetadata.assert_called_once_with({"user_eyeos":"eyeID_EyeosUser_2","status": "NEW", "version": 1, "filename": "prueba.txt", "parent_id": "null", "server_modified": "2013-03-08 10:36:41.997", "path": "/", "client_modified": "2013-03-08 10:36:41.997", "id": 9873615, "user": "eyeos","is_folder":False})
+        self.protocol.renameMetadata.assert_called_once_with({"user_eyeos":"eyeID_EyeosUser_2","status": "NEW", "version": 1, "filename": "prueba.txt", "parent_id": "null", "server_modified": "2013-03-08 10:36:41.997", "path": "/", "client_modified": "2013-03-08 10:36:41.997", "id": "9873615", "user": "eyeos","is_folder":False})
         self.assertEquals('true',result)
 
 
