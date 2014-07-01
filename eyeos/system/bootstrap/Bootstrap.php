@@ -106,6 +106,8 @@ abstract class Bootstrap {
         include_once "../system/kernel/services/Storage/implementations/Handlers/SQL/EyeosDAO.php";
         include_once "../system/Frameworks/Store/TransferObjects/Token.php";
         include_once "../system/Frameworks/Store/Managers/ApiCalendarManager.php";
+        include_once "../system/Frameworks/Store/Managers/CommentsManager.php";
+        include_once "../system/Frameworks/Store/Managers/U1DBCredsManager.php";
     }
 	
 	/**

@@ -10,6 +10,8 @@ require FRAMEWORK_STORE_PATH . '/Managers/OAuthManagerOld.php';
 require FRAMEWORK_STORE_PATH . '/Managers/OAuthManager.php';
 require FRAMEWORK_STORE_PATH . '/Managers/ApiManager.php';
 require FRAMEWORK_STORE_PATH . '/Managers/ApiCalendarManager.php';
+require FRAMEWORK_STORE_PATH . '/Managers/CommentsManager.php';
+require FRAMEWORK_STORE_PATH . '/Managers/U1DBCredsManager.php';
 require FRAMEWORK_STORE_PATH . '/Providers/OAuthProviderOld.php';
 require FRAMEWORK_STORE_PATH . '/Providers/OAuthProvider.php';
 require FRAMEWORK_STORE_PATH . '/Providers/AccessorProvider.php';

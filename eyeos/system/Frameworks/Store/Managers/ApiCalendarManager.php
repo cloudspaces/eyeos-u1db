@@ -10,23 +10,27 @@ class ApiCalendarManager
 {
     private $accessorProvider;
     private $calendarManager;
+    private $u1dbCredsManager;
 
-    public function __construct(AccessorProvider $accessorProvider = NULL,ICalendarManager $calendarManager = NULL)
+    public function __construct(AccessorProvider $accessorProvider = NULL,ICalendarManager $calendarManager = NULL,U1DBCredsManager $u1dbCredsManager = NULL)
     {
         if(!$accessorProvider) $accessorProvider = new AccessorProvider();
         $this->accessorProvider = $accessorProvider;
 
         if(!$calendarManager) $calendarManager = CalendarManager::getInstance();
         $this->calendarManager = $calendarManager;
+
+        if(!$u1dbCredsManager) $u1dbCredsManager = new U1DBCredsManager($this->accessorProvider);
+        $this->u1dbCredsManager = $u1dbCredsManager;
     }
 
     public function createEvent($event)
     {
-        $credentials = $this->callProcessCredentials();
+        $credentials = $this->u1dbCredsManager->callProcessCredentials();
         return json_decode($this->callProcessU1db("insertEvent",$event,$credentials));
     }
 
-    public function callProcessCredentials()
+    /*public function callProcessCredentials()
     {
         $credentials = NULL;
         $token = isset($_SESSION['request_token'])?$_SESSION['request_token']:null;
@@ -40,7 +44,7 @@ class ApiCalendarManager
             //Logger::getLogger('sebas')->error('Credenciales:' . json_encode($credentials));
         }
         return $credentials;
-    }
+    }*/
 
     public function callProcessU1db($type,$lista,$credentials=NULL)
     {
@@ -50,24 +54,25 @@ class ApiCalendarManager
         if ($credentials) {
             $json['credentials'] = $credentials;
         }
+
         return $this->accessorProvider->getProcessDataU1db(json_encode($json));
     }
 
     public function deleteEvent($event)
     {
-        $credentials = $this->callProcessCredentials();
+        $credentials = $this->u1dbCredsManager->callProcessCredentials();
         return json_decode($this->callProcessU1db("deleteEvent",$event,$credentials));
     }
 
     public function updateEvent($event)
     {
-        $credentials = $this->callProcessCredentials();
+        $credentials = $this->u1dbCredsManager->callProcessCredentials();
         return json_decode($this->callProcessU1db("updateEvent",$event,$credentials));
     }
 
     public function selectEvent($event)
     {
-        $credentials = $this->callProcessCredentials();
+        $credentials = $this->u1dbCredsManager->callProcessCredentials();
         return json_decode($this->callProcessU1db("selectEvent",$event,$credentials));
     }
 
@@ -145,7 +150,7 @@ class ApiCalendarManager
 
     public function synchronizeCalendars($user)
     {
-        $credentials = $this->callProcessCredentials();
+        $credentials = $this->u1dbCredsManager->callProcessCredentials();
         $calendar = array();
         $calendar['type'] = 'calendar';
         $calendar['user_eyeos'] = $user->getName();
@@ -155,7 +160,7 @@ class ApiCalendarManager
             $calendars = $this->calendarManager->getAllCalendarsFromOwner($user);
             if(count($u1dbCalendar) === 0 && count($calendars) > 0) {
                 foreach($calendars as $calendar) {
-                    $credentials = $this->callProcessCredentials();
+                    $credentials = $this->u1dbCredsManager->callProcessCredentials();
                     $calendarU1db = $this->getCalendarInsert($calendar->getName(),$user->getName(),$calendar->getTimezone(),$calendar->getDescription());
                     $this->callProcessU1db("insertCalendar",$calendarU1db,$credentials);
                 }
@@ -199,7 +204,7 @@ class ApiCalendarManager
                     }
 
                     if(!$encontrado) {
-                        $credentials = $this->callProcessCredentials();
+                        $credentials = $this->u1dbCredsManager->callProcessCredentials();
                         $calendar = $this->getCalendarInsert($calendars[$i]->getName(),$user->getName(),$calendars[$i]->getTimezone(),$calendars[$i]->getDescription());
                         $this->callProcessU1db("insertCalendar",$calendar,$credentials);
                     }
@@ -216,7 +221,7 @@ class ApiCalendarManager
 
     public function deleteCalendar($user,$calendar)
     {
-        $credentials = $this->callProcessCredentials();
+        $credentials = $this->u1dbCredsManager->callProcessCredentials();
         $calendarU1db = array();
         $calendarU1db['type'] = 'calendar';
         $calendarU1db['user_eyeos'] = $user;
@@ -226,7 +231,7 @@ class ApiCalendarManager
 
     public function deleteCalendarAndEventsByUser($user)
     {
-        $credentials = $this->callProcessCredentials();
+        $credentials = $this->u1dbCredsManager->callProcessCredentials();
         $calendarU1db = array();
         $calendarU1db['user_eyeos'] = $user;
         return json_decode($this->callProcessU1db("deleteCalendarUser",$calendarU1db,$credentials));
@@ -234,7 +239,7 @@ class ApiCalendarManager
 
     public function insertCalendar($user,Calendar $calendar)
     {
-        $credentials = $this->callProcessCredentials();
+        $credentials = $this->u1dbCredsManager->callProcessCredentials();
         $calendarU1db = array();
         $calendarU1db['type'] = 'calendar';
         $calendarU1db['user_eyeos'] = $user;

@@ -1235,5 +1235,30 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         $token->setUserID($user);
         $oauthManager->deleteToken($token);
     }
+
+    public static function createComment($params)
+    {
+        $id = $params['id'];
+        $user = $params['user'];
+        $text = $params['text'];
+        $commentsManager = new CommentsManager();
+        return $commentsManager->createComment($id,$user,$text);
+    }
+
+    public static function deleteComment($params)
+    {
+        $id = $params['id'];
+        $user = $params['user'];
+        $time_created = $params['time_created'];
+        $commentsManager = new CommentsManager();
+        return $commentsManager->deleteComment($id,$user,$time_created);
+    }
+
+    public static function getComments($params)
+    {
+        $id = $params['id'];
+        $commentsManager = new CommentsManager();
+        return $commentsManager->getComments($id);
+    }
 }
 ?>

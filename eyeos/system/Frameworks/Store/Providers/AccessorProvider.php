@@ -74,6 +74,15 @@ class AccessorProvider
         //return exec($path);
         return $result;
     }
+
+    public function getProcessComments($json)
+    {
+        $path = "python '" . EXTERN_DIR . '/' . U1DB . "/Comments.py' " . escapeshellarg($json);
+        Logger::getLogger('sebas')->error('PathPython:' . $path);
+        $result = exec($path);
+        Logger::getLogger('sebas')->error('Comments: ' . strlen($result) . ' :: ' . $result);
+        return $result;
+    }
 }
 
 
