@@ -2001,7 +2001,7 @@ During the previous process some exceptions could be thrown, which are listed be
 
 
 The access token is permanently stored in eyeOS and has no expiration. If the user wants to delete the link, must do it from his StackSync intranet, after that, once it is done the first call to StackSync API a 403 error will be received, that indicates access denied.  
-
+  
     ![](img/Stacksync_exc_4.png)
 
 
@@ -2014,7 +2014,7 @@ EyeOS storages the comments into U1DB synchronized database. The database manage
 ![](img/Settings_Calendars.jpg)
 
 <div style="margin-top:45px;margin-bottom:10px;margin-left:40px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td width="15%">Server</td>
             <td width="45%" style="padding-left:15px">IP address where the Oauth server is active</td>
@@ -2051,7 +2051,7 @@ Next is detailed the APIs contained in the script Comments.py:
 Get all the comments of a specific element of StackSync.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px"><b>id</b> – Element identifier number in Stacksync</td>
@@ -2073,7 +2073,7 @@ Get all the comments of a specific element of StackSync.
 Create a new comment  associated with an specific element of StackSync.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
@@ -2100,7 +2100,7 @@ Create a new comment  associated with an specific element of StackSync.
 Delete a comment associated a un specific element of StackSync.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
@@ -2128,7 +2128,7 @@ Delete a comment associated a un specific element of StackSync.
 To use the Python APIs into eyeOS it has been generated the framework Store, containing some APIs with an uniform structure:
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td>
@@ -2149,7 +2149,7 @@ Next these APIs are listed:
 Ask for all the comments of a specific element of StackSync.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
@@ -2194,7 +2194,7 @@ Ask for all the comments of a specific element of StackSync.
 Create a new comment  associated with an specific element of StackSync.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
@@ -2243,7 +2243,7 @@ Create a new comment  associated with an specific element of StackSync.
 Delete a comment associated a un specific element of StackSync.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
