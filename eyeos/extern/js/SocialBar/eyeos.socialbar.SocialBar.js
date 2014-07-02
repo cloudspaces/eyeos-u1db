@@ -94,11 +94,22 @@ qx.Class.define('eyeos.socialbar.SocialBar', {
 		 */
 		createDefaultTabs: function () {
 			this.removeAllTabs();
+            this.getChildControl('bar').getChildControl('content').removeAll();
 			this.addTab('Info', 'index.php?extern=images/dialog-information.png', this.getBackgroundColor());
 			this.addTab('Share', 'index.php?extern=images/share.png', this.getBackgroundColor());
 			this.addTab('Activity', 'index.php?extern=images/document-open-recent.png', this.getBackgroundColor());
 			this.setSelection([this.getTab('Info')]);
 		},
+
+        createStackSyncTabs: function() {
+            this.removeAllTabs();
+            this.getChildControl('bar').getChildControl('content').removeAll();
+            this.addTab('Info', 'index.php?extern=images/dialog-information.png', this.getBackgroundColor());
+            this.addTab('Comments', 'index.php?extern=images/notes.png', this.getBackgroundColor());
+            this.addTab('Activity', 'index.php?extern=images/document-open-recent.png', this.getBackgroundColor());
+            this.addTab('Share', 'index.php?extern=images/share.png', this.getBackgroundColor());
+            this.setSelection([this.getTab('Info')]);
+        },
 
 		/**
 		 * Return the handler of a tab giving a Name
@@ -144,7 +155,6 @@ qx.Class.define('eyeos.socialbar.SocialBar', {
 				if (tab instanceof eyeos.socialbar.SocialTab) {
 					tab.destroy();
 				}
-
 			}
 		}
 	}

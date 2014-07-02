@@ -51,13 +51,19 @@ qx.Class.define('eyeos.files.SUManager', {
 		socialBar: {
 			init: null,
 			check: 'Object'
-		}
+		},
+
+        controller: {
+            init: null,
+            check: 'Object'
+        }
 	},
 
-	construct: function (socialBar, checknum) {
+	construct: function (socialBar, checknum,controller) {
 		this.base(arguments);
 		this.setSocialBar(socialBar);
 		this.setChecknum(checknum);
+        this.setController(controller);
 	},
 
 	members: {
@@ -80,7 +86,7 @@ qx.Class.define('eyeos.files.SUManager', {
 			var className = this._getCorrectHandlerClass('changeSelection', params);
 			var handlerClass = eval(className);
 			var handler = new handlerClass(this.getSocialBar(), params);
-			handler.updateSocialBar();
+			handler.updateSocialBar(this.getController());
 		},
 		
 		/**
@@ -102,7 +108,7 @@ qx.Class.define('eyeos.files.SUManager', {
 			var className = this._getCorrectHandlerClass('changeDirectory', params);;
 			var handlerClass = eval(className);
 			var handler = new handlerClass(this.getSocialBar(), params);
-			handler.updateSocialBar();
+			handler.updateSocialBar(this.getController());
 		},
 
 		_getCorrectHandlerClass: function (key, params) {
@@ -123,6 +129,13 @@ qx.Class.define('eyeos.files.SUManager', {
 				
 			}
 			throw "No Handler for " + key + " with params" + params;
-		}
+		},
+
+        createComments: function(comments,commentsBox,controller,file) {
+            //'eyeos.suhandlers.LocalFolder'
+            var handlerClass = eval(this.getHandlers().changeSelection[1]);
+            var handler = new handlerClass(this.getSocialBar(), null);
+            handler.createComments(comments,commentsBox,controller,file);
+        }
 	}
 });

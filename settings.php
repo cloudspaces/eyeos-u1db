@@ -447,7 +447,7 @@ if(!defined('REMEMBER_PASSWORD_ENABLED'))
 
 //RELEASE OR DEBUG
 if(!defined('SYSTEM_TYPE')) 
-	define('SYSTEM_TYPE', 'release');
+	define('SYSTEM_TYPE', 'debug');
 
 if(!defined('URL_CLOUDSPACE'))
     define('URL_CLOUDSPACE','http://api.stacksync.com:8080/oauth/authorize?oauth_token=');

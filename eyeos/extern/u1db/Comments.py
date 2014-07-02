@@ -23,7 +23,7 @@ class Comments:
     def createComment(self,id,user,text,time_created = None):
         try:
             data = {}
-            data['id'] = id;
+            data['id'] = id
             data['user'] = user
             data['text'] = text
             data['status'] =  "NEW"
@@ -56,24 +56,27 @@ class Comments:
             comments = self.db.get_from_index("by-id",id)
             for data in comments:
                 results.append(data.content)
-        except:
-            results.append({"error":-1,"description":"Error getComments"})
+        except Exception, e:
+            #results.append({"error":-1,"description":"Error getComments"})
+            results = {"error":-1,"description":"" + str(e) + ""}
         return json.dumps(results)
 
     def sync(self):
         try:
             self.db.sync(self.url,creds=self.creds)
-        except:
+        except Exception, e:
+            print(str(e))
             pass
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 1:
+    if len(sys.argv) == 2:
         params = json.loads(str(sys.argv[1]))
         if params.has_key('type') and params.has_key('metadata') and params.has_key('credentials'):
             type = params['type']
             metadata = params['metadata']
-            creds = params['credentials']
+            creds = {'oauth':{'consumer_key':'' + str(params['credentials']['oauth']['consumer_key']) + '','consumer_secret':'' + str(params['credentials']['oauth']['consumer_secret']) + '','token_key':'' + str(params['credentials']['oauth']['token_key']) + '','token_secret':'' + str(params['credentials']['oauth']['token_secret']) + ''}}
+
             comments = Comments("comment.u1db",creds)
             result = '{"error":-1,"description":"Type is not correct"}'
             try:

@@ -1765,7 +1765,7 @@ qx.Class.define('eyeos.files.Controller', {
         },
         _initFiles: function() {
              this.getView().initFiles();
-             var socialBarUpdater = new eyeos.files.SUManager(this.getView()._socialBar, this.getChecknum());
+             var socialBarUpdater = new eyeos.files.SUManager(this.getView()._socialBar, this.getChecknum(),this);
              this.setSocialBarUpdater(socialBarUpdater);
              this._addSocialBarUpdaterListeners();
              this._browse(true);
@@ -1843,6 +1843,40 @@ qx.Class.define('eyeos.files.Controller', {
                 this.getView().getCursorLoad().close();
                 this.getView().setCursorLoad(null);
             }
+        },
+
+        loadComments: function(id,commentsBox,file) {
+            var params = new Object();
+            params.id = "" + id;
+            var createComments = false;
+
+            eyeos.callMessage(this.getApplication().getChecknum(), 'getComments', params, function (result) {
+                if(result) {
+                    if((result.length > 0 && !result[0].error) || result.length == 0) {
+                        this.getSocialBarUpdater().createComments(result,commentsBox,this,file);
+                    }
+                }
+            },this);
+        },
+        createComment: function(id,user,comment,commentsBox,file) {
+            var params = new Object();
+            params.id = "" + id;
+            params.user = user;
+            params.text = comment;
+
+            eyeos.callMessage(this.getApplication().getChecknum(), 'createComment', params, function () {
+                this.loadComments(params.id,commentsBox,file);
+            },this);
+        },
+        deleteComment: function(id,user,time_created,commentsBox,file) {
+            var params = new Object();
+            params.id = "" + id;
+            params.user = user;
+            params.time_created = time_created;
+            eyeos.callMessage(this.getApplication().getChecknum(), 'deleteComment', params, function () {
+                this.loadComments(params.id,commentsBox,file);
+            },this);
+
         }
 	}
 });

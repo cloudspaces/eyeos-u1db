@@ -50,12 +50,26 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 		_urlBox: null,
 		_urlBoxImage: 'index.php?extern=images/22x22/categories/applications-internet.png',
 		_activityBox: null,
+        _commentsBox: null,
+        _headerComments: null,
+        _controller: null,
+        _file: null,
 
-		updateSocialBar: function () {
-			this.getSocialBar().createDefaultTabs();
-			var fileType = this.getParams()['selected'][0].getType();
+		updateSocialBar: function (controller) {
+            this._controller = controller;
+            this._file = this.getParams()['selected'][0];
+			var fileType = this._file.getType();
+            var path = this.getParams()['selected'][0].getAbsolutePath();
+            if(this._controller && this._controller.__isStacksync(path) && path !== 'home://~'+ eyeos.getCurrentUserName()+'/Stacksync') {
+                this.getSocialBar().createStackSyncTabs();
+                this._createContentsCommentsTab();
+            } else {
+                this.getSocialBar().createDefaultTabs();
+            }
+
+
 			this._createContentInfoTab();
-			
+
 			if (fileType == 'folder' && this.getParams()['selected'].length == 1) {
 				this.getSocialBar().removeTab('Share');
 			} else {
@@ -320,6 +334,239 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 
 
 			this.getSocialBar().getTab('Info').addBox(this._sharedWithBox, 'sharedwith');
-		}
-	}
+		},
+
+        _createContentsCommentsTab:function() {
+            var comments = this.getSocialBar().getTab('Comments');
+            comments.removeAll();
+            comments.set({
+                layout: new qx.ui.layout.VBox()
+            });
+            this._headerComments = new qx.ui.container.Composite().set({
+               layout:  new qx.ui.layout.HBox(),
+               paddingTop: 12,
+               paddingBottom: 8,
+               decorator: new qx.ui.decoration.Single(1).set({
+                   colorBottom: '#d1d1d1',
+                   widthTop: 0,
+                   widthLeft: 0,
+                   widthRight: 0
+               }),
+               marginBottom: 8
+            });
+
+            var labelNew = new qx.ui.basic.Label(tr('New')).set({
+                paddingRight: 8,
+                textColor: '#3d9af2',
+                font: new qx.bom.Font(11).set({
+                    bold: true
+                }),
+                enabled: false
+            });
+            var image = new qx.ui.basic.Image('eyeos/extern/images/add4.png').set({
+                enabled: false
+            });
+
+            labelNew.addListener('click',this.__createNewComment,this);
+            image.addListener('click',this.__createNewComment,this);
+
+            this._headerComments.add(new qx.ui.core.Spacer(165));
+            this._headerComments.add(labelNew);
+            this._headerComments.add(image);
+            comments.add(this._headerComments);
+
+            var scroll = new qx.ui.container.Scroll().set({
+                allowStretchY: true,
+                allowStretchX: true
+            });
+
+            this._commentsBox = new qx.ui.container.Composite().set({
+               layout: new qx.ui.layout.VBox()
+            });
+
+            scroll.add(this._commentsBox);
+
+            comments.add(scroll, {flex: 1});
+
+            if(this.getParams()['selected'].length == 1) {
+                this._commentsBox.addListener('appear',function() {
+                    var id = this._controller.__getFileId(this._file.getPath(),this._file.getName());
+                    if(id !== null) {
+                        this._controller.loadComments(id,comments,this._file);
+                    }
+                },this);
+            }
+
+        },
+        createComments: function(comments,commentsBox,controller,file) {
+            var headerComments = commentsBox.getChildren()[0];
+            headerComments.setVisibility('visible');
+            headerComments.getChildren()[1].setEnabled(true);
+            headerComments.getChildren()[1].setCursor('pointer');
+            headerComments.getChildren()[2].setEnabled(true);
+            headerComments.getChildren()[2].setCursor('pointer');
+
+            var commentsContainer = commentsBox.getChildren()[1].getChildren()[0];
+            commentsContainer.removeAll();
+            for(var i in comments) {
+                this.__createRow(comments[i],commentsContainer,controller,file)
+            }
+
+        },
+        __createNewComment: function() {
+            this._headerComments.setVisibility('excluded');
+            this._commentsBox.removeAll();
+
+            var labelBack = new qx.ui.basic.Label(tr("< Back")).set({
+                marginTop: 10,
+                paddingLeft: 8,
+                textColor: '#3d9af2',
+                font: new qx.bom.Font(11).set({
+                    bold: true
+                }),
+                cursor: 'pointer'
+            });
+
+            labelBack.addListener('click',function() {
+                var id = this._controller.__getFileId(this._file.getPath(),this._file.getName());
+                if(id !== null) {
+                    this._controller.loadComments(id,this.getSocialBar().getTab('Comments'));
+                }
+            },this);
+
+            this._commentsBox.add(labelBack);
+
+            var textComments = new qx.ui.form.TextArea().set({
+                height: 160,
+                margin:[10,10,10,10]
+            });
+
+            textComments.getContentElement().setStyle("resize", "none");
+            this._commentsBox.add(textComments);
+
+            var containerBottoms = new qx.ui.container.Composite().set({
+               layout: new qx.ui.layout.HBox()
+            });
+
+            var eraseButton = new qx.ui.form.Button().set({
+                label: tr('Erase'),
+                width: 60,
+                marginLeft: 10,
+                cursor: 'pointer'
+            });
+
+            eraseButton.addListener('execute',function() {
+                textComments.setValue('');
+            },this);
+
+            containerBottoms.add(eraseButton);
+
+            var addButton = new qx.ui.form.Button().set({
+                label: tr('Add'),
+                width: 60,
+                marginLeft: 10,
+                cursor: 'pointer'
+            });
+
+            addButton.addListener('execute',function(){
+                //this._controller.createComment()
+                if(textComments.getValue() !== null && textComments.getValue().trim().length > 0) {
+                    var metadata = this._controller.__getFileId(this._file.getPath(),this._file.getName(),true);
+                    if(metadata !== null) {
+                        this._controller.createComment(metadata.id,eyeos.getCurrentUserName(),textComments.getValue().trim(),this.getSocialBar().getTab('Comments'),this._file);
+                    }
+                }
+            },this);
+
+            containerBottoms.add(new qx.ui.core.Spacer(76));
+            containerBottoms.add(addButton);
+            this._commentsBox.add(containerBottoms);
+        },
+
+        __createRow: function(comment,commentsContainer,controller,file) {
+            var containerRow = new qx.ui.container.Composite().set({
+                layout: new qx.ui.layout.VBox()
+            });
+
+            var containerText = new qx.ui.container.Composite().set({
+                layout: new qx.ui.layout.VBox(),
+                decorator: new qx.ui.decoration.Single(1),
+                margin: [0,0,5,10],
+                allowGrowX: false,
+                width: 190
+            });
+
+            var lbUser = new qx.ui.basic.Label().set({
+                font: new qx.bom.Font(10).set({
+                    bold: true
+                }),
+                value: comment.user,
+                margin: [3,3,5,5],
+                rich: true
+            });
+            containerText.add(lbUser);
+
+            var lbDate = new qx.ui.basic.Label().set({
+                font: new qx.bom.Font(10).set({
+                    italic: true
+                }),
+                value: this.__formatDate(comment.time_created),
+                rich: true,
+                margin: [3,3,5,5]
+            });
+            containerText.add(lbDate);
+
+            var lbComments = new qx.ui.basic.Label().set({
+                font: new qx.bom.Font(10),
+                margin: [3,3,5,5],
+                rich: true,
+                value: comment.text.replace(/(?:\r\n|\r|\n)/g, '<br />')
+            });
+            containerText.add(lbComments);
+            containerRow.add(containerText);
+
+            var action = new qx.ui.container.Composite().set({
+               layout: new qx.ui.layout.HBox(),
+               marginBottom: 10
+            });
+
+            var lbDelete = new qx.ui.basic.Label(tr('Delete')).set({
+                paddingRight: 8,
+                textColor: '#3d9af2',
+                font: new qx.bom.Font(10).set({
+                    bold: true
+                }),
+                cursor: 'pointer'
+            });
+            var imgDelete = new qx.ui.basic.Image('eyeos/extern/images/less3.png').set({
+                cursor: 'pointer'
+            });
+
+            lbDelete.addListener('click',function() {
+                this.__deleteComment(comment.time_created,controller,file);
+            },this);
+
+            imgDelete.addListener('click',function() {
+                this.__deleteComment(comment.time_created,controller,file);
+            },this);
+
+            action.add(new qx.ui.core.Spacer(140));
+            action.add(lbDelete);
+            action.add(imgDelete);
+            containerRow.add(action);
+            commentsContainer.add(containerRow);
+        },
+
+        __deleteComment: function(time_created,controller,file) {
+            var metadata = controller.__getFileId(file.getPath(),file.getName(),true);
+            if(metadata !== null) {
+                controller.deleteComment(metadata.id,eyeos.getCurrentUserName(),time_created,this.getSocialBar().getTab('Comments'),file);
+            }
+        },
+
+        __formatDate: function(date) {
+            var dateAux = date.substring(6,8) + "/" + date.substring(4,6) + "/" + date.substring(0,4) + " " + date.substring(8,10) + ":" + date.substring(10,12);
+            return dateAux;
+        }
+    }
 });
