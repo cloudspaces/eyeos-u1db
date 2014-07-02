@@ -132,8 +132,7 @@ qx.Class.define('eyeos.files.SUManager', {
 		},
 
         createComments: function(comments,commentsBox,controller,file) {
-            //'eyeos.suhandlers.LocalFolder'
-            var handlerClass = eval(this.getHandlers().changeSelection[1]);
+            var handlerClass = eval('eyeos.suhandlers.LocalFile');
             var handler = new handlerClass(this.getSocialBar(), null);
             handler.createComments(comments,commentsBox,controller,file);
         }
