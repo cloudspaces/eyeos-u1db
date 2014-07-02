@@ -1040,7 +1040,7 @@ The Oauth server get the access token from mongodb database using the consumer a
 The step 1 is only applied in case that a request token hasn't been requested during the eyeOS user session.
 
 
-### Implementation of StackSync API into eyeOS
+## Implementation of StackSync API into eyeOS
 
 EyeOS accesses the private document storage of a cloudspace user using StackSync API's from the application “File Manager”.
 
@@ -2005,7 +2005,7 @@ The access token is permanently stored in eyeOS and has no expiration. If the us
 ![](img/Stacksync_exc_4.png)
 
 
-### Collaborative tool between eyeOS and StackSync
+## Collaborative tool between eyeOS and StackSync
 
 EyeOS allows from the application “File Manager” the next actions: list, insert and delete comments of a specific element, file or directory are located in the personal cloudspace of the user.
 
