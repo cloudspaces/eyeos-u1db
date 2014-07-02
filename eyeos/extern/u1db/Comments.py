@@ -56,16 +56,14 @@ class Comments:
             comments = self.db.get_from_index("by-id",id)
             for data in comments:
                 results.append(data.content)
-        except Exception, e:
-            #results.append({"error":-1,"description":"Error getComments"})
-            results = {"error":-1,"description":"" + str(e) + ""}
+        except:
+            results.append({"error":-1,"description":"Error getComments"})
         return json.dumps(results)
 
     def sync(self):
         try:
             self.db.sync(self.url,creds=self.creds)
-        except Exception, e:
-            print(str(e))
+        except:
             pass
 
 
