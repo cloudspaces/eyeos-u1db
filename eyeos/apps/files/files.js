@@ -129,6 +129,8 @@ qx.Class.define('eyeos.files.Controller', {
         __size: 0,
         __stacksync: false,
         __token: false,
+        _timerComments:null,
+        _comments: [],
 
 		_addListeners: function () {
 //			this.addListener('selectedFile', function (e) {
@@ -1400,6 +1402,13 @@ qx.Class.define('eyeos.files.Controller', {
             }
         },
 
+        closeTimerComments: function() {
+          if(this._timerComments) {
+              clearTimeout(this._timerComments);
+              this._timerComments = null;
+          }
+        },
+
         __changeMetadata: function(metadataOld,metadataNew) {
             var change = false;
             var encontrado = false;
@@ -1848,17 +1857,30 @@ qx.Class.define('eyeos.files.Controller', {
         loadComments: function(id,commentsBox,file) {
             var params = new Object();
             params.id = "" + id;
-            var createComments = false;
+
+            this.closeTimerComments();
 
             eyeos.callMessage(this.getApplication().getChecknum(), 'getComments', params, function (result) {
                 if(result) {
                     if((result.length > 0 && !result[0].error) || result.length == 0) {
-                        this.getSocialBarUpdater().createComments(result,commentsBox,this,file);
+                        if(this._commentsChanged(result)) {
+                            this.getSocialBarUpdater().createComments(result,commentsBox,this,file);
+                        }
+                    } else {
+                        this._comments = [];
                     }
+                } else {
+                    this._comments = [];
                 }
+
+                var that = this;
+                var reffunction = function(){that.loadComments(id,commentsBox,file)};
+                this._timerComments = setTimeout(reffunction,10000);
+
             },this);
         },
         createComment: function(id,user,comment,commentsBox,file) {
+            this.closeTimerComments();
             var params = new Object();
             params.id = "" + id;
             params.user = user;
@@ -1869,6 +1891,7 @@ qx.Class.define('eyeos.files.Controller', {
             },this);
         },
         deleteComment: function(id,user,time_created,commentsBox,file) {
+            this.closeTimerComments();
             var params = new Object();
             params.id = "" + id;
             params.user = user;
@@ -1877,6 +1900,28 @@ qx.Class.define('eyeos.files.Controller', {
                 this.loadComments(params.id,commentsBox,file);
             },this);
 
+        },
+        _commentsChanged: function(data) {
+            var resp = false;
+
+            if(data.length != this._comments.length) {
+                resp = true;
+            } else {
+                if(data.length > 0) {
+                    for(var i in data.length) {
+                        if(data[i] != this._comments[i]) {
+                            resp = true;
+                            break;
+                        }
+                    }
+                } else {
+                    resp = true;
+                }
+            }
+
+            this._comments = data;
+
+            return resp;
         }
 	}
 });

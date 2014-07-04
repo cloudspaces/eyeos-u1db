@@ -83,6 +83,8 @@ qx.Class.define('eyeos.files.SUManager', {
 		},
 
 		_doSelectionChanged: function (params) {
+            this.getController().closeTimerComments();
+            this.getController()._comments = [];
 			var className = this._getCorrectHandlerClass('changeSelection', params);
 			var handlerClass = eval(className);
 			var handler = new handlerClass(this.getSocialBar(), params);
@@ -105,6 +107,8 @@ qx.Class.define('eyeos.files.SUManager', {
 		},
 
 		_doDirectoryChanged: function (params) {
+            this.getController().closeTimerComments();
+            this.getController()._comments = [];
 			var className = this._getCorrectHandlerClass('changeDirectory', params);;
 			var handlerClass = eval(className);
 			var handler = new handlerClass(this.getSocialBar(), params);

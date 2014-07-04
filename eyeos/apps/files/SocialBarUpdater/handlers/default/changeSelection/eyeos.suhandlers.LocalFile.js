@@ -388,6 +388,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
             scroll.add(this._commentsBox);
 
             comments.add(scroll, {flex: 1});
+            this._controller._comments = [];
 
             if(this.getParams()['selected'].length == 1) {
                 this._commentsBox.addListener('appear',function() {
@@ -417,6 +418,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
         },
         __createNewComment: function() {
             this.closeTimer();
+            this._controller.closeTimerComments();
             this._headerComments.setVisibility('excluded');
             this._commentsBox.removeAll();
 
@@ -431,6 +433,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
             });
 
             labelBack.addListener('click',function() {
+                this._controller._comments = [];
                 var id = this._controller.__getFileId(this._file.getPath(),this._file.getName());
                 if(id !== null) {
                     this._controller.loadComments(id,this.getSocialBar().getTab('Comments'));
