@@ -42,7 +42,8 @@ class Comments:
             self.db.create_index("by-id-user-time", "id","user","time_created")
             comments = self.db.get_from_index("by-id-user-time",id,user,time_created)
             if len(comments) > 0:
-                self.db.delete_doc(comments[0])
+                comments[0].content['status'] = 'DELETED'
+                self.db.put_doc(comments[0])
             self.sync()
         except:
             data = {"status":"KO","error":-1}
@@ -52,8 +53,8 @@ class Comments:
         results = []
         try:
             self.sync()
-            self.db.create_index("by-id", "id")
-            comments = self.db.get_from_index("by-id",id)
+            self.db.create_index("by-id-status", "id","status")
+            comments = self.db.get_from_index("by-id-status",id,"NEW")
             for data in comments:
                 results.append(data.content)
         except:

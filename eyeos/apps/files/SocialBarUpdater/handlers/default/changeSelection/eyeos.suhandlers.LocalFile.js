@@ -550,6 +550,11 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
                 this.__deleteComment(comment.time_created,controller,file);
             },this);
 
+            if(eyeos.getCurrentUserName() != comment.user) {
+                lbDelete.setEnabled(false);
+                imgDelete.setEnabled(false);
+            }
+
             action.add(new qx.ui.core.Spacer(140));
             action.add(lbDelete);
             action.add(imgDelete);

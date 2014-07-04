@@ -36,9 +36,13 @@ class CommentsTest (unittest.TestCase):
     """
     def test_deleteComment_called_idAndUserAndTimeCreated_deleteCorrect(self):
         comment = self.insertOneComment()
+        comment['status'] = 'DELETED'
         self.sut.deleteComment(comment['id'],comment['user'],comment['time_created'])
         files = self.sut.db.get_all_docs()
-        self.assertEquals(0,len(files[1]))
+        commentU1db = ''
+        if len(files[1]) > 0:
+            commentU1db = files[1][0].content
+        self.assertEquals(comment,commentU1db)
 
     """
     method: getComments
@@ -49,9 +53,10 @@ class CommentsTest (unittest.TestCase):
     def test_getComments_called_id_returnArray(self):
         list = self.insertSeveralComments()
         list.sort()
+        self.sut.deleteComment("93509385","eyeos","201406201548")
         result = json.loads(self.sut.getComments(list[0]['id']))
         result.sort()
-        self.assertEquals(list,result)
+        self.assertEquals([list[1]],result)
 
     def insertSeveralComments(self):
         data = []
