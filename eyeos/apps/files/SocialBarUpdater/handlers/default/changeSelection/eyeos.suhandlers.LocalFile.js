@@ -54,6 +54,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
         _headerComments: null,
         _controller: null,
         _file: null,
+        _timer: null,
 
 		updateSocialBar: function (controller) {
             this._controller = controller;
@@ -408,12 +409,14 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 
             var commentsContainer = commentsBox.getChildren()[1].getChildren()[0];
             commentsContainer.removeAll();
-            for(var i in comments) {
-                this.__createRow(comments[i],commentsContainer,controller,file)
-            }
+
+            var that = this;
+            var a = function() {that.__createRow(comments,commentsContainer,controller,file,0,that);};
+            this.__timer = setTimeout(a,0);
 
         },
         __createNewComment: function() {
+            this.closeTimer();
             this._headerComments.setVisibility('excluded');
             this._commentsBox.removeAll();
 
@@ -483,86 +486,106 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
             this._commentsBox.add(containerBottoms);
         },
 
-        __createRow: function(comment,commentsContainer,controller,file) {
-            var containerRow = new qx.ui.container.Composite().set({
-                layout: new qx.ui.layout.VBox()
-            });
+        __createRow: function(comments,commentsContainer,controller,file,contador,form) {
+            if(comments[contador]) {
+                var containerRow = new qx.ui.container.Composite().set({
+                    layout: new qx.ui.layout.VBox()
+                });
 
-            var containerText = new qx.ui.container.Composite().set({
-                layout: new qx.ui.layout.VBox(),
-                decorator: new qx.ui.decoration.Single(1),
-                margin: [0,0,5,10],
-                allowGrowX: false,
-                width: 190
-            });
+                var containerText = new qx.ui.container.Composite().set({
+                    layout: new qx.ui.layout.VBox(),
+                    decorator: new qx.ui.decoration.Single(1),
+                    margin: [0,0,5,10],
+                    allowGrowX: false,
+                    width: 190
+                });
 
-            var lbUser = new qx.ui.basic.Label().set({
-                font: new qx.bom.Font(10).set({
-                    bold: true
-                }),
-                value: comment.user,
-                margin: [3,3,5,5],
-                rich: true
-            });
-            containerText.add(lbUser);
+                var lbUser = new qx.ui.basic.Label().set({
+                    font: new qx.bom.Font(10).set({
+                        bold: true
+                    }),
+                    value: comments[contador].user,
+                    margin: [3,3,5,5],
+                    rich: true
+                });
+                containerText.add(lbUser);
 
-            var lbDate = new qx.ui.basic.Label().set({
-                font: new qx.bom.Font(10).set({
-                    italic: true
-                }),
-                value: this.__formatDate(comment.time_created),
-                rich: true,
-                margin: [3,3,5,5]
-            });
-            containerText.add(lbDate);
+                var lbDate = new qx.ui.basic.Label().set({
+                    font: new qx.bom.Font(10).set({
+                        italic: true
+                    }),
+                    value: this.__formatDate(comments[contador].time_created),
+                    rich: true,
+                    margin: [3,3,5,5]
+                });
+                containerText.add(lbDate);
 
-            var lbComments = new qx.ui.basic.Label().set({
-                font: new qx.bom.Font(10),
-                margin: [3,3,5,5],
-                rich: true,
-                value: comment.text.replace(/(?:\r\n|\r|\n)/g, '<br />')
-            });
-            containerText.add(lbComments);
-            containerRow.add(containerText);
+                var lbComments = new qx.ui.basic.Label().set({
+                    font: new qx.bom.Font(10),
+                    margin: [3,3,5,5],
+                    rich: true,
+                    value: comments[contador].text.replace(/(?:\r\n|\r|\n)/g, '<br />')
+                });
+                containerText.add(lbComments);
+                containerRow.add(containerText);
 
-            var action = new qx.ui.container.Composite().set({
-               layout: new qx.ui.layout.HBox(),
-               marginBottom: 10
-            });
+                var action = new qx.ui.container.Composite().set({
+                   layout: new qx.ui.layout.HBox(),
+                   marginBottom: 10
+                });
 
-            var lbDelete = new qx.ui.basic.Label(tr('Delete')).set({
-                paddingRight: 8,
-                textColor: '#3d9af2',
-                font: new qx.bom.Font(10).set({
-                    bold: true
-                }),
-                cursor: 'pointer'
-            });
-            var imgDelete = new qx.ui.basic.Image('eyeos/extern/images/less3.png').set({
-                cursor: 'pointer'
-            });
+                var lbDelete = new qx.ui.basic.Label(tr('Delete')).set({
+                    paddingRight: 8,
+                    textColor: '#3d9af2',
+                    font: new qx.bom.Font(10).set({
+                        bold: true
+                    }),
+                    cursor: 'pointer'
+                });
+                var imgDelete = new qx.ui.basic.Image('eyeos/extern/images/less3.png').set({
+                    cursor: 'pointer'
+                });
 
-            lbDelete.addListener('click',function() {
-                this.__deleteComment(comment.time_created,controller,file);
-            },this);
+                lbDelete.addListener('click',function(e) {
+                    var pos = e.getCurrentTarget().getLayoutParent().getLayoutParent().getLayoutParent().indexOf( e.getCurrentTarget().getLayoutParent().getLayoutParent());
+                    if(pos != -1) {
+                        form.__deleteComment(comments[pos].time_created,controller,file);
+                    }
+                },form);
 
-            imgDelete.addListener('click',function() {
-                this.__deleteComment(comment.time_created,controller,file);
-            },this);
+                imgDelete.addListener('click',function(e) {
+                    var pos = e.getCurrentTarget().getLayoutParent().getLayoutParent().getLayoutParent().indexOf( e.getCurrentTarget().getLayoutParent().getLayoutParent());
+                    if(pos != -1) {
+                        form.__deleteComment(comments[pos].time_created,controller,file);
+                    }
+                },form);
 
-            if(eyeos.getCurrentUserName() != comment.user) {
-                lbDelete.setEnabled(false);
-                imgDelete.setEnabled(false);
+                if(eyeos.getCurrentUserName() != comments[contador].user) {
+                    lbDelete.setEnabled(false);
+                    imgDelete.setEnabled(false);
+                }
+
+                action.add(new qx.ui.core.Spacer(140));
+                action.add(lbDelete);
+                action.add(imgDelete);
+                containerRow.add(action);
+                commentsContainer.add(containerRow);
+
+                //console.log(contador + " ::" + comments.length);
+                if((contador + 1) < comments.length) {
+                    contador ++;
+                    var that = form;
+                    var a = function() {that.__createRow(comments,commentsContainer,controller,file,contador,that);};
+                    form.__timer = setTimeout(a,0);
+                } else {
+                    form.closeTimer();
+
+                }
             }
-
-            action.add(new qx.ui.core.Spacer(140));
-            action.add(lbDelete);
-            action.add(imgDelete);
-            containerRow.add(action);
-            commentsContainer.add(containerRow);
         },
 
         __deleteComment: function(time_created,controller,file) {
+            this.closeTimer();
             var metadata = controller.__getFileId(file.getPath(),file.getName(),true);
             if(metadata !== null) {
                 controller.deleteComment(metadata.id,eyeos.getCurrentUserName(),time_created,this.getSocialBar().getTab('Comments'),file);
@@ -572,6 +595,12 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
         __formatDate: function(date) {
             var dateAux = date.substring(6,8) + "/" + date.substring(4,6) + "/" + date.substring(0,4) + " " + date.substring(8,10) + ":" + date.substring(10,12);
             return dateAux;
+        },
+        closeTimer: function() {
+            if(this.__timer) {
+                clearTimeout(this.__timer);
+            }
+
         }
     }
 });
