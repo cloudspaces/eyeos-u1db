@@ -126,6 +126,31 @@ class Metadata:
                     _pathNew = pathNew + file.content['filename'] + '/'
                     self.renamePath(file.content['id'],user,_pathOld,_pathNew)
 
+    def insertDownloadVersion(self,metadata):
+        self.db.create_doc_from_json(json.dumps(metadata))
+
+    def updateDownloadVersion(self,metadata):
+        self.db.create_index("by-id","id")
+        files = self.db.get_from_index("by-id",metadata['id'])
+        if len(files) > 0:
+            files[0].set_json(json.dumps(metadata))
+            self.db.put_doc(files[0])
+
+    def deleteDownloadVersion(self,id):
+        self.db.create_index("by-id","id")
+        files = self.db.get_from_index("by-id",id)
+        if len(files) > 0:
+            self.db.delete_doc(files[0])
+
+    def getDownloadVersion(self,id):
+        result = ''
+        self.db.create_index("by-id","id")
+        files = self.db.get_from_index("by-id",id)
+        if len(files) > 0:
+            result = files[0].content
+        return result
+
+
 
     """
     ##################################################################################################################################################

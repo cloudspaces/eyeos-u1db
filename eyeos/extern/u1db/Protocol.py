@@ -41,6 +41,14 @@ class Protocol:
             result = self.selectMetadataUser(lista[0]['user_eyeos'])
         elif type == "rename":
             result = self.renameMetadata(lista[0])
+        elif type == "insertDownloadVersion":
+            result = self.insertDownloadVersion(lista[0])
+        elif type == "updateDownloadVersion":
+            result = self.updateDownloadVersion(lista[0])
+        elif type == "deleteDownloadVersion":
+            result = self.deleteDownloadVersion(lista[0]['id'])
+        elif type == "getDownloadVersion":
+            result = self.getDownloadVersion(lista[0]['id'])
         elif type == "deleteEvent":
             result = self.deleteEvent(lista)
         elif type == "updateEvent":
@@ -97,6 +105,21 @@ class Protocol:
         self.metadata.renameMetadata(metadata)
         return True
 
+    def insertDownloadVersion(self,metadata):
+        self.metadata.insertDownloadVersion(metadata)
+        return True
+
+    def updateDownloadVersion(self,metadata):
+        self.metadata.updateDownloadVersion(metadata)
+        return True
+
+    def deleteDownloadVersion(self,id):
+        self.metadata.deleteDownloadVersion(id)
+        return True
+
+    def getDownloadVersion(self,id):
+        return self.metadata.getDownloadVersion(id)
+
     def deleteEvent(self,lista):
         self.metadata.deleteEvent(lista)
         return True
@@ -141,6 +164,8 @@ class Protocol:
             name = "metadata.u1db"
             if type == "deleteEvent" or type == "updateEvent" or type == "selectEvent" or type == "insertEvent" or type == "insertCalendar" or type == "deleteCalendar" or type == "selectCalendar" or type == "updateCalendar" or type == 'deleteCalendarUser' or type == 'selectCalendarsAndEvents':
                 name = "calendar.u1db"
+            elif type == "insertDownloadVersion" or type == "updateDownloadVersion" or type == "deleteDownloadVersion" or type == "getDownloadVersion":
+                name = "downloadfile.u1db"
 
         self.metadata = Metadata(name,creds)
 

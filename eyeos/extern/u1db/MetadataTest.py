@@ -164,6 +164,63 @@ class MetadataTest (unittest.TestCase):
         results.sort()
         self.assertEquals(expected,results)
 
+    """
+    method: insertDownloadVersion
+    when: called
+    with: metadata
+    should: insertCorrect
+    """
+    def test_insertDownloadVersion_called_metadata_insertCorrect(self):
+        expected = {u'id':u'12457988',u'version': u'2', u'recover': False}
+        self.sut.insertDownloadVersion(expected)
+        results = ''
+        files = self.sut.db.get_all_docs()
+        if len(files[1]) > 0:
+            results = files[1][0].content
+        self.assertEquals(expected,results)
+
+    """
+    method: updateDownloadVersion
+    when: called
+    with: metadata
+    should: updateCorrect
+    """
+    def test_updateDownloadVersion_called_metadata_updateCorrect(self):
+        metadata = {u'id':u'12457988',u'version': u'2', u'recover': False}
+        expected = {u'id':u'12457988',u'version': u'3', u'recover': True}
+        self.sut.insertDownloadVersion(metadata)
+        self.sut.updateDownloadVersion(expected)
+        results = ''
+        files = self.sut.db.get_all_docs()
+        if len(files[1]) > 0:
+            results = files[1][0].content
+        self.assertEquals(expected,results)
+
+    """
+    method: deleteDownloadVersion
+    when: called
+    with: id
+    should: deleteCorrect
+    """
+    def test_deleteDownloadVersion_called_id_deleteCorrect(self):
+        metadata = {u'id':u'12457988',u'version': u'2', u'recover': False}
+        self.sut.insertDownloadVersion(metadata)
+        self.sut.deleteDownloadVersion("12457988")
+        files = self.sut.db.get_all_docs()
+        self.assertEquals(0,len(files[1]))
+
+    """
+    method: getDownloadVersion
+    when: called
+    with: id
+    should: returnMetadata
+    """
+    def test_getDownloadVersion_called_id_returnMetadata(self):
+        metadata = {u'id':u'12457988',u'version': u'2', u'recover': False}
+        self.sut.insertDownloadVersion(metadata)
+        result = self.sut.getDownloadVersion("12457988")
+        self.assertEquals(metadata,result)
+
     def getArrayInsert(self):
         array = [{u'user_eyeos':u'eyeID_EyeosUser_2',u'status': u'NEW', u'is_root': False, u'version': 1, u'filename': u'clients', u'parent_id': u'null', u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': u'9873615', u'user': u'eyeID_EyeosUser_2',u'is_folder':True},
                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'Client1.pdf',u'path':u'/clients/',u'id':u'32565632156',u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':3,u'parent_id':u'9873615',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False},

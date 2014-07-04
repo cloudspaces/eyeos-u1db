@@ -145,6 +145,68 @@ class ProtocolTest (unittest.TestCase):
 
 
     """
+  ##################################################################################################################################################
+                                                                  TEST DOWNLOAD FILES
+  ##################################################################################################################################################
+  """
+
+    """
+    method: protocol
+    when: called
+    with: typeInsertDownloadVersionAndList
+    should: insertCorrect
+    """
+    def test_protocol_called_typeInsertDownloadVersionAndList_insertCorrect(self):
+        params = '{"type":"insertDownloadVersion","lista":[{"id":"9873615","version":"2","recover":false}]}'
+        self.protocol.insertDownloadVersion = Mock()
+        self.protocol.insertDownloadVersion.return_value = True
+        result = self.protocol.protocol(params)
+        self.protocol.insertDownloadVersion.assert_called_once_with({"id":"9873615","version":"2","recover":False})
+        self.assertEquals('true',result)
+
+    """
+    method: protocol
+    when: called
+    with: typeUpdateDownloadVersionAndList
+    should: updateCorrect
+    """
+    def test_protocol_called_typeUpdateDownloadVersionAndList_updateCorrect(self):
+        params = '{"type":"updateDownloadVersion","lista":[{"id":"9873615","version":"3","recover":false}]}'
+        self.protocol.updateDownloadVersion = Mock()
+        self.protocol.updateDownloadVersion.return_value = True
+        result = self.protocol.protocol(params)
+        self.protocol.updateDownloadVersion.assert_called_once_with({"id":"9873615","version":"3","recover":False})
+        self.assertEquals('true',result)
+
+    """
+    method: protocol
+    when: called
+    with: typeDeleteDownloadVersionAndList
+    should: deleteCorrect
+    """
+    def test_protocol_called_typeDeleteDownloadVersionAndList_deleteCorrect(self):
+        params = '{"type":"deleteDownloadVersion","lista":[{"id":"9873615"}]}'
+        self.protocol.deleteDownloadVersion = Mock()
+        self.protocol.deleteDownloadVersion.return_value = True
+        result = self.protocol.protocol(params)
+        self.protocol.deleteDownloadVersion.assert_called_once_with("9873615")
+        self.assertEquals('true',result)
+
+    """
+    method: protocol
+    when: called
+    with: typeGetDownloadVersionAndList
+    should: returnMetadata
+    """
+    def test_protocol_called_typeGetDownloadVersionAndList_returnMetadata(self):
+        params = '{"type":"getDownloadVersion","lista":[{"id":"9873615"}]}'
+        self.protocol.getDownloadVersion = Mock()
+        self.protocol.getDownloadVersion.return_value = {"id":"9873615","version":"3","recover":False}
+        result = self.protocol.protocol(params)
+        self.protocol.getDownloadVersion.assert_called_once_with("9873615")
+        self.assertEquals('{"version": "3", "recover": false, "id": "9873615"}',result)
+
+    """
    ##################################################################################################################################################
                                                                    TEST CALENDAR
    ##################################################################################################################################################
