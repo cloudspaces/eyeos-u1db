@@ -6,18 +6,32 @@ import os
 from settings import settings
 
 class Metadata:
-    def __init__(self, name, creds=None):
+    db1 = None
+    db2 = None
+    def __init__(self, name, creds=None,name2 = None):
         if name == "test.u1db":
             db = name
         else:
             db =  os.getcwd() + "/extern/u1db/" + name
         self.db = u1db.open(db, create=True)
+
+        db2 = None
+        if name2 == "test1.u1db":
+            db2 = name2
+        elif name2 != None:
+            db2 =  os.getcwd() + "/extern/u1db/" + name2
+
+        if db2 != None:
+            self.db2 = u1db.open(db2, create=True)
+
         #self.url = "http://192.168.3.118:8080/" + name
         self.url = settings['Oauth']['sync'] + settings['Oauth']['server'] + ":" + str(settings['Oauth']['port']) + "/" + name
         self.creds = creds
 
     def __del__(self):
         self.db.close()
+        if self.db2 != None:
+            self.db2.close()
 
     def insert(self,lista):
         for data in lista:
@@ -143,12 +157,23 @@ class Metadata:
             self.db.delete_doc(files[0])
 
     def getDownloadVersion(self,id):
-        result = ''
+        result = None
         self.db.create_index("by-id","id")
         files = self.db.get_from_index("by-id",id)
         if len(files) > 0:
             result = files[0].content
         return result
+
+    def recursiveDeleteVersion(self,id):
+        self.db.create_index("by-parent", "parent_id")
+        files = self.db.get_from_index("by-parent",str(id))
+        for file in files:
+            if file.content['is_folder'] == True:
+                self.recursiveDeleteVersion(file.content['id'])
+            self.db2.create_index("by-id","id")
+            files = self.db2.get_from_index("by-id",str(file.content['id']))
+            for file in files:
+                self.db2.delete_doc(file)
 
 
 

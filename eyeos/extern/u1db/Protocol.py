@@ -49,6 +49,8 @@ class Protocol:
             result = self.deleteDownloadVersion(lista[0]['id'])
         elif type == "getDownloadVersion":
             result = self.getDownloadVersion(lista[0]['id'])
+        elif type == "recursiveDeleteVersion":
+            result = self.recursiveDeleteVersion(lista[0]['id'])
         elif type == "deleteEvent":
             result = self.deleteEvent(lista)
         elif type == "updateEvent":
@@ -120,6 +122,10 @@ class Protocol:
     def getDownloadVersion(self,id):
         return self.metadata.getDownloadVersion(id)
 
+    def recursiveDeleteVersion(self,id):
+        self.metadata.recursiveDeleteVersion(id)
+        return True
+
     def deleteEvent(self,lista):
         self.metadata.deleteEvent(lista)
         return True
@@ -160,14 +166,18 @@ class Protocol:
     def configDb(self,type,creds = None):
         if self.test == True:
             name = "test.u1db"
+            name2 = "test1.u1db"
         else:
             name = "metadata.u1db"
+            name2 = None
             if type == "deleteEvent" or type == "updateEvent" or type == "selectEvent" or type == "insertEvent" or type == "insertCalendar" or type == "deleteCalendar" or type == "selectCalendar" or type == "updateCalendar" or type == 'deleteCalendarUser' or type == 'selectCalendarsAndEvents':
                 name = "calendar.u1db"
             elif type == "insertDownloadVersion" or type == "updateDownloadVersion" or type == "deleteDownloadVersion" or type == "getDownloadVersion":
                 name = "downloadfile.u1db"
+            elif type == "recursiveDeleteVersion":
+                name2 = "downloadfile.u1db"
 
-        self.metadata = Metadata(name,creds)
+        self.metadata = Metadata(name,creds,name2)
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:

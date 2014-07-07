@@ -427,7 +427,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 			if($fileToRemove->delete(true)) {
 			    self::removeUrlShareInfo($param['file']);
                 if(isset($param['id'])) {
-                    $result = $apiManager->deleteMetadata($_SESSION['access_token_v2'],$isFile,$param['id'],$currentUser->getId());
+                    $result = $apiManager->deleteMetadata($_SESSION['access_token_v2'],$isFile,$param['id'],$currentUser->getId(),$fileToRemove->getParentPath());
                     if($result) {
                         if(isset($result['error']) && $result['error'] == 403) {
                             self::permissionDeniedStackSync($currentUser->getId());
@@ -553,6 +553,10 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 $change = true;
             }
 
+            if($stacksyncOrig) {
+                $apiManager->recursiveDeleteVersion($params['file']['id']);
+            }
+
             if($stacksyncOrig && $stacksyncDest) {
                 if($isDirectory) {
                     $filename = $theName;
@@ -575,6 +579,9 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             return $return;
 
         } else {
+            if($stacksyncOrig) {
+                $apiManager->recursiveDeleteVersion($params['file']['id']);
+            }
             $result = self::copyFile($params);
             if (array_key_exists('error',$result)) {
                 if($result['error'] == 403) {
@@ -888,7 +895,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 if(is_array($params['files'][$i])) {
                     $component = FSI::getFile($params['files'][$i]['path']);
                     $path = self::getPathStacksync($component);
-                    $apiManager->getSkel($_SESSION['access_token_v2'],$params['files'][$i]['is_file'],$params['files'][$i]['id'],$metadatas,$path,$params['files'][$i]['path']);
+                    $apiManager->getSkel($_SESSION['access_token_v2'],$params['files'][$i]['is_file'],$params['files'][$i]['id'],$metadatas,$path,$params['files'][$i]['path'],$component->getParentPath());
                 } else {
                     self::getSkelLocal($params['files'][$i],$metadatas,null);
                 }
@@ -990,12 +997,17 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $tmpFile = new LocalFile('/var/tmp/' . date('Y_m_d_H_i_s') . '_' . $user->getId());
             $pathAbsolute = AdvancedPathLib::getPhpLocalHackPath($tmpFile->getAbsolutePath());
             if(array_key_exists('id',$params['file'])) {
-                $metadata = $apiManager->downloadMetadata($_SESSION['access_token_v2'],$params['file']['id'],$pathAbsolute);
+                $metadata = $apiManager->downloadMetadata($_SESSION['access_token_v2'],$params['file']['id'],$pathAbsolute,true);
                 if($metadata['status'] == 'KO') {
                     if($metadata['error'] == 403) {
                         self::permissionDeniedStackSync($user->getId());
                     }
                     return $metadata;
+                } else {
+                    if(isset($metadata['local'])) {
+                        $file = FSI::getFile($params['file']['pathEyeos']);
+                        $tmpFile->putContents($file->getContents());
+                    }
                 }
             } else {
                 $file = FSI::getFile($params['file']['path']);

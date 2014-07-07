@@ -20,7 +20,7 @@ class ApiProvider
     {
         $request = $this->getRequest('get',$token);
         $request->metadata->file = $file;
-        $request->metadata->id = $id;
+        $request->metadata->id = "" . $id;
         $request->metadata->contents = $contents;
         return $this->exerciseMetadata($request);
     }
@@ -29,9 +29,9 @@ class ApiProvider
     {
         $request = $this->getRequest('update',$token);
         $request->metadata->file = $file;
-        $request->metadata->id = $id;
+        $request->metadata->id = "" . $id;
         $request->metadata->filename = $name;
-        $request->metadata->parent_id = $parent;
+        $request->metadata->parent_id = $parent === null?'null':"" . $parent;
         return $this->exerciseMetadata($request);
     }
 
@@ -40,7 +40,7 @@ class ApiProvider
         $request = $this->getRequest('create',$token);
         $request->metadata->file = $file;
         $request->metadata->filename = $name;
-        $request->metadata->parent_id = $parent;
+        $request->metadata->parent_id = $parent === null?'null':"" . $parent;
         $request->metadata->path = $path;
         return $this->exerciseMetadata($request);
     }
@@ -48,7 +48,7 @@ class ApiProvider
     public function uploadMetadata($token,$id,$path)
     {
         $request = $this->getRequest('upload',$token);
-        $request->metadata->id = $id;
+        $request->metadata->id = "" . $id;
         $request->metadata->path = $path;
         return $this->exerciseMetadata($request);
     }
@@ -57,7 +57,7 @@ class ApiProvider
     {
         $resp = json_decode('{"error":-1}');
         $request = $this->getRequest('download',$token);
-        $request->metadata->id = $id;
+        $request->metadata->id = "" . $id;
         $request->metadata->path = $path;
         $result = $this->accessorProvider->getProcessOauthCredentials(json_encode($request));
 
@@ -76,7 +76,7 @@ class ApiProvider
     {
         $request = $this->getRequest('delete',$token);
         $request->metadata->file = $file;
-        $request->metadata->id = $id;
+        $request->metadata->id = "" . $id;
         return $this->exerciseMetadata($request);
     }
 

@@ -100,16 +100,17 @@ class ApiManager
         return $respuesta;
     }
 
-    public function getSkel($token,$file,$id,&$metadatas,$path,$pathAbsolute) {
+    public function getSkel($token,$file,$id,&$metadatas,$path,$pathAbsolute,$pathEyeos) {
         $contents = $file == false?true:null;
         $metadata = $this->apiProvider->getMetadata($token,$file,$id,$contents);
         if(!isset($metadata->error)) {
             $metadata->pathAbsolute = $pathAbsolute;
             $metadata->path = $path;
+            $metadata->pathEyeos = $pathEyeos . "/" . $metadata->filename;
             if($metadata->is_folder) {
                 $path = $metadata->id == 'null'?'/':$path . $metadata->filename . '/';
                 for ($i=0;$i<count($metadata->contents);$i++){
-                    $this->getSkel($token,!$metadata->contents[$i]->is_folder,$metadata->contents[$i]->id,$metadatas,$path,null);
+                    $this->getSkel($token,!$metadata->contents[$i]->is_folder,$metadata->contents[$i]->id,$metadatas,$path,null,$metadata->pathEyeos);
                 }
             }
             unset($metadata->contents);
@@ -137,8 +138,21 @@ class ApiManager
                         if(!isset($newMetadata->error)) {
                             $this->addPathMetadata($newMetadata,$path);
                             if($this->callProcessU1db('insert',$this->setUserEyeos($newMetadata,$user)) == 'true') {
-                                $result['status'] = 'OK';
-                                unset($result['error']);
+                                $ok = true;
+                                if($file) {
+                                    $lista = new stdClass();
+                                    $lista->id = "" . $newMetadata->id;
+                                    $lista->version = $newMetadata->version;
+                                    $lista->recover = false;
+                                    $resultU1db = $this->callProcessU1db("insertDownloadVersion",$lista);
+                                    if($resultU1db !== 'true') {
+                                        $ok = false;
+                                    }
+                                }
+                                if($ok) {
+                                    $result['status'] = 'OK';
+                                    unset($result['error']);
+                                }
                             }
                         } else {
                             $result['error'] = $newMetadata->error;
@@ -156,8 +170,15 @@ class ApiManager
                                     array_push($metadataUpdate, $old);
                                     array_push($metadataUpdate, $this->setUserEyeos($changedMetadata,$user));
                                     if($this->callProcessU1db('update',$metadataUpdate) == 'true') {
-                                        $result['status'] = 'OK';
-                                        unset($result['error']);
+                                        $lista = new stdClass();
+                                        $lista->id = "" . $changedMetadata->id;
+                                        $lista->version = $changedMetadata->version;
+                                        $lista->recover = false;
+                                        $resultU1db = $this->callProcessU1db("updateDownloadVersion",$lista);
+                                        if($resultU1db === 'true') {
+                                            $result['status'] = 'OK';
+                                            unset($result['error']);
+                                        }
                                     }
                                 } else {
                                     $result['error'] = $changedMetadata->error;
@@ -177,34 +198,84 @@ class ApiManager
         return $result;
     }
 
-    public function downloadMetadata($token,$id,$path)
+    public function downloadMetadata($token,$id,$path,$isTmp=false)
     {
-        $content = $this->apiProvider->downloadMetadata($token,$id,$path);
         $result['status'] = 'KO';
         $result['error'] = -1;
-        if(!isset($content->error)) {
-            $result['status'] = 'OK';
-            unset($result['error']);
-        } else {
-            $result['error'] = $content->error;
+        $metadata = $this->apiProvider->getMetadata($token,true,$id);
+        $insert = false;
+        $type = '';
+
+        if(!isset($metadata->error) && count($metadata) > 0) {
+            $lista = new stdClass();
+            $lista->id = "" . $id;
+            $metadataU1db = $this->callProcessU1db('getDownloadVersion',$lista);
+            if($metadataU1db !== "null") {
+                $metadataU1db = json_decode($metadataU1db);
+                if($metadataU1db) {
+                    if($metadata->version != $metadataU1db->version && $metadataU1db->recover === false) {
+                        $insert = true;
+                        $type = 'updateDownloadVersion';
+                    } else {
+                        $result['status'] = 'OK';
+                        $result['local'] = true;
+                        unset($result['error']);
+                    }
+                }
+            } else {
+                $insert = true;
+                $type = 'insertDownloadVersion';
+            }
+
+            if($insert) {
+                $content = $this->apiProvider->downloadMetadata($token,$id,$path);
+                if(!isset($content->error)) {
+                    if ($isTmp == false) {
+                        $lista = new stdClass();
+                        $lista->id = "" . $id;
+                        $lista->version = $metadata->version;
+                        $lista->recover = false;
+                        $resultU1db = $this->callProcessU1db($type,$lista);
+                        if($resultU1db === 'true') {
+                            $result['status'] = 'OK';
+                            unset($result['error']);
+                        }
+                    } else {
+                        $result['status'] = 'OK';
+                        unset($result['error']);
+                    }
+                } else {
+                    $result['error'] = $content->error;
+                }
+            }
+
+        } else{
+            $result['error'] = $metadata->error;
         }
 
         return $result;
     }
 
-    public function deleteMetadata($token,$file,$id,$user)
+    public function deleteMetadata($token,$file,$id,$user,$path)
     {
         $result['status'] = 'KO';
         $result['error'] = -1;
         $metadata = $this->apiProvider->deleteMetadata($token,$file,$id);
         if(!isset($metadata->error)) {
-            $result['status'] = 'OK';
-            unset($result['error']);
-            $data = new stdClass();
-            $data->id = $id;
-            $data->user_eyeos = $user;
-            $data->parent_id = $metadata->parent_id;
-            $this->callProcessU1db('delete',$data);
+            $lista = new stdClass();
+            $lista->id = "" . $id;
+            $resultU1db = $this->callProcessU1db("recursiveDeleteVersion",$lista);
+            if($resultU1db === 'true') {
+                $data = new stdClass();
+                $data->id = "" . $id;
+                $data->user_eyeos = $user;
+                $data->path = $this->getPathU1db($path);
+                if($this->callProcessU1db('deleteFolder',$data) === 'true') {
+                    $result['status'] = 'OK';
+                    unset($result['error']);
+                }
+            }
+
         } else {
             $result['error'] = $metadata->error;
         }
@@ -258,6 +329,19 @@ class ApiManager
 
         return $result;
 
+    }
+
+    public function recursiveDeleteVersion($id) {
+        $result['status'] = 'KO';
+        $result['error'] = -1;
+        $lista = new stdClass();
+        $lista->id = "" . $id;
+        $resultU1db = $this->callProcessU1db("recursiveDeleteVersion",$lista);
+        if($resultU1db === 'true') {
+            $result['status'] = 'OK';
+            unset($result['error']);
+        }
+        return $result;
     }
 
     public function callProcessU1db($type,$lista,$credentials=NULL)

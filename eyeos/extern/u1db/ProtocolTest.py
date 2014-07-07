@@ -14,6 +14,7 @@ class ProtocolTest (unittest.TestCase):
 
     def tearDown(self):
         os.remove("test.u1db")
+        os.remove("test1.u1db")
 
     """
    method: protocol
@@ -205,6 +206,20 @@ class ProtocolTest (unittest.TestCase):
         result = self.protocol.protocol(params)
         self.protocol.getDownloadVersion.assert_called_once_with("9873615")
         self.assertEquals('{"version": "3", "recover": false, "id": "9873615"}',result)
+
+    """
+    method: protocol
+    when: called
+    with: typeRecursiveDeleteVersionAndList
+    should: deleteCorrect
+    """
+    def test_protocol_called_typeRecursiveDeleteVersionAndList_deleteCorrect(self):
+        params = '{"type":"recursiveDeleteVersion","lista":[{"id":"9873615"}]}'
+        self.protocol.recursiveDeleteVersion = Mock()
+        self.protocol.recursiveDeleteVersion.return_value = True
+        result = self.protocol.protocol(params)
+        self.protocol.recursiveDeleteVersion.assert_called_once_with("9873615")
+        self.assertEquals('true',result)
 
     """
    ##################################################################################################################################################
