@@ -218,6 +218,8 @@ if __name__ == "__main__":
                 result = oauthCredentials.deleteMetadata(oauth,metadata['file'],metadata['id'])
             elif type == 'listVersions':
                 result = oauthCredentials.getFileVersions(oauth,metadata['id'])
+            elif type == "getFileVersion":
+                result = oauthCredentials.getFileVersionData(oauth,metadata['id'],metadata['version'],metadata['path'])
         elif params.has_key("verifier") and params.has_key('token'):
             token_key =  params['token']['key']
             token_secret = params['token']['secret']
