@@ -439,11 +439,53 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->exerciseListVersion($metadataIn,$metadataOut,$this->permission,9873615);
     }
 
+    /**
+     * method: listVersions
+     * when: called
+     * with: tokenAndId
+     * should: returnException
+     */
     public function test_listVersions_called_tokenAndId_returnException()
     {
         $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listVersions","id":"9873615"}}';
         $metadataOut = 'false';
         $this->exerciseListVersion($metadataIn,$metadataOut,$this->exception,9873615);
+    }
+
+    /**
+     * method: getFileVersionData
+     * when: called
+     * with: tokenAndIdAndVersionAndPath
+     * should: returnCorrectDownloadVersion
+     */
+    public function test_getFileVersionData_called_tokenAndIdAndVersionAndPath_returnCorrectDownloadVersion()
+    {
+        $metadataOut = "true";
+        $this->exerciseGetFileVersionData($metadataOut,'{"status":true}');
+    }
+
+    /**
+     * method: getFileVersionData
+     * when: called:
+     * with: tokenAndIdAndVersionAndPath
+     * should: returnPermissionDenied
+     */
+    public function test_getFileVersionData_called_tokenAndIdAndVersionAndPath_returnPermissionDenied()
+    {
+        $metadataOut = "403";
+        $this->exerciseGetFileVersionData($metadataOut,$this->permission);
+    }
+
+    /**
+     * method: getFileVersionData
+     * when: called:
+     * with: tokenAndIdAndVersionAndPath
+     * should: returnException
+     */
+    public function test_getFileVersionData_called_tokenAndIdAndVersionAndPath_returnException()
+    {
+        $metadataOut = "false";
+        $this->exerciseGetFileVersionData($metadataOut,$this->exception);
     }
 
     private function exerciseGetMetadata($metadataIn,$metadataOut,$check,$file,$id,$contents = null)
@@ -503,6 +545,22 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     {
         $this->exerciseMockMetadata($metadataIn,$metadataOut);
         $result = $this->sut->listVersions($this->token,$id);
+        $this->assertEquals(json_decode($check),$result);
+    }
+
+    private function exerciseGetFileVersionData($metadataOut,$check)
+    {
+        $metadataIn = new stdClass();
+        $metadataIn->token = new stdClass();
+        $metadataIn->token->key = "ABCD";
+        $metadataIn->token->secret = "EFGH";
+        $metadataIn->metadata = new stdClass();
+        $metadataIn->metadata->type = "getFileVersion";
+        $metadataIn->metadata->id = "9873615";
+        $metadataIn->metadata->version = "2";
+        $metadataIn->metadata->path = "/home/eyeos/prueba3.pdf";
+        $this->exerciseMockMetadata(json_encode($metadataIn),$metadataOut);
+        $result = $this->sut->getFileVersionData($this->token,"9873615",2,"/home/eyeos/prueba3.pdf");
         $this->assertEquals(json_decode($check),$result);
     }
 }

@@ -401,6 +401,43 @@ class ApiManager
         return $result;
     }
 
+    public function getFileVersionData($token,$id,$version,$path)
+    {
+        $result['status'] = 'KO';
+        $result['error'] = -1;
+        $type = null;
+
+        $lista = new stdClass();
+        $lista->id = "" . $id;
+        $metadataU1db = $this->callProcessU1db('getDownloadVersion',$lista);
+        if($metadataU1db !== "null") {
+            $metadataU1db = json_decode($metadataU1db);
+            if($metadataU1db) {
+                $type = 'updateDownloadVersion';
+            }
+        } else {
+            $type = 'insertDownloadVersion';
+        }
+
+        if($type) {
+            $metadata = $this->apiProvider->getFileVersionData($token,$id,$version,$path);
+            if(!isset($metadata->error)) {
+                $lista = new stdClass();
+                $lista->id = "" . $id;
+                $lista->version = $version;
+                $lista->recover = true;
+                $metadataU1db = $this->callProcessU1db($type,$lista);
+                if($metadataU1db == "true") {
+                    $result['status'] = 'OK';
+                    unset($result['error']);
+                }
+            } else {
+                $result['error'] = $metadata->error;
+            }
+        }
+        return $result;
+    }
+
     private function setUserEyeos($metadata,$user)
     {
         $aux = new stdClass();

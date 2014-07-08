@@ -1079,10 +1079,10 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     /**
      * method: listVersions
      * when: called
-     * with: id
+     * with: tokenAndId
      * should: returnListCorrectAndCurrentVersion
      */
-    public function test_listVersions_called_id_returnListCorrectAndCurrentVersion()
+    public function test_listVersions_called_tokenAndId_returnListCorrectAndCurrentVersion()
     {
         $id = 8983444;
         $metadata = '[{"name":"Winter2015.jpg","path":"\/documents\/clients\/Winter2015.jpg","id":32565632156,"size":775412,"mimetype":"image\/jpg","status":"RENAMED","version":3,"parent":12386548974,"user":"Adrian","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"},{"name":"Winter2012.jpg","path":"\/documents\/clients\/Winter2012.jpg","id":32565632156,"size":7482,"mimetype":"image\/jpg","status":"CHANGED","version":2,"parent":12386548974,"user":"Cristian","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"},{"name":"Winter2012.jpg","path":"\/documents\/clients\/Winter2012.jpg","id":32565632156,"size":775412,"mimetype":"image\/jpg","status":"NEW","version":1,"parent":12386548974,"user":"Adrian","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}]';
@@ -1112,10 +1112,10 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     /**
      * method: listVersion
      * when: called
-     * with: id
+     * with: tokenAndId
      * should: returnListCorrectAndOlderVersion
      */
-    public function test_listVersion_called_id_returnListCorrectAndOlderVersion()
+    public function test_listVersion_called_tokenAndId_returnListCorrectAndOlderVersion()
     {
         $id = 8983444;
         $metadata = '[{"name":"Winter2015.jpg","path":"\/documents\/clients\/Winter2015.jpg","id":32565632156,"size":775412,"mimetype":"image\/jpg","status":"RENAMED","version":3,"parent":12386548974,"user":"Adrian","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"},{"name":"Winter2012.jpg","path":"\/documents\/clients\/Winter2012.jpg","id":32565632156,"size":7482,"mimetype":"image\/jpg","status":"CHANGED","version":2,"parent":12386548974,"user":"Cristian","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"},{"name":"Winter2012.jpg","path":"\/documents\/clients\/Winter2012.jpg","id":32565632156,"size":775412,"mimetype":"image\/jpg","status":"NEW","version":1,"parent":12386548974,"user":"Adrian","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}]';
@@ -1145,10 +1145,10 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     /**
      * method: listVersions
      * when: called
-     * with: id
+     * with: tokenAndId
      * should: returnPermissionDenied
      */
-    public function test_listVersions_called_id_returnPermissionDenied()
+    public function test_listVersions_called_tokenAndId_returnPermissionDenied()
     {
         $id = 8983444;
         $this->apiProviderMock->expects($this->at(0))
@@ -1166,10 +1166,10 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     /**
      * method: listVersions
      * when: called
-     * with: id
+     * with: tokenAndId
      * should: returnException
      */
-    public function test_listVersions_called_id_returnException()
+    public function test_listVersions_called_tokenAndId_returnException()
     {
         $id = 8983444;
         $this->apiProviderMock->expects($this->at(0))
@@ -1183,6 +1183,63 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $result = $this->sut->listVersions($this->token,$id);
         $this->assertEquals(array("status"=>"KO","error"=>-1),$result);
 
+    }
+
+    /**
+     * method: getFileVersionData
+     * when: called
+     * with: tokenAndIdAndVersionAndPath
+     * should: insertDownloadVersion
+     */
+    public function test_getFileVersionData_called_tokenAndIdAndVersionAndPath_insertDownloadVersion()
+    {
+        $id = 8983444;
+        $version = 2;
+        $path = "/home/eyeos/client1.pdf";
+        $this->exerciseGetFileVersionData("null",'{"status":true}',array("status" => "OK"),$id,$version,$path,"insertDownloadVersion");
+
+    }
+
+    /**
+     * method: getFileVersionData
+     * when: called
+     * with: tokenAndIdAndVersionAndPath
+     * should: updateDownloadVersion
+     */
+    public function test_getFileVersionData_called_tokenAndIdAndVersionAndPath_updateDownloadVersion()
+    {
+        $id = 8983444;
+        $version = 2;
+        $path = "/home/eyeos/client1.pdf";
+        $this->exerciseGetFileVersionData('{"id":"8983444","version":1,"recover":false}','{"status":true}',array("status" => "OK"),$id,$version,$path,"updateDownloadVersion");
+    }
+
+    /**
+     * method: getFileVersionData
+     * when: called
+     * with: tokenAndIdAndVersionAndPath
+     * should: returnPermissionDenied
+     */
+    public function test_getFileVersionData_called_tokenAndIdAndVersionAndPath_returnPermissionDenied()
+    {
+        $id = 8983444;
+        $version = 2;
+        $path = "/home/eyeos/client1.pdf";
+        $this->exerciseGetFileVersionData('{"id":"8983444","version":1,"recover":false}','{"error":403}',array("status" => "KO","error" => 403),$id,$version,$path,'',true);
+    }
+
+    /**
+     * method: getFileVersionData
+     * when: called
+     * with: tokenAndIdAndVersionAndPath
+     * should: returnException
+     */
+    public function test_getFileVersionData_called_tokenAndIdAndVersionAndPath_returnException()
+    {
+        $id = 8983444;
+        $version = 2;
+        $path = "/home/eyeos/client1.pdf";
+        $this->exerciseGetFileVersionData('{"id":"8983444","version":1,"recover":false}','{"error":-1}',array("status" => "KO","error" => -1),$id,$version,$path,'',true);
     }
 
     private function exerciseCreateMetadata($file,$name,$parent_id,$path,$pathAbsolute,$metadataOut)
@@ -1359,6 +1416,53 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->method('getProcessDataU1db')
             ->with(json_encode($params))
             ->will($this->returnValue($expected));
+    }
+
+    private function exerciseGetFileVersionData($metadataU1db,$metadataOut,$expected,$id,$version,$path,$type,$exception = false)
+    {
+        $params = new stdClass();
+        $params->type = "getDownloadVersion";
+        $params->lista = array();
+        $aux = new stdClass();
+        $aux->id = "" . $id;
+        array_push($params->lista,$aux);
+
+        if($exception) {
+            $this->accessorProviderMock->expects($this->exactly(1))
+                ->method('getProcessDataU1db')
+                ->with(json_encode($params))
+                ->will($this->returnValue($metadataU1db));
+        } else {
+            $this->accessorProviderMock->expects($this->at(0))
+                ->method('getProcessDataU1db')
+                ->with(json_encode($params))
+                ->will($this->returnValue($metadataU1db));
+        }
+
+        $this->apiProviderMock->expects($this->at(0))
+            ->method('getFileVersionData')
+            ->with($this->token,$id,$version,$path)
+            ->will($this->returnValue(json_decode($metadataOut)));
+
+
+        if(!$exception) {
+            $params = new stdClass();
+            $params->type = $type;
+            $params->lista = array();
+            $aux = new stdClass();
+            $aux->id = "" . $id;
+            $aux->version = $version;
+            $aux->recover = true;
+            array_push($params->lista,$aux);
+
+            $this->accessorProviderMock->expects($this->at(1))
+                ->method('getProcessDataU1db')
+                ->with(json_encode($params))
+                ->will($this->returnValue('true'));
+        }
+
+        $result = $this->sut->getFileVersionData($this->token,$id,$version,$path);
+        $this->assertEquals($expected,$result);
     }
 }
 
