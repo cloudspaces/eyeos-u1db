@@ -1924,7 +1924,7 @@ qx.Class.define('eyeos.files.Controller', {
             return resp;
         },
 
-        loadVersions: function(id,versionsBox) {
+        loadVersions: function(id,versionsBox,file) {
             var params = new Object();
             params.id = id;
 
@@ -1932,8 +1932,27 @@ qx.Class.define('eyeos.files.Controller', {
                 if(results) {
                     var metadata = JSON.parse(results);
                     if(!metadata.error) {
-                        this.getSocialBarUpdater().createListVersions(metadata,versionsBox,this);
+                        this.getSocialBarUpdater().createListVersions(metadata,versionsBox,this,file);
                     } else if (metadata.error == 403) {
+                        this.__permissionDenied();
+                    }
+                }
+            },this);
+        },
+
+        getVersion: function(id,version,versionBox,file) {
+            var params = new Object();
+            params.id = id;
+            params.version = version;
+            params.path = file.getAbsolutePath();
+
+            eyeos.callMessage(this.getApplication().getChecknum(), 'getFileVersionData', params, function (result) {
+                if(!result.error) {
+                    if(result.status == "OK") {
+                        this.loadVersions(id,versionBox,file);
+                    }
+                } else {
+                    if(result.error == 403) {
                         this.__permissionDenied();
                     }
                 }

@@ -670,23 +670,23 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
                 activity.addListener('appear',function() {
                     var id = this._controller.__getFileId(this._file.getPath(),this._file.getName());
                     if(id !== null) {
-                        this._controller.loadVersions(id,activity);
+                        this._controller.loadVersions(id,activity,this._file);
                     }
                 },this);
             }
         },
 
-        createListVersions: function(versions,versionsBox,controller) {
+        createListVersions: function(versions,versionsBox,controller,file) {
             this.closeTimerVersion();
             var versionsContainer = versionsBox.getChildren()[1].getChildren()[0];
             versionsContainer.removeAll();
 
             var that = this;
-            var a = function() {that.__createRowVersion(versions,versionsContainer,controller,0,that);};
+            var a = function() {that.__createRowVersion(versions,versionsContainer,controller,0,file,that);};
             this._timerVersion = setTimeout(a,0);
         },
 
-        __createRowVersion: function(versions,versionsContainer,controller,contador,form) {
+        __createRowVersion: function(versions,versionsContainer,controller,contador,file,form) {
             if(versions[contador]) {
                 var containerRow = new qx.ui.container.Composite().set({
                     layout: new qx.ui.layout.HBox()
@@ -711,21 +711,35 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 
                 containerRow.add(labelVersion);
 
+                versionsContainer.add(containerRow);
+
                 if(versions[contador].enabled === true) {
                     var imageCheck = new qx.ui.basic.Image("eyeos/extern/images/16x16/actions/dialog-ok.png").set({
                         marginLeft: 2
-                    })
+                    });
                     containerRow.add(imageCheck);
-                }
+                } else {
+                    containerRow.addListener('mouseover',form.__mouseOver,form);
+                    containerRow.addListener('mouseout',form.__mouseOut,form);
 
-                versionsContainer.add(containerRow);
+                    var pos = containerRow.getLayoutParent().indexOf(containerRow);
+                    if(pos !== -1) {
+                        var params = new Object();
+                        params.file = file;
+                        params.version = versions[pos].version;
+                        params.controller = controller;
+                        params.activity = this.getSocialBar().getTab('Activity');
+
+                        containerRow.setUserData("params",params);
+                        containerRow.addListener('click',form.__getVersion,form);
+                    }
+                }
 
 
                 if((contador + 1) < versions.length) {
                     contador ++;
-
                     var that = form;
-                    var a = function() {that.__createRowVersion(versions,versionsContainer,controller,contador,that);};
+                    var a = function() {that.__createRowVersion(versions,versionsContainer,controller,contador,file,that);};
                     form._timerVersion = setTimeout(a,0);
                 } else {
                     form.closeTimerVersion();
@@ -736,6 +750,24 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
         __formatDateVersion: function(date) {
             var aux = date.substring(8,10) + "/" + date.substring(5,7) + "/" + date.substring(0,4) + " " + date.substring(11,13) + ":" + date.substring(14,16);
             return aux;
+        },
+
+        __mouseOver: function(e) {
+            e.getCurrentTarget().setBackgroundColor('#edf3fa');
+            e.getCurrentTarget().setCursor('pointer');
+        },
+
+        __mouseOut: function(e) {
+            e.getCurrentTarget().resetBackgroundColor();
+            e.getCurrentTarget().setCursor('default');
+        },
+
+        __getVersion: function(e) {
+            var params = e.getCurrentTarget().getUserData('params');
+            var id = params.controller.__getFileId(params.file.getPath(),params.file.getName());
+            if(id !== -1) {
+                params.controller.getVersion(id,params.version,params.activity,params.file);
+            }
         }
     }
 });

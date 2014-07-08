@@ -141,10 +141,10 @@ qx.Class.define('eyeos.files.SUManager', {
             handler.createComments(comments,commentsBox,controller,file);
         },
 
-        createListVersions: function(versions,versionsBox,controller) {
+        createListVersions: function(versions,versionsBox,controller,file) {
             var handlerClass = eval('eyeos.suhandlers.LocalFile');
             var handler = new handlerClass(this.getSocialBar(), null);
-            handler.createListVersions(versions,versionsBox,controller);
+            handler.createListVersions(versions,versionsBox,controller,file);
         }
 	}
 });

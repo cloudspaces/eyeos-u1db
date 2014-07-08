@@ -38,6 +38,6 @@ qx.Interface.define('eyeos.files.ISocialBarHandler',
    {
 		updateSocialBar: function () {},
         createComments: function(comments,commentBox,controller,file) {},
-        createListVersions: function(versions,versionsBox,controller) {}
+        createListVersions: function(versions,versionsBox,controller,file) {}
    }
 });
