@@ -718,9 +718,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $result = $apiManager->getMetadata($_SESSION['access_token_v2'],$id,$path,$user);
 
             if($result) {
-                $valor = json_decode($result);
-
-                if (isset($valor->error) && $valor->error === 403) {
+                if(isset($result['error']) && $result['error'] == 403) {
                     self::permissionDeniedStackSync($user);
                 }
             }
@@ -1281,8 +1279,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $apiManager = new ApiManager();
             $result = $apiManager->listVersions($_SESSION['access_token_v2'],$id);
             if($result) {
-                $valor = json_decode($result);
-                if (isset($valor->error) && $valor->error === 403) {
+                if(isset($result['error']) && $result['error'] == 403) {
                     self::permissionDeniedStackSync($user);
                 }
             }
