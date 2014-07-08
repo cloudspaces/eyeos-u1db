@@ -84,7 +84,7 @@ class ApiProvider
     {
         $request = $this->getRequest('listVersions',$token);
         $request->metadata->id = "" . $id;
-        return $this->exerciseMetadata($request);
+        return $this->exerciseMetadata($request,true);
     }
 
     private function getRequest($type,$token)
@@ -98,7 +98,7 @@ class ApiProvider
         return $request;
     }
 
-    private function exerciseMetadata($request)
+    private function exerciseMetadata($request,$versions = false)
     {
         $resp = json_decode('{"error":-1}');
         $result = $this->accessorProvider->getProcessOauthCredentials(json_encode($request));
@@ -107,6 +107,9 @@ class ApiProvider
                 $resp = json_decode('{"status":true}');
             } else if($result !== 'false' && $result !== '403') {
                 $resp = json_decode($result);
+                if($versions === true) {
+                    $resp = $resp->versions;
+                }
             } else if($result === '403'){
                 $resp = json_decode('{"error":403}');
             }

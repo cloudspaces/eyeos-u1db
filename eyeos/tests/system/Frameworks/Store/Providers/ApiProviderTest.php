@@ -419,47 +419,10 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_listVersions_called_tokenAndId_returnCorrectData()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listVersions","id":"9873615"}}';
-        $metadataOut = '[{"name":"Winter2012.jpg",
-"path":"/documents/clients/Winter2012.jpg",
-"id":32565632156,
-"size":775412,
-"mimetype":"image/jpg",
-"status":"NEW",
-"version":1,
-"parent":12386548974,
-"user":"Adrian",
-"client_modified":"2013-03-08 10:36:41.997",
-"server_modified":"2013-03-08 10:36:41.997"
-},
-{
-"name":"Winter2012.jpg",
-"path":"/documents/clients/Winter2012.jpg",
-"id":32565632156,
-"size":7482,
-"mimetype":"image/jpg",
-"status":"CHANGED",
-"version":2,
-"parent":12386548974,
-"user":"Cristian",
-"client_modified":"2013-03-08 10:36:41.997",
-"server_modified":"2013-03-08 10:36:41.997"
-},
-{
-"name":"Winter2015.jpg",
-"path":"/documents/clients/Winter2015.jpg",
-"id":32565632156,
-"size":775412,
-"mimetype":"image/jpg",
-"status":"RENAMED",
-"version":3,
-"parent":12386548974,
-"user":"Adrian",
-"client_modified":"2013-03-08 10:36:41.997",
-"server_modified":"2013-03-08 10:36:41.997"
-}
-]';
-        $this->exerciseListVersion($metadataIn,$metadataOut,$metadataOut,9873615);
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listVersions","id":"153"}}';
+        $metadataOut = '{"status": "CHANGED", "mimetype": "text/plain", "versions": [{"status": "CHANGED", "mimetype": "text/plain", "checksum": 2499810342, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 4, "is_folder": false, "chunks": [], "id": 155, "size": 61}, {"status": "RENAMED", "mimetype": "text/plain", "checksum": 1825838054, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 3, "is_folder": false, "chunks": [], "id": 155, "size": 59}, {"status": "RENAMED", "mimetype": "text/plain", "checksum": 1825838054, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 2, "is_folder": false, "chunks": [], "id": 155, "size": 59}, {"status": "NEW", "mimetype": "text/plain", "checksum": 1825838054, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 1, "is_folder": false, "chunks": [], "id": 155, "size": 59}], "checksum": 2499810342, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": "null", "version": 4, "is_folder": false, "chunks": [], "id": 155, "size": 61}';
+        $check = '[{"status": "CHANGED", "mimetype": "text/plain", "checksum": 2499810342, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 4, "is_folder": false, "chunks": [], "id": 155, "size": 61}, {"status": "RENAMED", "mimetype": "text/plain", "checksum": 1825838054, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 3, "is_folder": false, "chunks": [], "id": 155, "size": 59}, {"status": "RENAMED", "mimetype": "text/plain", "checksum": 1825838054, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 2, "is_folder": false, "chunks": [], "id": 155, "size": 59}, {"status": "NEW", "mimetype": "text/plain", "checksum": 1825838054, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 1, "is_folder": false, "chunks": [], "id": 155, "size": 59}]';
+        $this->exerciseListVersion($metadataIn,$metadataOut,$check,153);
 
     }
 
