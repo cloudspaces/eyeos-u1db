@@ -1922,6 +1922,22 @@ qx.Class.define('eyeos.files.Controller', {
             this._comments = data;
 
             return resp;
+        },
+
+        loadVersions: function(id,versionsBox) {
+            var params = new Object();
+            params.id = id;
+
+            eyeos.callMessage(this.getApplication().getChecknum(), 'listVersions', params, function (results) {
+                if(results) {
+                    var metadata = JSON.parse(results);
+                    if(!metadata.error) {
+                        this.getSocialBarUpdater().createListVersions(metadata,versionsBox,this);
+                    } else if (metadata.error == 403) {
+                        this.__permissionDenied();
+                    }
+                }
+            },this);
         }
 	}
 });

@@ -55,13 +55,16 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
         _controller: null,
         _file: null,
         _timer: null,
+        _timerVersion: null,
 
 		updateSocialBar: function (controller) {
             this._controller = controller;
             this._file = this.getParams()['selected'][0];
 			var fileType = this._file.getType();
             var path = this.getParams()['selected'][0].getAbsolutePath();
+            var stacksync = false;
             if(this._controller && this._controller.__isStacksync(path) && path !== 'home://~'+ eyeos.getCurrentUserName()+'/Stacksync') {
+                stacksync = true;
                 this.getSocialBar().createStackSyncTabs();
                 this._createContentsCommentsTab();
             } else {
@@ -76,8 +79,12 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 			} else {
 				this._createContentShareTab();
 			}
-			
-			this._createContentActivityTab();
+
+            if(stacksync && fileType == 'file') {
+                this._createContenActivityTabStacksync();
+            } else {
+			    this._createContentActivityTab();
+            }
 			//Show only if the selected file is not a folder
 			
 			if (fileType != 'folder' && this.getParams()['selected'].length == 1) {
@@ -413,11 +420,10 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 
             var that = this;
             var a = function() {that.__createRow(comments,commentsContainer,controller,file,0,that);};
-            this.__timer = setTimeout(a,0);
+            this._timer = setTimeout(a,0);
 
         },
         __createNewComment: function() {
-            this.closeTimer();
             this._controller.closeTimerComments();
             this._headerComments.setVisibility('excluded');
             this._commentsBox.removeAll();
@@ -579,7 +585,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
                     contador ++;
                     var that = form;
                     var a = function() {that.__createRow(comments,commentsContainer,controller,file,contador,that);};
-                    form.__timer = setTimeout(a,0);
+                    form._timer = setTimeout(a,0);
                 } else {
                     form.closeTimer();
 
@@ -600,10 +606,136 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
             return dateAux;
         },
         closeTimer: function() {
-            if(this.__timer) {
-                clearTimeout(this.__timer);
+            if(this._timer) {
+                clearTimeout(this._timer);
             }
 
+        },
+
+        closeTimerVersion: function() {
+            if(this._timerVersion) {
+                clearTimeout(this._timerVersion);
+            }
+        },
+
+        _createContenActivityTabStacksync: function() {
+            var activity = this.getSocialBar().getTab('Activity');
+            activity.removeAll();
+            activity.set({
+                layout: new qx.ui.layout.VBox()
+            });
+
+            var header = new qx.ui.container.Composite().set({
+                layout: new qx.ui.layout.HBox(),
+                decorator: new qx.ui.decoration.Single(1).set({widthTop:0,widthLeft:0,widthRight:0,colorBottom:'#d1d1d1'}),
+                margin: [10,0,5,10],
+                paddingBottom: 5,
+                allowGrowX: false,
+                width: 190
+            });
+
+
+            var labelDate = new qx.ui.basic.Label().set({
+               width: 100,
+               value: tr('Date'),
+               font: new qx.bom.Font(11).set({bold:true})
+            });
+
+            header.add(labelDate);
+
+            var labelVersion = new qx.ui.basic.Label().set({
+                width: 70,
+                value: tr('Version'),
+                marginLeft: 20,
+                font: new qx.bom.Font(11).set({bold:true})
+            });
+
+            header.add(labelVersion);
+            activity.add(header);
+
+            var scroll = new qx.ui.container.Scroll().set({
+                allowStretchY: true,
+                allowStretchX: true
+            });
+
+            var versions = new qx.ui.container.Composite().set({
+                layout: new qx.ui.layout.VBox()
+            });
+
+            scroll.add(versions);
+
+            activity.add(scroll,{flex: 1});
+
+            if(this.getParams()['selected'].length == 1) {
+                activity.addListener('appear',function() {
+                    var id = this._controller.__getFileId(this._file.getPath(),this._file.getName());
+                    if(id !== null) {
+                        this._controller.loadVersions(id,activity);
+                    }
+                },this);
+            }
+        },
+
+        createListVersions: function(versions,versionsBox,controller) {
+            this.closeTimerVersion();
+            var versionsContainer = versionsBox.getChildren()[1].getChildren()[0];
+            versionsContainer.removeAll();
+
+            var that = this;
+            var a = function() {that.__createRowVersion(versions,versionsContainer,controller,0,that);};
+            this._timerVersion = setTimeout(a,0);
+        },
+
+        __createRowVersion: function(versions,versionsContainer,controller,contador,form) {
+            if(versions[contador]) {
+                var containerRow = new qx.ui.container.Composite().set({
+                    layout: new qx.ui.layout.HBox()
+                });
+
+                var labelDate = new qx.ui.basic.Label().set({
+                   value:  form.__formatDateVersion(versions[contador].modified_at),
+                   marginLeft: 10,
+                   width: 100,
+                   paddingTop: 1
+                });
+
+                containerRow.add(labelDate);
+
+                var labelVersion = new qx.ui.basic.Label().set({
+                   value: versions[contador].version,
+                    marginLeft: 20,
+                    width: 50,
+                    textAlign: 'center',
+                    paddingTop: 1
+                });
+
+                containerRow.add(labelVersion);
+
+                if(versions[contador].enabled === true) {
+                    var imageCheck = new qx.ui.basic.Image("eyeos/extern/images/16x16/actions/dialog-ok.png").set({
+                        marginLeft: 2
+                    })
+                    containerRow.add(imageCheck);
+                }
+
+                versionsContainer.add(containerRow);
+
+
+                if((contador + 1) < versions.length) {
+                    contador ++;
+
+                    var that = form;
+                    var a = function() {that.__createRowVersion(versions,versionsContainer,controller,contador,that);};
+                    form._timerVersion = setTimeout(a,0);
+                } else {
+                    form.closeTimerVersion();
+                }
+            }
+        },
+
+        __formatDateVersion: function(date) {
+            var aux = date.substring(8,10) + "/" + date.substring(5,7) + "/" + date.substring(0,4) + " " + date.substring(11,13) + ":" + date.substring(14,16);
+            return aux;
         }
     }
 });
