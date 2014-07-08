@@ -373,7 +373,28 @@ class ApiManager
         $result['error'] = -1;
         $metadata = $this->apiProvider->listVersions($token,$id);
         if(!isset($metadata->error)) {
-            $result = $metadata;
+            $lista = new stdClass();
+            $lista->id = "" . $id;
+            $metadataU1db = $this->callProcessU1db('getDownloadVersion',$lista);
+            if($metadataU1db !== "null") {
+                $metadataU1db = json_decode($metadataU1db);
+                if($metadataU1db) {
+                    foreach($metadata as $file) {
+                        if($file->version == $metadataU1db->version) {
+                            $file->enabled = true;
+                            break;
+                        }
+                    }
+
+                    $result = json_encode($metadata);
+                }
+            } else {
+                if(count($metadata) > 0) {
+                    $metadata[0]->enabled = true;
+                    $result = json_encode($metadata);
+                }
+            }
+
         } else {
             $result['error'] = $metadata->error;
         }
