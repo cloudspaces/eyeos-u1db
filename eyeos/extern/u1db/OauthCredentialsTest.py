@@ -340,10 +340,10 @@ class OauthCredentialsTest (unittest.TestCase):
     """
     method: downloadFile
     when: called
-    with: accessTokenAndId
-    should: returnContent
+    with: accessTokenAndIdAndPath
+    should: returnCorrect
     """
-    def test_downloadFile_called_accessTokenAndId_returnContent(self):
+    def test_downloadFile_called_accessTokenAndIdAndPath_returnCorrect(self):
         fileId = 123456
         data = 'true'
         self.exerciseDonwloadFile(fileId,data,data)
@@ -352,10 +352,10 @@ class OauthCredentialsTest (unittest.TestCase):
     """
     method: downloadFile
     when: called
-    with: accessTokenAndId
+    with: accessTokenAndIdAndPath
     should: returnException
     """
-    def test_downloadFile_called_accessTokenAndId_returnException(self):
+    def test_downloadFile_called_accessTokenAndIdAndPath_returnException(self):
         fileId = -1
         self.exerciseDonwloadFile(fileId,'false',{"error":404, "description": "File or folder not found"})
 
@@ -429,6 +429,26 @@ class OauthCredentialsTest (unittest.TestCase):
         result = self.oauthCredentials.getFileVersions(oauth,id)
         oauth.get.assert_called_once_with(self.resourceurl + self.getResource(True) + "/" + id + "/versions")
         self.assertEquals(metadataOut,result)
+
+    """
+    method: getFileVersionData
+    when: called
+    with: accessTokenAndIdAndVersionAndPath
+    should: returnCorrect
+    """
+    def test_getFileVersionData_called_accessTokenAndIdAndVersionAndPath_returnCorrect(self):
+        id = 123456
+        self.exerciseGetFileVersionData(id,"true","true")
+
+    """
+    method: getFileVersionData
+    when: called
+    with: accessTokenAndIdAndVersionAndPath
+    should: returnException
+    """
+    def test_getFileVersionData_called_accessTokenAndIdAndVersionAndPath_returnException(self):
+        id = 123456
+        self.exerciseGetFileVersionData(id,403,{"error":403, "description": "Forbidden. The requester does not have permission to access the specified resource."})
 
     def createOauthSession(self):
         oauth = OAuth1Session(self.key, client_secret=self.secret,resource_owner_key="OPQR",resource_owner_secret="STVW")
@@ -508,6 +528,16 @@ class OauthCredentialsTest (unittest.TestCase):
         result = self.oauthCredentials.deleteMetadata(oauth,file,fileId)
         oauth.delete.assert_called_once_with(self.resourceurl + self.getResource(file) + "/" + str(fileId))
         self.assertEquals(metadataOut,result)
+
+    def exerciseGetFileVersionData(self,id,check,returnValue):
+        path = "prueba.txt"
+        version = 2
+        oauth = self.createOauthSession()
+        oauth.get = Mock()
+        oauth.get.return_value = returnValue
+        result = self.oauthCredentials.getFileVersionData(oauth,id,version,path)
+        oauth.get.assert_called_once_with(self.resourceurl + "file/" + str(id) + "/version/" + str(version) + "/data")
+        self.assertEquals(check,result)
 
     def getResource(self,file):
         resource = "folder"

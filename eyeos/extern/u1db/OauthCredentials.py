@@ -120,6 +120,20 @@ class OauthCredentials:
         result = oauth.get(url)
         return self.createRequest(result)
 
+    def getFileVersionData(self,oauth,id,version,path):
+        metadata = 'false'
+        self.createHeader(oauth)
+        result = oauth.get(self.resourceurl + "file/" + str(id) + "/version/" + str(version) + "/data")
+        if isinstance(result,types.StringTypes):
+            file = open(path,'w')
+            if file:
+                file.write(result)
+                file.close()
+            metadata = 'true'
+        elif isinstance(result,dict) and result.has_key('error') and result['error'] == 403:
+            metadata = result['error']
+        return metadata
+
     def createHeader(self,oauth):
         oauth.headers['StackSync-API'] = self.version
 
