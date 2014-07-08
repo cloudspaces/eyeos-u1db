@@ -1295,8 +1295,9 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
             $id = $params['id'];
             $version = $params['version'];
-            $path = $params['path'];
+            $file = FSI::getFile($params['path']);
             $apiManager = new ApiManager();
+            $path = AdvancedPathLib::getPhpLocalHackPath($file->getRealFile()->getAbsolutePath());
             $result = $apiManager->getFileVersionData($_SESSION['access_token_v2'],$id,$version,$path);
             if($result) {
                 if(isset($result['error']) && $result['error'] == 403) {
