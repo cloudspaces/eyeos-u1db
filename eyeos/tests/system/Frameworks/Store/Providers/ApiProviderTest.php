@@ -411,6 +411,78 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->exerciseDeleteMetadata($metadataIn,$metadataOut,$this->permission,false,9873615);
     }
 
+    /**
+     * method: listVersions
+     * when: called
+     * with: tokenAndId
+     * should: returnCorrectData
+     */
+    public function test_listVersions_called_tokenAndId_returnCorrectData()
+    {
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listVersions","id":"9873615"}}';
+        $metadataOut = '[{"name":"Winter2012.jpg",
+"path":"/documents/clients/Winter2012.jpg",
+"id":32565632156,
+"size":775412,
+"mimetype":"image/jpg",
+"status":"NEW",
+"version":1,
+"parent":12386548974,
+"user":"Adrian",
+"client_modified":"2013-03-08 10:36:41.997",
+"server_modified":"2013-03-08 10:36:41.997"
+},
+{
+"name":"Winter2012.jpg",
+"path":"/documents/clients/Winter2012.jpg",
+"id":32565632156,
+"size":7482,
+"mimetype":"image/jpg",
+"status":"CHANGED",
+"version":2,
+"parent":12386548974,
+"user":"Cristian",
+"client_modified":"2013-03-08 10:36:41.997",
+"server_modified":"2013-03-08 10:36:41.997"
+},
+{
+"name":"Winter2015.jpg",
+"path":"/documents/clients/Winter2015.jpg",
+"id":32565632156,
+"size":775412,
+"mimetype":"image/jpg",
+"status":"RENAMED",
+"version":3,
+"parent":12386548974,
+"user":"Adrian",
+"client_modified":"2013-03-08 10:36:41.997",
+"server_modified":"2013-03-08 10:36:41.997"
+}
+]';
+        $this->exerciseListVersion($metadataIn,$metadataOut,$metadataOut,9873615);
+
+    }
+
+    /**
+     * method: listVersions
+     * when: called
+     * with: tokenAndId
+     * should: returnPermissionDenied
+     */
+    public function test_listVersions_called_tokenAndId_returnPermissionDenied()
+    {
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listVersions","id":"9873615"}}';
+        $metadataOut = '403';
+        $this->exerciseListVersion($metadataIn,$metadataOut,$this->permission,9873615);
+    }
+
+    public function test_listVersions_called_tokenAndId_returnException()
+    {
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listVersions","id":"9873615"}}';
+        $metadataOut = 'false';
+        $this->exerciseListVersion($metadataIn,$metadataOut,$this->exception,9873615);
+    }
+
     private function exerciseGetMetadata($metadataIn,$metadataOut,$check,$file,$id,$contents = null)
     {
         $this->exerciseMockMetadata($metadataIn,$metadataOut);
@@ -462,6 +534,13 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
             ->method('getProcessOauthCredentials')
             ->with($metadataIn)
             ->will($this->returnValue($metadataOut));
+    }
+
+    private function exerciseListVersion($metadataIn,$metadataOut,$check,$id)
+    {
+        $this->exerciseMockMetadata($metadataIn,$metadataOut);
+        $result = $this->sut->listVersions($this->token,$id);
+        $this->assertEquals(json_decode($check),$result);
     }
 }
 ?>

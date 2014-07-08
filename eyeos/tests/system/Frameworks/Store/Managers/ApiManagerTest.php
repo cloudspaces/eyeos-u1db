@@ -1076,6 +1076,100 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(array("status" =>"OK"),$result);
     }
 
+    /**
+     * method: listVersions
+     * when: called
+     * with: id
+     * should: returnListCorrect
+     */
+    public function test_listVersions_called_id_returnListCorrect()
+    {
+        $id = 8983444;
+        $metadata = '[
+{
+"name":"Winter2012.jpg",
+"path":"/documents/clients/Winter2012.jpg","id":32565632156,
+"size":775412,
+"mimetype":"image/jpg",
+"status":"NEW",
+"version":1,
+"parent":12386548974,
+"user":"Adrian",
+"client_modified":"2013-03-08 10:36:41.997",
+"server_modified":"2013-03-08 10:36:41.997"
+},
+{
+"name":"Winter2012.jpg",
+"path":"/documents/clients/Winter2012.jpg",
+"id":32565632156,
+"size":7482,
+"mimetype":"image/jpg",
+"status":"CHANGED",
+"version":2,
+"parent":12386548974,
+"user":"Cristian",
+"client_modified":"2013-03-08 10:36:41.997",
+"server_modified":"2013-03-08 10:36:41.997"
+},
+{
+"name":"Winter2015.jpg",
+"path":"/documents/clients/Winter2015.jpg",
+"id":32565632156,
+"size":775412,
+"mimetype":"image/jpg",
+"status":"RENAMED",
+"version":3,
+"parent":12386548974,
+"user":"Adrian",
+"client_modified":"2013-03-08 10:36:41.997",
+"server_modified":"2013-03-08 10:36:41.997"
+}
+]';
+
+        $this->apiProviderMock->expects($this->at(0))
+            ->method('listVersions')
+            ->with($this->token,$id)
+            ->will($this->returnValue(json_decode($metadata)));
+
+        $this->sut->listVersions($this->token,8983444);
+    }
+
+    /**
+     * method: listVersions
+     * when: called
+     * with: id
+     * should: returnPermissionDenied
+     */
+    public function test_listVersions_called_id_returnPermissionDenied()
+    {
+        $id = 8983444;
+        $this->apiProviderMock->expects($this->at(0))
+            ->method('listVersions')
+            ->with($this->token,$id)
+            ->will($this->returnValue(json_decode('{"error":403}')));
+
+        $result = $this->sut->listVersions($this->token,$id);
+        $this->assertEquals(array("status"=>"KO","error"=>403),$result);
+    }
+
+    /**
+     * method: listVersions
+     * when: called
+     * with: id
+     * should: returnException
+     */
+    public function test_listVersions_called_id_returnException()
+    {
+        $id = 8983444;
+        $this->apiProviderMock->expects($this->at(0))
+            ->method('listVersions')
+            ->with($this->token,$id)
+            ->will($this->returnValue(json_decode('{"error":-1}')));
+        $result = $this->sut->listVersions($this->token,$id);
+        $this->assertEquals(array("status"=>"KO","error"=>-1),$result);
+
+    }
+
     private function exerciseCreateMetadata($file,$name,$parent_id,$path,$pathAbsolute,$metadataOut)
     {
         $type = $file?'false':'true';

@@ -80,6 +80,13 @@ class ApiProvider
         return $this->exerciseMetadata($request);
     }
 
+    public function listVersions($token,$id)
+    {
+        $request = $this->getRequest('listVersions',$token);
+        $request->metadata->id = "" . $id;
+        return $this->exerciseMetadata($request);
+    }
+
     private function getRequest($type,$token)
     {
         $request = new stdClass();

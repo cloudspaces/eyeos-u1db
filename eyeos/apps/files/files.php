@@ -1272,5 +1272,23 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         $commentsManager = new CommentsManager();
         return $commentsManager->getComments($id);
     }
+
+    public static function listVersions($params)
+    {
+        if(isset($_SESSION['access_token_v2'])) {
+            $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
+            $id = $params['id'];
+            $apiManager = new ApiManager();
+            $result = $apiManager->listVersions($_SESSION['access_token_v2'],$id);
+            if($result) {
+                if (isset($result['error']) && $result['error'] === 403) {
+                    self::permissionDeniedStackSync($user);
+                }
+            }
+        } else {
+            $result = '{"error":-1,"description":"Access token not exists"}';
+        }
+        return $result;
+    }
 }
 ?>
