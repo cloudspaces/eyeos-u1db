@@ -115,7 +115,7 @@ class OauthCredentials:
 
     def getFileVersions(self,oauth,id):
         url = self.getUrl(True,id)
-        url += "/version"
+        url += "/versions"
         self.createHeader(oauth)
         result = oauth.get(url)
         return self.createRequest(result)
@@ -148,6 +148,10 @@ class OauthCredentials:
             for file in data['contents']:
                 self.replaceNull(file)
 
+        if data.has_key('versions'):
+            for file in data['versions']:
+                self.replaceNull(file)
+
         return data
 
     def replaceNullArray(self,data):
@@ -167,9 +171,6 @@ class OauthCredentials:
                 metadata = json.dumps(self.replaceNull(result))
             elif result['error'] == 403:
                 metadata = result['error']
-
-        if isinstance(result,list):
-            metadata = json.dumps(self.replaceNullArray(result))
 
         return metadata
 
