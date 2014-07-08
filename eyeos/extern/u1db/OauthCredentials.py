@@ -113,6 +113,13 @@ class OauthCredentials:
         result= oauth.delete(url)
         return self.createRequest(result)
 
+    def getFileVersions(self,oauth,id):
+        url = self.getUrl(True,id)
+        url += "/version"
+        self.createHeader(oauth)
+        result = oauth.get(url)
+        return self.createRequest(result)
+
     def createHeader(self,oauth):
         oauth.headers['StackSync-API'] = self.version
 
@@ -143,6 +150,13 @@ class OauthCredentials:
 
         return data
 
+    def replaceNullArray(self,data):
+        for version in data:
+            for i, j in version.items():
+                if j == None:
+                    version[i] = "null"
+        return data
+
     def createRequest(self,result):
         if not(isinstance(result,dict)):
             result = json.loads(result)
@@ -153,6 +167,9 @@ class OauthCredentials:
                 metadata = json.dumps(self.replaceNull(result))
             elif result['error'] == 403:
                 metadata = result['error']
+
+        if isinstance(result,list):
+            metadata = json.dumps(self.replaceNullArray(result))
 
         return metadata
 
@@ -184,6 +201,8 @@ if __name__ == "__main__":
                 result = oauthCredentials.downloadFile(oauth,metadata['id'],metadata['path'])
             elif type == 'delete':
                 result = oauthCredentials.deleteMetadata(oauth,metadata['file'],metadata['id'])
+            elif type == 'listVersions':
+                result = oauthCredentials.getFileVersions(oauth,metadata['id'])
         elif params.has_key("verifier") and params.has_key('token'):
             token_key =  params['token']['key']
             token_secret = params['token']['secret']

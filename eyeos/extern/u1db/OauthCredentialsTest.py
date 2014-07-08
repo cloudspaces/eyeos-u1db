@@ -413,6 +413,23 @@ class OauthCredentialsTest (unittest.TestCase):
         folderId = -1
         self.exerciseDeleteMetadata({"error":403, "description": "Forbidden. The requester does not have permission to access the specified resource."},403,False,folderId)
 
+    """
+    method: getFileVersions
+    when: called
+    with: accessTokenAndID
+    should: returnList
+    """
+    def test_getFileVersions_called_accessTokenAndId_returnList(self):
+        id = "32565632156"
+        metadataIn = '[{"name":"Winter2012.jpg","path":"/documents/clients/Winter2012.jpg","id":"32565632156","size":775412,"mimetype":"image/jpg","status":"NEW","version":1,"parent_id":null,"user":"Adrian","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"},{"name":"Winter2012.jpg","path":"/documents/clients/Winter2012.jpg","id":"32565632156","size":7482,"mimetype":"image/jpg","status":"CHANGED","version":2,"parent_id":null,"user":"Cristian","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"},{"name":"Winter2015.jpg","path":"/documents/clients/Winter2015.jpg","id":"32565632156","size":775412,"mimetype":"image/jpg","status":"RENAMED","version":3,"parent_id":null,"user":"Adrian","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}]'
+        metadataOut = '[{"mimetype": "image/jpg", "status": "NEW", "name": "Winter2012.jpg", "client_modified": "2013-03-08 10:36:41.997", "parent_id": "null", "version": 1, "user": "Adrian", "server_modified": "2013-03-08 10:36:41.997", "path": "/documents/clients/Winter2012.jpg", "id": "32565632156", "size": 775412}, {"mimetype": "image/jpg", "status": "CHANGED", "name": "Winter2012.jpg", "client_modified": "2013-03-08 10:36:41.997", "parent_id": "null", "version": 2, "user": "Cristian", "server_modified": "2013-03-08 10:36:41.997", "path": "/documents/clients/Winter2012.jpg", "id": "32565632156", "size": 7482}, {"mimetype": "image/jpg", "status": "RENAMED", "name": "Winter2015.jpg", "client_modified": "2013-03-08 10:36:41.997", "parent_id": "null", "version": 3, "user": "Adrian", "server_modified": "2013-03-08 10:36:41.997", "path": "/documents/clients/Winter2015.jpg", "id": "32565632156", "size": 775412}]'
+        oauth = self.createOauthSession()
+        oauth.get = Mock()
+        oauth.get.return_value = metadataIn
+        result = self.oauthCredentials.getFileVersions(oauth,id)
+        oauth.get.assert_called_once_with(self.resourceurl + self.getResource(True) + "/" + id + "/version")
+        self.assertEquals(metadataOut,result)
+
     def createOauthSession(self):
         oauth = OAuth1Session(self.key, client_secret=self.secret,resource_owner_key="OPQR",resource_owner_secret="STVW")
         return oauth
