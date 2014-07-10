@@ -1947,6 +1947,7 @@ qx.Class.define('eyeos.files.Controller', {
             params.path = file.getAbsolutePath();
 
             eyeos.callMessage(this.getApplication().getChecknum(), 'getFileVersionData', params, function (result) {
+                versionBox.getChildren()[1].getChildren()[0].setEnabled(true);
                 if(!result.error) {
                     if(result.status == "OK") {
                         this.loadVersions(id,versionBox,file);
