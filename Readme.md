@@ -286,7 +286,7 @@ Creates a document from JSON data.
 Alternatively can be especified the document's identifier. The identifier mustn't exist in the database. If database especifies a maximum document size and the document exceeds, the exception DocumentTooBig will be thrown.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td>
@@ -309,7 +309,7 @@ Alternatively can be especified the document's identifier. The identifier mustn'
 Document update. If database especifies a maximum document size and the document exceeds, the exception DocumentTooBig will be thrown.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px"><b>doc</b> – Document with new content</td>
@@ -327,7 +327,7 @@ Document update. If database especifies a maximum document size and the document
 Updates document's JSON data.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px"><b>json</b> – JSON data</td>
@@ -341,7 +341,7 @@ Updates document's JSON data.
 Mark a document as deleted.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px"><b>doc</b> – Document to delete</td>
@@ -359,7 +359,7 @@ Quering in U1DB is performed by means of indexes. To recover some documents from
 Creates an index that will be used to make queries in the database. The creation of an existing index  will not throw any exception. The creation of an existing index with different index_expressions than the original one will throw an exception.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td>
@@ -380,7 +380,7 @@ Creates an index that will be used to make queries in the database. The creation
 Returns the documents that match the specified keys.  It must be specified the same number of values than keys defined in the index.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td>
@@ -413,7 +413,7 @@ Synchronizes documents with a remote backup by means of an url.
 
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td>
@@ -444,7 +444,7 @@ EyeOS storages the user's calendars and events into U1DB synchronized database. 
 ![](img/Settings_Calendars.jpg)
 
 <div style="margin-top:45px;margin-bottom:10px;margin-left:40px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td width="15%">Server</td>
             <td width="45%" style="padding-left:15px">IP address where the Oauth server is active</td>
@@ -481,7 +481,7 @@ Next is detailed the APIs contained in the script Protocol.py:
 Get all calendars of the user.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px"><b>data</b> – Contains the type and the user.<br>
@@ -504,7 +504,7 @@ Get all calendars of the user.
 Introduce the new calendar created by the eyeOS user.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px"><b>lista</b> – Contains an array of the calendars pending to insert.<br>
@@ -525,7 +525,7 @@ Introduce the new calendar created by the eyeOS user.
 Identifies the status of the calendar as deleted (STATUS=”DELETED”) of a particular eyeOS user.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px"><b>lista</b> – Contains an array of the calendars identied as deleted.<br>
@@ -545,7 +545,7 @@ Identifies the status of the calendar as deleted (STATUS=”DELETED”) of a par
 
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td>
@@ -573,7 +573,7 @@ Identifies the status of the calendar as deleted (STATUS=”DELETED”) of a par
 Introduce a new event into the especified user's calendar.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
@@ -595,7 +595,7 @@ Introduce a new event into the especified user's calendar.
 Identifies the status of the event as deleted (STATUS=”DELETED”) of a particular eyeOS user.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
@@ -617,7 +617,7 @@ Identifies the status of the event as deleted (STATUS=”DELETED”) of a partic
 Update the data of an event.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
@@ -641,7 +641,7 @@ To see correctly the calendars into eyeOS platform it must be respected the estr
 To use the Python APIs into eyeOS it has been generated the framework Store, containing some APIs with an uniform structure:
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td>
@@ -662,7 +662,7 @@ Next these APIs are listed:
 Synchronize all calendars of the user connected in eyeOS platform.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
@@ -703,7 +703,7 @@ Synchronize all calendars of the user connected in eyeOS platform.
 Create a new calendar.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
@@ -751,7 +751,7 @@ Create a new calendar.
 Delete an existing calendar.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
@@ -797,7 +797,7 @@ Synchronize all the events of the especified calendar of the user connected in e
 
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
@@ -842,7 +842,7 @@ Synchronize all the events of the especified calendar of the user connected in e
 Create a new event
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
@@ -895,7 +895,7 @@ Delete an existing event.
 
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
@@ -947,7 +947,7 @@ Delete an existing event.
 Update an existing event.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
@@ -1049,7 +1049,7 @@ The StackSync API calls are made via a Python script called OAuthCredentials.py.
 ![](img/settings_connectStacksync.jpg)
 
 <div style="margin-top:45px;margin-bottom:10px;margin-left:40px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td colspan="2">Urls</td>
         </tr>
@@ -1079,7 +1079,7 @@ Next are detailed the APIs contained in the script OAuthCredentials.py:
 Ask for the consumer eyeos's request token.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Url:</td>
             <td style="padding-left:30px">
@@ -1123,7 +1123,7 @@ Ask for the consumer eyeos's request token.
 Ask for the consumer eyeos's access token from the storaged request token.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Url:</td>
             <td style="padding-left:30px">
@@ -1167,7 +1167,7 @@ Ask for the consumer eyeos's access token from the storaged request token.
 Get the metadata of a directory and/or files.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Url:</td>
             <td style="padding-left:30px">
@@ -1238,7 +1238,7 @@ Get the metadata of a directory and/or files.
 Update the metadata of the element in the actions rename and move.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Url:</td>
             <td style="padding-left:30px">
@@ -1297,7 +1297,7 @@ Update the metadata of the element in the actions rename and move.
 Create a new element (file or directory)
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Url:</td>
             <td style="padding-left:30px">
@@ -1356,7 +1356,7 @@ Create a new element (file or directory)
 Upload the contents of an existing file.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Url:</td>
             <td style="padding-left:30px">
@@ -1401,7 +1401,7 @@ Upload the contents of an existing file.
 Download the contents of an existing file.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Url:</td>
             <td style="padding-left:30px">
@@ -1446,7 +1446,7 @@ Download the contents of an existing file.
 Delete an element (file or directory)
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Url:</td>
             <td style="padding-left:30px">
@@ -1498,6 +1498,129 @@ Delete an element (file or directory)
     </table>
 </div>
 
+**getFileVersions(**_oauth,id_**)**
+
+Get the list of versions of a specific file.
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Url:</td>
+            <td style="padding-left:30px">
+                Use RESOURCE_URL from the configuration file.
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Method:</td>
+            <td style="padding-left:30px">
+                GET
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Signature:</td>
+            <td style="padding-left:30px">
+                HMAC-SHA1
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px">
+                <b>oauth</b> – Object OauthRequest. Contains the values key and secret from the configuration file. Also the access token.<br>
+                <b>Id</b> – File identifier number
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">
+            Metadata of the element or in case of error returns an error structure:<br>
+            - error: Error number<br>
+            - description: Error description<br>
+            Example:<br>
+            {"status": "CHANGED",<br>
+            &nbsp;"is_folder": false,<br>
+            &nbsp;"chunks": [],<br>
+            &nbsp;"id": "155",<br>            
+            &nbsp;"mimetype": "text/plain",<br>
+            &nbsp;"versions": [<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{"status":"CHANGED",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"is_folder": false,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"chunks": [],<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id": "155",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"size": 61,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"mimetype": "text/plain",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"checksum": 2499810342,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"modified_at": "2014-06-20 10:11:11.031",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"filename":"welcome.txt",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"parent_id":"null",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"version":"2"},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{"status":"NEW",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"is_folder": false,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"chunks": [],<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id": "155",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"size": 59,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"mimetype": "text/plain",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"checksum": 2499810342,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"modified_at": "2014-06-20 10:11:11.031",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"filename":"welcome.txt",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"parent_id":"null",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"version":"1"}],<br>
+            &nbsp;"checksum": 2499810342,<br>
+            &nbsp;"modified_at": "2014-06-20 10:11:11.031",<br>
+            &nbsp;"filename": "welcome.txt",<br>
+            &nbsp;"parent_id": "null",<br>
+            &nbsp;"version":2}<br>
+            {"error":403, "description": "Forbidden ."}
+            </td>
+        </tr>
+    </table>
+</div>
+
+**getFileVersionData(**_oauth,id,version,path_**)**
+
+Download the contents of a specific version of an existing file.
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Url:</td>
+            <td style="padding-left:30px">
+                Use RESOURCE_URL from the configuration file.
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Method:</td>
+            <td style="padding-left:30px">
+                GET
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Signature:</td>
+            <td style="padding-left:30px">
+                HMAC-SHA1
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px">
+                <b>oauth</b> – Object OauthRequest. Contains the values key and secret from the configuration file. Also the access token.<br>
+                <b>id</b> – File identifier number<br>
+                <b>version</b> – Pending download version<br>
+                <b>path</b> – Absolute file path
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">
+            True or in case of error returns an error structure:<br>
+            - error: Error number<br>
+            - description: Error description<br>
+            Example:<br>
+            {"error":403, "description": "Forbidden ."}
+            </td>
+        </tr>
+    </table>
+</div>
+
 
 Next are listed the APIs contained in the framework Store, which comunicate with the Python APIs previously explained:
 
@@ -1506,7 +1629,7 @@ Next are listed the APIs contained in the framework Store, which comunicate with
 Ask for the consumer eyeos's request token.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Script call:</td>
             <td style="padding-left:30px">
@@ -1532,7 +1655,7 @@ Ask for the consumer eyeos's request token.
 Ask for the consumer eyeos's access token from the request token.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
@@ -1571,7 +1694,7 @@ Ask for the consumer eyeos's access token from the request token.
 Get the metadatas of the current element. Generate its file and/or directory structure in eyeOS.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
@@ -1641,7 +1764,7 @@ Get the metadatas of the current element. Generate its file and/or directory str
 Get recursively the metadatas depending of the current element. Used in the copy and move action in eyeOS.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
@@ -1710,7 +1833,7 @@ Get recursively the metadatas depending of the current element. Used in the copy
 Create a new file or directory.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
@@ -1771,7 +1894,7 @@ Create a new file or directory.
 Download the contents of a file.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
@@ -1816,7 +1939,7 @@ Download the contents of a file.
 Delete an existing file or directory.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
@@ -1862,7 +1985,7 @@ Delete an existing file or directory.
 Rename a file or directory.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
@@ -1913,7 +2036,7 @@ Rename a file or directory.
 Move a file or directory.
 
 <div style="margin-bottom:10px;margin-left:0px">
-    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
@@ -1943,6 +2066,128 @@ Move a file or directory.
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":32565632156,<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"filename":"Client2.pdf",<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"parent_id":0<br>             
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                }
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">
+            Result structure:<br>
+            - status: 'OK' correct case or 'KO' error case<br>
+            - error: Error number. Only exists in case of error<br>
+            Example:<br>
+            {"status":"OK"}<br>
+            {"status":"KO","error":-1}
+            </td>
+        </tr>
+    </table>
+</div>
+
+**listVersions(**_token,id_**)**
+
+Get the list of versions of a specific file.
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px">
+                <b>token</b> – Contains the access token's key and secret<br>
+                <b>id</b> – File identifier number in Stacksync
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Script call:</td>
+            <td style="padding-left:30px">
+                Example:<br>
+                {<br>
+                &nbsp;"token":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"key":"token1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"secret":"secret1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                &nbsp;"metadata":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type":"listVersions",<br> 
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":32565632156,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                }
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">
+            Metadatas array or in case of error returns an error structure:<br>
+            - error: Error number<br>
+            Example:<br>
+            [{"name":"Winter2015.jpg",<br>
+            &nbsp;&nbsp;"path":"\/documents\/clients\/Winter2015.jpg",<br>
+            &nbsp;&nbsp;"id":32565632156,<br>            
+            &nbsp;&nbsp;"size":775412,<br>
+            &nbsp;&nbsp;"mimetype":"image\/jpg",<br>
+            &nbsp;&nbsp;"status":RENAMED,<br>
+            &nbsp;&nbsp;"version":3,<br>
+            &nbsp;&nbsp;"parent_id":12386548974,<br>
+            &nbsp;&nbsp;“user”: "Adrian",<br>
+            &nbsp;&nbsp;“client_modified”: "2013-03-08 10:36:41.997",<br>
+            &nbsp;&nbsp;“server_modified”: "2013-03-08 10:36:41.997",<br>
+            &nbsp;&nbsp;"enabled":true},<br>            
+            &nbsp;{"name":"Winter2015.jpg",<br>
+            &nbsp;&nbsp;"path":"\/documents\/clients\/Winter2015.jpg",<br>
+            &nbsp;&nbsp;"id":32565632156,<br>            
+            &nbsp;&nbsp;"size":7482,<br>
+            &nbsp;&nbsp;"mimetype":"image\/jpg",<br>
+            &nbsp;&nbsp;"status":CHANGED,<br>
+            &nbsp;&nbsp;"version":2,<br>
+            &nbsp;&nbsp;"parent_id":12386548974,<br>
+            &nbsp;&nbsp;“user”: "Cristian",<br>
+            &nbsp;&nbsp;“client_modified”: "2013-03-08 10:36:41.997",<br>
+            &nbsp;&nbsp;“server_modified”: "2013-03-08 10:36:41.997"},<br>
+            &nbsp;{"name":"Winter2015.jpg",<br>
+            &nbsp;&nbsp;"path":"\/documents\/clients\/Winter2015.jpg",<br>
+            &nbsp;&nbsp;"id":32565632156,<br>            
+            &nbsp;&nbsp;"size":775412,<br>
+            &nbsp;&nbsp;"mimetype":"image\/jpg",<br>
+            &nbsp;&nbsp;"status":NEW,<br>
+            &nbsp;&nbsp;"version":1,<br>
+            &nbsp;&nbsp;"parent_id":12386548974,<br>
+            &nbsp;&nbsp;“user”: "Adrian",<br>
+            &nbsp;&nbsp;“client_modified”: "2013-03-08 10:36:41.997",<br>
+            &nbsp;&nbsp;“server_modified”: "2013-03-08 10:36:41.997"}]<br>
+            {"status":"KO","error":-1}
+            </td>
+        </tr>
+    </table>
+</div>
+
+**getFileVersionData(**_token,id,version,path_**)**
+
+Download the contents of a specific version of an existing file.
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px">
+                <b>token</b> – Contains the access token's key and secret<br>
+                <b>id</b> – Element identifier number in Stacksync<br>
+                <b>version</b> – Pending version download<br>
+                <b>path</b> – Absolute file path
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Script call:</td>
+            <td style="padding-left:30px">
+                Example:<br>
+                {<br>
+                &nbsp;"token":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"key":"token1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"secret":"secret1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                &nbsp;"metadata":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type":"getFileVersion",<br> 
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":32565632156,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"version":2,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"path":"\/documents\/clients\/Winter2012.jpg",<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
                 }
             </td>
