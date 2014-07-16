@@ -96,6 +96,13 @@ class ApiProvider
         return $this->exerciseMetadata($request);
     }
 
+    public function getListUsersShare($token,$id)
+    {
+        $request = $this->getRequest('listUsersShare',$token);
+        $request->metadata->id = "" . $id;
+        return $this->exerciseMetadata($request);
+    }
+
     private function getRequest($type,$token)
     {
         $request = new stdClass();

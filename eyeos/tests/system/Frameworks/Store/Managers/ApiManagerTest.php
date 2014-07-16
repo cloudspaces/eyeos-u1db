@@ -1242,6 +1242,47 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->exerciseGetFileVersionData('{"id":"8983444","version":1,"recover":false}','{"error":-1}',array("status" => "KO","error" => -1),$id,$version,$path,'',true);
     }
 
+    /**
+     * method: getListUsersShare
+     * when: called
+     * with: tokenAndId
+     * should: returnList
+     */
+    public function test_getListUsersShare_called_tokenAndId_returnList()
+    {
+        $id = 123;
+        $metadata = '[{"joined_at":"2014-05-27","is_owner":true,"name":"tester1","email":"tester1@test.com"}]';
+        $this->exerciseGetListUsersShare($metadata,$id,$metadata);
+    }
+
+    /**
+     * method: getListUsersShare
+     * when: called
+     * with: tokenAndId
+     * should: returnPermissionDenied
+     */
+    public function test_getListUsersShare_called_tokenAndId_returnPermissionDenied()
+    {
+        $id = 123;
+        $metadata = '{"error":403}';
+        $metadataOut = array("status" => "KO","error" => 403);
+        $this->exerciseGetListUsersShare($metadata,$id,$metadataOut);
+    }
+
+    /**
+     * method: getListUsersShare
+     * when: called
+     * with: tokenAndId
+     * should: returnException
+     */
+    public function test_getListUsersShare_called_tokenAndId_returnException()
+    {
+        $id = 123;
+        $metadata = '{"error":-1}';
+        $metadataOut = array("status" => "KO","error" => -1);
+        $this->exerciseGetListUsersShare($metadata,$id,$metadataOut);
+    }
+
     private function exerciseCreateMetadata($file,$name,$parent_id,$path,$pathAbsolute,$metadataOut)
     {
         $type = $file?'false':'true';
@@ -1462,6 +1503,16 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         }
 
         $result = $this->sut->getFileVersionData($this->token,$id,$version,$path);
+        $this->assertEquals($expected,$result);
+    }
+
+    private function exerciseGetListUsersShare($metadata,$id,$expected)
+    {
+        $this->apiProviderMock->expects($this->once())
+            ->method('getListUsersShare')
+            ->with($this->token,$id)
+            ->will($this->returnValue(json_decode($metadata)));
+        $result = $this->sut->getListUsersShare($this->token,$id);
         $this->assertEquals($expected,$result);
     }
 }
