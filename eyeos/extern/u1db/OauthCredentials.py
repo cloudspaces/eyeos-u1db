@@ -134,6 +134,13 @@ class OauthCredentials:
             metadata = result['error']
         return metadata
 
+    def getListUsersShare(self,oauth,id):
+        url = self.getUrl(False,id)
+        url += "/members"
+        self.createHeader(oauth)
+        result = oauth.get(url)
+        return self.createRequest(result)
+
     def createHeader(self,oauth):
         oauth.headers['StackSync-API'] = self.version
 
@@ -220,6 +227,8 @@ if __name__ == "__main__":
                 result = oauthCredentials.getFileVersions(oauth,metadata['id'])
             elif type == "getFileVersion":
                 result = oauthCredentials.getFileVersionData(oauth,metadata['id'],metadata['version'],metadata['path'])
+            elif type == "listUsersShare":
+                result == oauthCredentials.getListUsersShare(oauth,metadata['id'])
         elif params.has_key("verifier") and params.has_key('token'):
             token_key =  params['token']['key']
             token_secret = params['token']['secret']
