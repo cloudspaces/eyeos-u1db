@@ -460,12 +460,19 @@ class OauthCredentialsTest (unittest.TestCase):
         id = "123"
         metadataIn = '[{"name":"tester1","email":"tester1@test.com","is_owner":true,"joined_at":"2014-05-27"}]'
         metadataOut = '[{"joined_at": "2014-05-27", "is_owner": true, "name": "tester1", "email": "tester1@test.com"}]'
-        oauth = self.createOauthSession()
-        oauth.get = Mock()
-        oauth.get.return_value = metadataIn
-        result = self.oauthCredentials.getListUsersShare(oauth,id)
-        oauth.get.assert_called_once_with(self.resourceurl + self.getResource(False) + "/" + id + "/members")
-        self.assertEquals(metadataOut,result)
+        self.exerciseGetListUsersShare(id,metadataOut,metadataIn)
+
+    """
+    method: getListUsersShare
+    when: called
+    with: accessTokenAndId
+    should: returnException
+    """
+    def test_getListUsersShare_called_accessTokenAndId_returnException(self):
+        id = "123"
+        metadataIn = {"error":403, "description": "Forbidden. The requester does not have permission to access the specified resource."}
+        metadataOut = 403
+        self.exerciseGetListUsersShare(id,metadataOut,metadataIn)
 
     def createOauthSession(self):
         oauth = OAuth1Session(self.key, client_secret=self.secret,resource_owner_key="OPQR",resource_owner_secret="STVW")
@@ -554,6 +561,14 @@ class OauthCredentialsTest (unittest.TestCase):
         oauth.get.return_value = returnValue
         result = self.oauthCredentials.getFileVersionData(oauth,id,version,path)
         oauth.get.assert_called_once_with(self.resourceurl + "file/" + str(id) + "/version/" + str(version) + "/data")
+        self.assertEquals(check,result)
+
+    def exerciseGetListUsersShare(self,id,check,returnValue):
+        oauth = self.createOauthSession()
+        oauth.get = Mock()
+        oauth.get.return_value = returnValue
+        result = self.oauthCredentials.getListUsersShare(oauth,id)
+        oauth.get.assert_called_once_with(self.resourceurl + self.getResource(False) + "/" + id + "/members")
         self.assertEquals(check,result)
 
     def getResource(self,file):
