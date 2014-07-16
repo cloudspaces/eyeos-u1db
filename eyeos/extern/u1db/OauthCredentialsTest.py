@@ -458,8 +458,8 @@ class OauthCredentialsTest (unittest.TestCase):
     """
     def test_getListUsersShare_called_accessTokenAndId_returnList(self):
         id = "123"
-        metadataIn = {"id": "123","users":[{"name":"tester1","email":"tester1@test.com","is_owner":True,"joined_at":"2014-05-27"},{"name":"tester2","email":"tester2@test.com","is_owner":True,"joined_at":"2014-05-27"}]}
-        metadataOut = '{"id": "123", "users": [{"joined_at": "2014-05-27", "is_owner": true, "name": "tester1", "email": "tester1@test.com"}, {"joined_at": "2014-05-27", "is_owner": true, "name": "tester2", "email": "tester2@test.com"}]}'
+        metadataIn = '[{"name":"tester1","email":"tester1@test.com","is_owner":true,"joined_at":"2014-05-27"}]'
+        metadataOut = '[{"joined_at": "2014-05-27", "is_owner": true, "name": "tester1", "email": "tester1@test.com"}]'
         oauth = self.createOauthSession()
         oauth.get = Mock()
         oauth.get.return_value = metadataIn
