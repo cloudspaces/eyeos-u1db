@@ -107,3 +107,7 @@ lang['No'] = 'No';
 lang['An error has occurred when processing request to Stacksync'] = 'Se ha producido un error al procesar la petición de Stacksync';
 lang['Access denied.'] = 'Acceso denegado.';
 lang['Continue'] = 'Continuar';
+lang['Date'] = 'Fecha';
+lang['Version'] = 'Versión';
+lang['User'] = 'Usuario';
+lang['Owner'] = 'Propietario';

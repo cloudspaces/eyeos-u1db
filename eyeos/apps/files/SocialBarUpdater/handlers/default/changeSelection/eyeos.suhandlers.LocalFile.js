@@ -80,8 +80,13 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 				this._createContentShareTab();
 			}
 
-            if(stacksync && fileType == 'file') {
-                this._createContenActivityTabStacksync();
+            if(stacksync) {
+                if (fileType == 'file') {
+                    this._createContenActivityTabStacksync(false);
+                } else {
+                    this._createContenActivityTabStacksync(true);
+                    //this._createListUsersActivityTabStacksync();
+                }
             } else {
 			    this._createContentActivityTab();
             }
@@ -618,7 +623,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
             }
         },
 
-        _createContenActivityTabStacksync: function() {
+        _createContenActivityTabStacksync: function(folder) {
             var activity = this.getSocialBar().getTab('Activity');
             activity.removeAll();
             activity.set({
@@ -637,7 +642,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 
             var labelDate = new qx.ui.basic.Label().set({
                width: 100,
-               value: tr('Date'),
+               value: folder?tr('User'):tr('Date'),
                font: new qx.bom.Font(11).set({bold:true})
             });
 
@@ -645,7 +650,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 
             var labelVersion = new qx.ui.basic.Label().set({
                 width: 70,
-                value: tr('Version'),
+                value: folder?tr('Owner'):tr('Version'),
                 marginLeft: 20,
                 font: new qx.bom.Font(11).set({bold:true})
             });
@@ -670,30 +675,32 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
                 activity.addListener('appear',function() {
                     var id = this._controller.__getFileId(this._file.getPath(),this._file.getName());
                     if(id !== null) {
-                        this._controller.loadVersions(id,activity,this._file);
+                        this._controller.loadActivity(id,activity,this._file,folder);
                     }
                 },this);
             }
         },
 
-        createListVersions: function(versions,versionsBox,controller,file) {
+        createListActivity: function(list,listBox,controller,file,type) {
             this.closeTimerVersion();
-            var versionsContainer = versionsBox.getChildren()[1].getChildren()[0];
-            versionsContainer.removeAll();
+            var listContainer = listBox.getChildren()[1].getChildren()[0];
+            listContainer.removeAll();
 
             var that = this;
-            var a = function() {that.__createRowVersion(versions,versionsContainer,controller,0,file,that);};
+            var a = function() {
+                that.__createRowActivity(list,listContainer,controller,0,file,type,that);
+            };
             this._timerVersion = setTimeout(a,0);
         },
 
-        __createRowVersion: function(versions,versionsContainer,controller,contador,file,form) {
-            if(versions[contador]) {
+        __createRowActivity: function(list,listContainer,controller,contador,file,type,form) {
+            if(list[contador]) {
                 var containerRow = new qx.ui.container.Composite().set({
                     layout: new qx.ui.layout.HBox()
                 });
 
                 var labelDate = new qx.ui.basic.Label().set({
-                   value:  form.__formatDateVersion(versions[contador].modified_at),
+                   value: type?list[contador].name:form.__formatDateVersion(list[contador].modified_at),
                    marginLeft: 10,
                    width: 100,
                    paddingTop: 1
@@ -701,45 +708,48 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 
                 containerRow.add(labelDate);
 
-                var labelVersion = new qx.ui.basic.Label().set({
-                   value: versions[contador].version,
-                    marginLeft: 20,
-                    width: 50,
-                    textAlign: 'center',
-                    paddingTop: 1
-                });
+                if (!type){
+                    var labelVersion = new qx.ui.basic.Label().set({
+                       value: list[contador].version,
+                        marginLeft: 20,
+                        width: 50,
+                        textAlign: 'center',
+                        paddingTop: 1
+                    });
 
-                containerRow.add(labelVersion);
+                    containerRow.add(labelVersion);
+                }
 
-                versionsContainer.add(containerRow);
+                listContainer.add(containerRow);
 
-                if(versions[contador].enabled === true) {
+                if((!type && list[contador].enabled === true) || (type && list[contador].is_owner === true)) {
                     var imageCheck = new qx.ui.basic.Image("eyeos/extern/images/16x16/actions/dialog-ok.png").set({
-                        marginLeft: 2
+                        marginLeft: type?35:2
                     });
                     containerRow.add(imageCheck);
                 } else {
-                    containerRow.addListener('mouseover',form.__mouseOver,form);
-                    containerRow.addListener('mouseout',form.__mouseOut,form);
+                    if (!type){
+                        containerRow.addListener('mouseover',form.__mouseOver,form);
+                        containerRow.addListener('mouseout',form.__mouseOut,form);
 
-                    var pos = containerRow.getLayoutParent().indexOf(containerRow);
-                    if(pos !== -1) {
-                        var params = new Object();
-                        params.file = file;
-                        params.version = versions[pos].version;
-                        params.controller = controller;
-                        params.activity = this.getSocialBar().getTab('Activity');
+                        var pos = containerRow.getLayoutParent().indexOf(containerRow);
+                        if(pos !== -1) {
+                            var params = new Object();
+                            params.file = file;
+                            params.version = list[pos].version;
+                            params.controller = controller;
+                            params.activity = this.getSocialBar().getTab('Activity');
 
-                        containerRow.setUserData("params",params);
-                        containerRow.addListener('click',form.__getVersion,form);
+                            containerRow.setUserData("params",params);
+                            containerRow.addListener('click',form.__getVersion,form);
+                        }
                     }
                 }
 
-
-                if((contador + 1) < versions.length) {
+                if((contador + 1) < list.length) {
                     contador ++;
                     var that = form;
-                    var a = function() {that.__createRowVersion(versions,versionsContainer,controller,contador,file,that);};
+                    var a = function() {that.__createRowActivity(list,listContainer,controller,contador,file,type,that);};
                     form._timerVersion = setTimeout(a,0);
                 } else {
                     form.closeTimerVersion();
@@ -763,7 +773,6 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
         },
 
         __getVersion: function(e) {
-            console.log('ha entrado');
             var params = e.getCurrentTarget().getUserData('params');
             var id = params.controller.__getFileId(params.file.getPath(),params.file.getName());
             if(id !== -1) {

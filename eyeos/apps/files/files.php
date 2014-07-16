@@ -484,7 +484,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
         if(count($params) === 3) {
             $apiManager = new ApiManager();
-            $idParent = $params[2] == 0?'null':$params[2];
+            $idParent = $params[2];
             $path = self::getPathStacksync($dirToCreate);
             $result = $apiManager->createMetadata($_SESSION['access_token_v2'],$currentUser->getId(),false,$dirToCreate->getName(),$idParent,$path);
             if($result) {
