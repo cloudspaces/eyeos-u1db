@@ -190,6 +190,7 @@ qx.Class.define('eyeos.files.ViewManager', {
 			this.add(this._socialBar);
 
             this.addListener('beforeClose',function() {
+                this.getController().setCloseCompleted(true);
                 this.getController().closeTimer();
                 this.getController().closeTimerComments();
                 this.getController().closeProgress();

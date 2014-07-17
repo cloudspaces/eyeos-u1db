@@ -114,6 +114,10 @@ qx.Class.define('eyeos.files.Controller', {
         checknum: {
             init: null,
             check: 'Integer'
+        },
+        closeCompleted: {
+            check: 'Boolean',
+            init: false
         }
 	},
 
@@ -125,6 +129,7 @@ qx.Class.define('eyeos.files.Controller', {
 		_dBus: eyeos.messageBus.getInstance(),
         _metadatas: new Array(),
         _timer: null,
+        _closeBefore: false,
         __progress: null,
         __size: 0,
         __stacksync: false,
@@ -634,35 +639,37 @@ qx.Class.define('eyeos.files.Controller', {
 		},
 
 		_browsePath: function(path, addToHistory,refresh) {
-            this.closeTimer();
-            if (this.__isStacksync(path)) {
-                var params = new Object();
-                params.path = path;
-                params.id = this.__getFileIdFolder(path);
+            if (!this.getCloseCompleted()) {
+                this.closeTimer();
+                if (!this._timer && this.__isStacksync(path)) {
+                    var params = new Object();
+                    params.path = path;
+                    params.id = this.__getFileIdFolder(path);
 
-                if(params.id !== null) {
-                    eyeos.callMessage(this.getApplication().getChecknum(), 'getMetadata', params, function (results) {
-                        this.closeCursorLoad();
-                        if(results) {
-                            var metadata = JSON.parse(results);
-                            if(!metadata.error) {
-                                if(this.__insertMetadata(metadata,path) || !refresh) {
-                                    this.__callBrowsePath(path,addToHistory,true);
-                                } else {
-                                    this.__refreshFolder(path,addToHistory,true);
+                    if(params.id !== null) {
+                        eyeos.callMessage(this.getApplication().getChecknum(), 'getMetadata', params, function (results) {
+                            this.closeCursorLoad();
+                            if(results) {
+                                var metadata = JSON.parse(results);
+                                if(!metadata.error) {
+                                    if(this.__insertMetadata(metadata,path) || !refresh) {
+                                        this.__callBrowsePath(path,addToHistory,true);
+                                    } else {
+                                        this.__refreshFolder(path,addToHistory,true);
+                                    }
+                                } else if (metadata.error == 403) {
+                                    this.__permissionDenied();
                                 }
-                            } else if (metadata.error == 403) {
-                                this.__permissionDenied();
+                            } else {
+                                this.__refreshFolder(path,addToHistory,true);
                             }
-                        } else {
-                            this.__refreshFolder(path,addToHistory,true);
-                        }
-                    }, this, null, 12000);
+                        }, this, null, 12000);
+                    } else {
+                        this.__callBrowsePath(path,addToHistory,false);
+                    }
                 } else {
                     this.__callBrowsePath(path,addToHistory,false);
                 }
-            } else {
-                this.__callBrowsePath(path,addToHistory,false);
             }
 		},
 
@@ -1855,29 +1862,31 @@ qx.Class.define('eyeos.files.Controller', {
         },
 
         loadComments: function(id,commentsBox,file) {
-            var params = new Object();
-            params.id = "" + id;
+            if (!this.getCloseCompleted()) {
+                var params = new Object();
+                params.id = "" + id;
 
-            this.closeTimerComments();
+                this.closeTimerComments();
 
-            eyeos.callMessage(this.getApplication().getChecknum(), 'getComments', params, function (result) {
-                if(result) {
-                    if((result.length > 0 && !result[0].error) || result.length == 0) {
-                        if(this._commentsChanged(result)) {
-                            this.getSocialBarUpdater().createComments(result,commentsBox,this,file);
+                eyeos.callMessage(this.getApplication().getChecknum(), 'getComments', params, function (result) {
+                    if(result) {
+                        if((result.length > 0 && !result[0].error) || result.length == 0) {
+                            if(this._commentsChanged(result)) {
+                                this.getSocialBarUpdater().createComments(result,commentsBox,this,file);
+                            }
+                        } else {
+                            this._comments = [];
                         }
                     } else {
                         this._comments = [];
                     }
-                } else {
-                    this._comments = [];
-                }
 
-                var that = this;
-                var reffunction = function(){that.loadComments(id,commentsBox,file)};
-                this._timerComments = setTimeout(reffunction,10000);
+                    var that = this;
+                    var reffunction = function(){that.loadComments(id,commentsBox,file)};
+                    this._timerComments = setTimeout(reffunction,10000);
 
-            },this);
+                },this);
+            }
         },
         createComment: function(id,user,comment,commentsBox,file) {
             this.closeTimerComments();

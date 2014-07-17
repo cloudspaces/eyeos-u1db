@@ -56,7 +56,7 @@ class StoreListener extends AbstractFileAdapter implements ISharingListener {
                     $parentId = $u1db[0]->id;
                 }
             } else {
-                $parentId = 'null';
+                $parentId = '0'; //'null'
                 $path = $pathParent;
             }
 
