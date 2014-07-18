@@ -141,11 +141,13 @@ class OauthCredentials:
         result = oauth.get(url)
         return self.createRequest(result)
 
-    def shareFolder(self,oauth,id):
+    def shareFolder(self,oauth,id,list):
         url = self.getUrl(False,id)
         url += "/share"
         self.createHeader(oauth)
-        result = oauth.post(url)
+        emails = {}
+        emails['share_to'] = list
+        result = oauth.post(url,json.dumps(emails))
         if len(result) == 0:
             return 'true'
         else:
@@ -243,7 +245,7 @@ if __name__ == "__main__":
             elif type == "listUsersShare":
                 result = oauthCredentials.getListUsersShare(oauth,metadata['id'])
             elif type == "shareFolder":
-                result = oauthCredentials.shareFolder(oauth,metadata['id'])
+                result = oauthCredentials.shareFolder(oauth,metadata['id'],metadata['list'])
         elif params.has_key("verifier") and params.has_key('token'):
             token_key =  params['token']['key']
             token_secret = params['token']['secret']
