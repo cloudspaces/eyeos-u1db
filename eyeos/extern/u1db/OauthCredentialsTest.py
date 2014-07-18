@@ -474,6 +474,30 @@ class OauthCredentialsTest (unittest.TestCase):
         metadataOut = 403
         self.exerciseGetListUsersShare(id,metadataOut,metadataIn)
 
+    """
+    method: shareFolder
+    when: called
+    with: accessTokenAndId
+    should: returnCorrect
+    """
+    def test_shareFolder_called_accessTokenAndId_returnCorrect(self):
+        id = "123"
+        metadataIn = '';
+        metadataOut = 'true';
+        self.exerciseShareFolder(id,metadataOut,metadataIn)
+
+    """
+    method: shareFolder
+    when: called
+    with: accessTokenAndId
+    should: returnException
+    """
+    def test_shareFolder_called_accessTokenAndId_returnException(self):
+        id = "123"
+        metadataIn = {"error":403,"description":"Forbidden"}
+        metadataOut = 403
+        self.exerciseShareFolder(id,metadataOut,metadataIn)
+
     def createOauthSession(self):
         oauth = OAuth1Session(self.key, client_secret=self.secret,resource_owner_key="OPQR",resource_owner_secret="STVW")
         return oauth
@@ -569,6 +593,14 @@ class OauthCredentialsTest (unittest.TestCase):
         oauth.get.return_value = returnValue
         result = self.oauthCredentials.getListUsersShare(oauth,id)
         oauth.get.assert_called_once_with(self.resourceurl + self.getResource(False) + "/" + id + "/members")
+        self.assertEquals(check,result)
+
+    def exerciseShareFolder(self,id,check,returnValue):
+        oauth = self.createOauthSession()
+        oauth.post = Mock()
+        oauth.post.return_value = returnValue
+        result = self.oauthCredentials.shareFolder(oauth,id)
+        oauth.post.assert_called_once_with(self.resourceurl + self.getResource(False) + "/" + str(id) + "/share")
         self.assertEquals(check,result)
 
     def getResource(self,file):

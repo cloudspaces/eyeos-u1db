@@ -141,6 +141,16 @@ class OauthCredentials:
         result = oauth.get(url)
         return self.createRequest(result)
 
+    def shareFolder(self,oauth,id):
+        url = self.getUrl(False,id)
+        url += "/share"
+        self.createHeader(oauth)
+        result = oauth.post(url)
+        if len(result) == 0:
+            return 'true'
+        else:
+            return self.createRequest(result)
+
     def createHeader(self,oauth):
         oauth.headers['StackSync-API'] = self.version
 
