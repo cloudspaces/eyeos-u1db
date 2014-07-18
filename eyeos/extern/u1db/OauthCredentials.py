@@ -242,6 +242,8 @@ if __name__ == "__main__":
                 result = oauthCredentials.getFileVersionData(oauth,metadata['id'],metadata['version'],metadata['path'])
             elif type == "listUsersShare":
                 result = oauthCredentials.getListUsersShare(oauth,metadata['id'])
+            elif type == "shareFolder":
+                result = oauthCredentials.shareFolder(oauth,metadata['id'])
         elif params.has_key("verifier") and params.has_key('token'):
             token_key =  params['token']['key']
             token_secret = params['token']['secret']
