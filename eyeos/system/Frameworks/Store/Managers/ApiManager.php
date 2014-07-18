@@ -283,7 +283,6 @@ class ApiManager
         return $result;
     }
 
-
     public function renameMetadata($token,$file,$id,$name,$path,$user,$parent=NULL)
     {
         $result['status'] = 'KO';
@@ -445,6 +444,20 @@ class ApiManager
         $metadata = $this->apiProvider->getListUsersShare($token,$id);
         if (!isset($metadata->error)){
             $result = json_encode($metadata);
+        } else {
+            $result['error'] = $metadata->error;
+        }
+        return $result;
+    }
+
+    public function shareFolder($token,$id,$list)
+    {
+        $result['status'] = 'KO';
+        $result['error'] = -1;
+        $metadata = $this->apiProvider->shareFolder($token,$id,$list);
+        if (!isset($metadata->error)) {
+            $result['status'] = 'OK';
+            unset($result['error']);
         } else {
             $result['error'] = $metadata->error;
         }

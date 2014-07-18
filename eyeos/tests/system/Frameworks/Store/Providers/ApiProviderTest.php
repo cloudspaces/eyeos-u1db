@@ -530,6 +530,51 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->exerciseListUsersShare($metadataIn,$metadataOut,$this->exception,$id);
     }
 
+    /**
+     * method: shareFolder
+     * when: called
+     * with: tokenAndIdAndList
+     * should: returnCorrect
+     */
+    public function test_shareFolder_called_tokenAndIdAndList_returnCorrect()
+    {
+        $id = 153;
+        $list = ["a@a.com","b@b.com"];
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"]}}';
+        $metadataOut = 'true';
+        $this->exerciseShareFolder($metadataIn,$metadataOut,'{"status":true}',$id,$list);
+    }
+
+    /**
+     * method: shareFolder
+     * when: called
+     * with: tokenAndIdAndList
+     * should: returnPermissionDenied
+     */
+    public function test_shareFolder_called_tokenAndIdAndList_returnPermissionDenied()
+    {
+        $id = 153;
+        $list = ["a@a.com","b@b.com"];
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"]}}';
+        $metadataOut = '403';
+        $this->exerciseShareFolder($metadataIn,$metadataOut,$this->permission,$id,$list);
+    }
+
+    /**
+     * method: shareFolder
+     * when: called
+     * with: tokenAndIdAndList
+     * should: returnException
+     */
+    public function test_shareFolder_called_tokenAndIdAndList_returnException()
+    {
+        $id = 153;
+        $list = ["a@a.com","b@b.com"];
+        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"]}}';
+        $metadataOut = 'false';
+        $this->exerciseShareFolder($metadataIn,$metadataOut,$this->exception,$id,$list);
+    }
+
     private function exerciseGetMetadata($metadataIn,$metadataOut,$check,$file,$id,$contents = null)
     {
         $this->exerciseMockMetadata($metadataIn,$metadataOut);
@@ -594,6 +639,13 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     {
         $this->exerciseMockMetadata($metadataIn,$metadataOut);
         $result = $this->sut->getListUsersShare($this->token,$id);
+        $this->assertEquals(json_decode($check),$result);
+    }
+
+    private function exerciseShareFolder($metadataIn,$metadataOut,$check,$id,$list)
+    {
+        $this->exerciseMockMetadata($metadataIn,$metadataOut);
+        $result = $this->sut->shareFolder($this->token,$id,$list);
         $this->assertEquals(json_decode($check),$result);
     }
 

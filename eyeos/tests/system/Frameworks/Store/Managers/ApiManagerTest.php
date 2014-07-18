@@ -1283,6 +1283,51 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->exerciseGetListUsersShare($metadata,$id,$metadataOut);
     }
 
+    /**
+     * method: shareFolder
+     * when: called
+     * with: tokenAndIdAndList
+     * should: returnCorrect
+     */
+    public function test_shareFolder_called_tokenAndIdAndList_returnCorrect()
+    {
+        $id = 123;
+        $list = array("a@a.com","b@b.com");
+        $metadata = '{"status":true}';
+        $metadataOut = array("status" => "OK");
+        $this->exerciseShareFolder($metadata,$id,$list,$metadataOut);
+    }
+
+    /**
+     * method: shareFolder
+     * when: called
+     * with: tokenAndIdAndList
+     * should: returnPermissionDenied
+     */
+    public function test_shareFolder_called_tokenAndIdAndList_returnPermissionDenied()
+    {
+        $id = 123;
+        $list = array("a@a.com","b@b.com");
+        $metadata = '{"error":403}';
+        $metadataOut = array("status" => "KO", "error" => 403);
+        $this->exerciseShareFolder($metadata,$id,$list,$metadataOut);
+    }
+
+    /**
+     * method: shareFolder
+     * when: called
+     * with: tokenAndIdAndList
+     * should: returnException
+     */
+    public function test_shareFolder_called_tokenAndIdAndList_returnException()
+    {
+        $id = 123;
+        $list = array("a@a.com","b@b.com");
+        $metadata = '{"error":-1}';
+        $metadataOut = array("status" => "KO", "error" => -1);
+        $this->exerciseShareFolder($metadata,$id,$list,$metadataOut);
+    }
+
     private function exerciseCreateMetadata($file,$name,$parent_id,$path,$pathAbsolute,$metadataOut)
     {
         $type = $file?'false':'true';
@@ -1513,6 +1558,17 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->with($this->token,$id)
             ->will($this->returnValue(json_decode($metadata)));
         $result = $this->sut->getListUsersShare($this->token,$id);
+        $this->assertEquals($expected,$result);
+    }
+
+    private function exerciseShareFolder($metadata,$id,$list,$expected)
+    {
+        $this->apiProviderMock->expects($this->once())
+            ->method('shareFolder')
+            ->with($this->token,$id,$list)
+            ->will($this->returnValue(json_decode($metadata)));
+
+        $result = $this->sut->shareFolder($this->token,$id,$list);
         $this->assertEquals($expected,$result);
     }
 }
