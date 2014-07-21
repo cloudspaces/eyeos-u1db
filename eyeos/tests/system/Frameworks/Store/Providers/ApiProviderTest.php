@@ -539,7 +539,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     public function test_shareFolder_called_tokenAndIdAndList_returnCorrect()
     {
         $id = 153;
-        $list = ["a@a.com","b@b.com"];
+        $list = array("a@a.com","b@b.com");
         $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"]}}';
         $metadataOut = 'true';
         $this->exerciseShareFolder($metadataIn,$metadataOut,'{"status":true}',$id,$list);
@@ -554,7 +554,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     public function test_shareFolder_called_tokenAndIdAndList_returnPermissionDenied()
     {
         $id = 153;
-        $list = ["a@a.com","b@b.com"];
+        $list = array("a@a.com","b@b.com");
         $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"]}}';
         $metadataOut = '403';
         $this->exerciseShareFolder($metadataIn,$metadataOut,$this->permission,$id,$list);
@@ -569,7 +569,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     public function test_shareFolder_called_tokenAndIdAndList_returnException()
     {
         $id = 153;
-        $list = ["a@a.com","b@b.com"];
+        $list = array("a@a.com","b@b.com");
         $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"]}}';
         $metadataOut = 'false';
         $this->exerciseShareFolder($metadataIn,$metadataOut,$this->exception,$id,$list);
