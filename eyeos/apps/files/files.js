@@ -2189,6 +2189,7 @@ qx.Class.define('eyeos.files.Controller', {
 
                 eyeos.callMessage(this.getApplication().getChecknum(), 'shareFolder', params, function (results) {
                     if(results.error == 403) {
+                        this.closeCursorLoad();
                         this.__permissionDenied();
                     } else {
                         this._browsePath(currentPath);
