@@ -59,11 +59,13 @@ qx.Class.define('eyeos.files.ViewManager', {
                  this.centerCursor();
              }
              this.__centerCursorLoad();
+             this.centerShareWindow();
 
         },this);
 
         this.addListener('move',function(e) {
             this.__centerCursorLoad();
+            this.centerShareWindow();
         },this);
 	},
 
@@ -81,6 +83,11 @@ qx.Class.define('eyeos.files.ViewManager', {
 		},
 
         cursorLoad: {
+            check: 'Object',
+            init: null
+        },
+
+        shareWindow: {
             check: 'Object',
             init: null
         }
@@ -194,6 +201,7 @@ qx.Class.define('eyeos.files.ViewManager', {
                 this.getController().closeTimer();
                 this.getController().closeTimerComments();
                 this.getController().closeProgress();
+                this.getController().closeShare();
                 if(this.getCursorLoad() !== null) {
                     this.getCursorLoad().close();
                 }
@@ -654,6 +662,18 @@ qx.Class.define('eyeos.files.ViewManager', {
                 this.getCursorLoad().centerCursor(this);
             }
         },
+
+        centerShareWindow: function() {
+            if(this.getShareWindow() !== null) {
+                var size = this.getBounds();
+                var left = (size.width - this.getShareWindow().getWidth())/2;
+                var top = (size.height - this.getShareWindow().getHeight())/2;
+                left += size.left;
+                top += size.top;
+                this.getShareWindow().moveTo(left,top);
+            }
+        },
+
         enabledFiles: function(enabled) {
             this._header.enabledItems(enabled);
             this._menuBar.setEnabled(enabled);

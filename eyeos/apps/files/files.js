@@ -136,6 +136,7 @@ qx.Class.define('eyeos.files.Controller', {
         __token: false,
         _timerComments:null,
         _comments: [],
+        _share: null,
 
 		_addListeners: function () {
 //			this.addListener('selectedFile', function (e) {
@@ -1968,6 +1969,242 @@ qx.Class.define('eyeos.files.Controller', {
                     }
                 }
             },this);
+        },
+
+        shareFolder: function() {
+            var selected = this.getView().returnSelected();
+            if(selected.length == 1) {
+                this.__createDialogShare(selected[0]);
+            }
+        },
+
+        __createDialogShare: function(file) {
+            this.getView().enabledFiles(false);
+
+            if(!this._share) {
+                this._share = new qx.ui.window.Window(tr('Share Folder'));
+                this._share.set({
+                    layout: new qx.ui.layout.VBox(),
+                    width: 400,
+                    height: 310,
+                    resizable: false,
+                    showMaximize: false,
+                    showMinimize: false
+                });
+
+                var labelMail = new qx.ui.basic.Label(tr('Mailing list users')).set({
+                    font:  new qx.bom.Font(12).set({bold:true}),
+                    marginLeft: 20
+                });
+
+                this._share.add(labelMail);
+
+                var mailScroll =  new qx.ui.container.Scroll().set({
+                    allowStretchY: true,
+                    allowStretchX: true,
+                    allowGrowX: false,
+                    width: 350,
+                    height: 150,
+                    marginTop: 8,
+                    marginLeft: 20,
+                    decorator: new qx.ui.decoration.Single(1)
+                });
+
+                var containerMail = new qx.ui.container.Composite().set({
+                    layout: new qx.ui.layout.VBox()
+                });
+
+                mailScroll.add(containerMail);
+
+                this._share.add(mailScroll);
+
+                var containerAdd = new qx.ui.container.Composite().set({
+                    layout: new qx.ui.layout.HBox()
+                });
+
+                var mailText = new qx.ui.form.TextField().set({
+                    font:  new qx.bom.Font(11),
+                    marginTop: 20,
+                    marginLeft: 20,
+                    width: 310
+                });
+                containerAdd.add(mailText);
+
+                var imageAdd = new qx.ui.basic.Image().set({
+                    source: "index.php?extern=images/add2.png",
+                    marginLeft: 10,
+                    marginTop: 22
+                });
+
+                this._share.addListener('close',function() {
+                    this.getView().enabledFiles(true);
+                },this);
+
+                containerAdd.add(imageAdd);
+                this._share.add(containerAdd);
+
+                var containerButtons = new qx.ui.container.Composite().set({
+                    layout: new qx.ui.layout.HBox(),
+                    marginTop: 20,
+                    marginLeft: 20
+                },this);
+
+                var buttonErase = new qx.ui.form.Button().set({
+                    label: tr('Erase'),
+                    font:  new qx.bom.Font(11),
+                    width: 80
+                });
+
+                containerButtons.add(buttonErase);
+
+                buttonErase.addListener('execute',function() {
+                    containerMail.removeAll();
+                },this);
+
+                containerButtons.add(new qx.ui.core.Spacer(190));
+
+                var buttonSend = new qx.ui.form.Button().set({
+                    label: tr('Send'),
+                    font:  new qx.bom.Font(11),
+                    width: 80,
+                    enabled: false
+                });
+
+                containerButtons.add(buttonSend);
+
+                buttonSend.setUserData('file',file);
+                buttonSend.setUserData('containerMail',containerMail);
+                buttonSend.addListener('execute',this.__sendShareMail,this);
+
+                this._share.add(containerButtons);
+
+                imageAdd.setUserData('buttonSend',buttonSend);
+                imageAdd.setUserData('containerMail',containerMail);
+                imageAdd.setUserData('mailText',mailText);
+                imageAdd.addListener('mouseover',this.__mouseOver,this);
+                imageAdd.addListener('mouseout',this.__mouseOut,this);
+                imageAdd.addListener('click',this.__shareFolderMail,this);
+
+                mailText.addListener('keypress',function(e) {
+                    if(e.getKeyIdentifier() == 'Enter') {
+                        mailText.setUserData('buttonSend',buttonSend);
+                        mailText.setUserData('containerMail',containerMail);
+                        mailText.setUserData('mailText',mailText);
+                        this.__shareFolderMail(e);
+                    }
+                },this);
+
+                this.getView().setShareWindow(this._share);
+                this.getView().centerShareWindow();
+                this._share.show();
+            }
+        },
+
+        closeShare: function() {
+            if(this._share) {
+                this._share.close();
+                this._share = null;
+                this.getView().setShareWindow(null);
+            }
+        },
+
+        __mouseOver: function(e) {
+            e.getCurrentTarget().setCursor('pointer');
+        },
+
+        __mouseOut: function(e) {
+            e.getCurrentTarget().setCursor('default');
+        },
+
+        __shareFolderMail: function(e) {
+            var containerMail = e.getCurrentTarget().getUserData('containerMail');
+            var mailText = e.getCurrentTarget().getUserData('mailText');
+            var buttonSend = e.getCurrentTarget().getUserData('buttonSend');
+            var mail = mailText.getValue();
+            if(mail && mail.trim().length > 0 && this.__checkEmail(mail.trim()) && !this.__repeatedMail(containerMail,mail.trim())) {
+                mail = mail.trim();
+                var containerMailUser = new qx.ui.container.Composite().set({
+                    layout: new qx.ui.layout.HBox(),
+                    decorator: new qx.ui.decoration.Single(1,'solid','#d1d1d1').set({widthTop: 0,widthLeft: 0,widthRight: 0})
+                });
+
+                var mailUser = new qx.ui.basic.Label().set({
+                    font:  new qx.bom.Font(11),
+                    value: mail,
+                    padding: 3,
+                    width: 310
+                });
+                containerMailUser.add(mailUser);
+
+                var deleteImage = new qx.ui.basic.Image().set({
+                    source: "index.php?extern=images/delete.png",
+                    marginLeft: 3,
+                    marginTop: 2
+                });
+
+                deleteImage.addListener('mouseover',this.__mouseOver,this);
+                deleteImage.addListener('mouseout',this.__mouseOut,this);
+                deleteImage.addListener('click',function(e) {
+                    var pos = e.getCurrentTarget().getLayoutParent().getLayoutParent().indexOf(e.getCurrentTarget().getLayoutParent());
+                    if(pos !== -1) {
+                        containerMail.removeAt(pos);
+                        if(containerMail.getChildren().length == 0) {
+                            buttonSend.setEnabled(false);
+                        }
+                    }
+                },this);
+                containerMailUser.add(deleteImage);
+                containerMail.add(containerMailUser);
+                mailText.setValue(null);
+                buttonSend.setEnabled(true);
+            }
+        },
+
+        __checkEmail: function(email) {
+            var filter = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+            return filter.test(email);
+        },
+        __repeatedMail: function(containerMail,mail) {
+            var resp = false;
+            for(var i = 0;i < containerMail.getChildren().length;i++) {
+                if(containerMail.getChildren()[i].getChildren()[0].getValue() == mail) {
+                    resp = true;
+                }
+            }
+            return resp;
+        },
+
+        __sendShareMail: function(e) {
+            var file = e.getCurrentTarget().getUserData('file');
+            var containerMail = e.getCurrentTarget().getUserData('containerMail');
+            var id = this.__getFileIdFolder(file.getFile().getAbsolutePath());
+            if(id !== null) {
+                var params = new Object();
+                params.id = id;
+                params.list = this.__getListMails(containerMail);
+                this._share.close();
+                this.closeTimer();
+                this.openCursorLoad();
+                var currentPath = file.getFile().getPath();
+
+                eyeos.callMessage(this.getApplication().getChecknum(), 'shareFolder', params, function (results) {
+                    if(results.error == 403) {
+                        this.__permissionDenied();
+                    } else {
+                        this._browsePath(currentPath);
+                    }
+                },this);
+            }
+        },
+
+        __getListMails: function(containerMail) {
+            var list = [];
+
+            for(var i = 0;i < containerMail.getChildren().length;i++) {
+                list.push(containerMail.getChildren()[i].getChildren()[0].getValue());
+            }
+
+            return list;
         }
 	}
 });
