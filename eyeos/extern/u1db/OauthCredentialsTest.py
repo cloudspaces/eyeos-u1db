@@ -602,9 +602,7 @@ class OauthCredentialsTest (unittest.TestCase):
         oauth.post = Mock()
         oauth.post.return_value = returnValue
         result = self.oauthCredentials.shareFolder(oauth,id,list)
-        datos = {}
-        datos['share_to'] = list
-        oauth.post.assert_called_once_with(self.resourceurl + self.getResource(False) + "/" + str(id) + "/share",json.dumps(datos))
+        oauth.post.assert_called_once_with(self.resourceurl + self.getResource(False) + "/" + str(id) + "/share",json.dumps(list))
         self.assertEquals(check,result)
 
     def getResource(self,file):

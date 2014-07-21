@@ -145,9 +145,7 @@ class OauthCredentials:
         url = self.getUrl(False,id)
         url += "/share"
         self.createHeader(oauth)
-        emails = {}
-        emails['share_to'] = list
-        result = oauth.post(url,json.dumps(emails))
+        result = oauth.post(url,json.dumps(list))
         if len(result) == 0:
             return 'true'
         else:
