@@ -39,7 +39,7 @@ qx.Class.define('eyeos.files.IconViewItem', {
 
 		// EXTENSIONS
 		this._imageExtensions = ['JPG', 'JPEG', 'PNG', 'GIF'];
-		this._videoExtensions = ['FLV'];
+		this._videoExtensions = ['FLV','AVI','MOV','WMA','WAV','3GP','3GPP','3G2','MP4','MPG','MPV','OGG','OGV','WEBM'];
 		this._musicExtensions = ['MP3', 'M4A'];
 		this._docExtensions = ['DOC', 'TXT', 'XLS', 'ODS', 'EDOC'];
 		this._zipExtensions = ['ZIP'];

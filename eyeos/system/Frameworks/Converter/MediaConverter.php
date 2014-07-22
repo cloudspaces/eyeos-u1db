@@ -83,7 +83,8 @@ class MediaConverter {
 
 		} else {
 			//Call the proper converter
-			if($format == 'MP4') {
+            return self::ConvertVLC($fileName, $format);
+			/*if($format == 'MP4') {
 				return self::video2mp4($fileName);
 			} else if($format == 'JPG') {
 				return self::video2jpg($fileName);
@@ -93,7 +94,7 @@ class MediaConverter {
 				return self::ConvertH263($fileName);
 			} else {
 				return self::ConvertVLC($fileName, $format);
-			}
+			}*/
 		}
 		return $this->pathOutputFile;
 	}
