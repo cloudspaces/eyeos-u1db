@@ -111,8 +111,8 @@ class Metadata:
                 self.db.delete_doc(file)
 
                 if id != None:
-                    self.db2.create_index("by-id","id")
-                    versions = self.db2.get_from_index("by-id",id)
+                    self.db2.create_index("by-id-user","id","user_eyeos")
+                    versions = self.db2.get_from_index("by-id-user",id,user)
                     if len(versions) > 0:
                         self.db2.delete_doc(versions[0])
 
@@ -153,34 +153,34 @@ class Metadata:
         self.db.create_doc_from_json(json.dumps(metadata))
 
     def updateDownloadVersion(self,metadata):
-        self.db.create_index("by-id","id")
-        files = self.db.get_from_index("by-id",metadata['id'])
+        self.db.create_index("by-id-user","id","user_eyeos")
+        files = self.db.get_from_index("by-id-user",metadata['id'],metadata['user_eyeos'])
         if len(files) > 0:
             files[0].set_json(json.dumps(metadata))
             self.db.put_doc(files[0])
 
-    def deleteDownloadVersion(self,id):
-        self.db.create_index("by-id","id")
-        files = self.db.get_from_index("by-id",id)
+    def deleteDownloadVersion(self,id,user):
+        self.db.create_index("by-id-user","id","user_eyeos")
+        files = self.db.get_from_index("by-id-user",id,user)
         if len(files) > 0:
             self.db.delete_doc(files[0])
 
-    def getDownloadVersion(self,id):
+    def getDownloadVersion(self,id,user):
         result = None
-        self.db.create_index("by-id","id")
-        files = self.db.get_from_index("by-id",id)
+        self.db.create_index("by-id-user","id","user_eyeos")
+        files = self.db.get_from_index("by-id-user",id,user)
         if len(files) > 0:
             result = files[0].content
         return result
 
-    def recursiveDeleteVersion(self,id):
+    def recursiveDeleteVersion(self,id,user):
         self.db.create_index("by-parent", "parent_id")
         files = self.db.get_from_index("by-parent",str(id))
         for file in files:
             if file.content['is_folder'] == True:
-                self.recursiveDeleteVersion(file.content['id'])
-            self.db2.create_index("by-id","id")
-            files = self.db2.get_from_index("by-id",str(file.content['id']))
+                self.recursiveDeleteVersion(file.content['id'],user)
+            self.db2.create_index("by-id-user","id","user_eyeos")
+            files = self.db2.get_from_index("by-id-user",str(file.content['id']),user)
             for file in files:
                 self.db2.delete_doc(file)
 

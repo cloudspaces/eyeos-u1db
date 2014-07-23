@@ -198,7 +198,7 @@ class ApiManager
         return $result;
     }
 
-    public function downloadMetadata($token,$id,$path,$isTmp=false)
+    public function downloadMetadata($token,$id,$path,$user,$isTmp=false)
     {
         $result['status'] = 'KO';
         $result['error'] = -1;
@@ -209,6 +209,7 @@ class ApiManager
         if(!isset($metadata->error) && count($metadata) > 0) {
             $lista = new stdClass();
             $lista->id = "" . $id;
+            $lista->user_eyeos = $user;
             $metadataU1db = $this->callProcessU1db('getDownloadVersion',$lista);
             if($metadataU1db !== "null") {
                 $metadataU1db = json_decode($metadataU1db);
@@ -233,6 +234,7 @@ class ApiManager
                     if ($isTmp == false) {
                         $lista = new stdClass();
                         $lista->id = "" . $id;
+                        $lista->user_eyeos = $user;
                         $lista->version = $metadata->version;
                         $lista->recover = false;
                         $resultU1db = $this->callProcessU1db($type,$lista);
@@ -264,6 +266,7 @@ class ApiManager
         if(!isset($metadata->error)) {
             $lista = new stdClass();
             $lista->id = "" . $id;
+            $lista->user_eyeos = $user;
             $resultU1db = $this->callProcessU1db("recursiveDeleteVersion",$lista);
             if($resultU1db === 'true') {
                 $data = new stdClass();
@@ -330,11 +333,12 @@ class ApiManager
 
     }
 
-    public function recursiveDeleteVersion($id) {
+    public function recursiveDeleteVersion($id,$user) {
         $result['status'] = 'KO';
         $result['error'] = -1;
         $lista = new stdClass();
         $lista->id = "" . $id;
+        $lista->user_eyeos = $user;
         $resultU1db = $this->callProcessU1db("recursiveDeleteVersion",$lista);
         if($resultU1db === 'true') {
             $result['status'] = 'OK';
@@ -366,7 +370,7 @@ class ApiManager
         return json_decode($this->callProcessU1db("deleteMetadataUser",$file));
     }
 
-    public function listVersions($token,$id)
+    public function listVersions($token,$id,$user)
     {
         $result['status'] = 'KO';
         $result['error'] = -1;
@@ -374,6 +378,7 @@ class ApiManager
         if(!isset($metadata->error)) {
             $lista = new stdClass();
             $lista->id = "" . $id;
+            $lista->user_eyeos = $user;
             $metadataU1db = $this->callProcessU1db('getDownloadVersion',$lista);
             if($metadataU1db !== "null") {
                 $metadataU1db = json_decode($metadataU1db);
@@ -400,7 +405,7 @@ class ApiManager
         return $result;
     }
 
-    public function getFileVersionData($token,$id,$version,$path)
+    public function getFileVersionData($token,$id,$version,$path,$user)
     {
         $result['status'] = 'KO';
         $result['error'] = -1;
@@ -408,6 +413,7 @@ class ApiManager
 
         $lista = new stdClass();
         $lista->id = "" . $id;
+        $lista->user_eyeos = $user;
         $metadataU1db = $this->callProcessU1db('getDownloadVersion',$lista);
         if($metadataU1db !== "null") {
             $metadataU1db = json_decode($metadataU1db);
@@ -423,6 +429,7 @@ class ApiManager
             if(!isset($metadata->error)) {
                 $lista = new stdClass();
                 $lista->id = "" . $id;
+                $lista->user_eyeos = $user;
                 $lista->version = $version;
                 $lista->recover = true;
                 $metadataU1db = $this->callProcessU1db($type,$lista);

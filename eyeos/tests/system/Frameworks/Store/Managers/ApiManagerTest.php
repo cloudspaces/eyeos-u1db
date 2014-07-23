@@ -684,10 +684,10 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     /**
      * method: donwloadMetadata
      * when: called
-     * with: tokenAndIdAndPath
+     * with: tokenAndIdAndPathAndUser
      * should: returnFirstDownload
      */
-    public function test_downloadMetadata_called_tokenAndIdAndPath_returnFirstDownload()
+    public function test_downloadMetadata_called_tokenAndIdAndPathAndUser_returnFirstDownload()
     {
         $path = "/home/eyeos/prueba.txt";
         $id = "8888888";
@@ -703,6 +703,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $params->lista = array();
         $aux = new stdClass();
         $aux->id = $id;
+        $aux->user_eyeos = $this->user;
         $aux->version = 1;
         $aux->recover = false;
         array_push($params->lista,$aux);
@@ -712,16 +713,16 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->with(json_encode($params))
             ->will($this->returnValue('true'));
 
-        $this->sut->downloadMetadata($this->token,$id,$path,false);
+        $this->sut->downloadMetadata($this->token,$id,$path,$this->user,false);
     }
 
     /**
      * method: downloadMetadata
      * when: called
-     * with: tokenAndIdAndPath
+     * with: tokenAndIdAndPathAndUser
      * should: returnFileLocal
      */
-    public function test_downloadMetadata_called_tokenAndIdAndPath_returnFileLocal()
+    public function test_downloadMetadata_called_tokenAndIdAndPathAndUser_returnFileLocal()
     {
         $path = "/home/eyeos/prueba.txt";
         $id = "8888888";
@@ -729,21 +730,21 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->getDownloadMetadata($metadata,'{"id":"8888888","version":1,"recover":false}',$id);
         $this->apiProviderMock->expects($this->never())
             ->method('downloadMetadata');
-        $this->sut->downloadMetadata($this->token,$id,$path,false);
+        $this->sut->downloadMetadata($this->token,$id,$path,$this->user,false);
     }
 
     /**
      * method: downloadMetadata
      * when: called
-     * with: tokenAndIdAndPath
+     * with: tokenAndIdAndPathAndUser
      * should: returnFileWritten
      */
-    public function test_downloadMetadata_called_tokenAndIdAndPath_returnFileWritten()
+    public function test_downloadMetadata_called_tokenAndIdAndPathAndUser_returnFileWritten()
     {
         $path = "/home/eyeos/prueba.txt";
         $id = "8888888";
         $metadata = '{"filename":"prueba.pdf","id":"8888888","status":"NEW","version":2,"parent_id":"32565632156","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":false}';
-        $this->getDownloadMetadata($metadata,'{"id":"8888888","version":1,"recover":false}',$id);
+        $this->getDownloadMetadata($metadata,'{"id":"8888888","user_eyeos":"eyeID_EyeosUser_2","version":1,"recover":false}',$id);
 
         $this->apiProviderMock->expects($this->at(1))
             ->method('downloadMetadata')
@@ -755,6 +756,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $params->lista = array();
         $aux = new stdClass();
         $aux->id = $id;
+        $aux->user_eyeos = $this->user;
         $aux->version = 2;
         $aux->recover = false;
         array_push($params->lista,$aux);
@@ -764,35 +766,35 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->with(json_encode($params))
             ->will($this->returnValue('true'));
 
-        $this->sut->downloadMetadata($this->token,$id,$path,false);
+        $this->sut->downloadMetadata($this->token,$id,$path,$this->user,false);
     }
 
     /**
      * method: downloadMetadata
      * when: called
-     * with: tokenAndIdAndPath
+     * with: tokenAndIdAndPathAndUser
      * should: returnFileLocalRecover
      */
-    public function test_downloadMetadata_called_tokenAndIdAndPath_returnFileLocalRecover()
+    public function test_downloadMetadata_called_tokenAndIdAndPathAndUser_returnFileLocalRecover()
     {
         $path = "/home/eyeos/prueba.txt";
         $id = "8888888";
         $metadata = '{"filename":"prueba.pdf","id":"8888888","status":"NEW","version":2,"parent_id":"32565632156","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":false}';
-        $this->getDownloadMetadata($metadata,'{"id":"8888888","version":1,"recover":true}',$id);
+        $this->getDownloadMetadata($metadata,'{"id":"8888888","user_eyeos":"eyeID_EyeosUser_2","version":1,"recover":true}',$id);
 
         $this->apiProviderMock->expects($this->never())
             ->method('downloadMetadata');
 
-        $this->sut->downloadMetadata($this->token,$id,$path,false);
+        $this->sut->downloadMetadata($this->token,$id,$path,$this->user,false);
     }
 
     /**
      * method: downloadMetadata
      * when: called
-     * with: tokenAndIdAndPathAndIsTmp
+     * with: tokenAndIdAndPathAndAndUserAndIsTmp
      * should: returnFileWritten
      */
-    public function test_downloadMetadata_called_tokenAndIdAndPathAndIsTmp_returnFileWritten()
+    public function test_downloadMetadata_called_tokenAndIdAndPathAndUserAndIsTmp_returnFileWritten()
     {
         $path = "/home/eyeos/prueba.txt";
         $id = "8888888";
@@ -807,6 +809,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $params->lista = array();
         $aux = new stdClass();
         $aux->id = $id;
+        $aux->user_eyeos = $this->user;
         array_push($params->lista,$aux);
 
         $this->accessorProviderMock->expects($this->exactly(1))
@@ -819,16 +822,16 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->with($this->token,$id,$path)
             ->will($this->returnValue('true'));
 
-        $this->sut->downloadMetadata($this->token,$id,$path,true);
+        $this->sut->downloadMetadata($this->token,$id,$path,$this->user,true);
     }
 
     /**
      * method: downloadMetadata
      * when: called
-     * with: tokenAndIdAndPath
+     * with: tokenAndIdAndPathAndUser
      * should: returnPermissionDenied
      */
-    public function test_downloadMetadata_called_tokenAndIdAndPath_returnPermissionDenied()
+    public function test_downloadMetadata_called_tokenAndIdAndPathAndUser_returnPermissionDenied()
     {
         $path = "/home/eyeos/prueba.txt";
         $id = 8888888;
@@ -840,7 +843,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->filesProviderMock->expects($this->never())
             ->method('putContents');
-        $this->sut->downloadMetadata($this->token,$id,$path,false);
+        $this->sut->downloadMetadata($this->token,$id,$path,$this->user,false);
     }
 
     /**
@@ -1054,17 +1057,19 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     /**
      * method: recursiveDeleteVersion
      * when: called
-     * with: id
+     * with: idAndUser
      * when: deleteCorrect
      */
-    public function test_recursiveDeleteVersion_called_id_calledDeleteCorrect()
+    public function test_recursiveDeleteVersion_called_idAndUser_calledDeleteCorrect()
     {
         $id = "88888888";
+        $user = "eyeos";
         $params = new stdClass();
         $params->type = "recursiveDeleteVersion";
         $params->lista = array();
         $aux = new stdClass();
         $aux->id = $id;
+        $aux->user_eyeos = $user;
         array_push($params->lista,$aux);
 
         $this->accessorProviderMock->expects($this->once())
@@ -1072,17 +1077,17 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->with(json_encode($params))
             ->will($this->returnValue('true'));
 
-        $result = $this->sut->recursiveDeleteVersion($id);
+        $result = $this->sut->recursiveDeleteVersion($id,$user);
         $this->assertEquals(array("status" =>"OK"),$result);
     }
 
     /**
      * method: listVersions
      * when: called
-     * with: tokenAndId
+     * with: tokenAndIdAndUser
      * should: returnListCorrectAndCurrentVersion
      */
-    public function test_listVersions_called_tokenAndId_returnListCorrectAndCurrentVersion()
+    public function test_listVersions_called_tokenAndIdAndUser_returnListCorrectAndCurrentVersion()
     {
         $id = 8983444;
         $metadata = '[{"name":"Winter2015.jpg","path":"\/documents\/clients\/Winter2015.jpg","id":32565632156,"size":775412,"mimetype":"image\/jpg","status":"RENAMED","version":3,"parent":12386548974,"user":"Adrian","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"},{"name":"Winter2012.jpg","path":"\/documents\/clients\/Winter2012.jpg","id":32565632156,"size":7482,"mimetype":"image\/jpg","status":"CHANGED","version":2,"parent":12386548974,"user":"Cristian","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"},{"name":"Winter2012.jpg","path":"\/documents\/clients\/Winter2012.jpg","id":32565632156,"size":775412,"mimetype":"image\/jpg","status":"NEW","version":1,"parent":12386548974,"user":"Adrian","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}]';
@@ -1098,6 +1103,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $params->lista = array();
         $aux = new stdClass();
         $aux->id = "" . $id;
+        $aux->user_eyeos = $this->user;
         array_push($params->lista,$aux);
 
         $this->accessorProviderMock->expects($this->once())
@@ -1105,17 +1111,17 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->with(json_encode($params))
             ->will($this->returnValue('null'));
 
-        $result = $this->sut->listVersions($this->token,8983444);
+        $result = $this->sut->listVersions($this->token,8983444,$this->user);
         $this->assertEquals($expected,$result);
     }
 
     /**
      * method: listVersion
      * when: called
-     * with: tokenAndId
+     * with: tokenAndIdAndUser
      * should: returnListCorrectAndOlderVersion
      */
-    public function test_listVersion_called_tokenAndId_returnListCorrectAndOlderVersion()
+    public function test_listVersion_called_tokenAndIdAndUser_returnListCorrectAndOlderVersion()
     {
         $id = 8983444;
         $metadata = '[{"name":"Winter2015.jpg","path":"\/documents\/clients\/Winter2015.jpg","id":32565632156,"size":775412,"mimetype":"image\/jpg","status":"RENAMED","version":3,"parent":12386548974,"user":"Adrian","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"},{"name":"Winter2012.jpg","path":"\/documents\/clients\/Winter2012.jpg","id":32565632156,"size":7482,"mimetype":"image\/jpg","status":"CHANGED","version":2,"parent":12386548974,"user":"Cristian","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"},{"name":"Winter2012.jpg","path":"\/documents\/clients\/Winter2012.jpg","id":32565632156,"size":775412,"mimetype":"image\/jpg","status":"NEW","version":1,"parent":12386548974,"user":"Adrian","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}]';
@@ -1131,6 +1137,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $params->lista = array();
         $aux = new stdClass();
         $aux->id = "" . $id;
+        $aux->user_eyeos = $this->user;
         array_push($params->lista,$aux);
 
         $this->accessorProviderMock->expects($this->once())
@@ -1138,17 +1145,17 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->with(json_encode($params))
             ->will($this->returnValue('{"id":"8983444","version":2,"recover":false}'));
 
-        $result = $this->sut->listVersions($this->token,8983444);
+        $result = $this->sut->listVersions($this->token,8983444,$this->user);
         $this->assertEquals($expected,$result);
     }
 
     /**
      * method: listVersions
      * when: called
-     * with: tokenAndId
+     * with: tokenAndIdAndUser
      * should: returnPermissionDenied
      */
-    public function test_listVersions_called_tokenAndId_returnPermissionDenied()
+    public function test_listVersions_called_tokenAndIdAndUser_returnPermissionDenied()
     {
         $id = 8983444;
         $this->apiProviderMock->expects($this->at(0))
@@ -1159,17 +1166,17 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->accessorProviderMock->expects($this->never())
             ->method('getProcessDataU1db');
 
-        $result = $this->sut->listVersions($this->token,$id);
+        $result = $this->sut->listVersions($this->token,$id,$this->user);
         $this->assertEquals(array("status"=>"KO","error"=>403),$result);
     }
 
     /**
      * method: listVersions
      * when: called
-     * with: tokenAndId
+     * with: tokenAndIdAndUser
      * should: returnException
      */
-    public function test_listVersions_called_tokenAndId_returnException()
+    public function test_listVersions_called_tokenAndIdAndUser_returnException()
     {
         $id = 8983444;
         $this->apiProviderMock->expects($this->at(0))
@@ -1180,7 +1187,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->accessorProviderMock->expects($this->never())
             ->method('getProcessDataU1db');
 
-        $result = $this->sut->listVersions($this->token,$id);
+        $result = $this->sut->listVersions($this->token,$id,$this->user);
         $this->assertEquals(array("status"=>"KO","error"=>-1),$result);
 
     }
@@ -1188,10 +1195,10 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     /**
      * method: getFileVersionData
      * when: called
-     * with: tokenAndIdAndVersionAndPath
+     * with: tokenAndIdAndVersionAndPathAndUser
      * should: insertDownloadVersion
      */
-    public function test_getFileVersionData_called_tokenAndIdAndVersionAndPath_insertDownloadVersion()
+    public function test_getFileVersionData_called_tokenAndIdAndVersionAndPathAndUser_insertDownloadVersion()
     {
         $id = 8983444;
         $version = 2;
@@ -1203,10 +1210,10 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     /**
      * method: getFileVersionData
      * when: called
-     * with: tokenAndIdAndVersionAndPath
+     * with: tokenAndIdAndVersionAndPathAndUser
      * should: updateDownloadVersion
      */
-    public function test_getFileVersionData_called_tokenAndIdAndVersionAndPath_updateDownloadVersion()
+    public function test_getFileVersionData_called_tokenAndIdAndVersionAndPathAndUser_updateDownloadVersion()
     {
         $id = 8983444;
         $version = 2;
@@ -1217,10 +1224,10 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     /**
      * method: getFileVersionData
      * when: called
-     * with: tokenAndIdAndVersionAndPath
+     * with: tokenAndIdAndVersionAndPathAndUser
      * should: returnPermissionDenied
      */
-    public function test_getFileVersionData_called_tokenAndIdAndVersionAndPath_returnPermissionDenied()
+    public function test_getFileVersionData_called_tokenAndIdAndVersionAndPathAndUser_returnPermissionDenied()
     {
         $id = 8983444;
         $version = 2;
@@ -1231,10 +1238,10 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     /**
      * method: getFileVersionData
      * when: called
-     * with: tokenAndIdAndVersionAndPath
+     * with: tokenAndIdAndVersionAndPathAndUser
      * should: returnException
      */
-    public function test_getFileVersionData_called_tokenAndIdAndVersionAndPath_returnException()
+    public function test_getFileVersionData_called_tokenAndIdAndVersionAndPathAndUser_returnException()
     {
         $id = 8983444;
         $version = 2;
@@ -1386,6 +1393,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $params->lista = array();
         $aux = new stdClass();
         $aux->id = "" . $id;
+        $aux->user_eyeos = $this->user;
         array_push($params->lista,$aux);
 
         $this->accessorProviderMock->expects($this->at(0))
@@ -1496,6 +1504,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $params->lista = array();
         $aux = new stdClass();
         $aux->id = $id;
+        $aux->user_eyeos = $this->user;
         array_push($params->lista,$aux);
 
         $this->accessorProviderMock->expects($this->at(0))
@@ -1511,6 +1520,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $params->lista = array();
         $aux = new stdClass();
         $aux->id = "" . $id;
+        $aux->user_eyeos = $this->user;
         array_push($params->lista,$aux);
 
         if($exception) {
@@ -1537,6 +1547,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             $params->lista = array();
             $aux = new stdClass();
             $aux->id = "" . $id;
+            $aux->user_eyeos = $this->user;
             $aux->version = $version;
             $aux->recover = true;
             array_push($params->lista,$aux);
@@ -1547,7 +1558,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
                 ->will($this->returnValue('true'));
         }
 
-        $result = $this->sut->getFileVersionData($this->token,$id,$version,$path);
+        $result = $this->sut->getFileVersionData($this->token,$id,$version,$path,$this->user);
         $this->assertEquals($expected,$result);
     }
 

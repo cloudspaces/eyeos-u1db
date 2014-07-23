@@ -554,7 +554,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             }
 
             if($stacksyncOrig) {
-                $apiManager->recursiveDeleteVersion($params['file']['id']);
+                $apiManager->recursiveDeleteVersion($params['file']['id'],$currentUser->getId());
             }
 
             if($stacksyncOrig && $stacksyncDest) {
@@ -580,7 +580,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
         } else {
             if($stacksyncOrig) {
-                $apiManager->recursiveDeleteVersion($params['file']['id']);
+                $apiManager->recursiveDeleteVersion($params['file']['id'],$currentUser->getId());
             }
             $result = self::copyFile($params);
             if (array_key_exists('error',$result)) {
@@ -633,7 +633,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $parent = $params[4] === 0?'null':$params[4];
             if(!$fileToRename->isDirectory()) {
                 $pathAbsolute = AdvancedPathLib::getPhpLocalHackPath($fileToRename->getRealFile()->getAbsolutePath());
-                $metadata = $apiManager->downloadMetadata($_SESSION['access_token_v2'],$params[3],$pathAbsolute);
+                $metadata = $apiManager->downloadMetadata($_SESSION['access_token_v2'],$params[3],$pathAbsolute,$currentUser->getId());
                 if(isset($metadata['error'])) {
                     if ($metadata['error'] == 403) {
                         self::permissionDeniedStackSync($currentUser->getId());
@@ -862,11 +862,11 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             if( !isset($params['id']) || !isset($params['path'])) {
                 throw new EyeMissingArgumentException('Missing or invalid file.');
             }
-
+            $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
             $file = FSI::getFile($params['path']);
             $path = AdvancedPathLib::getPhpLocalHackPath($file->getRealFile()->getAbsolutePath());
             $apiManager = new ApiManager();
-            $result = $apiManager->downloadMetadata($_SESSION['access_token_v2'],$params['id'],$path);
+            $result = $apiManager->downloadMetadata($_SESSION['access_token_v2'],$params['id'],$path,$user);
             if($result) {
                 if (isset($result['error']) && $result['error'] === 403) {
                     $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
@@ -995,7 +995,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $tmpFile = new LocalFile('/var/tmp/' . date('Y_m_d_H_i_s') . '_' . $user->getId());
             $pathAbsolute = AdvancedPathLib::getPhpLocalHackPath($tmpFile->getAbsolutePath());
             if(array_key_exists('id',$params['file'])) {
-                $metadata = $apiManager->downloadMetadata($_SESSION['access_token_v2'],$params['file']['id'],$pathAbsolute,true);
+                $metadata = $apiManager->downloadMetadata($_SESSION['access_token_v2'],$params['file']['id'],$pathAbsolute,$user->getId(),true);
                 if($metadata['status'] == 'KO') {
                     if($metadata['error'] == 403) {
                         self::permissionDeniedStackSync($user->getId());
@@ -1277,7 +1277,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
             $id = $params['id'];
             $apiManager = new ApiManager();
-            $result = $apiManager->listVersions($_SESSION['access_token_v2'],$id);
+            $result = $apiManager->listVersions($_SESSION['access_token_v2'],$id,$user);
             if($result) {
                 if(isset($result['error']) && $result['error'] == 403) {
                     self::permissionDeniedStackSync($user);
@@ -1298,7 +1298,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $file = FSI::getFile($params['path']);
             $apiManager = new ApiManager();
             $path = AdvancedPathLib::getPhpLocalHackPath($file->getRealFile()->getAbsolutePath());
-            $result = $apiManager->getFileVersionData($_SESSION['access_token_v2'],$id,$version,$path);
+            $result = $apiManager->getFileVersionData($_SESSION['access_token_v2'],$id,$version,$path,$user);
             if($result) {
                 if(isset($result['error']) && $result['error'] == 403) {
                     self::permissionDeniedStackSync($user);

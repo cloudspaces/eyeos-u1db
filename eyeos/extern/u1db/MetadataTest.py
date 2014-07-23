@@ -180,7 +180,7 @@ class MetadataTest (unittest.TestCase):
     should: insertCorrect
     """
     def test_insertDownloadVersion_called_metadata_insertCorrect(self):
-        expected = {u'id':u'12457988',u'version': u'2', u'recover': False}
+        expected = {u'id':u'12457988',u'user_eyeos':u'eyeID_EyeosUser_2',u'version': u'2', u'recover': False}
         self.sut.insertDownloadVersion(expected)
         results = ''
         files = self.sut.db.get_all_docs()
@@ -195,8 +195,8 @@ class MetadataTest (unittest.TestCase):
     should: updateCorrect
     """
     def test_updateDownloadVersion_called_metadata_updateCorrect(self):
-        metadata = {u'id':u'12457988',u'version': u'2', u'recover': False}
-        expected = {u'id':u'12457988',u'version': u'3', u'recover': True}
+        metadata = {u'id':u'12457988',u'user_eyeos':u'eyeID_EyeosUser_2',u'version': u'2', u'recover': False}
+        expected = {u'id':u'12457988',u'user_eyeos':u'eyeID_EyeosUser_2',u'version': u'3', u'recover': True}
         self.sut.insertDownloadVersion(metadata)
         self.sut.updateDownloadVersion(expected)
         results = ''
@@ -212,9 +212,9 @@ class MetadataTest (unittest.TestCase):
     should: deleteCorrect
     """
     def test_deleteDownloadVersion_called_id_deleteCorrect(self):
-        metadata = {u'id':u'12457988',u'version': u'2', u'recover': False}
+        metadata = {u'id':u'12457988',u'user_eyeos':u'eyeID_EyeosUser_2',u'version': u'2', u'recover': False}
         self.sut.insertDownloadVersion(metadata)
-        self.sut.deleteDownloadVersion("12457988")
+        self.sut.deleteDownloadVersion("12457988","eyeID_EyeosUser_2")
         files = self.sut.db.get_all_docs()
         self.assertEquals(0,len(files[1]))
 
@@ -225,9 +225,9 @@ class MetadataTest (unittest.TestCase):
     should: returnMetadata
     """
     def test_getDownloadVersion_called_id_returnMetadata(self):
-        metadata = {u'id':u'12457988',u'version': u'2', u'recover': False}
+        metadata = {u'id':u'12457988',u'user_eyeos':u'eyeID_EyeosUser_2',u'version': u'2', u'recover': False}
         self.sut.insertDownloadVersion(metadata)
-        result = self.sut.getDownloadVersion("12457988")
+        result = self.sut.getDownloadVersion("12457988","eyeID_EyeosUser_2")
         self.assertEquals(metadata,result)
 
     """
@@ -242,7 +242,7 @@ class MetadataTest (unittest.TestCase):
         arrayVersion = self.getArrayInsertVersion()
         for version in arrayVersion:
             self.sut.db2.create_doc_from_json(json.dumps(version))
-        self.sut.recursiveDeleteVersion("9873615")
+        self.sut.recursiveDeleteVersion("9873615","eyeID_EyeosUser_2")
         files = self.sut.db2.get_all_docs()
         self.assertEquals(0,len(files[1]))
 
@@ -317,15 +317,15 @@ class MetadataTest (unittest.TestCase):
         return array
 
     def getArrayInsertVersion(self):
-        array = [{u'id':u'32565632156',u'version':2,u'recover':False},
-                 {u'id':u'222333',u'version':2,u'recover':False}]
+        array = [{u'id':u'32565632156',u'user_eyeos':u'eyeID_EyeosUser_2',u'version':2,u'recover':False},
+                 {u'id':u'222333',u'user_eyeos':u'eyeID_EyeosUser_2',u'version':2,u'recover':False}]
         array.sort()
         return array
 
     def getArrayInsertVersionDeleteUser(self):
-        array = [{u'id':u'9873615',u'version':2,u'recover':False},
-         {u'id':u'32565632156',u'version':2,u'recover':False},
-         {u'id':u'32565632157',u'version':2,u'recover':False}]
+        array = [{u'id':u'9873615',u'user_eyeos':u'eyeID_EyeosUser_2',u'version':2,u'recover':False},
+         {u'id':u'32565632156',u'user_eyeos':u'eyeID_EyeosUser_2',u'version':2,u'recover':False},
+         {u'id':u'32565632157',u'user_eyeos':u'eyeID_EyeosUser_2',u'version':2,u'recover':False}]
         return array
 
     """
