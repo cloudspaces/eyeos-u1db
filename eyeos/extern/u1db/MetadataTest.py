@@ -113,9 +113,16 @@ class MetadataTest (unittest.TestCase):
     def test_deleteMetadataUser_called_user_deleteCorrect(self):
         array = self.getArrayInsert()
         self.sut.insert(array)
+        arrayVersion = self.getArrayInsertVersionDeleteUser()
+        for version in arrayVersion:
+            self.sut.db2.create_doc_from_json(json.dumps(version))
+
         self.sut.deleteMetadataUser('eyeID_EyeosUser_2')
         docs = self.sut.db.get_all_docs()
-        self.assertEquals(0,len(docs[1]))
+        result = len(docs[1])
+        docs = self.sut.db2.get_all_docs()
+        result += len(docs[1])
+        self.assertEquals(0,result)
 
     """
     method: selectMetadataUser
@@ -313,6 +320,12 @@ class MetadataTest (unittest.TestCase):
         array = [{u'id':u'32565632156',u'version':2,u'recover':False},
                  {u'id':u'222333',u'version':2,u'recover':False}]
         array.sort()
+        return array
+
+    def getArrayInsertVersionDeleteUser(self):
+        array = [{u'id':u'9873615',u'version':2,u'recover':False},
+         {u'id':u'32565632156',u'version':2,u'recover':False},
+         {u'id':u'32565632157',u'version':2,u'recover':False}]
         return array
 
     """

@@ -105,7 +105,16 @@ class Metadata:
         files = self.db.get_from_index("by-usereyeos",user)
         if len(files) > 0:
             for file in files:
+                id = None
+                if file.content.has_key('id'):
+                    id = str(file.content['id'])
                 self.db.delete_doc(file)
+
+                if id != None:
+                    self.db2.create_index("by-id","id")
+                    versions = self.db2.get_from_index("by-id",id)
+                    if len(versions) > 0:
+                        self.db2.delete_doc(versions[0])
 
     def selectMetadataUser(self,user):
         result = []
