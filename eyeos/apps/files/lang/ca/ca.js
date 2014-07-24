@@ -37,3 +37,7 @@ lang['Date'] = 'Data';
 lang['Version'] = 'Versió';
 lang['User'] = 'Usuari';
 lang['Owner'] = 'Propietari';
+lang['Share Folder'] = 'Compartir carpeta';
+lang['Mail list'] = 'Llista de correus';
+lang['Erase'] = 'Esborrar';
+lang['Send'] = 'Enviar';

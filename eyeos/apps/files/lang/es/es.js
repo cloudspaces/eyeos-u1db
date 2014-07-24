@@ -111,3 +111,7 @@ lang['Date'] = 'Fecha';
 lang['Version'] = 'Versión';
 lang['User'] = 'Usuario';
 lang['Owner'] = 'Propietario';
+lang['Share Folder'] = 'Compartir carpeta';
+lang['Mail list'] = 'Lista de correos';
+lang['Erase'] = 'Borrar';
+lang['Send'] = 'Enviar';

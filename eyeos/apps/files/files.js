@@ -1992,7 +1992,7 @@ qx.Class.define('eyeos.files.Controller', {
                     showMinimize: false
                 });
 
-                var labelMail = new qx.ui.basic.Label(tr('Mailing list users')).set({
+                var labelMail = new qx.ui.basic.Label(tr('Mail list')).set({
                     font:  new qx.bom.Font(12).set({bold:true}),
                     marginLeft: 20
                 });

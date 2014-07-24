@@ -33,3 +33,7 @@ lang['No'] = 'No';
 lang['An error has occurred when processing request to stacksync'] = 'An error has occurred when processing request to stacksync';
 lang['Access denied.'] = 'Access denied.';
 lang['Continue'] = 'Continue';
+lang['Share Folder'] = 'Share Folder';
+lang['Mail list'] = 'Mail list';
+lang['Erase'] = 'Erase';
+lang['Send'] = 'Send';
