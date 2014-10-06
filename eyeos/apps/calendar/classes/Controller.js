@@ -724,6 +724,13 @@ qx.Class.define('eyeos.calendar.Controller', {
 		   for(var i in ob){return false;}
 			 return true;
 		  },
+        deleteEventModels: function(calendar) {
+            for (var i in this.__eventModels) {
+                if (this.__eventModels[i].$$user_calendar.$$user_id == calendar) {
+                    delete this.__eventModels[i];
+                }
+            }
+        },
         refreshEventsCalendar: function(refresh) {
             /*if(calendar.isVisible()) {
                 this.closeTimerCalendar(calendar.getId());
@@ -789,7 +796,7 @@ qx.Class.define('eyeos.calendar.Controller', {
                 if(params.calendar.length > 0) {
                     eyeos.callMessage(this.__checknum,'getAllEventsFromPeriod',params,function(calendars) {
                         if(calendars && calendars.length > 0 && this.__tieneEventos(calendars)) {
-                            this.__eventModels =  {};
+//                            this.__eventModels = {};
                             var change = false;
                             var events = [];
                             for(var i in calendars) {
@@ -798,6 +805,7 @@ qx.Class.define('eyeos.calendar.Controller', {
                                 if(this.__eventModels !== {} && !change) {
                                     if(calendars[i].length > 0) {
                                         eventsOld = this.__getEventsByPeriod(calendars[i][0].calendarId);
+                                        this.deleteEventModels(calendars[i][0].calendarId);
                                     }
                                 }
 
