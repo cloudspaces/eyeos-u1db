@@ -1604,7 +1604,7 @@ Download the contents of a specific version of an existing file.
             <td style="padding-left:30px">
                 <b>oauth</b> – Object OauthRequest. Contains the values key and secret from the configuration file. Also the access token.<br>
                 <b>id</b> – File identifier number<br>
-                <b>version</b> – Pending download version<br>
+                <b>version</b> – Version pending to download<br>
                 <b>path</b> – Absolute file path
             </td>
         </tr>
@@ -2170,7 +2170,7 @@ Download the contents of a specific version of an existing file.
             <td style="padding-left:30px">
                 <b>token</b> – Contains the access token's key and secret<br>
                 <b>id</b> – Element identifier number in Stacksync<br>
-                <b>version</b> – Pending version download<br>
+                <b>version</b> – Version pending to download<br>
                 <b>path</b> – Absolute file path
             </td>
         </tr>
