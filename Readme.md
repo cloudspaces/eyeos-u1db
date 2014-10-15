@@ -2568,7 +2568,7 @@ The user performs an action in the file manager, such as lists the users who hav
 
 The getListUsersShare of the Share Manager and the Share API, as well as the other actions performed by the Share tool. Now are described in more detail, respectively:
 
-- Share Manager
+- **_Share Manager_**
 
 **getListUsersShare(**_token,id_**)**
 
@@ -2677,7 +2677,7 @@ Shares a directory with another user.
 </div>  
   
   
-- Share API
+- **_Share API_**
 
 The configuration file of Share API is found at “/var/www/eyeos/eyeos/extern/u1db/” and is called “settings.py”.
 
