@@ -266,25 +266,25 @@ If installed in another independent machine the directories /var/www/eyeos/serve
 
 ## Persistence
 
-EyeOS calendar saves the events into a U1DB database.
+eyeOS Calendar and the comments tool of the file manager store data in a U1DB database.
 
 ![](img/diagrama_Persistencia_Grafica.jpg)
 
-U1DB is an database API to synchronize JSON documents databases created by Canonical. Its allows that applications can storage documents and synchronize then between machines and devices. U1DB is a database design to work in every enviroment, offering a backup of platform's native data. This means that can be use in differents platforms, with differents languages, with backup and synchronization between all of them.
+U1DB is a database API to sync JSON documents that was created by Canonical. It lets applications store documents and synchronize them between machines and devices. U1DB is designed to work anywhere, acting as a storage backup for native platform data. This means it can be implemented on any platform, from different languages, providing backup and sync services between platforms.  
 
-API U1DB has three different parts: storage/recover documents, queries and synchronization. Next are detailed the functions that are used and a short explanation of operation.
+The U1DB API contains three sections: document storage/retrieval, querying and synchronization. A short description of their operation is given below.  
 
 
 ### Storage/recovering documents
 
-U1DB storages documents, basically any information that can be expressed in JSON.
+U1DB stores documents, basically any information that can be expressed in JSON.  
 
 
 **created_doc_from_json(**_json,doc\_id=None_**)**
 
 Creates a document from JSON data.
 
-Alternatively can be especified the document's identifier. The identifier mustn't exist in the database. If database especifies a maximum document size and the document exceeds, the exception DocumentTooBig will be thrown.
+Optionally the doc id can be specified. This id must not exist in the database. If the database specifies a maximum document size and the document exceeds this size, a DocumentTooBig exception is triggered.  
 
 <div style="margin-bottom:10px;margin-left:0px">
     <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
@@ -293,7 +293,7 @@ Alternatively can be especified the document's identifier. The identifier mustn'
             <td>
                 <ul>
                     <li><b>json</b> – JSON data</li>
-                    <li><b>doc-id</b> – Optional document identificator</li>
+                    <li><b>doc-id</b> – Optional document id</li>
                 </ul>
             </td>
         </tr>
@@ -302,25 +302,25 @@ Alternatively can be especified the document's identifier. The identifier mustn'
             <td style="padding-left:30px">Document</td>
         </tr>
     </table>
-</div>
+</div>  
 
 
 **put_doc(**_doc_**)**
 
-Document update. If database especifies a maximum document size and the document exceeds, the exception DocumentTooBig will be thrown.
+Updates documents. If the database specifies a maximum document size and the document exceeds this size, a DocumentTooBig exception is triggered.
 
 <div style="margin-bottom:10px;margin-left:0px">
     <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
-            <td style="padding-left:30px"><b>doc</b> – Document with new content</td>
+            <td style="padding-left:30px"><b>doc</b> – Document with new contents</td>
         </tr>
         <tr>
             <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">Document</td>
+            <td style="padding-left:30px">new_doc_rev - New revision id for the document.<br>The document object will also be updated</td>
         </tr>
     </table>
-</div>
+</div>  
 
 
 **set_json(**_json_**)**
@@ -334,12 +334,12 @@ Updates document's JSON data.
             <td style="padding-left:30px"><b>json</b> – JSON data</td>
         </tr>
     </table>
-</div>
-
-
+</div>  
+  
+  
 **delete_doc(**_doc_**)**
 
-Mark a document as deleted.
+Flags a document as deleted.
 
 <div style="margin-bottom:10px;margin-left:0px">
     <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
@@ -348,16 +348,16 @@ Mark a document as deleted.
             <td style="padding-left:30px"><b>doc</b> – Document to delete</td>
         </tr>
     </table>
-</div>
+</div>  
 
 
 ### Queries
 
-Quering in U1DB is performed by means of indexes. To recover some documents from the database, based on some criteria, first an index must be created and then get the data using it.
+Querying in U1DB is done using indexes. To retrieve certain documents from the database according to specific criteria, first you must create an index and then query this index.
 
 **create_index(**_index\_name,\*index_expressions_**)**
 
-Creates an index that will be used to make queries in the database. The creation of an existing index  will not throw any exception. The creation of an existing index with different index_expressions than the original one will throw an exception.
+Creates an index that will be used to perform queries in the database. No exceptions are triggered if you try to create an existing index. However, an exception is triggered if you try to create an index that changes the index_expressions of a previously created index.
 
 <div style="margin-bottom:10px;margin-left:0px">
     <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
@@ -365,7 +365,7 @@ Creates an index that will be used to make queries in the database. The creation
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td>
                 <ul>
-                    <li><b>index_name</b> – Unique index identifier</li>
+                    <li><b>index_name</b> – Unique index id</li>
                     <li><b>index_expressions</b> – Keys used in future queries</li>
                 </ul>
                 <br><br>
@@ -373,12 +373,12 @@ Creates an index that will be used to make queries in the database. The creation
             </td>
         </tr>
     </table>
-</div>
+</div>  
 
 
 **get_from_index(**_index\_name,\*key\_values_**)**
 
-Returns the documents that match the specified keys.  It must be specified the same number of values than keys defined in the index.
+Returns the documents containing the keys specified. The same number of values as keys defined in the index must be specified.
 
 <div style="margin-bottom:10px;margin-left:0px">
     <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
@@ -386,8 +386,8 @@ Returns the documents that match the specified keys.  It must be specified the s
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td>
                 <ul>
-                    <li><b>index_name</b> – Name of index</li>
-                    <li><b>key_values</b> – Values to seek. Ex: if index1 has 3 fields, then get_from_index(index1, val1, val2, val3)</li>
+                    <li><b>index_name</b> – Name of the index queried</li>
+                    <li><b>key_values</b> – Values to search. <br>if an index has 3 fields, you will get get_from_index(index1,val1,val2,val3)</li>
                 </ul>
             </td>
         </tr>
@@ -396,21 +396,21 @@ Returns the documents that match the specified keys.  It must be specified the s
             <td style="padding-left:30px">List of documents</td>
         </tr>
     </table>
-</div>
+</div>  
 
 
 ### Synchronization
 
-U1DB is a synchronized database.  An U1DB database can be used both as client or server, where one or several clients can be synchronized with the server.
+U1DB is a syncable database. Any U1DB database can be synced with a U1DB server. Most U1DB installations can be run as server.  
 
-The synchronization between server and client provides the update of both, so that they have got the same data. The data are saved into local U1DB no matter if online or offline, and then, the synchronization takes place when it's online.
+Syncing the server and the client updates both sides so that they contain the same data. Data is saved in local U1DBs, whether online-offline, and then synchronized when online.  
 
 ![](img/diagrama_Persistenca_bd.jpg)
 
 
 **sync(**_url,creds=None,autocreate=True_**)**
 
-Synchronizes documents with a remote backup by means of an url.
+Syncs documents with a remote replica via a URL.
 
 
 <div style="margin-bottom:10px;margin-left:0px">
@@ -419,23 +419,24 @@ Synchronizes documents with a remote backup by means of an url.
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td>
                 <ul>
-                    <li><b>url</b> – url of remote backup the synchronization is going to take place with</li>
-                    <li><b>creds</b> – (Optional). Credentials to authorize the operation with the server.  For instance using the credentials to identificate by means of OAuth:<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ ‘consumer_key’: ..., ‘consumer_secret’: ...,<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;‘token_key’: ..., ‘token_secret’: ...<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-                    }
+                    <li><b>url</b> – URL of the remote replica with which it will be synchronized</li>
+                    <li><b>creds</b> – (Optional). Credentials to authorize the operation with the server. For example, use credentials to identify via OAuth:<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br> 
+		    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'oauth': {<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;‘consumer_key’: ..., ‘consumer_secret’: ...,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;‘token_key’: ..., ‘token_secret’: ...<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+		    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}
                     </li>
-                    <li><b>autocreate</b> – If the value is True, is created database if it not exists. If the value is False, the database doesn't exists and it don't synchronize.</li>
+                    <li><b>autocreate</b> – If the value is True, the database is created if it doesn’t exist. If the value is False, synchronization will not be performed if the database doesn’t exist.</li>
                 </ul>
             </td>
         </tr>
         <tr>
             <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">local_gen_before_sync – It's a local generation key to control the synchronization. It's useful to use with the function whats_changed, if an aplication wants to know the documents that have changed during synchronization</td>
+            <td style="padding-left:30px">local_gen_before_sync – A local gen key to control synchronization. This is useful with the whats_changed function, if an application needs to know the documents changed during synchronization.</td>
         </tr>
     </table>
-</div>
+</div>  
 
 
 ### Implementation of U1DB into eyeOS calendar
