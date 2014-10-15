@@ -268,7 +268,7 @@ If installed in another independent machine the directories /var/www/eyeos/serve
 
 EyeOS calendar saves the events into a U1DB database.
 
-![](img/persistencia.jpeg)
+![](img/diagrama_Persistencia_Grafica.jpg)
 
 U1DB is an database API to synchronize JSON documents databases created by Canonical. Its allows that applications can storage documents and synchronize then between machines and devices. U1DB is a database design to work in every enviroment, offering a backup of platform's native data. This means that can be use in differents platforms, with differents languages, with backup and synchronization between all of them.
 
@@ -405,7 +405,7 @@ U1DB is a synchronized database.  An U1DB database can be used both as client or
 
 The synchronization between server and client provides the update of both, so that they have got the same data. The data are saved into local U1DB no matter if online or offline, and then, the synchronization takes place when it's online.
 
-![](img/Permanencia.jpeg)
+![](img/diagrama_Persistenca_bd.jpg)
 
 
 **sync(**_url,creds=None,autocreate=True_**)**
