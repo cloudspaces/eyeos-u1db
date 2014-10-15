@@ -2538,7 +2538,7 @@ Delete a comment associated a un specific element of StackSync.
 </div>
   
   
-## Share
+## Implementation of Share API into eyeOS
 
 To share folders and their contents among users of the same or different Personal Clouds, the Share tool is implemented in the file manager.  
 
