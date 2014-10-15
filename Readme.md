@@ -1033,7 +1033,7 @@ Updates an existing event.
 To display the calendars correctly in the eyeOS platform, the structure of the calendars and the events, as well as their indexes, must be respected: 
 
   - calendar: type and user_eyeos.  
-	- events: type, user_eyeos and calendar.
+  - events: type, user_eyeos and calendar.
 
 The functions are listed and described below.  
 
