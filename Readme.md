@@ -15,6 +15,7 @@ Tutorial eyeOS 2.5 OpenSource & CloudSpaces
     - [Implementation of Oauth into eyeOS calendar](#implementation-of-oauth-into-eyeos-calendar)
 - [Implementation of StackSync API into eyeOS](#implementation-of-stacksync-api-into-eyeos)
 - [Collaborative tool between eyeOS and StackSync](#collaborative-tool-between-eyeos-and-stacksync)
+- [Implementation of Share API into eyeOS](#implementation-of-share-api-into-eyeos)
 
 
 ## eyeOS 2.5 installation on Ubuntu
@@ -253,7 +254,7 @@ The url of StackSync resources requests can be configured in the file settings.p
 \# cd /var/www/eyeos/  
 \# nano settings.php
 
-![](img/token_oauthUrl.jpg)
+![](img/token_oautUrl.jpg)
 
 
 ### serverU1DB installation
@@ -2535,3 +2536,256 @@ Delete a comment associated a un specific element of StackSync.
         </tr>
     </table>
 </div>
+  
+  
+## Share
+
+To share folders and their contents among users of the same or different Personal Clouds, the Share tool is implemented in the file manager.  
+
+The user can access the tool by selecting a Personal Cloud directory and then clicking the “Activity” tab in the right toolbar (social bar).  
+
+![](img/FilesManager_Share_1.jpg)
+
+This tab lists all users that can access and manage the active directory. Furthermore it indicates who is the owner of the directory.  
+
+Where the directory is not shared, only the directory owner is displayed.   
+
+![](img/FilesManager_Share_2.jpg)
+
+If the user wants to share or add more users to the sharing list, they must right click on the directory to open a contextual menu and then select the “Share” option. When they select this option, a form appears in which they need to enter the email addresses of the people with whom they want to share the directory. Once the form has been completed, the data is sent to StackSync. If the operation is done successfully, the form closes. When the user accesses the “Activity” tab of the directory again, they will see the new users added to the list.  
+
+![](img/FilesManager_Share_3.jpg)  
+
+![](img/FilesManager_Share_4.jpg)
+
+The list of users sharing the directory is not refreshed, as there is no background process that enables new users to be displayed automatically.  
+
+Directory sharing is implemented in eyeOS according to the diagram below:
+
+![](img/diagrama_Share.jpg)
+
+The user performs an action in the file manager, such as lists the users who have access to the directory. The Manager using the getListUsersShare function retrieves the user’s access token and the id of the directory in StackSync. These values are sent to the API, which is responsible for requesting the resource from StackSync using the getListUsersShare function. It receives the list of users and then it notifies the Manager, which will update the eyeOS interface.  
+
+The getListUsersShare of the Share Manager and the Share API, as well as the other actions performed by the Share tool. Now are described in more detail, respectively:
+
+- Share Manager
+
+**getListUsersShare(**_token,id_**)**
+
+Gets all users with access to a StackSync directory.
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px">
+                <b>token</b> – Includes key and secret of the access token<br>
+                <b>id</b> – Id of the StackSync element
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Script call:</td>
+            <td style="padding-left:30px">
+                Example:<br>
+                {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;"token":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"key":"token1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"secret":"secret1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;"metadata":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type":"listUsersShare",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":32565632156,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                }<br>
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">
+                List of users or, in the event of error, returns an error structure:<br>
+                - error: Error number<br>
+                - description: Error description<br>
+                Example:<br>
+                [<br>
+		&nbsp;&nbsp;&nbsp;{“name”:”tester1”,<br>
+		&nbsp;&nbsp;&nbsp;”email”:”tester1@test.com”,<br>
+		&nbsp;&nbsp;&nbsp;”modified_at”:”2014-04-11 10:02:33.432”,<br>
+		&nbsp;&nbsp;&nbsp;”is_owner”:true},<br>
+		&nbsp;&nbsp;&nbsp;{“name”:”tester2”,<br>
+		&nbsp;&nbsp;&nbsp;”email”:”tester2@test.com”,<br>
+		&nbsp;&nbsp;&nbsp;”modified_at”:”2014-05-30 19:39:21.044”,<br>
+		&nbsp;&nbsp;&nbsp;”is_owner”:false},<br>
+		&nbsp;&nbsp;&nbsp;{“name”:”tester3”,<br>
+		&nbsp;&nbsp;&nbsp;”email”:”tester3@test.com”,<br>
+		&nbsp;&nbsp;&nbsp;”modified_at”:”2014-06-06 15:42:41.852”,<br>
+		&nbsp;&nbsp;&nbsp;”is_owner”:false},<br>
+		]<br>
+                {“error”:401,”description”:”Error list members”}
+            </td>
+        </tr>
+    </table>
+</div>  
+  
+  
+**shareFolder(**_token,id,list_**)**
+
+Shares a directory with another user.
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px">
+                <b>token</b> – Includes key and secret of the access token<br>
+                <b>id</b> – Id of the StackSync element<br>
+                <b>list</b> – Users’ email addresses
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Script call:</td>
+            <td style="padding-left:30px">
+                Example:<br>
+                {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;"token":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"key":"token1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"secret":"secret1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;"metadata":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type":"shareFolder",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":32565632156,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"list":[<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"tester1@test.com",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"tester2@test.com",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"tester3@test.com"<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                }<br>
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">
+                Result structure:<br>
+                - status: ‘OK’ if correct or ‘KO’ in the event of error<br>
+                - error: Error number. Only exists in the event of error<br>
+                Example:<br>
+                {“status”:”OK” }<br>
+		{“status”:”KO”, “error”: -1}
+            </td>
+        </tr>
+    </table>
+</div>  
+  
+  
+- Share API
+
+The configuration file of Share API is found at “/var/www/eyeos/eyeos/extern/u1db/” and is called “settings.py”.
+
+**getListUsersShare(**_oauth,id_**)** 
+
+Gets all users with access to a StackSync directory.  
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Url:</td>
+            <td style="padding-left:30px">
+                Use RESOURCE_URL of the configuration file.
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Method:</td>
+            <td style="padding-left:30px">
+                GET
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Signature:</td>
+            <td style="padding-left:30px">
+                HMAC-SHA1
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px">
+		<ul>
+		   <li><b>oauth</b> – OauthRequest object. Includes the values of the consumer key and secret of the configuration file. And also the access token</li>
+		   <li><b>id</b> – Id of the StackSync element</li>
+		</ul>
+	    </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">
+            List of users or, in the event of error, returns an error structure:<br>
+            - error: Error number<br>
+            - description: Error description<br>
+            Example:<br>
+            [<br>
+	    &nbsp;&nbsp;&nbsp;{“name”:”tester1”,<br>
+	    &nbsp;&nbsp;&nbsp;”email”:”tester1@test.com”,<br>
+	    &nbsp;&nbsp;&nbsp;”modified_at”:”2014-04-11 10:02:33.432”,<br>
+	    &nbsp;&nbsp;&nbsp;”is_owner”:true},<br>
+	    &nbsp;&nbsp;&nbsp;{“name”:”tester2”,<br>
+	    &nbsp;&nbsp;&nbsp;”email”:”tester2@test.com”,<br>
+	    &nbsp;&nbsp;&nbsp;”modified_at”:”2014-05-30 19:39:21.044”,<br>
+	    &nbsp;&nbsp;&nbsp;”is_owner”:false},<br>
+	    &nbsp;&nbsp;&nbsp;{“name”:”tester3”,<br>
+	    &nbsp;&nbsp;&nbsp;”email”:”tester3@test.com”,<br>
+	    &nbsp;&nbsp;&nbsp;”modified_at”:”2014-06-06 15:42:41.852”,<br>
+	    &nbsp;&nbsp;&nbsp;”is_owner”:false},<br>
+	    ]<br>
+            {“error”:401,”description”:”Error list members”}
+            </td>
+        </tr>
+    </table>
+</div>  
+  
+   
+**shareFolder(**_oauth,id,list_**)** 
+
+Shares a directory with another user.
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Url:</td>
+            <td style="padding-left:30px">
+                Use RESOURCE_URL of the configuration file.
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Method:</td>
+            <td style="padding-left:30px">
+                POST
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Signature:</td>
+            <td style="padding-left:30px">
+                HMAC-SHA1
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px">
+		<ul>
+		   <li><b>oauth</b> – OauthRequest object. Includes the values of the consumer key and secret of the configuration file. And also the access token</li>
+		   <li><b>id</b> – Id of the StackSync element</li>
+		   <li><b>list</b> – List of users</li>
+		</ul>
+	    </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">
+            True or, in the event of error, returns an error structure:<br>
+            - error: Error number<br>
+            - description: Error description<br>
+            Example:<br>
+            {"error":403, "description": "Forbidden ."}
+            </td>
+        </tr>
+    </table>
+</div>
+   
