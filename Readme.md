@@ -11,10 +11,10 @@ Tutorial eyeOS 2.5 OpenSource & CloudSpaces
     - [Storage/recovering documents](#storage/recovering-documents)
     - [Queries](#queries)
     - [Synchronization](#synchronization)
-    - [Implementation of U1DB into eyeOS calendar](#implementation-of-u1db-into-eyeos-calendar)
     - [Implementation of Oauth into eyeOS calendar](#implementation-of-oauth-into-eyeos-calendar)
+    - [Implementation of U1DB into eyeOS calendar](#implementation-of-u1db-into-eyeos-calendar)
+    - [Collaborative tool between eyeOS and StackSync](#collaborative-tool-between-eyeos-and-stacksync)
 - [Implementation of StackSync API into eyeOS](#implementation-of-stacksync-api-into-eyeos)
-- [Collaborative tool between eyeOS and StackSync](#collaborative-tool-between-eyeos-and-stacksync)
 - [Implementation of Share API into eyeOS](#implementation-of-share-api-into-eyeos)
 
 
@@ -439,9 +439,84 @@ Syncs documents with a remote replica via a URL.
 </div>  
 
 
-### Implementation of U1DB into eyeOS calendar
+### Implementation of Oauth into eyeOS calendar
 
-EyeOS storages the user's calendars and events into U1DB synchronized database. The database management is performed by means of a Python script called Protocol.py. This script handles the synchronization with the U1DB server and is located in '/var/www/eyeos/eyeos/extern/u1db/', to configure it the “settings.py” file must be modified in the following values:
+To sync eyeOS Calendar and the comments tool applications, authentication must be done with the server using the OAuth protocol.
+
+The OAuth server provides access to a unique protected resource, the U1DB server.
+
+The eyeOS platform implements the Credentials.py script, which contains the APIs required for communicating with the OAuth server.
+
+The communication dialog is as follows:
+
+![](img/diagrama_Oauth_ServerOauth.jpeg)
+
+**Step 1**:
+
+API getRequestToken() gets the consumer key and consumer secret from the settings (see Annex 1.2). It then makes a call to the OAuth server using the “request_token” URL.
+
+The OAuth server retrieves the consumer key from the database and compares it with the consumer key received. If the keys do not match, it returns an error; otherwise, it performs a new search in the database using the consumer key to get the request token.
+
+The OAuth server responds to the eyeOS call, returning the request token and access verifier to request the access token.
+
+The eyeOS platform stores the request token and the verifier in the session variables so that it does not have to repeat the process in subsequent steps.
+
+**Step 2**:
+
+API getAccesToken(token,verifier) makes a call to the OAuth server through the “access_token” URL.
+
+The OAuth server retrieves the consumer key and request token from the database and compares them with those received from getAccessToken(). If they do not match, it returns an error; otherwise, it performs a new search in the database with the consumer key and request token to get the access token. If no data is obtained or the data obtained has expired, a new access token must be generated and stored in the database, which means that previous tokens will no longer have access. 
+
+The OAuth server responds to the eyeOS call, returning the access token.
+
+**Step 3**:
+
+API protocol(params) calls the OAuth server via the U1DB synchronization API.
+
+The OAuth server retrieves the access token from the database using the consumer and token received. If they do not match, it returns an error; otherwise, it syncs with the U1DB server.
+
+Step 1 only applies where a request token has not been requested during the eyeOS user session.
+
+
+Authentication implemented in both applications is requested for each resource request. The request process flow is illustrated in the following diagram:
+
+![](img/diagrama_Oauth_ServerU1DB.jpg)
+
+Persistence OAuth Manager and Persistence OAuth API persistence functions are described in more detail, respectively:  
+
+**_Persistence OAuth Manager_**
+
+**callProcessCredentials()**
+
+Gets credentials of the eyeOS consumer.
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Script call:</td>
+            <td style="padding-left:30px">No parameters</td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">
+            Token object or in the event of error null<br>
+            Example:<br>
+            {<br>
+	    &nbsp;&nbsp;&nbsp;"oauth":{<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"token_key":"access1234",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"token_secret":"access_secret",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"consumer_key":"key1234",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"consumer_secret":"secret1234",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+	    }
+            </td>
+        </tr>
+    </table>
+</div>  
+  
+  
+**_Persistence OAuth API_**
+  
+The configuration file of OAuth API is found at “/var/www/eyeos/eyeos/extern/u1db/” and is called “settings.py”. This file must be modified in the following values:
 
 ![](img/Settings_Calendars.jpg)
 
@@ -474,77 +549,130 @@ EyeOS storages the user's calendars and events into U1DB synchronized database. 
             <td style="padding-left:15px">Included when mongodb was configured in the Oauth server installation</td>
         </tr>
     </table>
-</div>
+</div>   
+  
+  
+**getRequestToken()** 
 
-Next is detailed the APIs contained in the script Protocol.py:
-
-**selectCalendar(**_data_**)**
-
-Get all calendars of the user.
-
-<div style="margin-bottom:10px;margin-left:0px">
-    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-        <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
-            <td style="padding-left:30px"><b>data</b> – Contains the type and the user.<br>
-                Example: {“type”:”calendar”,”user_eyeos”:”eyeos”}
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">Array in JSON format<br>
-                Example:<br>
-                [{“type”:”calendar”,”user_eyeos”:”eyeos”,”name”:”personal”,”description”:”personal calendar”,”timezone”: 0,”status”:”NEW”}]
-            </td>
-        </tr>
-    </table>
-</div>
-
-
-**insertCalendar(**_lista_**)**
-
-Introduce the new calendar created by the eyeOS user.
+Gets the request token of the eyeOS consumer.  
 
 <div style="margin-bottom:10px;margin-left:0px">
     <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
-            <td style="padding-left:30px"><b>lista</b> – Contains an array of the calendars pending to insert.<br>
-                Example:<br>
-                [{“type”:”calendar”,”user_eyeos”:”eyeos”,”name”:”personal”,”description”:”personal calendar”,”timezone”:0,”status”:”NEW”}]
+            <td style="background-color:#C0C0C0">Url:</td>
+            <td style="padding-left:30px">
+                Use REQUEST_TOKEN_URL of the configuration file.
             </td>
         </tr>
         <tr>
+            <td style="background-color:#C0C0C0">Method:</td>
+            <td style="padding-left:30px">
+                GET
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Signature:</td>
+            <td style="padding-left:30px">
+                Plaintext
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px">No parameters</td>
+        </tr>
+        <tr>
             <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">'true' or exception in case of error</td>
+            <td style="padding-left:30px">
+            Key and secret of the request token or, in the event of error, returns an error structure:<br>
+            - error: Error number<br>
+            - description: Error description<br>
+            Example:<br>
+            {“oauth_token” : “token1234”,  “oauth_secret” : “secret1234”}
+            {“error” : “401”, “description” : “Authorization required”}
+            </td>
         </tr>
     </table>
 </div>
+  
+  
+**getAccessToken(**_token,verifier_**)** 
 
-
-**deleteCalendar(**_lista_**)**
-
-Identifies the status of the calendar as deleted (STATUS=”DELETED”) of a particular eyeOS user.
+Gets the access token of the eyeOS consumer from the request token and verifier received.   
 
 <div style="margin-bottom:10px;margin-left:0px">
     <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
+            <td style="background-color:#C0C0C0">Url:</td>
+            <td style="padding-left:30px">
+                Use ACCESS_TOKEN_URL of the configuration file.
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Method:</td>
+            <td style="padding-left:30px">
+                GET
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Signature:</td>
+            <td style="padding-left:30px">
+                Plaintext
+            </td>
+        </tr>
+        <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
-            <td style="padding-left:30px"><b>lista</b> – Contains an array of the calendars identied as deleted.<br>
-                Example:<br>
-                [{“type”:”calendar”,”user_eyeos”:”eyeos”,”name”:”personal”}]
+            <td style="padding-left:30px">
+                <b>token</b> – OauthToken object. Includes key and secret values of the request token<br>
+                <b>verifier</b> – Word by which the user is authenticated
             </td>
         </tr>
         <tr>
             <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">'true' or exception in case of error</td>
+            <td style="padding-left:30px">
+            Key and secret of the access token or, in the event of error, returns an error structure:<br>
+            - error: Error number<br>
+            - description: Error description<br>
+            Example:<br>
+            {<br>
+	    &nbsp;&nbsp;&nbsp;"credentials":{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"token_key":"access1234",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"token_secret":"access_secret",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"consumer_key":"key1234",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"consumer_secret":"secret1234",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+	    &nbsp;&nbsp;&nbsp;"request_token":{"key":"token1111","secret":"secret2222"},<br>
+	    &nbsp;&nbsp;&nbsp;"verifier":"verifier"<br>
+            }<br>
+            {"error" : "401", "description" : "Authorization required"}
+            </td>
         </tr>
     </table>
-</div>
+</div>  
+   
+  
+### Implementation of U1DB into eyeOS calendar
 
+EyeOS storages the user's calendars and events into U1DB synchronized database.
 
-**selectEvent(**_type,user,calendarId_**)**
+Calendar and event sync processes are performed when eyeOS Calendar is opened. 
 
+Calendars are synced every 20 seconds. If any changes are detected, the calendar list is refreshed and the waiting time is reset. 
+
+Events are synced every 10 seconds. If any changes are detected, the events of the period shown on screen are refreshed and the waiting time is reset. 
+
+Persistence in implemented in eyeOS according to the diagram below: 
+
+![](img/diagrama_Persistence_Calendar.jpg)
+
+The user performs an action on the calendar, such as adds an event to a specific calendar. The Manager uses the insertEvent function to retrieve the user’s credentials. These values are sent to the API together with the data of the new event. The API is responsible for requesting the resource from the U1DB server using the insertEvent function.  
+
+If everything is correct, the U1DB server updates the server database and subsequently notifies other clients of the change. The API receives confirmation of the change and applies it to the client U1DB database. Once the updates have been made, it notifies the Manager, which modifies the local calendar tables and updates the eyeOS interface. 
+
+The insertEvent functions of the Calendar Manager and the Calendar API, as well as the other actions performed by the calendar. Now are described in more detail, respectively. 
+
+**_Calendar Manager_**
+
+The Calendar Manager API consists of a uniform structure in the script call:  
 
 <div style="margin-bottom:10px;margin-left:0px">
     <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
@@ -552,123 +680,27 @@ Identifies the status of the calendar as deleted (STATUS=”DELETED”) of a par
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td>
                 <ul>
-                    <li><b>type</b> – Fixed value “event”</li>
-                    <li><b>user</b> – EyeOS user</li>
-                    <li><b>calendarId</b> – Name of the calendar</li>
-                </ul>
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">
-                Array in JSON format<br>
-                Example:<br>
-                [{“type”:”event”,”user_eyeos”:”eyeos”,”calendar”:”personal”,”status”:”NEW”, “isallday”: “0”, “timestart”: “201419160000”, “timeend”:”201419170000”, “repetition”: “None”, “finaltype”: “1”, “finalvalue”: “0”, “subject”: “Visita Médico”, “location”: “Barcelona”, “description”: “Llevar justificante”}]
-            </td>
-        </tr>
-    </table>
-</div>
-
-
-**insertEvent(**_self,lista_**)**
-
-Introduce a new event into the especified user's calendar.
-
-<div style="margin-bottom:10px;margin-left:0px">
-    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-        <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
-            <td style="padding-left:30px">
-                <b>lista</b> – Contains an array with the news events.<br>
-                Example:<br>
-                [{“type”:”event”,”user_eyeos”:”eyeos”,”calendar”:”personal”,”status”:”NEW”, “isallday”: “0”, “timestart”: “201419160000”, “timeend”:”201419170000”, “repetition”: “None”, “finaltype”: “1”, “finalvalue”: “0”, “subject”: “Visita Médico”, “location”: “Barcelona”, “description”: “Llevar justificante”}]
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">'true' or exception in case of error</td>
-        </tr>
-    </table>
-</div>
-
-
-**deleteEvent(**_lista_**)**
-
-Identifies the status of the event as deleted (STATUS=”DELETED”) of a particular eyeOS user.
-
-<div style="margin-bottom:10px;margin-left:0px">
-    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-        <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
-            <td style="padding-left:30px">
-                <b>lista</b> – Contains an array with the events identified as deleted.<br>
-                Example:<br>
-                [{“type”:”event”,”user_eyeos”:”eyeos”,”calendar”:”personal”,”status”:”DELETED”, “isallday”: “0”, “timestart”: “201419160000”, “timeend”:”201419170000”, “repetition”: “None”, “finaltype”: “1”, “finalvalue”: “0”, “subject”: “Visita Médico”, “location”: “Barcelona”, “description”: “Llevar justificante”}]
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">'true' or exception in case of error</td>
-        </tr>
-    </table>
-</div>
-
-
-**updateEvent(**_lista_**)**
-
-Update the data of an event.
-
-<div style="margin-bottom:10px;margin-left:0px">
-    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-        <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
-            <td style="padding-left:30px">
-                <b>lista</b> – Contains an array with the events to update.<br>
-                Example:<br>
-                [{“type”:”event”,”user_eyeos”:”eyeos”,”calendar”:”personal”,”status”:”CHANGED”, “isallday”: “0”, “timestart”: “201419160000”, “timeend”:”201419170000”, “repetition”: “None”, “finaltype”: “1”, “finalvalue”: “0”, “subject”: “Examen”, “location”: “Tarragona”, “description”: “Llevar libro”}]
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">'true' or exception in case of error</td>
-        </tr>
-    </table>
-</div>
-
-
-To see correctly the calendars into eyeOS platform it must be respected the estructure of the calendars and the events, also its indexes that are the next:  
-- calendar: type, user_eyeos, name and status.  
-- events: type, user_eyeos, calendar and status.  
-
-To use the Python APIs into eyeOS it has been generated the framework Store, containing some APIs with an uniform structure:
-
-<div style="margin-bottom:10px;margin-left:0px">
-    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-        <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
-            <td>
-                <ul>
-                    <li><b>type</b> – Python API name</li>
-                    <li><b>lista</b> – Python API parameters</li>
-                    <li><b>credentials</b> – Credentials for the identification into synchronization process</li>
+                    <li><b>type</b> – Name of the Python API function</li>
+                    <li><b>lista</b> – Parameters of the previous function</li>
+                    <li><b>credentials</b> – Credentials for identification during the synchronization process</li>
                 </ul>
             </td>
         </tr>
     </table>
 </div>
 
-Next these APIs are listed:
+The functions are listed and described below.  
 
 **synchronizeCalendars(**_user_**)**
 
-Synchronize all calendars of the user connected in eyeOS platform.
+Requests credentials of the eyeOS consumer.
 
 <div style="margin-bottom:10px;margin-left:0px">
     <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
-                <b>user</b> – Contains the eyeOS user's identifier and name
+                <b>user</b> – Contains the id and name of the eyeOS user
             </td>
         </tr>
         <tr>
@@ -698,11 +730,11 @@ Synchronize all calendars of the user connected in eyeOS platform.
         </tr>
     </table>
 </div>
-
-
+  
+  
 **insertCalendars(**_user,calendar_**)**
 
-Create a new calendar.
+Creates a new calendar.
 
 <div style="margin-bottom:10px;margin-left:0px">
     <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
@@ -711,7 +743,7 @@ Create a new calendar.
             <td style="padding-left:30px">
                 <ul>
                     <li><b>user</b> – User name</li>
-                    <li><b>calendar</b> – It's an object that contains name, description and timezone</li>
+                    <li><b>calendar</b> – An object that contains name, description, and timezone</li>
                 </ul>
             </td>
         </tr>
@@ -746,11 +778,11 @@ Create a new calendar.
         </tr>
     </table>
 </div>
-
-
+  
+  
 **deleteCalendars(**_user,calendar_**)**
 
-Delete an existing calendar.
+Deletes an existing calendar.
 
 <div style="margin-bottom:10px;margin-left:0px">
     <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
@@ -787,15 +819,15 @@ Delete an existing calendar.
         </tr>
         <tr>
             <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">True or in case of error null</td>
+            <td style="padding-left:30px">True or in the event of error null</td>
         </tr>
     </table>
 </div>
-
-
+  
+  
 **synchronizeCalendar(**_calendarId,user_**)**
 
-Synchronize all the events of the especified calendar of the user connected in eyeOS platform.
+Synchronizes all the events of the specified calendar of the user connected to the eyeOS platform.
 
 
 <div style="margin-bottom:10px;margin-left:0px">
@@ -804,7 +836,7 @@ Synchronize all the events of the especified calendar of the user connected in e
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
                 <ul>
-                    <li><b>calendarId</b> – Calendar identifier in eyeOS</li>
+                    <li><b>calendarId</b> – Id of the eyeOS calendar</li>
                     <li><b>user</b> – User name</li>
                 </ul>
             </td>
@@ -837,18 +869,18 @@ Synchronize all the events of the especified calendar of the user connected in e
         </tr>
     </table>
 </div>
-
-
+  
+  
 **createEvent(**_event_**)**
 
-Create a new event
+Creates a new event
 
 <div style="margin-bottom:10px;margin-left:0px">
     <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
-                <b>event</b> – Contains the event's U1DB estructure
+                <b>event</b> – Contains the U1DB structure of the event
             </td>
         </tr>
         <tr>
@@ -860,7 +892,7 @@ Create a new event
                 &nbsp;&nbsp;&nbsp;&nbsp;"lista":[{<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type":"event",<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"user_eyeos": "eyeos"<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"name": "personal"<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"calendar": "personal"<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"status": "NEW"<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"isallday": "0"<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"timestart": "201419160000"<br>
@@ -885,15 +917,15 @@ Create a new event
         </tr>
         <tr>
             <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">True or in case of error null</td>
+            <td style="padding-left:30px">True or in the event of error null</td>
         </tr>
     </table>
 </div>
-
-
+  
+  
 **deleteEvent(**_event_**)**
 
-Delete an existing event.
+Deletes an existing event.
 
 
 <div style="margin-bottom:10px;margin-left:0px">
@@ -901,7 +933,7 @@ Delete an existing event.
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
-                <b>event</b> – Contains the event's U1DB structure
+                <b>event</b> – Contains the U1DB structure of the event
             </td>
         </tr>
         <tr>
@@ -913,7 +945,7 @@ Delete an existing event.
                 &nbsp;&nbsp;&nbsp;&nbsp;"lista":[{<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type":"event",<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"user_eyeos": "eyeos"<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"name": "personal"<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"calendar": "personal"<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"status": "DELETED"<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"isallday": "0"<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"timestart": "201419160000"<br>
@@ -938,22 +970,22 @@ Delete an existing event.
         </tr>
         <tr>
             <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">True or in case of error null</td>
+            <td style="padding-left:30px">True or in the event of error null</td>
         </tr>
     </table>
 </div>
-
-
+  
+  
 **updateEvent(**_event_**)**
 
-Update an existing event.
+Updates an existing event.
 
 <div style="margin-bottom:10px;margin-left:0px">
     <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
-                <b>event</b> – Contains the event's U1DB structure
+                <b>event</b> – Contains the U1DB structure of the event
             </td>
         </tr>
         <tr>
@@ -965,7 +997,7 @@ Update an existing event.
                 &nbsp;&nbsp;&nbsp;&nbsp;"lista":[{<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type":"event",<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"user_eyeos": "eyeos"<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"name": "personal"<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"calendar": "personal"<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"status": "CHANGED"<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"isallday": "0"<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"timestart": "201419160000"<br>
@@ -990,102 +1022,737 @@ Update an existing event.
         </tr>
         <tr>
             <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">True or in case of error null</td>
+            <td style="padding-left:30px">True or in the event of error null</td>
+        </tr>
+    </table>
+</div>  
+  
+  
+**_Calendar API_**
+
+To display the calendars correctly in the eyeOS platform, the structure of the calendars and the events, as well as their indexes, must be respected: 
+
+  - calendar: type and user_eyeos.  
+	- events: type, user_eyeos and calendar.
+
+The functions are listed and described below.  
+
+**selectCalendar(**_data_**)**
+
+Get all calendars of the user.
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px"><b>data</b> – Contains the type and the user.<br>
+                Example: {“type”:”calendar”,”user_eyeos”:”eyeos”}
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">Vector with all the calendars, in JSON format<br>
+                Example:<br>
+                [{<br>
+		&nbsp;&nbsp;&nbsp;“type”:”calendar”,<br>
+		&nbsp;&nbsp;&nbsp;”user_eyeos”:”eyeos”,<br>
+		&nbsp;&nbsp;&nbsp;”name”:”personal”,<br>
+		&nbsp;&nbsp;&nbsp;”description”:”personal calendar”,<br>
+		&nbsp;&nbsp;&nbsp;”timezone”: 0,<br>
+		&nbsp;&nbsp;&nbsp;”status”:”NEW”<br>
+		}]
+            </td>
         </tr>
     </table>
 </div>
+  
+  
+**insertCalendar(**_lista_**)**
 
+Inserts the new calendar generated by the user in eyeOS.
 
-When the eyeOS calendar application starts the calendar and events synchronization processes are executed.
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px"><b>lista</b> – Contains a vector of the calendars to be inserted.<br>
+                Example:<br>
+                [{<br>
+		&nbsp;&nbsp;&nbsp;“type”:”calendar”,<br>
+		&nbsp;&nbsp;&nbsp;”user_eyeos”:”eyeos”,<br>
+		&nbsp;&nbsp;&nbsp;”name”:”personal”,<br>
+		&nbsp;&nbsp;&nbsp;”description”:”personal calendar”,<br>
+		&nbsp;&nbsp;&nbsp;”timezone”:0,<br>
+		&nbsp;&nbsp;&nbsp;”status”:”NEW”<br>
+		}]
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">'true' or exception in the event of error</td>
+        </tr>
+    </table>
+</div>
+  
+  
+**deleteCalendar(**_lista_**)**
 
-The calendar sinchronization is performed every 20 seconds, if changes are detected the calendar list is refreshed and the wait time starts again.
+Identifies the status of the calendar to be deleted (STATUS=”DELETED”) of a specific eyeOS user.
 
-The event sinchronization is performed every 10 seconds, if changes are detected the events of the period showed on the screen is refreshed and the wait time starts again.
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px"><b>lista</b> – Contains a vector of the calendars to be deleted.<br>
+                Example:<br>
+                [{<br>
+		&nbsp;&nbsp;&nbsp;“type”:”calendar”,<br>
+		&nbsp;&nbsp;&nbsp;”user_eyeos”:”eyeos”,<br>
+		&nbsp;&nbsp;&nbsp;”name”:”personal”<br>
+		}]
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">'true' or exception in the event of error</td>
+        </tr>
+    </table>
+</div>
+  
+  
+**selectEvent(**_type,user,calendarId_**)**
 
+Gets all the events of the calendar belonging to the specified user.  
 
-### Implementation of Oauth into eyeOS calendar
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>
+                <ul>
+                    <li><b>type</b> – “event” fixed flag</li>
+                    <li><b>user</b> – eyeOS user</li>
+                    <li><b>calendarId</b> – Calendar name</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">
+                Vector with all the calendar events, in JSON format<br>
+                Example:<br>
+                [{<br>
+		&nbsp;&nbsp;&nbsp;“type”:”event”,<br>
+		&nbsp;&nbsp;&nbsp;”user_eyeos”:”eyeos”,<br>
+		&nbsp;&nbsp;&nbsp;”calendar”:”personal”,<br>
+		&nbsp;&nbsp;&nbsp;”status”:”NEW”,<br>
+		&nbsp;&nbsp;&nbsp;“isallday”: “0”,<br>
+		&nbsp;&nbsp;&nbsp;“timestart”: “201419160000”,<br>
+		&nbsp;&nbsp;&nbsp;“timeend”:”201419170000”,<br>
+		&nbsp;&nbsp;&nbsp;“repetition”: “None”,<br>
+		&nbsp;&nbsp;&nbsp;“finaltype”: “1”,<br>
+		&nbsp;&nbsp;&nbsp;“finalvalue”: “0”,<br>
+		&nbsp;&nbsp;&nbsp;“subject”: “Visita Médico”,<br>
+		&nbsp;&nbsp;&nbsp;“location”: “Barcelona”,<br>
+		&nbsp;&nbsp;&nbsp;“description”: “Llevar justificante”<br>
+		}]
+            </td>
+        </tr>
+    </table>
+</div>
+  
+  
+**insertEvent(**_lista_**)**
 
-To synchronize eyeOS calendars and  events is needed authentication with the server using the Oauth protocol.
+Inserts a new event in the calendar of the specified user. 
 
-The Oauth server permits access to only one protected resource, that is the U1DB server.
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px">
+                <b>lista</b> – Contains a vector of the events to be inserted.<br>
+                Example:<br>
+                [{<br>
+		&nbsp;&nbsp;&nbsp;“type”:”event”,<br>
+		&nbsp;&nbsp;&nbsp;”user_eyeos”:”eyeos”,<br>
+		&nbsp;&nbsp;&nbsp;”calendar”:”personal”,<br>
+		&nbsp;&nbsp;&nbsp;”status”:”NEW”,<br>
+		&nbsp;&nbsp;&nbsp;“isallday”: “0”,<br>
+		&nbsp;&nbsp;&nbsp;“timestart”: “201419160000”,<br>
+		&nbsp;&nbsp;&nbsp;“timeend”:”201419170000”,<br>
+		&nbsp;&nbsp;&nbsp;“repetition”: “None”,<br>
+		&nbsp;&nbsp;&nbsp;“finaltype”: “1”,<br>
+		&nbsp;&nbsp;&nbsp;“finalvalue”: “0”,<br>
+		&nbsp;&nbsp;&nbsp;“subject”: “Visita Médico”,<br>
+		&nbsp;&nbsp;&nbsp;“location”: “Barcelona”,<br>
+		&nbsp;&nbsp;&nbsp;“description”: “Llevar justificante”<br>
+		}]
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">'true' or exception in the event of error</td>
+        </tr>
+    </table>
+</div>
+  
+   
+**deleteEvent(**_lista_**)**
 
-The eyeOS platform implements the Credentials.py and Protocol.py scripts that contain the necessary APIs to comunicate with the Oauth server.
+Identifies the status of the event of a calendar to be deleted for a specific eyeOS user. 
 
-Next is shown the communication dialog:
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px">
+                <b>lista</b> – Contains an array with the events identified as deleted.<br>
+                Example:<br>
+                [{<br>
+		&nbsp;&nbsp;&nbsp;“type”:”event”,<br>
+		&nbsp;&nbsp;&nbsp;”user_eyeos”:”eyeos”,<br>
+		&nbsp;&nbsp;&nbsp;”calendar”:”personal”,<br>
+		&nbsp;&nbsp;&nbsp;”status”:DELETED,<br>
+		&nbsp;&nbsp;&nbsp;“isallday”: “0”,<br>
+		&nbsp;&nbsp;&nbsp;“timestart”: “201419160000”,<br>
+		&nbsp;&nbsp;&nbsp;“timeend”:”201419170000”,<br>
+		&nbsp;&nbsp;&nbsp;“repetition”: “None”,<br>
+		&nbsp;&nbsp;&nbsp;“finaltype”: “1”,<br>
+		&nbsp;&nbsp;&nbsp;“finalvalue”: “0”,<br>
+		&nbsp;&nbsp;&nbsp;“subject”: “Visita Médico”,<br>
+		&nbsp;&nbsp;&nbsp;“location”: “Barcelona”,<br>
+		&nbsp;&nbsp;&nbsp;“description”: “Llevar justificante”<br>
+		}]
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">'true' or exception in the event of error</td>
+        </tr>
+    </table>
+</div>
+  
+  
+**updateEvent(**_lista_**)**
 
-![](img/DiagramaServerOauth.jpeg)
+Changes the data of an event in the existing calendar of a specific eyeOS user.
 
-Step 1:
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px">
+                <b>lista</b> – Contains a vector of the events to be updated.<br>
+                Example:<br>
+                [{<br>
+		&nbsp;&nbsp;&nbsp;“type”:”event”,<br>
+		&nbsp;&nbsp;&nbsp;”user_eyeos”:”eyeos”,<br>
+		&nbsp;&nbsp;&nbsp;”calendar”:”personal”,<br>
+		&nbsp;&nbsp;&nbsp;”status”:CHANGED,<br>
+		&nbsp;&nbsp;&nbsp;“isallday”: “0”,<br>
+		&nbsp;&nbsp;&nbsp;“timestart”: “201419160000”,<br>
+		&nbsp;&nbsp;&nbsp;“timeend”:”201419170000”,<br>
+		&nbsp;&nbsp;&nbsp;“repetition”: “None”,<br>
+		&nbsp;&nbsp;&nbsp;“finaltype”: “1”,<br>
+		&nbsp;&nbsp;&nbsp;“finalvalue”: “0”,<br>
+		&nbsp;&nbsp;&nbsp;“subject”: “Examen”,<br>
+		&nbsp;&nbsp;&nbsp;“location”: “Tarragona”,<br>
+		&nbsp;&nbsp;&nbsp;“description”: “Llevar libro”<br>
+		}]
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">'true' or exception in the event of error</td>
+        </tr>
+    </table>
+</div>  
+  
+   
+## Collaborative tool between eyeOS and StackSync
 
-API getRequestToken() get the consumer key and consumer secret from the settings file. Performs the call to the Oauth server by means of the “request_token” url.
+The comments tool is only valid in the user’s Personal Cloud because it is a collaboration resource between StackSync and eyeOS. 
 
-The Oauth server get the consumer key from mongodb database, an compares it with the consumer received from getRequestToken(). If it isn't correct, return an error and otherwise, performs a new search in mongodb, with the consumer key to get the request token.
+The user accesses the comments tool when they select a Personal Cloud file or directory in the file manager and then clicks the “Comments” tab in the right toolbar (social bar).  
 
-The Oauth server answers to the eyeOS call providing the request token and the access verification to ask for the access token.
+![](img/FilesManager_Comments_1.jpg)
 
-The eyeOS platform storage the request token and the verifier in the session variables in order not to repeat the process previously explained.
+The comments tool lists all comments inserted for a specific element, both those from the element’s owner and from other users who have been given privileges to access the element.  
 
-Step 2:
+The data given in a list comment is:  
 
-API getAccessToken(token,verifier) performs the Oauth server call by means of “access_token” url.
+- name of the user who made the comment 
+- creation date/time 
+- text entered
 
-The Oauth server get the consumer and the request token from mongodb database, an compares it with the data received from getAccessToken(). If it isn't correct, returns an error and otherwise, performs a new search, with consumer key and request token key in mongodb to get the access token. If no data are adquired or the adquired data are expired, a new access token must be generated and stored it in mongodb, that  will invalidate any previous token.
-
-The Oauth server ask for the eyeOS call providing the access token.
-
-Step 3:
-
-API protocol(params) performs the Oauth server call by means of the U1DB synchonization API.
-
-The Oauth server get the access token from mongodb database using the consumer and token received. If they aren't correct returns an error and otherwise proceed to perform the synchronization with the U1DB server.
-
-The step 1 is only applied in case that a request token hasn't been requested during the eyeOS user session.
-
-
-## Implementation of StackSync API into eyeOS
-
-EyeOS accesses the private document storage of a cloudspace user using StackSync API's from the application “File Manager”.
-
-The StackSync API calls are made via a Python script called OAuthCredentials.py. This script can be configured from the file “settings.py” located at '/var/www/eyeos/eyeos/extern/u1db/'. Next are shown the values to modify:
-
-![](img/settings_connectStacksync.jpg)
+Example:  
 
 <div style="margin-top:45px;margin-bottom:10px;margin-left:40px">
     <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td colspan="2">Urls</td>
+            <td style="background-color:#C0C0C0" width="15%">User</td>
+            <td width="45%" style="padding-left:15px"><b>stacksync2</b></td>
         </tr>
         <tr>
-            <td valign="middle">CALLBACK_URL</td>
-            <td style="padding-left:15px">Callback url when the user has been validated in StackSync</td>
+            <td style="background-color:#C0C0C0">Date / time</td>
+            <td style="padding-left:15px">04/07/2014 13:02</td>
         </tr>
         <tr>
-            <td colspan="2">consumer</td>
+            <td style="background-color:#C0C0C0">Text</td>
+            <td style="padding-left:15px">Welcome 3</td>
         </tr>
+    </table>
+</div>
+  
+Other actions that can be performed include insert new comments with the “New” option or delete existing comments with the “Delete” option. The delete option is restricted; only comments made by the user in question can be deleted. Users cannot delete comments made by others. 
+
+![](img/FilesManager_Comments_2.jpg)
+
+The comments list is not refreshed, as there is no background process that enables new comments to be displayed automatically.
+
+Persistence is implemented in the eyeOS comments tool according to the diagram below:
+
+![](img/diagrama_Persistence_Comentarios.jpg)
+
+The user performs an action, such as inserts a new comment in the list. The Manager using the createComment function retrieves the user’s credentials. These values are sent to the API together with the data of the new comment. The API is responsible for requesting the resource from the U1DB server using the createComment function. 
+
+If everything is correct, the U1DB server updates the server database and subsequently notifies other clients of the change. The API receives confirmation of the change and applies it to the client U1DB database. Once the updates have been made, it notifies the Manager, which will update the eyeOS interface. 
+
+The createComment functions of the Comment Manager and the Comment API, as well as the other actions performed by the comments tool. Now are described in more detail, respectively:  
+
+**_Comment Manager_**
+
+The Comment Manager API consists of a uniform structure in the script call:  
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
-            <td valign="middle" width="10%">key</td>
-            <td style="padding-left:15px">Key provided by StackSync</td>
-        </tr>
-        <tr>
-            <td valign="middle">secret</td>
-            <td style="padding-left:15px">Secret provided by StackSync</td>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td>
+                <ul>
+                    <li><b>type</b> – Name of the Python API function</li>
+                    <li><b>lista</b> – Parameters of the previous function</li>
+                    <li><b>credentials</b> – Credentials for identification during the synchronization process</li>
+                </ul>
+            </td>
         </tr>
     </table>
 </div>
 
+The functions are listed and described below.  
 
-Next are detailed the APIs contained in the script OAuthCredentials.py:
+**getComments(**_id_**)**
+
+Gets all the comments of a StackSync element.
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px">
+                <b>id</b> – Id of the StackSync element
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Script call:</td>
+            <td style="padding-left:30px">
+                Example:<br>
+                {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;"type":"get" ,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;"metadata":[{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":"124578",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}]<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;"credentials":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”oauth”:{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“consumer_key”:”eyeos”,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“consumer_secret”:”eyeosABC”,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“token_key”:”eyeostoken”,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“token_secret”:”eyeosDEF”<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                }<br>
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">
+                Array containing all comments, in JSON format or, in the event of error, returns an error structure:<br>
+                - error: Error number<br>
+                Example:<br>
+                [{<br>
+		&nbsp;&nbsp;&nbsp;“id”:”1245789”,<br>
+		&nbsp;&nbsp;&nbsp;”user”:”eyeos”,<br>
+		&nbsp;&nbsp;&nbsp;”time_created”:”20140702124055”,<br>
+		&nbsp;&nbsp;&nbsp;”status”:”NEW”,<br>
+		&nbsp;&nbsp;&nbsp;”text”: ”Comment 1”
+		}]<br>
+                [{“error”:-1,”description”:”Error getComments”}]
+            </td>
+        </tr>
+    </table>
+</div>
+  
+  
+**createComment(**_id,user,text_**)**
+
+Links a new comment to a specific StackSync element.
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px">
+                <b>id</b> – Id of the StackSync element<br>
+                <b>user</b> – Name of the user inserting a comment<br>
+                <b>text</b> – Text of the comment
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Script call:</td>
+            <td style="padding-left:30px">
+                Example:<br>
+                {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;"type":"create" ,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;"metadata":[{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":"124578",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"user":"eyeos",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"text":"Comment 1",<br>                
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}]<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;"credentials":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”oauth”:{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“consumer_key”:”eyeos”,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“consumer_secret”:”eyeosABC”,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“token_key”:”eyeostoken”,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“token_secret”:”eyeosDEF”<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                }<br>
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">
+                Metadata of the comment, in JSON format or, in the event of error, returns an error structure:<br>
+                - error: Error number<br>
+                - description: Error description<br>
+                Example:<br>
+                [{<br>
+		&nbsp;&nbsp;&nbsp;“id”:”1245789”,<br>
+		&nbsp;&nbsp;&nbsp;”user”:”eyeos”,<br>
+		&nbsp;&nbsp;&nbsp;”time_created”:”20140702124944”,<br>
+		&nbsp;&nbsp;&nbsp;”status”:”NEW”,<br>
+		&nbsp;&nbsp;&nbsp;”text”: ”Comment 1”
+		}]<br>
+                {“error”:-1,”description”:”Error create comment”}
+            </td>
+        </tr>
+    </table>
+</div>
+  
+  
+**deleteComments(**_id,user,time_created_**)**
+
+Deletes a comment of a specific StackSync element.
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px">
+                <b>id</b> – Id of the StackSync element<br>
+                <b>user</b> – Name of the user inserting a comment<br>
+                <b>time_created</b> – Date and time when the comment was created. YYYYmmddHHMMSS format
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Script call:</td>
+            <td style="padding-left:30px">
+                Example:<br>
+                {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;"type":"delete" ,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;"metadata":[{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":"124578",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"user":"eyeos",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"time_created":"20140702124944",<br>                
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}]<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;"credentials":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”oauth”:{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“consumer_key”:”eyeos”,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“consumer_secret”:”eyeosABC”,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“token_key”:”eyeostoken”,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“token_secret”:”eyeosDEF”<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                }<br>
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">
+                Result structure:<br>
+                - status:  'OK' if correct or 'KO' in the event of error<br>
+                - error: Error number. Only exists in the event of error<br>
+                Example:<br>
+                {“status”: “OK”}<br>
+                {<br>
+                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“status”: “KO”,<br>
+                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“error”: -1<br>
+                }
+            </td>
+        </tr>
+    </table>
+</div>  
+  
+  
+**_Comment API_**
+
+**getComments(**_id_**)**
+
+Gets all comments of a specific StackSync element.
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px"><b>id</b> – Id of the StackSync element</td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">Vector containing all comments, in JSON format or, in the event of error, returns an error structure:<br>
+                - error: Error number<br>
+                - description: Error description<br>
+                Example:<br>
+                [{<br>
+		&nbsp;&nbsp;&nbsp;“id”:”1245789”,<br>
+		&nbsp;&nbsp;&nbsp;”user”:”eyeos”,<br>
+		&nbsp;&nbsp;&nbsp;”time_created”:”20140702124944”,<br>
+		&nbsp;&nbsp;&nbsp;”status”:”NEW”,<br>
+		&nbsp;&nbsp;&nbsp;”text”: ”Comment 1”
+		}]<br>
+                [{“error”:-1,”description”:”Error getComments”}]
+            </td>
+        </tr>
+    </table>
+</div>
+  
+  
+**createComment(**_id,user,text,time_created_**)**
+
+Links a new comment to a specific StackSync element.
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px">
+                <b>id</b> – Id of the StackSync element<br>
+                <b>user</b> – Name of the user inserting a comment<br>
+                <b>text</b> – Text of the comment<br>
+                <b>time_created</b> – Date and time when the comment was created. YYYYmmddHHMMSS format (Optional)                
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">Metadata of the comment, in JSON format or, in the event of error, returns an error structure:<br>
+                - error: Error number<br>
+                - description: Error description<br>
+                Example:<br>
+                [{<br>
+		&nbsp;&nbsp;&nbsp;“id”:”1245789”,<br>
+		&nbsp;&nbsp;&nbsp;”user”:”eyeos”,<br>
+		&nbsp;&nbsp;&nbsp;”time_created”:”20140702124055”,<br>
+		&nbsp;&nbsp;&nbsp;”status”:”NEW”,<br>
+		&nbsp;&nbsp;&nbsp;”text”: ”Comment 1”
+		}]<br>
+                {“error”:-1,”description”:”Error create comment”}
+            </td>
+        </tr>
+    </table>
+</div>
+  
+  
+**deleteComment(**_id,user,time_created_**)**
+
+Deletes a comment from a specific StackSync element.
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px">
+                <b>id</b> – Id of the StackSync element<br>
+                <b>user</b> – Name of the user inserting a comment<br>
+                <b>time_created</b> – Date and time when the comment was created. YYYYmmddHHMMSS format (Optional)                
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">Result structure:<br>
+                - status:  'OK' if correct or 'KO' in the event of error<br>
+                - error: Error number. Only exists in the event of error<br>
+                Example:<br>
+                {“status”: “OK”}<br>
+                {<br>
+                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“status”: “KO”,<br>
+                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“error”: -1<br>
+                }
+
+            </td>
+        </tr>
+    </table>
+</div>  
+
+
+## Implementation of StackSync API into eyeOS
+
+Within the eyeOS Personal Web Desktop, one of the key features of the platform is file management. eyeOS includes a web file manager developed in JavaScript, HTML and CSS that enables users to manage all their files directly from their browser, but with an experience similar to a file manager of any desktop operating system, such as Microsoft Windows™ or GNU/Linux.
+
+![](img/FilesManager_1.jpg)
+
+By integrating Personal Cloud services in the eyeOS platform, users can use eyeOS’ web file manager and all its features with their Personal Cloud files. For example, users can display online their documents saved in their Personal Cloud, create directories, move files, share documents, etc.  
+
+Users access the files in their Personal Cloud using the StackSync directory. To get the file and directory structure of Personal Cloud, a call is made to StackSync’s API. This call returns metadata with all the structural information of the files and directories, which eyeOS uses to generate a local replica.  
+
+The files and directories are created without content. When the user selects an element and performs an operation on it, i.e. opens, moves or copies it, the element's contents are downloaded. By doing this, the system is not overloaded unnecessarily by retrieving information that the user will not use at that moment. If the content of a file or directory has already been retrieved and there are no changes, it will not be updated.  
+
+![](img/FilesManager_2.jpg)
+
+The file manager can retrieve previous versions of a file. It shows a list of all the available versions of the file, letting the user retrieve the contents of the desired version.   
+
+![](img/FilesManager_3.jpg)
+
+If the user makes changes to a previous version, when those changes are saved, a new version is created in Personal Cloud.
+
+![](img/FilesManager_4.jpg)
+
+The contents of the current directory are synced with the Personal Cloud directory in a background process, which sends queries every 10 seconds to check whether there are any changes. If there are any changes, the current structure is updated.  
+
+![](img/FilesManager_5.jpg)  
+  
+  
+###Authentication
+
+The eyeOS platform uses OAuth authentication in order to interact with the user’s protected data stored in Personal Cloud. OAuth is an authorization protocol that enables the user (resource owner) to authorize eyeOS to access the resources on their behalf without giving eyeOS their authentication credentials i.e. user name and password. 
+
+![](img/authentication.png)
+  
+When the eyeOS user accesses the file manager for the first time, a newly developed plugin is used to get a security token with which the keys required for interacting with user data stored in Personal Cloud can be obtained.  The Access Token and Token Secret keys are stored in the ‘token’ table of the relational database management system (RDBMS) based on MySQL. These keys are linked with the user who has logged into the platform, meaning the system can determine the access token for a given user who attempts to use the service at any stage.
+
+The communication dialog is as follows:
+
+![](img/Oauth.jpg)
+
+**Step 1**:
+
+Request from StackSync the consumer key and secret token that identifies eyeOS as the CloudSpaces resource consumer.This communication is done via email.
+
+**Step 2**:
+
+Get the request token and provide StackSync with the redirect URL to eyeOS once the user grants authorization.
+StackSync responds to the previous request by giving a valid request token and an authorization URL.
+
+**Step 3**:
+
+Redirect the user to the authorization URL where the user grants eyeOS access to their private space.
+Once StackSync verifies the user, it redirects the user to the eyeOS URL provided in the previous step.
+
+**Step 4**:
+
+Get the access token and token secret from StackSync, with which eyeOS will identify itself when accessing the user’s private space in CloudSpaces.
+
+
+Authentication is implemented in eyeOS according to the diagram below:
+
+![](img/diagrama_Oauth_Desktop.jpg)
+
+The OAuth Manager and OAuth API functions now are described, respectively:
+
+**_OAuth Manager_**
+
+**getRequestToken()**
+
+Gets the request token of the eyeOS consumer.
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Script call:</td>
+            <td style="padding-left:30px">
+                No parameters
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">
+            Object token or in case of error null<br>
+            Example:<br>
+            {<br>
+            &nbsp;"key": "token1234",<br>
+            &nbsp;"secret": "secret1234"<br>
+            }
+            </td>
+        </tr>
+    </table>
+</div>
+
+  
+
+**getAccessToken(**_token_**)**
+
+Get the access token of eyeOS consumer from the request token.
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px">
+                <b>token</b> – Contains the request token and user authorization
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Script call:</td>
+            <td style="padding-left:30px">
+                Example:<br>
+                {<br>
+                &nbsp;"token":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"key":"token1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"secret":"secret1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                &nbsp;"verifier":"userVerifier"<br>
+                }
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">
+            Token object or in the event of error, null<br>
+            Example:<br>
+            {<br>
+            &nbsp;"key": "access1234",<br>
+            &nbsp;"secret": "access1234"<br>
+            }
+            </td>
+        </tr>
+    </table>
+</div>  
+  
+  
+**_OAuth API_**
+
+The configuration file of the OAuth API is found at “/var/www/eyeos/eyeos/extern/u1db/” and is called “settings.py”.
+
 
 **getRequestToken(**_oauth_**)**
 
-Ask for the consumer eyeos's request token.
+Gets the request token of the eyeOS consumer.
 
 <div style="margin-bottom:10px;margin-left:0px">
     <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Url:</td>
             <td style="padding-left:30px">
-                Use REQUEST_TOKEN_URL from the configuration file.
+                Use REQUEST_TOKEN_URL of the configuration file.
             </td>
         </tr>
         <tr>
@@ -1103,13 +1770,13 @@ Ask for the consumer eyeos's request token.
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
-                <b>oauth</b> – Object OauthRequest. Contains the values key, secret and CALLBACK_URL from the configuration file
+                <b>oauth</b> – OauthRequest object. Contains the values of the consumer key, consumer secret and CALLBACK_URL of the configuration file
             </td>
         </tr>
         <tr>
             <td style="background-color:#C0C0C0">Return:</td>
             <td style="padding-left:30px">
-            Key and secret of the request token or in case of error returns an error structure:<br>
+            Key and secret of the request token or, in the event of error, returns an error structure:<br>
             - error: Error number<br>
             - description: Error description<br>
             Example:<br>
@@ -1122,14 +1789,14 @@ Ask for the consumer eyeos's request token.
 
 **getAccessToken(**_oauth_**)**
 
-Ask for the consumer eyeos's access token from the storaged request token.
+Gets the access token of the eyeOS consumer from the request token stored.
 
 <div style="margin-bottom:10px;margin-left:0px">
     <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Url:</td>
             <td style="padding-left:30px">
-                Use ACCESS_TOKEN_URL from the configuration file.
+                Use ACCESS_TOKEN_URL of the configuration file.
             </td>
         </tr>
         <tr>
@@ -1147,13 +1814,13 @@ Ask for the consumer eyeos's access token from the storaged request token.
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
-                <b>oauth</b> – Object OauthRequest. Contains the values key and secret from the configuration file. Also the request token and verifier.
+                <b>oauth</b> – OauthRequest object. Includes the values of consumer key and consumer secret of the configuration file. And also the request token and verifier received from StackSync.
             </td>
         </tr>
         <tr>
             <td style="background-color:#C0C0C0">Return:</td>
             <td style="padding-left:30px">
-            Key and secret of the access token or in case of error returns an error structure:<br>
+            Key and secret of the access token or, in the event of error, returns an error structure:<br>
             - error: Error number<br>
             - description: Error description<br>
             Example:<br>
@@ -1162,18 +1829,587 @@ Ask for the consumer eyeos's access token from the storaged request token.
             </td>
         </tr>
     </table>
+</div>  
+
+
+
+If the user has not previously granted eyeOS access to their CloudSpaces private space, when they access the file manager, the authentication process is initiated, as shown in the following screens:  
+
++ The user is asked if they want to grant eyeOS access to their protected data.
+
+    ![](img/Stacksync_1.jpg)
+
++ If the user selects “No”, the eyeOS file structure is shown without the StackSync directory, which contains the user’s protected data in CloudSpaces.
+
+    ![](img/StackSync_2.jpg)
+
++ If the user selects “Yes” in the first screen of the process, communication is established with StackSync to get the access token.
+
+    ![](img/StackSync_3.jpg)
+
++ A new browser window is pops up in which the user is redirected to the authorization URL received from StackSync. Here the user authorizes eyeOS to access their private space.
+
+    ![](img/StackSync_4.jpg)
+
++ Once access has been authorized, StackSync redirects the user to the URL provided by eyeOS on requesting the request token. This page notifies the user that the process has been completed successfully and that they can return to the eyeOS desktop.
+
+    ![](img/StackSync_5.jpg)
+
++ The access token for the current eyeOS user is saved. From this moment, the user can access their protected data from the StackSync directory without having to authenticate again.
+
+    ![](img/StackSync_6.jpg)
+
+During the authentication process, various exceptions may be triggered, which interrupt the process to get the access token. These errors are described below:
+
++ Communication error. This may occur on sending or receiving data from StackSync.
+
+    ![](img/StackSync_7.jpg)
+
++ Timeout exceeded for receiving the user’s authorization to access their private space. eyeOS establishes a timeout of 1 minute. The process to request the request token can be restarted or interrupted.
+
+    ![](img/StackSync_8.jpg)
+
++ Access denied as an invalid access token was sent to StackSync. The access token does not expire and is stored permanently in eyeOS. This error occurs when the users deletes the access token from the StackSync portal.
+
+    ![](img/StackSync_9.png)
+
+### Storage
+
+To integrate the Personal Cloud storage service within eyeOS, the Storage Manager and the Storage API have been created. The Storage API communicates with the StackSync API v2, which manages all the requests made from the file manager.   
+
+Storage is implemented in eyeOS according to the diagram below:  
+
+![](img/diagrama_Storage.jpg)
+
+The user performs an action in the file manager, such as opening a directory. The Storage Manager using the getMetadata function retrieves the user’s access token and id for the directory in StackSync. These values are sent to the API, which is responsible for requesting the resource from StackSync using the getMetadata function. The file structure of the directory is retrieved and stored in the database, and the Manager is notified of the new structure, which will update the eyeOS interface.  
+
+The getMetadata functions of the Storage Manager and the Storage API, as well as the other actions performed by the file manager. Now are described in more detail, respectively:  
+
+**_Storage Manager_**
+
+**getMetadata(**_token,id,path,user_**)**
+
+Gets metadata for the current element. Generates its file structure and/or directories in eyeOS.
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px">
+                <b>token</b> – Includes key and secret of the access token<br>
+                <b>id</b> – Id number of the element in StackSync<br>
+                <b>path</b> – eyeOS path<br>
+                <b>user</b> – eyeOS user identifier               
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Script call:</td>
+            <td style="padding-left:30px">
+                Example:<br>
+                {<br>
+                &nbsp;"token":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"key":"token1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"secret":"secret1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                &nbsp;"metadata":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type":"get",<br> 
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"file":false,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":155241412,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"contents":true<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                }
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">
+            Metadatas or, in the event of error, returns an error structure:<br>
+            - error: Error number<br>
+            Example:<br>
+            {"filename":"clients",<br>
+            &nbsp;&nbsp;"id":155241412,<br>
+            &nbsp;&nbsp;"status":"NEW",<br>
+            &nbsp;&nbsp;"version":1,<br>
+            &nbsp;&nbsp;"parent_id":"null",<br>
+            &nbsp;&nbsp;"user":"eyeos",<br>
+            &nbsp;&nbsp;“modified_at”: "2013-03-08 10:36:41.997",<br>
+            &nbsp;&nbsp;"is_root":false,<br>            
+            &nbsp;&nbsp;"is_folder":true,<br>
+            &nbsp;&nbsp;"contents":[{<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"filename":"Client1.pdf",<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":32565632156,<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"size":775412,<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"mimetype":"application/pdf",<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"status":"NEW",<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"version":1,<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"parent_id":155241412,<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"user":"eyeos",<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"modified_at":"2013-03-08 10:36:41.997",<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"is_root":false,<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"is_folder":false,<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}]",<br>
+            }
+            {"error":401}
+            </td>
+        </tr>
+    </table>
 </div>
+  
+  
+**getSkel(**_token,file,id,metadatas,path,pathAbsolute,pathEyeos_**)**
+
+Recursively gets metadata depending on the current element. This function is used in the copy and move action in eyeOS.
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px">
+                <b>token</b> – Includes key and secret of the access token<br>
+                <b>file</b> – True, if it is a file or False, if it is a directory<br>                
+                <b>id</b> – Id number of the element in StackSync<br>
+                <b>metadatas</b> – Accumulative vector of metadata<br>                
+                <b>path</b> – Relative path of the current element<br>
+                <b>pathAbsolute</b> – eyeOS path<br>
+		<b>pathEyeos</b> – eyeOS path, only used when the destination of the action is outside Personal Cloud                
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Script call:</td>
+            <td style="padding-left:30px">
+                Example:<br>
+                {<br>
+                &nbsp;"token":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"key":"token1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"secret":"secret1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                &nbsp;"metadata":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type":"get",<br> 
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"file":false,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":155241412,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"contents":true<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                }
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">
+            Vector of metadata or, in the event of error, returns an error structure:<br>
+            - error: Error number<br>
+            Example:<br>
+            [{"filename":"Client1.pdf",<br>
+            &nbsp;&nbsp;"id":32565632156,<br>
+            &nbsp;&nbsp;"size":775412,<br>            
+            &nbsp;&nbsp;"mimetype":"application/pdf",<br>
+            &nbsp;&nbsp;"status":"NEW",<br>
+            &nbsp;&nbsp;"version":1,<br>
+            &nbsp;&nbsp;"parent_id":155241412,<br>
+            &nbsp;&nbsp;"user":"eyeos",<br>
+            &nbsp;&nbsp;"modified_at": "2013-03-08 10:36:41.997",<br>
+            &nbsp;&nbsp;"is_root":false,<br>            
+            &nbsp;&nbsp;"is_folder":false},<br>
+            &nbsp;{"filename":"clients",<br>
+            &nbsp;&nbsp;"id":155241412,<br>
+            &nbsp;&nbsp;"status":"NEW",<br>
+            &nbsp;&nbsp;"version":1,<br>
+            &nbsp;&nbsp;"parent_id":"null",<br>
+            &nbsp;&nbsp;"user":"eyeos",<br>
+            &nbsp;&nbsp;“modified_at”: "2013-03-08 10:36:41.997",<br>
+            &nbsp;&nbsp;"is_root":false,<br>
+            &nbsp;&nbsp;"is_folder":true}]<br>
+            {"error":401}
+            </td>
+        </tr>
+    </table>
+</div>
+  
+  
+**createMetadata(**_token,user,file,name,parent\_id,path,pathAbsolute_**)**
+
+Creates a new file or directory.
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px">
+                <b>token</b> – Includes key and secret of the access token<br>
+                <b>user</b> – eyeOS user identifier<br>
+                <b>file</b> – True, if it is a file or False, if it is a directory<br>
+                <b>name</b> – Name of the element<br>
+                <b>parent_id</b> – Id of the destination directory<br>
+                <b>path</b> – Relative path of the current element<br>
+                <b>pathAbsolute</b> – Absolute path. Required when the element is a file
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Script call:</td>
+            <td style="padding-left:30px">
+                Example:<br>
+                {<br>
+                &nbsp;"token":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"key":"token1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"secret":"secret1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                &nbsp;"metadata":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type":"create",<br> 
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"file":true,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"filename":"Client.pdf",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"parent_id":254885,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"path":"/home/eyeos/Documents/Client.pdf"<br>                
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                }
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">
+            Metadata or, in the event of error, returns an error structure:<br>
+            - error: Error number<br>
+            Example:<br>
+            {"filename":"Client.pdf",<br>
+            &nbsp;&nbsp;"id":32565632111,<br>
+            &nbsp;&nbsp;"size":775412,<br>            
+            &nbsp;&nbsp;"mimetype":"application/pdf",<br>
+            &nbsp;&nbsp;"status":"NEW",<br>
+            &nbsp;&nbsp;"version":1,<br>
+            &nbsp;&nbsp;"parent_id":254885,<br>
+            &nbsp;&nbsp;"user":"eyeos",<br>
+            &nbsp;&nbsp;“modified_at”: "2013-03-08 10:36:41.997",<br>
+            &nbsp;&nbsp;"is_root":false,<br>            
+            &nbsp;&nbsp;"is_folder":false}<br>
+            {"error":401}
+            </td>
+        </tr>
+    </table>
+</div>
+  
+  
+**downloadMetadata(**_token,id,path,user,isTmp=false_**)**
+
+Downloads the content of a file.
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px">
+                <b>token</b> – Includes key and secret of the access token<br>
+                <b>id</b> – Id number of the file in Stacksync<br>
+                <b>path</b> – Absolute path<br>
+		<b>user</b> – eyeOS user identifier<br>
+		<b>isTmp</b> – When False, updates the file versions table. When True, no update is performed
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Script call:</td>
+            <td style="padding-left:30px">
+                Example:<br>
+                {<br>
+                &nbsp;"token":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"key":"token1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"secret":"secret1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                &nbsp;"metadata":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type":"download",<br> 
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":32565632111,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"path":"/home/eyeos/Documents/Client.pdf"<br>                
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                }
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">
+            Result structure:<br>
+            - status: 'OK' if correct or 'KO' in the event of error<br>
+            - error: Error number. Only exists in the event of error<br>
+            Example:<br>
+            {"status":"OK"}<br>
+            {"status":"KO","error":-1}
+            </td>
+        </tr>
+    </table>
+</div>
+  
+  
+**deleteMetadata(**_token,file,id,user,path_**)**
+
+Deletes an existing file or directory.
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px">
+                <b>token</b> – Includes key and secret of the access token<br>
+                <b>file</b> – True, if it is a file or False, if it is a directory<br>
+                <b>id</b> – Id number of the element in Stacksync<br>
+                <b>user</b> – eyeOS useridentifier<br>
+                <b>user</b> – Absolute path
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Script call:</td>
+            <td style="padding-left:30px">
+                Example:<br>
+                {<br>
+                &nbsp;"token":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"key":"token1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"secret":"secret1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                &nbsp;"metadata":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type":"delete",<br> 
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"file":true,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":32565632111<br>                
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                }
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">
+            Result structure:<br>
+            - status: 'OK' if correct or 'KO' in the event of error<br>
+            - error: Error number. Only exists in the event of error<br>
+            Example:<br>
+            {"status":"OK"}<br>
+            {"status":"KO","error":-1}
+            </td>
+        </tr>
+    </table>
+</div>
+  
+  
+**renameMetadata(**_token,file,id,name,path,user,parent_**)**
+
+Renames a file or directory.
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px">
+                <b>token</b> – Includes key and secret of the access token<br>
+                <b>file</b> – True, if it is a file or False, if it is a directory<br>
+                <b>id</b> – Id number of the element in Stacksync<br>
+                <b>name</b> – New name of the element<br>
+                <b>path</b> – Relative path of the current element<br>
+                <b>user</b> – eyeOS user identifier<br>
+                <b>parent</b> – Id of the destination directory (Optional)
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Script call:</td>
+            <td style="padding-left:30px">
+                Example:<br>
+                {<br>
+                &nbsp;"token":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"key":"token1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"secret":"secret1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                &nbsp;"metadata":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type":"update",<br> 
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"file":true,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":32565632156,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"filename":"Client2.pdf",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"parent_id":155241412<br>             
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                }
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">
+            Result structure:<br>
+            - status: 'OK' if correct or 'KO' in the event of error<br>
+            - error: Error number. Only exists in the event of error<br>
+            Example:<br>
+            {"status":"OK"}<br>
+            {"status":"KO","error":-1}
+            </td>
+        </tr>
+    </table>
+</div>
+  
+  
+**moveMetadata(**_token,file,id,pathOrig,pathDest,user,parent,filenameOld,filenameNew_**)**
+
+Moves a file or directory.
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px">
+                <b>token</b> – Includes key and secret of the access token<br>
+                <b>file</b> – True, if it is a file or False, if it is a directory<br>
+                <b>id</b> – Id number of the element in Stacksync<br>
+                <b>pathOrig</b> – eyeOS source path<br>
+                <b>pathDest</b> – eyeOS destination path<br>
+                <b>user</b> – eyeOS user identifier<br>
+                <b>parent</b> – Id of the destination directory<br>
+                <b>filenameOld</b> – Name of the element of the source path<br>                
+                <b>filenameNew</b> – Name of the element of the destination path if different from the source path (Optional)
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Script call:</td>
+            <td style="padding-left:30px">
+                Example:<br>
+                {<br>
+                &nbsp;"token":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"key":"token1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"secret":"secret1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                &nbsp;"metadata":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type":"update",<br> 
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"file":true,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":32565632156,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"filename":"Client2.pdf",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"parent_id":0<br>             
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                }
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">
+            Result structure:<br>
+            - status: 'OK' if correct case or 'KO' in the event of error<br>
+            - error: Error number. Only exists in the event of error<br>
+            Example:<br>
+            {"status":"OK"}<br>
+            {"status":"KO","error":-1}
+            </td>
+        </tr>
+    </table>
+</div>
+  
+  
+**listVersions(**_token,id,user_**)**
+
+Gets a list of versions for a specific file.
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px">
+                <b>token</b> – Includes key and secret of the access token<br>
+                <b>id</b> – Id number of the file in Stacksync<br>
+                <b>user</b> – eyeOS user identifier
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Script call:</td>
+            <td style="padding-left:30px">
+                Example:<br>
+                {<br>
+                &nbsp;"token":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"key":"token1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"secret":"secret1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                &nbsp;"metadata":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type":"listVersions",<br> 
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":32565632156,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                }
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">
+            Result structure:<br>
+            - status: 'OK' if correct case or 'KO' in the event of error<br>
+            - error: Error number. Only exists in the event of error<br>
+            Example:<br>
+            {"status":"OK"}<br>
+            {"status":"KO","error":-1}
+            </td>
+        </tr>
+    </table>
+</div>
+  
+  
+**getFileVersionData(**_token,id,version,path,user_**)**
+
+Downloads the contents of a specific version of an existing file.
+
+<div style="margin-bottom:10px;margin-left:0px">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+            <td style="background-color:#C0C0C0">Parameters:</td>
+            <td style="padding-left:30px">
+                <b>token</b> – Includes key and secret of the access token<br>
+                <b>id</b> – Id number of the file in Stacksync<br>
+                <b>version</b> – Version to be downloaded<br>
+                <b>path</b> – Absolute path<br>
+                <b>user</b> – eyeOS user identifier
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Script call:</td>
+            <td style="padding-left:30px">
+                Example:<br>
+                {<br>
+                &nbsp;"token":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"key":"token1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"secret":"secret1234",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                &nbsp;"metadata":{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type":"getFileVersion",<br> 
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":32565632156,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"version":2,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"path":"\/documents\/clients\/Winter2012.jpg",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                }
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#C0C0C0">Return:</td>
+            <td style="padding-left:30px">
+            Result structure:<br>
+            - status: 'OK' if correct case or 'KO' in the event of error<br>
+            - error: Error number. Only exists in the event of error<br>
+            Example:<br>
+            {"status":"OK"}<br>
+            {"status":"KO","error":-1}
+            </td>
+        </tr>
+    </table>
+</div>  
+  
+  
+**_Storage API_**
+
+The configuration file of Storage API is found at“/var/www/eyeos/eyeos/extern/u1db/” and is called “settings.py”.
+
+![](img/settings_connectStacksync.jpg)
+
+The “Stacksync” key components of the configuration file are:
+
+| urls |   |
+|:----------------------|-----------------------------------------------------------------|
+| *REQUEST_TOKEN_URL* |  StakcSync API where the request token is requested |
+| *ACCES_TOKEN_URL* |  StackSync API to request the access token |
+| *CALLBACK_URL* |  Redirect to eyeOS once the user grants access to their private space |
+| *RESOURCE_URL* |  StackSync API to access the user's protected resources |
+| **Consumer** |   |
+| *KEY* |  Provided by StackSync to identify eyeOS |
+| *SECRET* |  Provided by StackSync to identify eyeOS |
 
 **getMetadata(**_oauth,file,id,contents_**)**
 
-Get the metadata of a directory and/or files.
+Gets metadata of a directory and/or files.
 
 <div style="margin-bottom:10px;margin-left:0px">
     <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Url:</td>
             <td style="padding-left:30px">
-                Use RESOURCE_URL from the configuration file.
+                Use RESOURCE_URL of the configuration file.
             </td>
         </tr>
         <tr>
@@ -1191,16 +2427,16 @@ Get the metadata of a directory and/or files.
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
-                <b>oauth</b> – Object OauthRequest. Contains the values key and secret from the configuration file. Also the access token<br>
-                <b>file</b> – True, if it is a file or False, is it a directory<br>
-                <b>Id</b> – Element identifier number (directory or file)<br>
-                <b>contents</b> – True, to list the metadatas depending on the id or None, to inactive the list. Used when 'Id' is a directory. (Optional)
+                <b>oauth</b> – OauthRequest object. Includes the values of the consumer key and secret of the configuration file. And also the access token<br>
+                <b>file</b> – True, if it is a file or False, if it is a directory<br>
+                <b>id</b> – Id number of the element (directory or file)<br>
+                <b>contents</b> – True, lists dependent metadata of the element identified by 'id', or none, the list is not activated. This is used when 'id' is a directory. (Optional)
             </td>
         </tr>
         <tr>
             <td style="background-color:#C0C0C0">Return:</td>
             <td style="padding-left:30px">
-            Metadata/s of the element or in case of error returns an error structure:<br>
+            Metadata of the element/s or, in the event of error, returns an error structure:<br>
             - error: Error number<br>
             - description: Error description<br>
             Example:<br>
@@ -1210,8 +2446,7 @@ Get the metadata of a directory and/or files.
             &nbsp;"version":1,<br>
             &nbsp;"parent_id":”null”,<br>
             &nbsp;"user":"eyeos",<br>
-            &nbsp;"client_modified":"2013-03-08 10:36:41.997",<br>
-            &nbsp;"server_modified":"2013-03-08 10:36:41.997",<br>
+            &nbsp;"modified_at":"2013-03-08 10:36:41.997",<br>
             &nbsp;“is_root”: false,<br>
             &nbsp;"is_folder":true,<br>
             &nbsp;"contents":[{<br>
@@ -1223,8 +2458,7 @@ Get the metadata of a directory and/or files.
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"version":1,<br>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"parent_id":-348534824681,<br>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"user":"eyeos",<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"client_modified":"2013-03-08 10:36:41.997",<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"server_modified":"2013-03-08 10:36:41.997",<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"modified_at":"2013-03-08 10:36:41.997",<br>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"is_root":false,<br>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"is_folder":false<br>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}]<br>
@@ -1234,17 +2468,18 @@ Get the metadata of a directory and/or files.
         </tr>
     </table>
 </div>
-
+  
+  
 **updateMetadata(**_oauth,file,id,name,parent_**)**
 
-Update the metadata of the element in the actions rename and move.
+Updates metadata of the element for rename and move actions.
 
 <div style="margin-bottom:10px;margin-left:0px">
     <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Url:</td>
             <td style="padding-left:30px">
-                Use RESOURCE_URL from the configuration file.
+                Use RESOURCE_URL of the configuration file.
             </td>
         </tr>
         <tr>
@@ -1262,28 +2497,27 @@ Update the metadata of the element in the actions rename and move.
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
-                <b>oauth</b> – Object OauthRequest. Contains the values key and secret from the configuration file. Also the access token<br>
-                <b>file</b> – True, if it is a file or False, is it a directory<br>
-                <b>Id</b> – Element identifier number (directory or file)<br>
-                <b>name</b> – Element name<br>
+                <b>oauth</b> – OauthRequest object. Includes the values of consumer key and secret of the configuration file. And also the access token<br>
+                <b>file</b> – True, if it is a file or False, of it is a directory<br>
+                <b>id</b> – Id number of the element (directory or file)<br>
+                <b>name</b> – Name of the element<br>
                 <b>parent</b> – Id of the destination directory (Optional)               
             </td>
         </tr>
         <tr>
             <td style="background-color:#C0C0C0">Return:</td>
             <td style="padding-left:30px">
-            Metadata of the element or in case of error returns an error structure:<br>
+            Metadata of the element or, in the event of error, returns an error structure:<br>
             - error: Error number<br>
             - description: Error description<br>
             Example:<br>
             {"status": "CHANGED",<br>
             &nbsp;"is_folder": false,<br>
             &nbsp;"user": "eyeos",<br>
-            &nbsp;"server_modified": "2013-03-08 10:36:41.997",<br>
+            &nbsp;"modified_at": "2013-03-08 10:36:41.997",<br>
             &nbsp;"id": 32565632156, <br>
             &nbsp;"size": 775412,<br>
             &nbsp;"mimetype": "application/pdf",<br>
-            &nbsp;"client_modified": "2013-03-08 10:36:41.997",<br>
             &nbsp;"filename": "Client1.pdf",<br>
             &nbsp;"parent_id": 789456,<br>
             &nbsp;“is_root”: false,<br>
@@ -1293,17 +2527,18 @@ Update the metadata of the element in the actions rename and move.
         </tr>
     </table>
 </div>
-
+  
+   
 **createMetadata(**_oauth,file,name,parent,path_**)**
 
-Create a new element (file or directory)
+Creates a new element (file or directory)
 
 <div style="margin-bottom:10px;margin-left:0px">
     <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Url:</td>
             <td style="padding-left:30px">
-                Use RESOURCE_URL from the configuration file.
+                Use RESOURCE_URL of the configuration file.
             </td>
         </tr>
         <tr>
@@ -1321,28 +2556,27 @@ Create a new element (file or directory)
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
-                <b>oauth</b> – Object OAuthRequest. Contains the values key and secret from the configuration file. Also the access token.<br>
-                <b>file</b> – True, if it is a file or False, is it a directory<br>
-                <b>name</b> – Element name<br>
+                <b>oauth</b> – OAuthRequest object. Includes the values of the consumer key and secret of the configuration file. And also the access token.<br>
+                <b>file</b> – True, if it is a file or False, if it is a directory<br>
+                <b>name</b> – Name of the element<br>
                 <b>parent</b> – Id of the destination directory (Optional)<br>
-                <b>path</b> – Absolute file path (Optional)
+                <b>path</b> – Absolute path of the file(Optional)
             </td>
         </tr>
         <tr>
             <td style="background-color:#C0C0C0">Return:</td>
             <td style="padding-left:30px">
-            Metadata of the element or in case of error returns an error structure:<br>
+            Metadata of the element or, in the event of error, returns an error structure:<br>
             - error: Error number<br>
             - description: Error description<br>
             Example:<br>
             {"status": "NEW",<br>
             &nbsp;"is_folder": false,<br>
             &nbsp;"user": "eyeos",<br>
-            &nbsp;"server_modified": "2013-03-08 10:36:41.997",<br>
+            &nbsp;"modified_at": "2013-03-08 10:36:41.997",<br>
             &nbsp;"id": 32565632155, <br>
             &nbsp;"size": 775412,<br>
             &nbsp;"mimetype": "application/pdf",<br>
-            &nbsp;"client_modified": "2013-03-08 10:36:41.997",<br>
             &nbsp;"filename": "Client.pdf",<br>
             &nbsp;"parent_id": 789456,<br>
             &nbsp;“is_root”: false,<br>
@@ -1352,17 +2586,18 @@ Create a new element (file or directory)
         </tr>
     </table>
 </div>
-
+  
+  
 **uploadFile(**_oauth,id,path_**)**
 
-Upload the contents of an existing file.
+Uploads the content of an existing file.
 
 <div style="margin-bottom:10px;margin-left:0px">
     <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Url:</td>
             <td style="padding-left:30px">
-                Use RESOURCE_URL from the configuration file.
+                Use RESOURCE_URL of the configuration file.
             </td>
         </tr>
         <tr>
@@ -1380,15 +2615,15 @@ Upload the contents of an existing file.
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
-                <b>oauth</b> – Object OauthRequest. Contains the values key and secret from the configuration file<br>
-                <b>id</b> – File identifier number<br>
-                <b>path</b> – Absolute file path (Optional)
+                <b>oauth</b> – OauthRequest object. Includes the values of consumer key and secret of the configuration file. And also the access token<br>
+                <b>id</b> – Id number of file<br>
+                <b>path</b> – Absolute path of the file (Optional)
             </td>
         </tr>
         <tr>
             <td style="background-color:#C0C0C0">Return:</td>
             <td style="padding-left:30px">
-            Metadata of the element or in case of error returns an error structure:<br>
+            True or, in the event of error, returns an error structure:<br>
             - error: Error number<br>
             - description: Error description<br>
             Example:<br>
@@ -1397,17 +2632,18 @@ Upload the contents of an existing file.
         </tr>
     </table>
 </div>
-
+  
+  
 **downloadFile(**_oauth,id,path_**)**
 
-Download the contents of an existing file.
+Downloads the content of an existing file.
 
 <div style="margin-bottom:10px;margin-left:0px">
     <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Url:</td>
             <td style="padding-left:30px">
-                Use RESOURCE_URL from the configuration file.
+                Use RESOURCE_URL of the configuration file.
             </td>
         </tr>
         <tr>
@@ -1425,15 +2661,15 @@ Download the contents of an existing file.
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
-                <b>oauth</b> – Object OauthRequest. Contains the values key and secret from the configuration file. Also the access token<br>
-                <b>id</b> – File identifier number<br>
-                <b>path</b> – Absolute file path
+                <b>oauth</b> – OauthRequest object. Includes the values of the consumer key and secret of the configuration file. And also the access token<br>
+                <b>id</b> – Id number of the file<br>
+                <b>path</b> – Absolute path of the file (Optional)
             </td>
         </tr>
         <tr>
             <td style="background-color:#C0C0C0">Return:</td>
             <td style="padding-left:30px">
-            True or in case of error returns an error structure:<br>
+            True or, in the event of error, returns an error structure:<br>
             - error: Error number<br>
             - description: Error description<br>
             Example:<br>
@@ -1442,17 +2678,18 @@ Download the contents of an existing file.
         </tr>
     </table>
 </div>
-
+  
+  
 **deleteMetadata(**_oauth,file,id_**)**
 
-Delete an element (file or directory)
+Deletes an element (file or directory)
 
 <div style="margin-bottom:10px;margin-left:0px">
     <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Url:</td>
             <td style="padding-left:30px">
-                Use RESOURCE_URL from the configuration file.
+                Use RESOURCE_URL of the configuration file.
             </td>
         </tr>
         <tr>
@@ -1470,26 +2707,25 @@ Delete an element (file or directory)
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
-                <b>oauth</b> – Object OauthRequest. Contains the values key and secret from the configuration file. Also the access token.<br>
-                <b>file</b> – True, if it is a file or False, is it a directory<br>
-                <b>Id</b> – Element identifier number (directory or file)
+                <b>oauth</b> – OauthRequest object. Includes the values of the consumer key and secret of the configuration file. And also the access token.<br>
+                <b>file</b> – True, if it is a file or False, if it is a directory<br>
+                <b>Id</b> – Id number of the element (directory or file)
             </td>
         </tr>
         <tr>
             <td style="background-color:#C0C0C0">Return:</td>
             <td style="padding-left:30px">
-            Metadata of the element or in case of error returns an error structure:<br>
+            Metadata of the element or, in the event of error, returns an error structure:<br>
             - error: Error number<br>
             - description: Error description<br>
             Example:<br>
             {"status": "DELETED",<br>
             &nbsp;"is_folder": false,<br>
             &nbsp;"user": "eyeos",<br>
-            &nbsp;"server_modified": "2013-03-08 10:36:41.997",<br>
+            &nbsp;"modified_at": "2013-03-08 10:36:41.997",<br>
             &nbsp;"id": 32565632156, <br>
             &nbsp;"size": 775412,<br>
             &nbsp;"mimetype": "application/pdf",<br>
-            &nbsp;"client_modified": "2013-03-08 10:36:41.997",<br>
             &nbsp;"filename": "Client1.pdf",<br>
             &nbsp;"parent_id": 789456,<br>
             &nbsp;“is_root”: false,<br>
@@ -1499,17 +2735,18 @@ Delete an element (file or directory)
         </tr>
     </table>
 </div>
-
+  
+  
 **getFileVersions(**_oauth,id_**)**
 
-Get the list of versions of a specific file.
+Gets the version list for a specific file.
 
 <div style="margin-bottom:10px;margin-left:0px">
     <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Url:</td>
             <td style="padding-left:30px">
-                Use RESOURCE_URL from the configuration file.
+                Use RESOURCE_URL of the configuration file.
             </td>
         </tr>
         <tr>
@@ -1527,14 +2764,14 @@ Get the list of versions of a specific file.
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
-                <b>oauth</b> – Object OauthRequest. Contains the values key and secret from the configuration file. Also the access token.<br>
-                <b>Id</b> – File identifier number
+                <b>oauth</b> – OauthRequest object. Includes the values of consumer key and secret of the configuration file. And also the access token.<br>
+                <b>Id</b> – Id number of the file
             </td>
         </tr>
         <tr>
             <td style="background-color:#C0C0C0">Return:</td>
             <td style="padding-left:30px">
-            Metadata of the element or in case of error returns an error structure:<br>
+            Metadata or, in the event of error, returns an error structure:<br>
             - error: Error number<br>
             - description: Error description<br>
             Example:<br>
@@ -1576,17 +2813,18 @@ Get the list of versions of a specific file.
         </tr>
     </table>
 </div>
-
+  
+  
 **getFileVersionData(**_oauth,id,version,path_**)**
 
-Download the contents of a specific version of an existing file.
+Downloads the contents of a specific version of an existing file.
 
 <div style="margin-bottom:10px;margin-left:0px">
     <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
         <tr>
             <td style="background-color:#C0C0C0">Url:</td>
             <td style="padding-left:30px">
-                Use RESOURCE_URL from the configuration file.
+                Use RESOURCE_URL of the configuration file.
             </td>
         </tr>
         <tr>
@@ -1604,16 +2842,16 @@ Download the contents of a specific version of an existing file.
         <tr>
             <td style="background-color:#C0C0C0">Parameters:</td>
             <td style="padding-left:30px">
-                <b>oauth</b> – Object OauthRequest. Contains the values key and secret from the configuration file. Also the access token.<br>
-                <b>id</b> – File identifier number<br>
-                <b>version</b> – Version pending to download<br>
-                <b>path</b> – Absolute file path
+                <b>oauth</b> – OauthRequest object. Includes the values of consumer key and secret of the configuration file. And also the access token.<br>
+                <b>id</b> – Id number of the file<br>
+                <b>version</b> – Version to be downloaded<br>
+                <b>path</b> – Absolute path of the file
             </td>
         </tr>
         <tr>
             <td style="background-color:#C0C0C0">Return:</td>
             <td style="padding-left:30px">
-            True or in case of error returns an error structure:<br>
+            True or, in the event of error, returns an error structure:<br>
             - error: Error number<br>
             - description: Error description<br>
             Example:<br>
@@ -1621,922 +2859,7 @@ Download the contents of a specific version of an existing file.
             </td>
         </tr>
     </table>
-</div>
-
-
-Next are listed the APIs contained in the framework Store, which comunicate with the Python APIs previously explained:
-
-**getRequestToken()**
-
-Ask for the consumer eyeos's request token.
-
-<div style="margin-bottom:10px;margin-left:0px">
-    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-        <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
-            <td style="padding-left:30px">
-                No parameters
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">
-            Object token or in case of error null<br>
-            Example:<br>
-            {<br>
-            &nbsp;"key": "token1234",<br>
-            &nbsp;"secret": "secret1234"<br>
-            }
-            </td>
-        </tr>
-    </table>
-</div>
-
-**getAccessToken(**_token_**)**
-
-Ask for the consumer eyeos's access token from the request token.
-
-<div style="margin-bottom:10px;margin-left:0px">
-    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-        <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
-            <td style="padding-left:30px">
-                <b>token</b> – Contains the request token and user verification
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
-            <td style="padding-left:30px">
-                Example:<br>
-                {<br>
-                &nbsp;"token":{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"key":"token1234",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"secret":"secret1234",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
-                &nbsp;"verifier":"userVerifier"<br>
-                }
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">
-            Object token or in case of error null<br>
-            Example:<br>
-            {<br>
-            &nbsp;"key": "access1234",<br>
-            &nbsp;"secret": "access1234"<br>
-            }
-            </td>
-        </tr>
-    </table>
-</div>
-
-**getMetadata(**_token,id,path,user_**)**
-
-Get the metadatas of the current element. Generate its file and/or directory structure in eyeOS.
-
-<div style="margin-bottom:10px;margin-left:0px">
-    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-        <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
-            <td style="padding-left:30px">
-                <b>token</b> – Contains the access token's key and secret<br>
-                <b>id</b> – Element identifier number in StackSync<br>
-                <b>path</b> – eyeOS path<br>
-                <b>user</b> – User identifier in eyeOS                
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
-            <td style="padding-left:30px">
-                Example:<br>
-                {<br>
-                &nbsp;"token":{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"key":"token1234",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"secret":"secret1234",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
-                &nbsp;"metadata":{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type":"get",<br> 
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"file":false,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":155241412,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"contents":true<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-                }
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">
-            Metadata or in case of error returns an error structure:<br>
-            - error: Error number<br>
-            Example:<br>
-            {"filename":"clients",<br>
-            &nbsp;"id":155241412,<br>
-            &nbsp;"status":"NEW",<br>
-            &nbsp;"version":1,<br>
-            &nbsp;"parent_id":”null”,<br>
-            &nbsp;"user":"eyeos",<br>
-            &nbsp;"client_modified":"2013-03-08 10:36:41.997",<br>
-            &nbsp;"server_modified":"2013-03-08 10:36:41.997",<br>
-            &nbsp;“is_root”: false,<br>
-            &nbsp;"is_folder":true,<br>
-            &nbsp;"contents":[{<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"filename":"Client1.pdf",<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":32565632156,<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"size":775412,<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"mimetype":"application/pdf",<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"status":"NEW",<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"version":1,<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"parent_id":155241412,<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"user":"eyeos",<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"client_modified":"2013-03-08 10:36:41.997",<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"server_modified":"2013-03-08 10:36:41.997",<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"is_root":false,<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"is_folder":false<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}]<br>
-            }<br>
-            {"error":401}
-            </td>
-        </tr>
-    </table>
-</div>
-
-**getSkel(**_token,file,id,metadatas,path,pathAbsolute_**)**
-
-Get recursively the metadatas depending of the current element. Used in the copy and move action in eyeOS.
-
-<div style="margin-bottom:10px;margin-left:0px">
-    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-        <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
-            <td style="padding-left:30px">
-                <b>token</b> – Contains the access token's key and secret<br>
-                <b>file</b> – True, if it is a file or False, if it is a directory<br>                
-                <b>id</b> – Element identifier number in StackSync<br>
-                <b>metadatas</b> – Metadats accumulative array<br>                
-                <b>path</b> – Current element's relative path<br>
-                <b>pathAbsolute</b> – eyeOS path               
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
-            <td style="padding-left:30px">
-                Example:<br>
-                {<br>
-                &nbsp;"token":{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"key":"token1234",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"secret":"secret1234",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
-                &nbsp;"metadata":{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type":"get",<br> 
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"file":false,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":155241412,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"contents":true<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-                }
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">
-            Metadatas array or in case of error returns an error structure:<br>
-            - error: Error number<br>
-            Example:<br>
-            [{"filename":"Client1.pdf",<br>
-            &nbsp;&nbsp;"id":32565632156,<br>
-            &nbsp;&nbsp;"size":775412,<br>            
-            &nbsp;&nbsp;"mimetype":"application/pdf",<br>
-            &nbsp;&nbsp;"status":"NEW",<br>
-            &nbsp;&nbsp;"version":1,<br>
-            &nbsp;&nbsp;"parent_id":155241412,<br>
-            &nbsp;&nbsp;"user":"eyeos",<br>
-            &nbsp;&nbsp;“client_modified”: "2013-03-08 10:36:41.997",<br>
-            &nbsp;&nbsp;“server_modified”: "2013-03-08 10:36:41.997",<br>
-            &nbsp;&nbsp;"is_root":false,<br>            
-            &nbsp;&nbsp;"is_folder":false},<br>
-            &nbsp;{"filename":"clients",<br>
-            &nbsp;&nbsp;"id":155241412,<br>
-            &nbsp;&nbsp;"status":"NEW",<br>
-            &nbsp;&nbsp;"version":1,<br>
-            &nbsp;&nbsp;"parent_id":"null",<br>
-            &nbsp;&nbsp;"user":"eyeos",<br>
-            &nbsp;&nbsp;“client_modified”: "2013-03-08 10:36:41.997",<br>
-            &nbsp;&nbsp;“server_modified”: "2013-03-08 10:36:41.997",<br>
-            &nbsp;&nbsp;"is_root":false,<br>
-            &nbsp;&nbsp;"is_folder":true}]<br>
-            {"error":401}
-            </td>
-        </tr>
-    </table>
-</div>
-
-**createMetadata(**_token,user,file,name,parent_id,path,pathAbsolute_**)**
-
-Create a new file or directory.
-
-<div style="margin-bottom:10px;margin-left:0px">
-    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-        <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
-            <td style="padding-left:30px">
-                <b>token</b> – Contains the access token's key and secret<br>
-                <b>user</b> – User identifier in eyeOS<br>
-                <b>file</b> – True, if it is a file or False, if it is a directory<br>
-                <b>name</b> – Element name<br>
-                <b>parent_id</b> – Id of the destination directory<br>
-                <b>path</b> – Current element's relative path<br>
-                <b>pathAbsolute</b> – Absolute path. Mandatory when the element is a file
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
-            <td style="padding-left:30px">
-                Example:<br>
-                {<br>
-                &nbsp;"token":{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"key":"token1234",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"secret":"secret1234",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
-                &nbsp;"metadata":{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type":"create",<br> 
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"file":true,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"filename":"Client.pdf",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"parent_id":254885,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"path":"/home/eyeos/Documents/Client.pdf"<br>                
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-                }
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">
-            Metadata or in case of error returns an error structure:<br>
-            - error: Error number<br>
-            Example:<br>
-            {"filename":"Client.pdf",<br>
-            &nbsp;&nbsp;"id":32565632111,<br>
-            &nbsp;&nbsp;"size":775412,<br>            
-            &nbsp;&nbsp;"mimetype":"application/pdf",<br>
-            &nbsp;&nbsp;"status":"NEW",<br>
-            &nbsp;&nbsp;"version":1,<br>
-            &nbsp;&nbsp;"parent_id":254885,<br>
-            &nbsp;&nbsp;"user":"eyeos",<br>
-            &nbsp;&nbsp;“client_modified”: "2013-03-08 10:36:41.997",<br>
-            &nbsp;&nbsp;“server_modified”: "2013-03-08 10:36:41.997",<br>
-            &nbsp;&nbsp;"is_root":false,<br>            
-            &nbsp;&nbsp;"is_folder":false}<br>
-            {"error":401}
-            </td>
-        </tr>
-    </table>
-</div>
-
-**downloadMetadata(**_token,id,path_**)**
-
-Download the contents of a file.
-
-<div style="margin-bottom:10px;margin-left:0px">
-    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-        <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
-            <td style="padding-left:30px">
-                <b>token</b> – Contains the access token's key and secret<br>
-                <b>id</b> – File identifier number in Stacksync<br>
-                <b>path</b> – Absolute path
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
-            <td style="padding-left:30px">
-                Example:<br>
-                {<br>
-                &nbsp;"token":{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"key":"token1234",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"secret":"secret1234",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
-                &nbsp;"metadata":{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type":"download",<br> 
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":32565632111,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"path":"/home/eyeos/Documents/Client.pdf"<br>                
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-                }
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">
-            Result structure:<br>
-            - status: 'OK' correct case or 'KO' error case<br>
-            - error: Error number. Only exists in case of error<br>
-            Example:<br>
-            {"status":"OK"}<br>
-            {"status":"KO","error":-1}
-            </td>
-        </tr>
-    </table>
-</div>
-
-**deleteMetadata(**_token,file,id,user_**)**
-
-Delete an existing file or directory.
-
-<div style="margin-bottom:10px;margin-left:0px">
-    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-        <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
-            <td style="padding-left:30px">
-                <b>token</b> – Contains the access token's key and secret<br>
-                <b>file</b> – True, if it is a file or False, if it is a directory<br>
-                <b>id</b> – Element identifier number in Stacksync<br>
-                <b>user</b> – User identifier in eyeOS
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
-            <td style="padding-left:30px">
-                Example:<br>
-                {<br>
-                &nbsp;"token":{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"key":"token1234",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"secret":"secret1234",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
-                &nbsp;"metadata":{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type":"delete",<br> 
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"file":true,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":32565632111<br>                
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-                }
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">
-            Result structure:<br>
-            - status: 'OK' correct case or 'KO' error case<br>
-            - error: Error number. Only exists in case of error<br>
-            Example:<br>
-            {"status":"OK"}<br>
-            {"status":"KO","error":-1}
-            </td>
-        </tr>
-    </table>
-</div>
-
-**renameMetadata(**_token,file,id,name,path,user,parent_**)**
-
-Rename a file or directory.
-
-<div style="margin-bottom:10px;margin-left:0px">
-    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-        <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
-            <td style="padding-left:30px">
-                <b>token</b> – Contains the access token's key and secret<br>
-                <b>file</b> – True, if it is a file or False, if it is a directory<br>
-                <b>id</b> – Element identifier number in Stacksync<br>
-                <b>name</b> – Element new name<br>
-                <b>path</b> – Current element's relative path<br>
-                <b>user</b> – User identifier in eyeOS<br>
-                <b>parent</b> – Id of the destination directory (Optional)
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
-            <td style="padding-left:30px">
-                Example:<br>
-                {<br>
-                &nbsp;"token":{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"key":"token1234",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"secret":"secret1234",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
-                &nbsp;"metadata":{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type":"update",<br> 
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"file":true,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":32565632156,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"filename":"Client2.pdf",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"parent_id":155241412<br>             
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-                }
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">
-            Result structure:<br>
-            - status: 'OK' correct case or 'KO' error case<br>
-            - error: Error number. Only exists in case of error<br>
-            Example:<br>
-            {"status":"OK"}<br>
-            {"status":"KO","error":-1}
-            </td>
-        </tr>
-    </table>
-</div>
-
-**moveMetadata(**_token,file,id,pathOrig,pathDest,user,parent,filenameOld,filenameNew_**)**
-
-Move a file or directory.
-
-<div style="margin-bottom:10px;margin-left:0px">
-    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-        <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
-            <td style="padding-left:30px">
-                <b>token</b> – Contains the access token's key and secret<br>
-                <b>file</b> – True, if it is a file or False, if it is a directory<br>
-                <b>id</b> – Element identifier number in Stacksync<br>
-                <b>pathOrig</b> – EyeOS path in source<br>
-                <b>pathDest</b> – EyeOS path in destination<br>
-                <b>user</b> – User identifier in eyeOS<br>
-                <b>parent</b> – Id of the destination directory<br>
-                <b>filenameOld</b> – Element name in the source path<br>                
-                <b>filenameNew</b> – Element name in the destination path if destination is different to source (Optional)
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
-            <td style="padding-left:30px">
-                Example:<br>
-                {<br>
-                &nbsp;"token":{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"key":"token1234",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"secret":"secret1234",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
-                &nbsp;"metadata":{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type":"update",<br> 
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"file":true,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":32565632156,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"filename":"Client2.pdf",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"parent_id":0<br>             
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-                }
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">
-            Result structure:<br>
-            - status: 'OK' correct case or 'KO' error case<br>
-            - error: Error number. Only exists in case of error<br>
-            Example:<br>
-            {"status":"OK"}<br>
-            {"status":"KO","error":-1}
-            </td>
-        </tr>
-    </table>
-</div>
-
-**listVersions(**_token,id_**)**
-
-Get the list of versions of a specific file.
-
-<div style="margin-bottom:10px;margin-left:0px">
-    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-        <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
-            <td style="padding-left:30px">
-                <b>token</b> – Contains the access token's key and secret<br>
-                <b>id</b> – File identifier number in Stacksync
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
-            <td style="padding-left:30px">
-                Example:<br>
-                {<br>
-                &nbsp;"token":{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"key":"token1234",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"secret":"secret1234",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
-                &nbsp;"metadata":{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type":"listVersions",<br> 
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":32565632156,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-                }
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">
-            Metadatas array or in case of error returns an error structure:<br>
-            - error: Error number<br>
-            Example:<br>
-            [{"name":"Winter2015.jpg",<br>
-            &nbsp;&nbsp;"path":"\/documents\/clients\/Winter2015.jpg",<br>
-            &nbsp;&nbsp;"id":32565632156,<br>            
-            &nbsp;&nbsp;"size":775412,<br>
-            &nbsp;&nbsp;"mimetype":"image\/jpg",<br>
-            &nbsp;&nbsp;"status":RENAMED,<br>
-            &nbsp;&nbsp;"version":3,<br>
-            &nbsp;&nbsp;"parent_id":12386548974,<br>
-            &nbsp;&nbsp;“user”: "Adrian",<br>
-            &nbsp;&nbsp;“client_modified”: "2013-03-08 10:36:41.997",<br>
-            &nbsp;&nbsp;“server_modified”: "2013-03-08 10:36:41.997",<br>
-            &nbsp;&nbsp;"enabled":true},<br>            
-            &nbsp;{"name":"Winter2015.jpg",<br>
-            &nbsp;&nbsp;"path":"\/documents\/clients\/Winter2015.jpg",<br>
-            &nbsp;&nbsp;"id":32565632156,<br>            
-            &nbsp;&nbsp;"size":7482,<br>
-            &nbsp;&nbsp;"mimetype":"image\/jpg",<br>
-            &nbsp;&nbsp;"status":CHANGED,<br>
-            &nbsp;&nbsp;"version":2,<br>
-            &nbsp;&nbsp;"parent_id":12386548974,<br>
-            &nbsp;&nbsp;“user”: "Cristian",<br>
-            &nbsp;&nbsp;“client_modified”: "2013-03-08 10:36:41.997",<br>
-            &nbsp;&nbsp;“server_modified”: "2013-03-08 10:36:41.997"},<br>
-            &nbsp;{"name":"Winter2015.jpg",<br>
-            &nbsp;&nbsp;"path":"\/documents\/clients\/Winter2015.jpg",<br>
-            &nbsp;&nbsp;"id":32565632156,<br>            
-            &nbsp;&nbsp;"size":775412,<br>
-            &nbsp;&nbsp;"mimetype":"image\/jpg",<br>
-            &nbsp;&nbsp;"status":NEW,<br>
-            &nbsp;&nbsp;"version":1,<br>
-            &nbsp;&nbsp;"parent_id":12386548974,<br>
-            &nbsp;&nbsp;“user”: "Adrian",<br>
-            &nbsp;&nbsp;“client_modified”: "2013-03-08 10:36:41.997",<br>
-            &nbsp;&nbsp;“server_modified”: "2013-03-08 10:36:41.997"}]<br>
-            {"status":"KO","error":-1}
-            </td>
-        </tr>
-    </table>
-</div>
-
-**getFileVersionData(**_token,id,version,path_**)**
-
-Download the contents of a specific version of an existing file.
-
-<div style="margin-bottom:10px;margin-left:0px">
-    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-        <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
-            <td style="padding-left:30px">
-                <b>token</b> – Contains the access token's key and secret<br>
-                <b>id</b> – Element identifier number in Stacksync<br>
-                <b>version</b> – Version pending to download<br>
-                <b>path</b> – Absolute file path
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
-            <td style="padding-left:30px">
-                Example:<br>
-                {<br>
-                &nbsp;"token":{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"key":"token1234",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"secret":"secret1234",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
-                &nbsp;"metadata":{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type":"getFileVersion",<br> 
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":32565632156,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"version":2,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"path":"\/documents\/clients\/Winter2012.jpg",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-                }
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">
-            Result structure:<br>
-            - status: 'OK' correct case or 'KO' error case<br>
-            - error: Error number. Only exists in case of error<br>
-            Example:<br>
-            {"status":"OK"}<br>
-            {"status":"KO","error":-1}
-            </td>
-        </tr>
-    </table>
-</div>
-
-
-The user uses the application “File Manager”, to manage his storaged files in StackSync via the previously explained APIs, as shown in the next point:
-
-+ If the eyeOS user doesn't have the StackSync's access token the next screen will be shown.  
-
-    ![](img/Stacksync_1.jpg)
-
-+ If the user selects the option 'No', it will be shown the files structure without access to StackSync.  
-
-    ![](img/Stacksync_exc_1.jpg)
-
-+ Otherwise, when 'Yes' it selected the connection to StackSync is started to get the access token.  
-
-    ![](img/Stacksync_2.jpg)
-
-+ A new window in the browser is opened, where the user is asked to login in StackSync.
-
-    ![](img/Stacksync_3.jpg)
-
-+ Once the user is logged correctly it is shown the redirect screen to eyeOS platform  
-
-    ![](img/Stacksync_4.jpg)
-
-+ The access token is saved attaching it to the current user. From now the user has access to StackSync's files structure.  
-
-    ![](img/Stacksync_5.jpg)
-
-
-During the previous process some exceptions could be thrown, which are listed bellow:  
-
-+ Communication error.
-
-    ![](img/Stacksync_exc_2.jpg)
-
-+ Timeout to login the StackSync exhausted. This timeout is configurated to 1 minute.  
-
-    ![](img/Stacksync_exc_3.jpg)
-
-
-The access token is permanently stored in eyeOS and has no expiration. If the user wants to delete the link, must do it from his StackSync intranet, after that, once it is done the first call to StackSync API a 403 error will be received, that indicates access denied.  
-  
-![](img/Stacksync_exc_4.png)
-
-
-## Collaborative tool between eyeOS and StackSync
-
-EyeOS allows from the application “File Manager” the next actions: list, insert and delete comments of a specific element, file or directory are located in the personal cloudspace of the user.
-
-EyeOS storages the comments into U1DB synchronized database. The database management is performed by means of a Python script called Commnents.py. This script handles the synchronization with the U1DB server and is located in '/var/www/eyeos/eyeos/extern/u1db/', to configure it the “settings.py” file must be modified in the following values:
-
-![](img/Settings_Calendars.jpg)
-
-<div style="margin-top:45px;margin-bottom:10px;margin-left:40px">
-    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-        <tr>
-            <td width="15%">Server</td>
-            <td width="45%" style="padding-left:15px">IP address where the Oauth server is active</td>
-        </tr>
-        <tr>
-            <td>Port</td>
-            <td style="padding-left:15px">Port where the Oauth server is active</td>
-        </tr>
-        <tr>
-            <td colspan="2">urls</td>
-        </tr>
-        <tr>
-            <td valign="middle">CALLBACK_URL</td>
-            <td style="padding-left:15px">Replace IP and port with the values stablished in the previous parameters (server and port)</td>
-        </tr>
-        <tr>
-            <td colspan="2">consumer</td>
-        </tr>
-        <tr>
-            <td valign="middle">key</td>
-            <td style="padding-left:15px">Included when mongodb was configured in the Oauth server installation</td>
-        </tr>
-        <tr>
-            <td valign="middle">secret</td>
-            <td style="padding-left:15px">Included when mongodb was configured in the Oauth server installation</td>
-        </tr>
-    </table>
-</div>
-
-Next is detailed the APIs contained in the script Comments.py:
-
-**getComments(**_id_**)**
-
-Get all the comments of a specific element of StackSync.
-
-<div style="margin-bottom:10px;margin-left:0px">
-    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-        <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
-            <td style="padding-left:30px"><b>id</b> – Element identifier number in Stacksync</td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">Array in JSON format or in case of error returns an error structure:<br>
-                - error: Error number<br>
-                Example:<br>
-                [{“id”:”1245789”,”user”:”eyeos”,”time_created”:”20140702124055”,”status”:”NEW”,”text”: ”Comment 1”}]<br>
-                [{“error”:-1,”description”:”Error getComments”}]
-            </td>
-        </tr>
-    </table>
-</div>
-
-**createComments(**_id,user,text,time_created_**)**
-
-Create a new comment  associated with an specific element of StackSync.
-
-<div style="margin-bottom:10px;margin-left:0px">
-    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-        <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
-            <td style="padding-left:30px">
-                <b>id</b> – Element identifier number in Stacksync<br>
-                <b>user</b> – Username that inserts the comment<br>
-                <b>text</b> – Text of comment<br>
-                <b>time_created</b> – Date and hour when is created  the comment. Format  YYYYmmddHHMMSS.(Optional)                
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">Metadata in JSON format or in case of error returns an error structure:<br>
-                - error: Error number<br>
-                Example:<br>
-                {“id”:”1245789”,”user”:”eyeos”,”time_created”:”20140702124055”,”status”:”NEW”,”text”: ”Comment 1”}<br>
-                {“error”:-1,”description”:”Error create comment”}
-            </td>
-        </tr>
-    </table>
-</div>
-
-**deleteComments(**_id,user,time_created_**)**
-
-Delete a comment associated a un specific element of StackSync.
-
-<div style="margin-bottom:10px;margin-left:0px">
-    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-        <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
-            <td style="padding-left:30px">
-                <b>id</b> – Element identifier number in Stacksync<br>
-                <b>user</b> – Username that inserts the comment<br>
-                <b>time_created</b> – Date and hour when is created  the comment. Format  YYYYmmddHHMMSS.
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">Result structure:<br>
-                - status:  'OK' correct case or 'KO' error case<br>
-                - error: Error number. Only exists in case of error<br>
-                Example:<br>
-                {“status”: “OK”}<br>
-                {<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“status”: “KO”,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“error”: -1<br>
-                }
-            </td>
-        </tr>
-    </table>
-</div>
-
-To use the Python APIs into eyeOS it has been generated the framework Store, containing some APIs with an uniform structure:
-
-<div style="margin-bottom:10px;margin-left:0px">
-    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-        <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
-            <td>
-                <ul>
-                    <li><b>type</b> – Python API name</li>
-                    <li><b>metadata</b> – Python API parameters</li>
-                    <li><b>credentials</b> – Credentials for the identification into synchronization process</li>
-                </ul>
-            </td>
-        </tr>
-    </table>
-</div>
-
-Next these APIs are listed:
-
-**getComments(**_id_**)**
-
-Ask for all the comments of a specific element of StackSync.
-
-<div style="margin-bottom:10px;margin-left:0px">
-    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-        <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
-            <td style="padding-left:30px">
-                <b>id</b> – Element identifier number in Stacksync
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
-            <td width="60%" style="padding-left:30px">
-                Example:<br>
-                {<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;"type":"get" ,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;"metadata":[{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":"124578",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}]<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;"credentials":{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”oauth”:{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“consumer_key”:”eyeos”,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“consumer_secret”:”eyeosABC”,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“token_key”:”eyeostoken”,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“token_secret”:”eyeosDEF”<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-                }<br>
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">
-                Array in JSON format or in case of error returns an error structure:<br>
-                - error: Error number<br>
-                Example:<br>
-                [{“id”:”124578”,”user”:”eyeos”,”time_created”:”20140702124055”,”status”:”NEW”,”text”: ”Comment 1”}]<br>
-                [{“error”:-1,”description”:”Error getComments”}]
-            </td>
-        </tr>
-    </table>
-</div>
-
-**createComments(**_id,user,text_**)**
-
-Create a new comment  associated with an specific element of StackSync.
-
-<div style="margin-bottom:10px;margin-left:0px">
-    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-        <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
-            <td style="padding-left:30px">
-                <b>id</b> – Element identifier number in Stacksync<br>
-                <b>user</b> – Username that inserts the comment<br>
-                <b>text</b> – Text of comment
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
-            <td width="60%" style="padding-left:30px">
-                Example:<br>
-                {<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;"type":"create" ,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;"metadata":[{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":"124578",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"user":"eyeos",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"text":"Comment 1",<br>                
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}]<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;"credentials":{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”oauth”:{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“consumer_key”:”eyeos”,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“consumer_secret”:”eyeosABC”,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“token_key”:”eyeostoken”,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“token_secret”:”eyeosDEF”<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-                }<br>
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">
-                Metadata in JSON format or in case of error returns an error structure:<br>
-                - error: Error number<br>
-                Example:<br>
-                {“id”:”124578”,”user”:”eyeos”,”time_created”:”20140702124055”,”status”:”NEW”,”text”: ”Comment 1”}<br>
-                {“error”:-1,”description”:”Error create comment”}
-            </td>
-        </tr>
-    </table>
-</div>
-
-**deleteComments(**_id,user,time_created_**)**
-
-Delete a comment associated a un specific element of StackSync.
-
-<div style="margin-bottom:10px;margin-left:0px">
-    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-        <tr>
-            <td style="background-color:#C0C0C0">Parameters:</td>
-            <td style="padding-left:30px">
-                <b>id</b> – Element identifier number in Stacksync<br>
-                <b>user</b> – Username that inserts the comment<br>
-                <b>time_created</b> – Date and hour when is created  the comment. Format  YYYYmmddHHMMSS
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Script call:</td>
-            <td width="60%" style="padding-left:30px">
-                Example:<br>
-                {<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;"type":"delete" ,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;"metadata":[{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id":"124578",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"user":"eyeos",<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"time_created":"20140702124944",<br>                
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}]<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;"credentials":{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”oauth”:{<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“consumer_key”:”eyeos”,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“consumer_secret”:”eyeosABC”,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“token_key”:”eyeostoken”,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“token_secret”:”eyeosDEF”<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-                }<br>
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#C0C0C0">Return:</td>
-            <td style="padding-left:30px">
-                Result structure:<br>
-                - status:  'OK' correct case or 'KO' error case<br>
-                - error: Error number. Only exists in case of error<br>
-                Example:<br>
-                {“status”: “OK”}<br>
-                {<br>
-                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“status”: “KO”,<br>
-                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“error”: -1<br>
-                }
-            </td>
-        </tr>
-    </table>
-</div>
+</div>  
   
   
 ## Implementation of Share API into eyeOS
@@ -2788,5 +3111,5 @@ Shares a directory with another user.
             </td>
         </tr>
     </table>
-</div>
+</div>  
    
