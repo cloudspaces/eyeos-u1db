@@ -341,7 +341,8 @@ abstract class UserManagementApplication extends EyeosApplicationExecutable {
 	private static function sendPassword($params) {
 		$to = $params['to'];
 		$from = $params['from'];
-		$url = 'http://' . $_SERVER['HTTP_HOST'];
+//		$url = 'http://' . $_SERVER['HTTP_HOST'];
+        $url = DNS_HOST;
 		$username = $params['userName'];
 		$password = $params['password'];
 
