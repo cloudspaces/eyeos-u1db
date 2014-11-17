@@ -484,7 +484,9 @@ function createPreviousElementIcon (father, pid, plist, checknum) {
 	father.appendChild(previousElementIcon);
 
 	previousElementIcon.onclick = function (){
-		[currentPlaylistEntry, foo] = previousNextMouseEvent(checknum, --currentPlaylistEntry, plist,  pid, 'clicked');
+        var elements = previousNextMouseEvent(checknum, --currentPlaylistEntry, plist,  pid, 'clicked');
+        currentPlaylistEntry = elements[0];
+		foo = elements[1];
 	}
 
 	previousElementIcon.onmouseover = function (){
@@ -506,7 +508,9 @@ function createNextElementIcon (father, pid, plist, checknum) {
 	father.appendChild(nextElementIcon);
 
 	nextElementIcon.onclick = function (){
-		[currentPlaylistEntry, foo] = previousNextMouseEvent(checknum, ++currentPlaylistEntry, plist,  pid, 'clicked');
+        var elements = previousNextMouseEvent(checknum, ++currentPlaylistEntry, plist,  pid, 'clicked');
+		currentPlaylistEntry = elements[0];
+        foo = elements[1];
 	}
 
 	nextElementIcon.onmouseover = function (){

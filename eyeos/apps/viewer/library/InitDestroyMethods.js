@@ -40,7 +40,9 @@ function flowplayerInit(pid, checknum, plist, startIndex) {
 			
 			onLastSecond: function() {
 				if ((plist[currentPlaylistEntry].length == 1) || (this.getClip().index == 1)) {
-					[currentPlaylistEntry, playlistEnded] = previousNextMouseEvent(checknum, ++currentPlaylistEntry, plist,  pid, 'auto');
+                    var elements = previousNextMouseEvent(checknum, ++currentPlaylistEntry, plist,  pid, 'auto');
+					currentPlaylistEntry = elements[0];
+                    playlistEnded = elements[1];
 					if (!playlistEnded) {
 						viewerWindow.setCaption(setWindowTitle(plist, currentPlaylistEntry));
 						onChangingPlaylistElementEvent(currentPlaylistEntry, plist, false);
