@@ -5,3 +5,4 @@ eyeos/system/conf/libs/idGen/*
 eyeos/system/conf/libs/log4php/logs/*
 eyeos/tmp/*
 !.gitignore
+.idea
