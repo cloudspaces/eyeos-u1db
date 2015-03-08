@@ -396,8 +396,9 @@ qx.Class.define('eyeos.files.IconView', {
 			}, this);
 			
 			var currentPath = this.getViewManager().getModel().getCurrentPath()[1];
-			
+
 			if (currentPath.substr(0, 8) != 'share://' && currentPath != 'workgroup:///') {
+                var itemsToDisable = ['cutFile()', 'editFile()', 'deleteFile()', 'copyFile()', 'pasteFile()'];
 				item.getContextMenu().addListener('appear', function (e) {
 					var childrens = this.getContextMenu().getChildren();
 					var selected = this.getManager().returnSelected();
@@ -411,6 +412,15 @@ qx.Class.define('eyeos.files.IconView', {
 						if (childrens[i].getUserData('id') == 'editFile()' && selected.length >= 2) {
 							childrens[i].setEnabled(false);
 						}
+                        if (itemsToDisable.indexOf(childrens[i].getUserData('id')) != -1) {
+                            console.log(childrens[i].getUserData('id'), "Bloqueado");
+                            for (var j = 0; j < selected.length; j++) {
+                                console.log("selected->", selected[j].getName());
+                                if (currentPath + selected[j].getName() == 'home://~' + eyeos.getCurrentUserName() + '/Cloudspaces') {
+                                    childrens[i].setEnabled(false);
+                                }
+                            }
+                        }
 					}
 				}, item);
 
