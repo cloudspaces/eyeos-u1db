@@ -449,8 +449,8 @@ if(!defined('REMEMBER_PASSWORD_ENABLED'))
 if(!defined('SYSTEM_TYPE')) 
 	define('SYSTEM_TYPE', 'debug');
 
-if(!defined('URL_CLOUDSPACE'))
-    define('URL_CLOUDSPACE','http://api.stacksync.com:8080/oauth/authorize?oauth_token=');
+//if(!defined('URL_CLOUDSPACE'))
+//    define('URL_CLOUDSPACE','http://api.stacksync.com:8080/oauth/authorize?oauth_token=');
     //define('URL_CLOUDSPACE','http://cloudspaces.urv.cat:5000/v2.0/tokens');
 if(!defined('DNS_HOST'))
     define('DNS_HOST','http://cloudspace1.eyeosbcn.com');
