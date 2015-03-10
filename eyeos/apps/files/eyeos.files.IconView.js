@@ -328,9 +328,15 @@ qx.Class.define('eyeos.files.IconView', {
 			 * Click events
 			 */
 
-			item.addListener('selected', function (e) {
-				self.getViewManager().getController().fireDataEvent('selectedFile', self.returnSelected());	
-			}, this);
+            item.addListener('selected', function (e) {
+                self.getViewManager().getController().fireDataEvent('selectedFile', self.returnSelected());
+                var file = e.getCurrentTarget().getCurrentPath() + e.getCurrentTarget().getName();
+                var enabled = true;
+                if (file == 'home://~' + eyeos.getCurrentUserName() + '/Cloudspaces') {
+                    enabled = false;
+                }
+                self.getViewManager().getController().fireDataEvent('cloudspacesSelected', enabled);
+            }, this);
 			
 			item.addListener('click',  function (e) {
 				if (!this._editing && !this._buttonSelectionActive) {

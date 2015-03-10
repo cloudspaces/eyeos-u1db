@@ -166,6 +166,12 @@ qx.Class.define('eyeos.files.Controller', {
 			 *
 			 * @receives {Array} [sourcePath: string, files: Array] 
 			 */
+
+            this.addListener('cloudspacesSelected', function (e){
+                var enabled = e.getData();
+                this.getView().enabledMenu(enabled);
+            });
+
 			this._dBusListeners.push(this._dBus.addListener('eyeos_files_delete', function (e) {
 				var sourcePath = e.getData()[0];
 				var filesToDelete = e.getData()[1];
@@ -1343,6 +1349,13 @@ qx.Class.define('eyeos.files.Controller', {
 
         __isStacksync: function(path) {
             if(path.indexOf('home://~'+ eyeos.getCurrentUserName()+'/Stacksync') !== -1) {
+                return true;
+            }
+            return false;
+        },
+
+        __isCloudspaces: function(path) {
+            if(path.indexOf('home://~'+ eyeos.getCurrentUserName()+'/Cloudspaces') !== -1) {
                 return true;
             }
             return false;
