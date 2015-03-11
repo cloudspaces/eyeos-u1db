@@ -419,9 +419,7 @@ qx.Class.define('eyeos.files.IconView', {
 							childrens[i].setEnabled(false);
 						}
                         if (itemsToDisable.indexOf(childrens[i].getUserData('id')) != -1) {
-                            console.log(childrens[i].getUserData('id'), "Bloqueado");
                             for (var j = 0; j < selected.length; j++) {
-                                console.log("selected->", selected[j].getName());
                                 if (currentPath + selected[j].getName() == 'home://~' + eyeos.getCurrentUserName() + '/Cloudspaces') {
                                     childrens[i].setEnabled(false);
                                 }

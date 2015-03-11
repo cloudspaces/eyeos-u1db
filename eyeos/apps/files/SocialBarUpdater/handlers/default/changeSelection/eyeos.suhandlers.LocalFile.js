@@ -71,6 +71,12 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
                 this.getSocialBar().createDefaultTabs();
             }
 
+            if(this._controller.__isCloudspaces(path)) {
+                this.getSocialBar().createCloudSpacesTabs();
+                //this._createContentsCommentsTab();
+            } else {
+                this.getSocialBar().createDefaultTabs();
+            }
 
 			this._createContentInfoTab();
 
@@ -625,6 +631,64 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 
         _createContenActivityTabStacksync: function(folder) {
             var activity = this.getSocialBar().getTab('Activity');
+            activity.removeAll();
+            activity.set({
+                layout: new qx.ui.layout.VBox()
+            });
+
+            var header = new qx.ui.container.Composite().set({
+                layout: new qx.ui.layout.HBox(),
+                decorator: new qx.ui.decoration.Single(1).set({widthTop:0,widthLeft:0,widthRight:0,colorBottom:'#d1d1d1'}),
+                margin: [10,0,5,10],
+                paddingBottom: 5,
+                allowGrowX: false,
+                width: 190
+            });
+
+
+            var labelDate = new qx.ui.basic.Label().set({
+               width: 100,
+               value: folder?tr('User'):tr('Date'),
+               font: new qx.bom.Font(11).set({bold:true})
+            });
+
+            header.add(labelDate);
+
+            var labelVersion = new qx.ui.basic.Label().set({
+                width: 70,
+                value: folder?tr('Owner'):tr('Version'),
+                marginLeft: 20,
+                font: new qx.bom.Font(11).set({bold:true})
+            });
+
+            header.add(labelVersion);
+            activity.add(header);
+
+            var scroll = new qx.ui.container.Scroll().set({
+                allowStretchY: true,
+                allowStretchX: true
+            });
+
+            var versions = new qx.ui.container.Composite().set({
+                layout: new qx.ui.layout.VBox()
+            });
+
+            scroll.add(versions);
+
+            activity.add(scroll,{flex: 1});
+
+            if(this.getParams()['selected'].length == 1) {
+                activity.addListener('appear',function() {
+                    var id = this._controller.__getFileId(this._file.getPath(),this._file.getName());
+                    if(id !== null) {
+                        this._controller.loadActivity(id,activity,this._file,folder);
+                    }
+                },this);
+            }
+        },
+
+        _createContenActivityTabCloudspaces: function(folder) {
+            var activity = this.getSocialBar().getTab('Cloudspaces');
             activity.removeAll();
             activity.set({
                 layout: new qx.ui.layout.VBox()

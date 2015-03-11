@@ -38,8 +38,15 @@ qx.Class.define('eyeos.suhandlers.LocalFolder', {
 		}
 	},
 	members: {
-		updateSocialBar: function () {
-			this.getSocialBar().createDefaultTabs();
+        _controller: null,
+		updateSocialBar: function (controller) {
+            this._controller = controller;
+            var path = this.getParams().path;
+            if(this._controller.__isCloudspaces(path)) {
+                this.getSocialBar().createCloudSpacesTabs();
+            }else {
+                this.getSocialBar().createDefaultTabs();
+            }
 			this.getSocialBar().removeTab('Share');
 		}
 
