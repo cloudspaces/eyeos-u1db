@@ -7,6 +7,7 @@ from requests_oauthlib import OAuth1Session
 import os
 import urllib
 import json
+from settings import settings
 
 class OauthCredentialsTest (unittest.TestCase):
     def setUp(self):
@@ -611,3 +612,14 @@ class OauthCredentialsTest (unittest.TestCase):
             resource = "file"
         return resource
 
+    """
+    method: getCloudsList
+    when: called
+    with:
+    should: returnClouds
+    """
+    def test_getCloudsList(self):
+        expected = ['Stacksyn1c', 'Nec']
+        print expected
+        clouds = self.oauthCredentials.getCloudsList()
+        self.assertEquals(expected, clouds)
