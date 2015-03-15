@@ -8,9 +8,26 @@
 
 class Token
 {
+    private $cloudspaceName;
     private $userID;
     private $tkey;
     private $tsecret;
+
+    /**
+     * @return mixed
+     */
+    public function getCloudspaceName()
+    {
+        return $this->cloudspaceName;
+    }
+
+    /**
+     * @param mixed $cloudspaceName
+     */
+    public function setCloudspaceName($cloudspaceName)
+    {
+        $this->cloudspaceName = $cloudspaceName;
+    }
 
     /**
      * @param mixed $token
