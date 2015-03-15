@@ -114,7 +114,7 @@ qx.Class.define('eyeos.socialbar.SocialBar', {
             this.removeAllTabs();
             this.getChildControl('bar').getChildControl('content').removeAll();
             this.addTab('Info', 'index.php?extern=images/dialog-information.png', this.getBackgroundColor());
-            this.addTab('Clouds', 'index.php?extern=images/16x16/status/weather-many-clouds.png', this.getBackgroundColor());
+            this.addTab('Clouds', 'index.php?extern=images/22x22/logo-cloudspaces.png', this.getBackgroundColor());
             this.addTab('Share', 'index.php?extern=images/share.png', this.getBackgroundColor());
             this.addTab('Activity', 'index.php?extern=images/document-open-recent.png', this.getBackgroundColor());
             this.setSelection([this.getTab('Info')]);
