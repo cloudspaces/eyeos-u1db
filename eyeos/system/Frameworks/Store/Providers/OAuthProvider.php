@@ -70,6 +70,25 @@ class OAuthProvider_
         return false;
     }
 
+    /**
+     * @return array
+     */
+    public function getCloudsList()
+    {
+//        "cd /var/www/eyeos/eyeos/extern/u1db && python -c 'from OauthCredentials import OauthCredentials; print OauthCredentials("", "", "", "").getCloudsList()'"
+        //$path = "cd ../../../../" . EXTERN_DIR . "/" . U1DB . " && python -c 'from OauthCredentials import OauthCredentials; OauthCredentials(\"\",\"\",\"\",\"\").getCloudsList()'";
+        //$result = exec($path);
+        //$result= '{"clouds": ["Stacksync", "Nec"]}';
+        //$result = json_encode(array("Clouds" => array("Stacsync", "Nec")));
+        //Logger::getLogger('Mustapha')->error('PathPython:');
+        //print $result;
+
+        $path = "cd /var/www/eyeos/eyeos/" . EXTERN_DIR . "/" . U1DB . " && python -c 'from OauthCredentials import OauthCredentials; OauthCredentials(\"\",\"\",\"\",\"\").getCloudsList()'";
+        $clouds = json_decode((exec($path)));
+        //echo json_encode($clouds);
+        return exec($path);
+    }
+
 
 }
 
