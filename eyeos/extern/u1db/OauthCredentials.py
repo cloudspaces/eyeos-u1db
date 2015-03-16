@@ -214,7 +214,7 @@ class OauthCredentials:
 
     def getCloudsList(self):
         clouds = settings['Clouds'].keys()
-        print json.dumps(clouds)
+        return json.dumps(clouds)
 
 
 if __name__ == "__main__":
