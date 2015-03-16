@@ -165,6 +165,7 @@ class MMapScreen extends Kernel implements IMMap {
 			EYE_ROOT . '/extern/js/SocialBar/eyeos.socialbar.Label.js',
 			EYE_ROOT . '/extern/js/SocialBar/eyeos.socialbar.Info.js',
 			EYE_ROOT . '/extern/js/SocialBar/eyeos.socialbar.InfoBox.js',
+			EYE_ROOT . '/extern/js/SocialBar/eyeos.socialbar.CloudsBox.js',
 			EYE_ROOT . '/extern/js/SocialBar/eyeos.socialbar.Activity.js',
 			EYE_ROOT . '/extern/js/SocialBar/eyeos.socialbar.ActivityBox.js',
 			EYE_ROOT . '/extern/js/SocialBar/eyeos.socialbar.TagWindow.js',
