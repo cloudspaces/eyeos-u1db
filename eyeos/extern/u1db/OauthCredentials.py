@@ -7,6 +7,7 @@ from oauthlib.oauth1 import SIGNATURE_PLAINTEXT
 from OAuthRequest import OAuthRequest
 import urllib
 import types
+import requests_oauthlib
 
 
 class OauthCredentials:
@@ -213,7 +214,7 @@ class OauthCredentials:
 
     def getCloudsList(self):
         clouds = settings['Clouds'].keys()
-        return clouds
+        print json.dumps(clouds)
 
 
 if __name__ == "__main__":
