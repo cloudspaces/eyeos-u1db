@@ -45,6 +45,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 		__shareds: null,		// Array of eyeos.socialbar.Shared
 
 		_infoBox: null,
+		_cloudsBox: null,
 		_sharedWithBox: null,
 		_sharedBox: null,
 		_urlBox: null,
@@ -73,7 +74,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 
             if(this._controller.__isCloudspaces(path)) {
                 this.getSocialBar().createCloudSpacesTabs();
-                //this._createContentsCommentsTab();
+                this._createContentCloudSpacesTab();
             } else {
                 this.getSocialBar().createDefaultTabs();
             }
@@ -108,6 +109,10 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 			this._createInfoBox();
 			this._createSharedWithBox();
 		},
+
+        _createContentCloudSpacesTab: function () {
+            this._createCloudsBox();
+        },
 
 		_createContentUrlTab: function () {
 			var sharedURLS = new eyeos.socialbar.Shared(this.getParams()['selected'][0].getAbsolutePath());
@@ -301,6 +306,18 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 			}, this);
 			//Add to Socialbar
 			this.getSocialBar().getTab('Info').addBox(this._infoBox, 'infoBox');
+		},
+
+		_createCloudsBox: function () {
+			//Contruct the element
+            eyeos.callMessage(this.getParams()['checknum'], 'getCloudsList', null, function (results) {
+                // Update socialbar handlers data struct
+                var clouds = JSON.parse(results);
+                this._cloudsBox = new eyeos.socialbar.CloudsBox(clouds);
+
+                //Add to Socialbar
+                this.getSocialBar().getTab('Clouds').addBox(this._cloudsBox, 'cloudBox');
+            }, this);
 		},
 
 		_createSharedWithBox: function () {
