@@ -76,8 +76,8 @@ class OAuthProvider_
     public function getCloudsList()
     {
         $path = "cd /var/www/eyeos/eyeos/" . EXTERN_DIR . "/" . U1DB . " && python -c 'from OauthCredentials import OauthCredentials; OauthCredentials(\"\",\"\",\"\",\"\").getCloudsList()'";
-        $clouds = json_decode((exec($path)));
-        return exec($clouds);
+        $clouds = exec($path);
+        return $clouds;
     }
 
 
