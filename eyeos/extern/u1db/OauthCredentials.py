@@ -267,6 +267,11 @@ if __name__ == "__main__":
                                  resource_owner_secret=token_secret, verifier=verifier,
                                  signature_method=SIGNATURE_PLAINTEXT)
             result = oauthCredentials.getAccessToken(oauth)
+        elif params.has_key("config"):
+            config = params['config']
+            type = config['type']
+            if type == "cloudsList":
+                result = oauthCredentials.getCloudsList()
     elif len(sys.argv) == 1:
         oauth = OAuthRequest(key, client_secret=secret, callback_uri=callbackurl, signature_method=SIGNATURE_PLAINTEXT)
         result = oauthCredentials.getRequestToken(oauth)

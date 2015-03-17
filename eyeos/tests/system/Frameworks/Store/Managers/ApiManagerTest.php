@@ -1335,6 +1335,39 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->exerciseShareFolder($metadata,$id,$list,$metadataOut);
     }
 
+    /**
+     * method: getCloudsList
+     * when: called
+     * with: emptyParams
+     * should: returnList
+     */
+    public function test_getCloudsList_called_emptyParams_returnList()
+    {
+        $metadata = array("Stacksync", "Nec");
+        $this->apiProviderMock->expects($this->once())
+            ->method('getCloudsList')
+            ->will($this->returnValue($metadata));
+        $result = $this->sut->getCloudsList();
+        $this->assertEquals(json_encode($metadata), $result);
+    }
+
+    /**
+     * method: getCloudsList
+     * when: called
+     * with: emptyParams
+     * should: returnException
+     */
+    public function test_getCloudsList_called_emptyParams_returnException()
+    {
+        $metadata =json_decode('{"error":-1}');
+        $metadataOut = array("status" => "KO", "error" => -1);
+        $this->apiProviderMock->expects($this->once())
+            ->method('getCloudsList')
+            ->will($this->returnValue($metadata));
+        $result = $this->sut->getCloudsList();
+        $this->assertEquals($metadataOut, $result);
+    }
+
     private function exerciseCreateMetadata($file,$name,$parent_id,$path,$pathAbsolute,$metadataOut)
     {
         $type = $file?'false':'true';

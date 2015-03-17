@@ -471,6 +471,19 @@ class ApiManager
         return $result;
     }
 
+    public function getCloudsList()
+    {
+        $result['status'] = 'KO';
+        $result['error'] = -1;
+        $metadata = $this->apiProvider->getCloudsList();
+        if (!isset($metadata->error)) {
+            $result = json_encode($metadata);
+        } else {
+            $result['error'] = $metadata->error;
+        }
+        return $result;
+    }
+
     private function setUserEyeos($metadata,$user)
     {
         $aux = new stdClass();

@@ -42,13 +42,6 @@ class OAuthManager
     {
         return $this->oauthProvider->deleteToken($token);
     }
-
-    /**
-     * @return array
-     */
-    public function getCloudsList(){
-        return $this->oauthProvider->getCloudsList();
-    }
 }
 
 

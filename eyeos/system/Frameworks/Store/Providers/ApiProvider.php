@@ -16,7 +16,7 @@ class ApiProvider
         $this->accessorProvider = $accessorProvider;
     }
 
-    public function getMetadata($token,$file,$id,$contents = null)
+    public function getMetadata($token, $file, $id, $contents = null)
     {
         $request = $this->getRequest('get',$token);
         $request->metadata->file = $file;
@@ -25,7 +25,7 @@ class ApiProvider
         return $this->exerciseMetadata($request);
     }
 
-    public function updateMetadata($token,$file,$id,$name = null,$parent = null)
+    public function updateMetadata($token, $file, $id, $name = null, $parent = null)
     {
         $request = $this->getRequest('update',$token);
         $request->metadata->file = $file;
@@ -35,9 +35,9 @@ class ApiProvider
         return $this->exerciseMetadata($request);
     }
 
-    public function createMetadata($token,$file,$name,$parent = null,$path = null)
+    public function createMetadata($token, $file, $name, $parent = null, $path = null)
     {
-        $request = $this->getRequest('create',$token);
+        $request = $this->getRequest('create', $token);
         $request->metadata->file = $file;
         $request->metadata->filename = $name;
         $request->metadata->parent_id = $parent === null?'null':"" . $parent;
@@ -45,18 +45,18 @@ class ApiProvider
         return $this->exerciseMetadata($request);
     }
 
-    public function uploadMetadata($token,$id,$path)
+    public function uploadMetadata($token, $id, $path)
     {
-        $request = $this->getRequest('upload',$token);
+        $request = $this->getRequest('upload', $token);
         $request->metadata->id = "" . $id;
         $request->metadata->path = $path;
         return $this->exerciseMetadata($request);
     }
 
-    public function downloadMetadata($token,$id,$path)
+    public function downloadMetadata($token, $id, $path)
     {
         $resp = json_decode('{"error":-1}');
-        $request = $this->getRequest('download',$token);
+        $request = $this->getRequest('download', $token);
         $request->metadata->id = "" . $id;
         $request->metadata->path = $path;
         $result = $this->accessorProvider->getProcessOauthCredentials(json_encode($request));
@@ -72,9 +72,9 @@ class ApiProvider
         return $resp;
     }
 
-    public function deleteMetadata($token,$file,$id)
+    public function deleteMetadata($token, $file, $id)
     {
-        $request = $this->getRequest('delete',$token);
+        $request = $this->getRequest('delete', $token);
         $request->metadata->file = $file;
         $request->metadata->id = "" . $id;
         return $this->exerciseMetadata($request);
@@ -82,14 +82,14 @@ class ApiProvider
 
     public function listVersions($token,$id)
     {
-        $request = $this->getRequest('listVersions',$token);
+        $request = $this->getRequest('listVersions', $token);
         $request->metadata->id = "" . $id;
         return $this->exerciseMetadata($request,true);
     }
 
-    public function getFileVersionData($token,$id,$version,$path)
+    public function getFileVersionData($token, $id, $version, $path)
     {
-        $request = $this->getRequest("getFileVersion",$token);
+        $request = $this->getRequest("getFileVersion", $token);
         $request->metadata->id = "" . $id;
         $request->metadata->version = "" . $version;
         $request->metadata->path = $path;
@@ -98,31 +98,42 @@ class ApiProvider
 
     public function getListUsersShare($token,$id)
     {
-        $request = $this->getRequest('listUsersShare',$token);
+        $request = $this->getRequest('listUsersShare', $token);
         $request->metadata->id = "" . $id;
         return $this->exerciseMetadata($request);
     }
 
     public function shareFolder($token,$id,$list)
     {
-        $request = $this->getRequest('shareFolder',$token);
+        $request = $this->getRequest('shareFolder', $token);
         $request->metadata->id = "" . $id;
         $request->metadata->list = $list;
         return $this->exerciseMetadata($request);
     }
 
-    private function getRequest($type,$token)
+    public function getCloudsList()
+    {
+        $request = $this->getRequest('cloudsList', null);
+        return $this->exerciseMetadata($request);
+    }
+
+    private function getRequest($type, $token)
     {
         $request = new stdClass();
-        $request->token = new stdClass();
-        $request->token->key = $token->key;
-        $request->token->secret = $token->secret;
-        $request->metadata = new stdClass();
-        $request->metadata->type = $type;
+        if ($token) {
+            $request->token = new stdClass();
+            $request->token->key = $token->key;
+            $request->token->secret = $token->secret;
+            $request->metadata = new stdClass();
+            $request->metadata->type = $type;
+        } else {
+            $request->config = new stdClass();
+            $request->config->type = $type;
+        }
         return $request;
     }
 
-    private function exerciseMetadata($request,$versions = false)
+    private function exerciseMetadata($request, $versions = false)
     {
         $resp = json_decode('{"error":-1}');
         $result = $this->accessorProvider->getProcessOauthCredentials(json_encode($request));
@@ -141,8 +152,6 @@ class ApiProvider
 
         return $resp;
     }
-
-
 }
 
 ?>

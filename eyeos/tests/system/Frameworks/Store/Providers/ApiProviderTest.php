@@ -575,6 +575,21 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->exerciseShareFolder($metadataIn,$metadataOut,$this->exception,$id,$list);
     }
 
+    /**
+     * method: getCloudsList
+     * when: called
+     * with: emptyParams
+     * should: returnList
+     */
+    public function test_getCloudsList_called_emptyParams_returnList()
+    {
+        $metadataIn = '{"metadata":{"type":"cloudsList"}}';
+        $metadataOut = '["Stacksync", "Nec"]';
+        $this->exerciseMockMetadata($metadataIn, $metadataOut);
+        $actual = $this->sut->getCloudsList();
+        $this->assertEquals(json_decode($metadataOut), $actual);
+    }
+
     private function exerciseGetMetadata($metadataIn,$metadataOut,$check,$file,$id,$contents = null)
     {
         $this->exerciseMockMetadata($metadataIn,$metadataOut);

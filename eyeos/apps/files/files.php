@@ -1352,9 +1352,10 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
      * @throws Exception
      */
     public function getCloudsList(){
+        $clouds = array();
         try {
-            $oauthManager =  new OAuthManager();
-            $clouds = $oauthManager->getCloudsList();
+            $apiManager =  new ApiManager();
+            $clouds = $apiManager->getCloudsList();
 
         } catch (Exception $e){
             throw new Exception($e->getMessage());

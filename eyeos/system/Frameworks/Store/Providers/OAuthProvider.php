@@ -69,18 +69,6 @@ class OAuthProvider_
         } catch (Exception $e) {}
         return false;
     }
-
-    /**
-     * @return array
-     */
-    public function getCloudsList()
-    {
-        $path = "cd /var/www/eyeos/eyeos/" . EXTERN_DIR . "/" . U1DB . " && python -c 'from OauthCredentials import OauthCredentials; OauthCredentials(\"\",\"\",\"\",\"\").getCloudsList()'";
-        $clouds = exec($path);
-        return $clouds;
-    }
-
-
 }
 
 
