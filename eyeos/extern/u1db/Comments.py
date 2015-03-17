@@ -62,10 +62,10 @@ class Comments:
         return json.dumps(results)
 
     def sync(self):
-        try:
+        /*try:
             self.db.sync(self.url,creds=self.creds)
         except:
-            pass
+            pass*/
 
 
 if __name__ == "__main__":

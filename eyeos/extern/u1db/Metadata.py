@@ -285,10 +285,10 @@ class Metadata:
                 self.db.put_doc(file)
 
     def sync(self):
-        try:
+        /*try:
             print(self.db.sync(self.url,creds=self.creds))
         except:
-            pass
+            pass*/
 
     def deleteCalendarUser(self,user):
         self.deleteMetadataUser(user)
