@@ -68,11 +68,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
                 stacksync = true;
                 this.getSocialBar().createStackSyncTabs();
                 this._createContentsCommentsTab();
-            } else {
-                this.getSocialBar().createDefaultTabs();
-            }
-
-            if(this._controller.__isCloudspaces(path)) {
+            } else if(this._controller && this._controller.__isCloudspaces(path)) {
                 this.getSocialBar().createCloudSpacesTabs();
                 this._createContentCloudSpacesTab();
             } else {
@@ -111,7 +107,16 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 		},
 
         _createContentCloudSpacesTab: function () {
-            this._createCloudsBox();
+            //Contruct the element
+            eyeos.callMessage(this.getParams()['checknum'], 'getCloudsList', null, function (results) {
+                // Update socialbar handlers data struct
+                var clouds = JSON.parse(results);
+                this._cloudsBox = new eyeos.socialbar.CloudsBox(clouds);
+
+                //Add to Socialbar
+                this.getSocialBar().getTab('Clouds').removeAll();
+                this.getSocialBar().getTab('Clouds').addBox(this._cloudsBox, 'cloudBox');
+            }, this);
         },
 
 		_createContentUrlTab: function () {
@@ -306,18 +311,6 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 			}, this);
 			//Add to Socialbar
 			this.getSocialBar().getTab('Info').addBox(this._infoBox, 'infoBox');
-		},
-
-		_createCloudsBox: function () {
-			//Contruct the element
-            eyeos.callMessage(this.getParams()['checknum'], 'getCloudsList', null, function (results) {
-                // Update socialbar handlers data struct
-                var clouds = JSON.parse(results);
-                this._cloudsBox = new eyeos.socialbar.CloudsBox(clouds);
-
-                //Add to Socialbar
-                this.getSocialBar().getTab('Clouds').addBox(this._cloudsBox, 'cloudBox');
-            }, this);
 		},
 
 		_createSharedWithBox: function () {

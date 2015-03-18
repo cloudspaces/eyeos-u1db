@@ -42,13 +42,25 @@ qx.Class.define('eyeos.suhandlers.LocalFolder', {
 		updateSocialBar: function (controller) {
             this._controller = controller;
             var path = this.getParams().path;
-            if(this._controller.__isCloudspaces(path)) {
+            if(this._controller && this._controller.__isCloudspaces(path)) {
                 this.getSocialBar().createCloudSpacesTabs();
+                this._createContentCloudSpacesTab();
             }else {
                 this.getSocialBar().createDefaultTabs();
             }
 			this.getSocialBar().removeTab('Share');
-		}
+		},
+        _createContentCloudSpacesTab: function() {
+            //Contruct the element
+            eyeos.callMessage(this.getParams()['checknum'], 'getCloudsList', null, function (results) {
+                // Update socialbar handlers data struct
+                var clouds = JSON.parse(results);
+                this._cloudsBox = new eyeos.socialbar.CloudsBox(clouds);
 
+                //Add to Socialbar
+                this.getSocialBar().getTab('Clouds').removeAll();
+                this.getSocialBar().getTab('Clouds').addBox(this._cloudsBox, 'cloudBox');
+            }, this);
+        }
 	}
 });

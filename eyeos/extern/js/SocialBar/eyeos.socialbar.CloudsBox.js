@@ -141,6 +141,15 @@ qx.Class.define('eyeos.socialbar.CloudsBox', {
                     padding: 0,
                     margin: 0
                 }));
+                this._layoutCloudsBox.addListener('mouseover', function(){
+                    this._layoutCloudsBox.setCursor('pointer');
+                }, this);
+                this._layoutCloudsBox.addListener('mouseout', function(){
+                    this._layoutCloudsBox.setCursor('default');
+                }, this);
+                this._layoutCloudsBox.addListener('click', function(e){
+                    console.log(e.getTarget().getValue());
+                }, this);
             }
 
         }

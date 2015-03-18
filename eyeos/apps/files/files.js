@@ -1355,7 +1355,6 @@ qx.Class.define('eyeos.files.Controller', {
         },
 
         __isCloudspaces: function(path) {
-            path = 'home://~' + path;
             if(path.indexOf('home://~'+ eyeos.getCurrentUserName()+'/Cloudspaces') !== -1) {
                 return true;
             }
