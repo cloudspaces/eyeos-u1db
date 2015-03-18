@@ -32,7 +32,7 @@ settings = {
             },
             "version": "v2"
         },
-        "Nec": {
+        "NEC": {
             "urls": {
                 "REQUEST_TOKEN_URL": "http://api.stacksync.com:8080/oauth/request_token",
                 "ACCESS_TOKEN_URL": "http://api.stacksync.com:8080/oauth/access_token",

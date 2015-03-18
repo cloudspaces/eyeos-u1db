@@ -508,7 +508,7 @@ class OauthCredentialsTest (unittest.TestCase):
     should: returnClouds
     """
     def test_getCloudsList_called_emptyParams_returnClouds(self):
-        expected = '["Stacksync", "Nec"]'
+        expected = '["Stacksync", "NEC"]'
         clouds = self.oauthCredentials.getCloudsList()
         self.assertEquals(expected, clouds)
 
