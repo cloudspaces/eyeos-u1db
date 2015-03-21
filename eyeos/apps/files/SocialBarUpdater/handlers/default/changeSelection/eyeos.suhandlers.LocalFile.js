@@ -111,7 +111,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
             eyeos.callMessage(this.getParams()['checknum'], 'getCloudsList', null, function (results) {
                 // Update socialbar handlers data struct
                 var clouds = JSON.parse(results);
-                this._cloudsBox = new eyeos.socialbar.CloudsBox(clouds);
+                this._cloudsBox = new eyeos.socialbar.CloudsBox(clouds, this._controller);
 
                 //Add to Socialbar
                 this.getSocialBar().getTab('Clouds').removeAll();

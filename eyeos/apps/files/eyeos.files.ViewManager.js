@@ -600,6 +600,10 @@ qx.Class.define('eyeos.files.ViewManager', {
 
         },
 
+        createDialogNec: function (){
+            console.log("Dialogue NEC");
+        },
+
         _permissionDenied: function() {
             var permissionDialog = new qx.ui.container.Composite().set({
                 layout: new qx.ui.layout.VBox(),

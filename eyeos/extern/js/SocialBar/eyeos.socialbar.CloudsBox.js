@@ -43,19 +43,12 @@ qx.Class.define('eyeos.socialbar.CloudsBox', {
         }
     },
 
-
-    events: {
-        /**
-         * Fired when a user change the rating
-         */
-        changeRating: 'qx.event.type.Data'
-    },
-
     /**
      * Constructor of a CloudsBox
      *
      */
-    construct: function (clouds) {
+    construct: function (clouds, controller) {
+        this._controller = controller;
         this.base(arguments);
         this.set({
             marginTop: 20,
@@ -64,9 +57,7 @@ qx.Class.define('eyeos.socialbar.CloudsBox', {
             layout: new qx.ui.layout.HBox(),
             decorator: null
         });
-        //if (Info instanceof eyeos.socialbar.Info){
-            this._buildGui(clouds);
-        //}
+        this._buildGui(clouds);
     },
 
     members: {
@@ -76,42 +67,22 @@ qx.Class.define('eyeos.socialbar.CloudsBox', {
         _layoutRatingBox: null,
         _emptyStar: 'index.php?extern=images/rate_off.png',
         _fullStar: 'index.php?extern=images/rate_on.png',
+        _controller: null,
 
         /**
          * Create the View of a CloudsBox
          *
-         * @param Info {Info} Info Object with all the related information
+         * @param clouds
          */
         _buildGui: function (clouds) {
-            //this._buildImageBox(Info);
             this._buildCloudsBox(clouds);
-
-            /*if (Info.getEnableRating()){
-                this._buildRatingBox(Info);
-            }*/
-        },
-
-        /**
-         * Create the View for the Image container (just the image)
-         *
-         * @param Info {Info} Info Object with all the related information
-         */
-        _buildImageBox: function (Info) {
-            this._layoutImageBox = new eyeos.ui.widgets.Image(Info.getImage()).set({
-                width: 70,
-                height: 70,
-                marginRight: 12,
-                scale: true,
-                forceRatio: 'auto'
-            });
-            this.add(this._layoutImageBox);
         },
 
         /**
          * Create the View of the information Container (info and rating system
          * if enabled)
          *
-         * @param Info {Info} Info Object with all the related information
+         * @param clouds
          */
         _buildCloudsBox: function (clouds) {
             this._layoutCloudsBox = new qx.ui.container.Composite().set({
@@ -119,6 +90,7 @@ qx.Class.define('eyeos.socialbar.CloudsBox', {
                 allowGrowY: true,
                 layout: new qx.ui.layout.VBox()
             });
+            self = this;
 
             this.add(this._layoutCloudsBox, {flex: 1});
 
@@ -128,28 +100,27 @@ qx.Class.define('eyeos.socialbar.CloudsBox', {
                 font: new qx.bom.Font(14).set({
                     family: ["Helvetica", "Arial", "Lucida Grande"],
                     bold: true
-                }),
-                margin: 2
+                })
             });
             this._layoutCloudsBox.add(titleLabel);
-            var blackHtml = '<span style=\'text-align:left; font-family: "Helvetica", "Arial", "Lucida Grande"; font-size: 12px; color: #666666\'; margin: 0; padding: 0\'>';
 
-            for ( var i = 0; i < clouds.length; i++){
-                this._layoutCloudsBox.add(new qx.ui.basic.Label().set({
-                    value: blackHtml + clouds[i]+'</span>',
+            for (var i = 0; i < clouds.length; i++) {
+                var linkCloud = new qx.ui.basic.Label().set({
+                    value: clouds[i],
                     rich: true,
                     padding: 0,
                     margin: 0
-                }));
-                this._layoutCloudsBox.addListener('mouseover', function(){
+                });
+                linkCloud.addListener('mouseover', function () {
                     this._layoutCloudsBox.setCursor('pointer');
                 }, this);
-                this._layoutCloudsBox.addListener('mouseout', function(){
+                linkCloud.addListener('mouseout', function () {
                     this._layoutCloudsBox.setCursor('default');
                 }, this);
-                this._layoutCloudsBox.addListener('click', function(e){
-                    console.log(e.getTarget().getValue());
+                linkCloud.addListener('click', function (e) {
+                    self._controller.createDialogueCloud(e.getTarget().getValue());
                 }, this);
+                this._layoutCloudsBox.add(linkCloud);
             }
 
         }

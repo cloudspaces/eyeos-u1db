@@ -1039,6 +1039,17 @@ qx.Class.define('eyeos.files.Controller', {
 				},this);
 			}
 		},
+		
+		createDialogueCloud: function(cloud) {
+            if(cloud == "NEC"){
+                this.getView().removeAll();
+                this.getView().createDialogNec();
+            }else if(cloud == "Stacksync"){
+                this.getView().removeAll();
+                this.getView().createDialogStacksync();
+            }
+		},
+		
 		newLink: function() {
 		   eyeos.execute('newLink', this.getApplication().getChecknum(), [this.getModel().getCurrentPath()[1]]);
 		},
@@ -1789,6 +1800,7 @@ qx.Class.define('eyeos.files.Controller', {
                     this.setToken(true);
                     this._initFiles();
                 } else {
+                    //TODO Disabled open Stacksync dialog
                     this.getView().createDialogStacksync();
                 }
             },this);
