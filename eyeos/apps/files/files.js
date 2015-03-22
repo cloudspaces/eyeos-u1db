@@ -74,7 +74,8 @@ qx.Class.define('eyeos.files.Controller', {
 				false
 		));
 
-        this._getToken();
+        //this._getToken(); Commented to disable display Stacksync dialogue starting files
+        this._initFiles();
 
         /*eyeos.callMessage(this.getApplication().getChecknum(), 'getToken', null, function (results) {
 
