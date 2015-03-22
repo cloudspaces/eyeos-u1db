@@ -501,17 +501,6 @@ class OauthCredentialsTest (unittest.TestCase):
         metadataOut = 403
         self.exerciseShareFolder(id,list,metadataOut,metadataIn)
 
-    """
-    method: getCloudsList
-    when: called
-    with: empty params
-    should: returnClouds
-    """
-    def test_getCloudsList_called_emptyParams_returnClouds(self):
-        expected = '["Stacksync", "NEC"]'
-        clouds = self.oauthCredentials.getCloudsList()
-        self.assertEquals(expected, clouds)
-
     def createOauthSession(self):
         oauth = OAuth1Session(self.key, client_secret=self.secret,resource_owner_key="OPQR",resource_owner_secret="STVW")
         return oauth

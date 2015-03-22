@@ -7,7 +7,6 @@ from oauthlib.oauth1 import SIGNATURE_PLAINTEXT
 from OAuthRequest import OAuthRequest
 import urllib
 import types
-import requests_oauthlib
 
 
 class OauthCredentials:
@@ -212,69 +211,100 @@ class OauthCredentials:
 
         return metadata
 
-    def getCloudsList(self):
-        clouds = settings['Clouds'].keys()
-        return json.dumps(clouds)
-
-
 if __name__ == "__main__":
-    oauthCredentials = OauthCredentials(settings['Clouds']['Stacksync']['urls']['REQUEST_TOKEN_URL'],
-                                        settings['Clouds']['Stacksync']['urls']['ACCESS_TOKEN_URL'],
-                                        settings['Clouds']['Stacksync']['urls']['RESOURCE_URL'],
-                                        settings['Clouds']['Stacksync']['version'])
-    key = settings['Clouds']['Stacksync']['consumer']['key']
-    secret = settings['Clouds']['Stacksync']['consumer']['secret']
-    callbackurl = settings['Clouds']['Stacksync']['urls']['CALLBACK_URL']
-    result = None
+    if settings[ 'NEW_CODE' ] == "true":
+        print( "NEW CODE ACTIVO" )
+        result = None
+        if len(sys.argv) == 2:
+            params = json.loads(str(sys.argv[1]))
+            if params.has_key( 'config' ) and params[ 'config' ].has_key( 'cloud' ):
+                cloud = params[ 'config' ][ 'cloud' ]
+                if settings[ 'Clouds' ].has_key( cloud ):
+                    settingsCloud = settings[ 'Clouds' ][ cloud ]
+                    if params[ 'config' ].has_key( 'type' ):
+                        type = params[ 'config' ][ 'type' ]
+                        if type == "oauthUrl":
+                            result = json.dumps(settingsCloud[ 'urls' ][ 'OAUTH_URL' ])
+                    else:
+                        oauthCredentials = OauthCredentials(settingsCloud[ 'urls' ][ 'REQUEST_TOKEN_URL' ],
+                                                            settingsCloud[ 'urls' ][ 'ACCESS_TOKEN_URL' ],
+                                                            settingsCloud[ 'urls' ][ 'RESOURCE_URL' ],
+                                                            settingsCloud[ 'version' ])
+                        key = settingsCloud[ 'consumer' ][ 'key' ]
+                        secret = settingsCloud[ 'consumer' ][ 'secret' ]
+                        callbackUrl = settingsCloud[ 'urls' ][ 'CALLBACK_URL' ]
+                        if not (params.has_key( 'metadata' ) or params.has_key( 'verifier' ) or params.has_key( 'token' )):
+                            oauth = OAuthRequest(key, client_secret=secret, callback_uri=callbackUrl, signature_method=SIGNATURE_PLAINTEXT)
+                            result = oauthCredentials.getRequestToken(oauth)
+                        elif params.has_key("verifier") and params.has_key('token'):
+                            token_key = params['token']['key']
+                            token_secret = params['token']['secret']
+                            verifier = params['verifier']
+                            oauth = OAuthRequest(key,
+                                                 client_secret=secret,
+                                                 resource_owner_key=token_key,
+                                                 resource_owner_secret=token_secret,
+                                                 verifier=verifier,
+                                                 signature_method=SIGNATURE_PLAINTEXT)
+                            result = oauthCredentials.getAccessToken(oauth)
+            if params.has_key( 'config' ) and params[ 'config' ].has_key( 'type' ):
+                type = params[ 'config' ][ 'type' ]
+                if type == "cloudsList":
+                    result = json.dumps(settings[ 'Clouds' ].keys())
 
-    if len(sys.argv) == 2:
-        params = json.loads(str(sys.argv[1]))
-        if params.has_key('metadata') and params.has_key('token'):
-            token_key = params['token']['key']
-            token_secret = params['token']['secret']
-            metadata = params['metadata']
-            type = metadata['type']
-            oauth = OAuthRequest(key, client_secret=secret, resource_owner_key=token_key,
-                                 resource_owner_secret=token_secret)
-            if type == "get":
-                result = oauthCredentials.getMetadata(oauth, metadata['file'], metadata['id'], metadata['contents'])
-            elif type == "update":
-                result = oauthCredentials.updateMetadata(oauth, metadata['file'], metadata['id'], metadata['filename'],
-                                                         metadata['parent_id'])
-            elif type == "create":
-                result = oauthCredentials.createMetadata(oauth, metadata['file'], metadata['filename'],
-                                                         metadata['parent_id'], metadata['path'])
-            elif type == 'upload':
-                result = oauthCredentials.uploadFile(oauth, metadata['id'], metadata['path'])
-            elif type == 'download':
-                result = oauthCredentials.downloadFile(oauth, metadata['id'], metadata['path'])
-            elif type == 'delete':
-                result = oauthCredentials.deleteMetadata(oauth, metadata['file'], metadata['id'])
-            elif type == 'listVersions':
-                result = oauthCredentials.getFileVersions(oauth, metadata['id'])
-            elif type == "getFileVersion":
-                result = oauthCredentials.getFileVersionData(oauth, metadata['id'], metadata['version'],
-                                                             metadata['path'])
-            elif type == "listUsersShare":
-                result = oauthCredentials.getListUsersShare(oauth, metadata['id'])
-            elif type == "shareFolder":
-                result = oauthCredentials.shareFolder(oauth, metadata['id'], metadata['list'])
-        elif params.has_key("verifier") and params.has_key('token'):
-            token_key = params['token']['key']
-            token_secret = params['token']['secret']
-            verifier = params['verifier']
-            oauth = OAuthRequest(key, client_secret=secret, resource_owner_key=token_key,
-                                 resource_owner_secret=token_secret, verifier=verifier,
-                                 signature_method=SIGNATURE_PLAINTEXT)
-            result = oauthCredentials.getAccessToken(oauth)
-        elif params.has_key("config"):
-            config = params['config']
-            type = config['type']
-            if type == "cloudsList":
-                result = oauthCredentials.getCloudsList()
-    elif len(sys.argv) == 1:
-        oauth = OAuthRequest(key, client_secret=secret, callback_uri=callbackurl, signature_method=SIGNATURE_PLAINTEXT)
-        result = oauthCredentials.getRequestToken(oauth)
+    else:
+        oauthCredentials = OauthCredentials(settings['Clouds']['Stacksync']['urls']['REQUEST_TOKEN_URL'],
+                                            settings['Clouds']['Stacksync']['urls']['ACCESS_TOKEN_URL'],
+                                            settings['Clouds']['Stacksync']['urls']['RESOURCE_URL'],
+                                            settings['Clouds']['Stacksync']['version'])
+        key = settings['Clouds']['Stacksync']['consumer']['key']
+        secret = settings['Clouds']['Stacksync']['consumer']['secret']
+        callbackurl = settings['Clouds']['Stacksync']['urls']['CALLBACK_URL']
+        result = None
+
+        if len(sys.argv) == 2:
+            params = json.loads(str(sys.argv[1]))
+            if params.has_key('metadata') and params.has_key('token'):
+                token_key = params['token']['key']
+                token_secret = params['token']['secret']
+                metadata = params['metadata']
+                type = metadata['type']
+                oauth = OAuthRequest(key, client_secret=secret, resource_owner_key=token_key,
+                                     resource_owner_secret=token_secret)
+                if type == "get":
+                    result = oauthCredentials.getMetadata(oauth, metadata['file'], metadata['id'], metadata['contents'])
+                elif type == "update":
+                    result = oauthCredentials.updateMetadata(oauth, metadata['file'], metadata['id'], metadata['filename'],
+                                                             metadata['parent_id'])
+                elif type == "create":
+                    result = oauthCredentials.createMetadata(oauth, metadata['file'], metadata['filename'],
+                                                             metadata['parent_id'], metadata['path'])
+                elif type == 'upload':
+                    result = oauthCredentials.uploadFile(oauth, metadata['id'], metadata['path'])
+                elif type == 'download':
+                    result = oauthCredentials.downloadFile(oauth, metadata['id'], metadata['path'])
+                elif type == 'delete':
+                    result = oauthCredentials.deleteMetadata(oauth, metadata['file'], metadata['id'])
+                elif type == 'listVersions':
+                    result = oauthCredentials.getFileVersions(oauth, metadata['id'])
+                elif type == "getFileVersion":
+                    result = oauthCredentials.getFileVersionData(oauth, metadata['id'], metadata['version'],
+                                                                 metadata['path'])
+                elif type == "listUsersShare":
+                    result = oauthCredentials.getListUsersShare(oauth, metadata['id'])
+                elif type == "shareFolder":
+                    result = oauthCredentials.shareFolder(oauth, metadata['id'], metadata['list'])
+            elif params.has_key("verifier") and params.has_key('token'):
+                token_key = params['token']['key']
+                token_secret = params['token']['secret']
+                verifier = params['verifier']
+                oauth = OAuthRequest(key, client_secret=secret, resource_owner_key=token_key,
+                                     resource_owner_secret=token_secret, verifier=verifier,
+                                     signature_method=SIGNATURE_PLAINTEXT)
+                result = oauthCredentials.getAccessToken(oauth)
+        elif len(sys.argv) == 1:
+            oauth = OAuthRequest(key, client_secret=secret, callback_uri=callbackurl, signature_method=SIGNATURE_PLAINTEXT)
+            result = oauthCredentials.getRequestToken(oauth)
     if result:
         if type != 'download':
             print(str(result))

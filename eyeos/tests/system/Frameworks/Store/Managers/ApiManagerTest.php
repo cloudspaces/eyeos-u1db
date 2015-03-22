@@ -1368,6 +1368,43 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($metadataOut, $result);
     }
 
+    /**
+     * method: getOauthUrlCloud
+     * when: called
+     * with: ValidCloud
+     * should: returnList
+     */
+    public function test_getOauthUrlCloud_called_ValidCloud_returnList()
+    {
+        $cloud = "Stacksync";
+        $metadata = json_decode("url_oauth_valid");
+        $this->apiProviderMock->expects($this->once())
+            ->method('getOauthUrlCloud')
+            ->with($cloud)
+            ->will($this->returnValue($metadata));
+        $result = $this->sut->getOauthUrlCloud($cloud);
+        $this->assertEquals(json_encode($metadata), $result);
+    }
+
+    /**
+     * method: getOauthUrlCloud
+     * when: called
+     * with: InvalidCloud
+     * should: returnException
+     */
+    public function test_getOauthUrlCloud_called_InvalidCloud_returnException()
+    {
+        $cloud = "No_valid_cloud";
+        $metadata =json_decode('{"error":-1}');
+        $metadataOut = array("status" => "KO", "error" => -1);
+        $this->apiProviderMock->expects($this->once())
+            ->method('getOauthUrlCloud')
+            ->with($cloud)
+            ->will($this->returnValue($metadata));
+        $result = $this->sut->getOauthUrlCloud($cloud);
+        $this->assertEquals($metadataOut, $result);
+    }
+
     private function exerciseCreateMetadata($file,$name,$parent_id,$path,$pathAbsolute,$metadataOut)
     {
         $type = $file?'false':'true';

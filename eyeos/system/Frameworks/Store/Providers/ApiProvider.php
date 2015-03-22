@@ -113,11 +113,17 @@ class ApiProvider
 
     public function getCloudsList()
     {
-        $request = $this->getRequest('cloudsList', null);
+        $request = $this->getRequest('cloudsList');
         return $this->exerciseMetadata($request);
     }
 
-    private function getRequest($type, $token)
+    public function getOauthUrlCloud($cloud)
+    {
+        $request = $this->getRequest('oauthUrl', null, $cloud);
+        return $this->exerciseMetadata($request);
+    }
+
+    private function getRequest($type, $token = NULL, $cloud = NULL)
     {
         $request = new stdClass();
         if ($token) {
@@ -128,6 +134,9 @@ class ApiProvider
             $request->metadata->type = $type;
         } else {
             $request->config = new stdClass();
+            if ($cloud) {
+                $request->config->cloud = $cloud;
+            }
             $request->config->type = $type;
         }
         return $request;
