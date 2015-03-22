@@ -590,6 +590,21 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(json_decode($metadataOut), $actual);
     }
 
+    /**
+     * method: getOauthUrlCloud
+     * when: called
+     * with: ValidCloud
+     * should: returnList
+     */
+    public function test_getOauthUrlCloud_called_ValidCloud_returnList()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","type":"oauthUrl"}}';
+        $metadataOut = 'http://api.stacksync.com:8080/oauth/authorize?oauth_token=';
+        $this->exerciseMockMetadata($metadataIn, $metadataOut);
+        $actual = $this->sut->getOauthUrlCloud("Stacksync");
+        $this->assertEquals(json_decode($metadataOut), $actual);
+    }
+
     private function exerciseGetMetadata($metadataIn,$metadataOut,$check,$file,$id,$contents = null)
     {
         $this->exerciseMockMetadata($metadataIn,$metadataOut);
