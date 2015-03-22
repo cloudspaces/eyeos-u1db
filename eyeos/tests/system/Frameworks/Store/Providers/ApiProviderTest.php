@@ -583,7 +583,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_getCloudsList_called_emptyParams_returnList()
     {
-        $metadataIn = '{"metadata":{"type":"cloudsList"}}';
+        $metadataIn = '{"config":{"type":"cloudsList"}}';
         $metadataOut = '["Stacksync", "Nec"]';
         $this->exerciseMockMetadata($metadataIn, $metadataOut);
         $actual = $this->sut->getCloudsList();
