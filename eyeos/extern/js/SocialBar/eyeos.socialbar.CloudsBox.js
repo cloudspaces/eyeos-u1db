@@ -61,12 +61,8 @@ qx.Class.define('eyeos.socialbar.CloudsBox', {
     },
 
     members: {
-        _layoutImageBox: null,
-        _layoutImage: null,
         _layoutCloudsBox: null,
-        _layoutRatingBox: null,
-        _emptyStar: 'index.php?extern=images/rate_off.png',
-        _fullStar: 'index.php?extern=images/rate_on.png',
+        _imageCheck: 'index.php?extern=images/eyefiles/checkmark.png',
         _controller: null,
 
         /**
@@ -79,8 +75,7 @@ qx.Class.define('eyeos.socialbar.CloudsBox', {
         },
 
         /**
-         * Create the View of the information Container (info and rating system
-         * if enabled)
+         * Create the View of the information Container
          *
          * @param clouds
          */
@@ -105,11 +100,21 @@ qx.Class.define('eyeos.socialbar.CloudsBox', {
             this._layoutCloudsBox.add(titleLabel);
 
             for (var i = 0; i < clouds.length; i++) {
+
+                var layoutCloud = new qx.ui.container.Composite().set({
+                    allowGrowX: false,
+                    allowGrowY: true,
+                    layout: new qx.ui.layout.HBox()
+                });
+
                 var linkCloud = new qx.ui.basic.Label().set({
                     value: clouds[i],
                     rich: true,
                     padding: 0,
-                    margin: 0
+                    margin: 0,
+                    maxWidth: 190,
+                    width: 190,
+                    minWidth: 180
                 });
                 linkCloud.addListener('mouseover', function () {
                     this._layoutCloudsBox.setCursor('pointer');
@@ -120,7 +125,20 @@ qx.Class.define('eyeos.socialbar.CloudsBox', {
                 linkCloud.addListener('click', function (e) {
                     self._controller.createDialogueCloud(e.getTarget().getValue());
                 }, this);
-                this._layoutCloudsBox.add(linkCloud);
+                layoutCloud.add(linkCloud);
+
+                //TODO Validate if cloud is configured
+                if (true) {
+                    var image = new qx.ui.basic.Image(this._imageCheck).set({
+                        allowGrowX: false,
+                        allowGrowY: false,
+                        alignX: 'right',
+                        alignY: 'middle'
+                    });
+                    layoutCloud.add(image);
+                }
+
+                this._layoutCloudsBox.add(layoutCloud);
             }
 
         }
