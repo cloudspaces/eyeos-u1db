@@ -602,6 +602,205 @@ qx.Class.define('eyeos.files.ViewManager', {
 
         createDialogNec: function (){
             console.log("Dialogue NEC");
+
+            var dialog = new qx.ui.container.Composite().set({
+                layout: new qx.ui.layout.VBox(),
+                width: this.getWidth(),
+                allowGrowY: false
+            });
+
+            dialog.addListener('appear',function(e) {
+                var heightParent = this.getBounds()?this.getBounds().height:this.getHeight();
+                var heightDialog = e.getCurrentTarget().getBounds().height;
+                var top = (heightParent / 2) - (heightDialog / 2) - 80;
+                e.getCurrentTarget().setMarginTop(top);
+            },this);
+
+            var logo = new qx.ui.basic.Image().set({
+                source:  "index.php?extern=images/stacksync.png",
+                width: 100,
+                height: 100,
+                scale: true,
+                alignX: 'center'
+            });
+            dialog.add(logo);
+
+            var label = new qx.ui.basic.Label().set({
+                value: tr("Do you want to log on NEC?"),
+                font:  new qx.bom.Font(18, ['Arial', 'sans-serif']),
+                alignX: 'center',
+                marginTop: 20
+            });
+
+            dialog.add(label);
+
+            var containerButtons = new qx.ui.container.Composite().set({
+                layout: new qx.ui.layout.HBox(),
+                allowGrowX: false,
+                alignX: 'center',
+                marginTop: 20
+            });
+
+            var buttonOK = new qx.ui.form.Button().set({
+                label: tr('Yes'),
+                font:  new qx.bom.Font(12, ['Arial', 'sans-serif']),
+                marginRight: 40,
+                width: 60,
+                height: 30
+            });
+
+            buttonOK.addListener('execute',function() {
+                this.waitNec();
+            },this);
+
+            var buttonKO = new qx.ui.form.Button().set({
+                label: tr('No'),
+                font:  new qx.bom.Font(12, ['Arial', 'sans-serif']),
+                width: 60,
+                height: 30
+            });
+
+            buttonKO.addListener('execute',function() {
+                this.removeAll();
+                this.getController()._initFiles();
+            },this);
+
+            containerButtons.add(buttonOK);
+            containerButtons.add(buttonKO);
+
+            dialog.add(containerButtons);
+
+            this.add(dialog);
+        },
+        waitNec: function() {
+            console.log("wait NEC");
+            this.removeAll();
+
+            var containerWait = new qx.ui.container.Composite().set({
+                layout: new qx.ui.layout.VBox(),
+                width: this.getWidth(),
+                allowGrowY: false
+            });
+
+            containerWait.addListener('appear',function(e) {
+                var heightParent = this.getBounds()?this.getBounds().height:this.getHeight();
+                var heightContainer = e.getCurrentTarget().getBounds().height;
+                var top = (heightParent / 2) - (heightContainer / 2) - 80;
+                e.getCurrentTarget().setMarginTop(top);
+            },this);
+
+            var logo = new qx.ui.basic.Image().set({
+                source:  "index.php?extern=images/stacksync.png",
+                width: 100,
+                height: 100,
+                scale: true,
+                alignX: 'center'
+            });
+            containerWait.add(logo);
+
+            var label = new qx.ui.basic.Label().set({
+                value: tr("Waiting NEC"),
+                font:  new qx.bom.Font(18, ['Arial', 'sans-serif']),
+                alignX: 'center',
+                marginTop: 20
+            });
+
+            containerWait.add(label);
+
+            var cursor = new qx.ui.basic.Image().set({
+                width: 42,
+                height: 42,
+                source: "index.php?extern=images/ajax-loader-1.gif",
+                marginTop: 10
+            });
+
+            cursor.addListener('appear',function(e) {
+                var widthParent = this.getBounds()?this.getBounds().width:this.getWidth();
+                var widthCursor = e.getCurrentTarget().getBounds().width;
+                var left = (widthParent / 2) - (widthCursor / 2);
+                e.getCurrentTarget().setMarginLeft(left);
+            },this);
+
+            containerWait.add(cursor);
+
+            this.add(containerWait);
+
+            this.getController()._getTokenNec();
+
+        },
+        timeOutNec: function(message) {
+            this.removeAll();
+
+            var containerTimeout = new qx.ui.container.Composite().set({
+                layout: new qx.ui.layout.VBox(),
+                width: this.getWidth(),
+                allowGrowY: false
+            });
+
+            containerTimeout.addListener('appear',function(e) {
+                var heightParent = this.getBounds()?this.getBounds().height:this.getHeight();
+                var heightContainer = e.getCurrentTarget().getBounds().height;
+                var top = (heightParent / 2) - (heightContainer / 2) - 80;
+                e.getCurrentTarget().setMarginTop(top);
+            },this);
+
+            var logo = new qx.ui.basic.Image().set({
+                source:  "index.php?extern=images/stacksync.png",
+                width: 100,
+                height: 100,
+                scale: true,
+                alignX: 'center'
+            });
+            containerTimeout.add(logo);
+
+            var label = new qx.ui.basic.Label().set({
+                value: message,
+                font:  new qx.bom.Font(18, ['Arial', 'sans-serif']),
+                alignX: 'center',
+                marginTop: 20
+            });
+
+            containerTimeout.add(label);
+
+            var containerButtons = new qx.ui.container.Composite().set({
+                layout: new qx.ui.layout.HBox(),
+                allowGrowX: false,
+                alignX: 'center',
+                marginTop: 20
+            });
+
+            var buttonReload = new qx.ui.form.Button().set({
+                label: tr('Reload'),
+                font:  new qx.bom.Font(12, ['Arial', 'sans-serif']),
+                marginRight: 40,
+                width: 100,
+                height: 30
+            });
+
+            buttonReload.addListener('execute',function() {
+                console.log("Reload NEC");
+                this.waitNec();
+            },this);
+
+            var buttonCancel = new qx.ui.form.Button().set({
+                label: tr('Cancel'),
+                font:  new qx.bom.Font(12, ['Arial', 'sans-serif']),
+                width: 100,
+                height: 30
+            });
+
+            buttonCancel.addListener('execute',function() {
+                this.removeAll();
+                this.getController()._initFiles();
+            },this);
+
+            containerButtons.add(buttonReload);
+            containerButtons.add(buttonCancel);
+
+            containerTimeout.add(containerButtons);
+
+            this.add(containerTimeout);
+
         },
 
         _permissionDenied: function() {

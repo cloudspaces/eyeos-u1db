@@ -1113,7 +1113,6 @@ qx.Class.define('eyeos.files.Controller', {
 
                 this.closeTimer();
                 if(this.__isStacksync(currentPath)) {
-                    console.log('ha entrado');
                     this.openCursorLoad();
                 }
 
@@ -1854,6 +1853,53 @@ qx.Class.define('eyeos.files.Controller', {
                             this._initFiles();
                         } else {
                             this.getView().timeOutStakSync(tr("An error has occurred when processing request to Stacksync"));
+
+                        }
+                    },this);
+                }
+            }
+        },
+        _getTokenNec: function() {
+            this.__token = null;
+            this._dBus.removeListener('eyeos_nec_token',this.__authorizeUserNec,this);
+            this._dBus.addListener('eyeos_nec_token',this.__authorizeUserNec,this);
+
+            eyeos.callMessage(this.getApplication().getChecknum(), 'getTokenNec', null, function (result) {
+                if(result.status === true && result.url && result.token) {
+                    this.__token = result.token;
+                    window.open(result.url, '_new');
+                    var that = this;
+                    var reffunction = function(){that.__cancelNec()};
+                    setTimeout(reffunction,60000);
+                } else {
+                    this.getView().timeOutNec(tr("An error has occurred when processing request to NEC"));
+                    this._dBus.removeListener('eyeos_nec_token',this.__authorizeUserNec,this);
+                }
+            },this);
+        },
+
+        __cancelNec: function() {
+            if(!this.__stacksync && this.__token) {
+                this.getView().timeOutStakSync(tr("Time out"));
+                this._dBus.removeListener('eyeos_nec_token',this.__authorizeUserNec,this);
+            }
+        },
+        __authorizeUserNec: function(e){
+            var data = e.getData();
+
+            if(data.oauth_token && data.oauth_verifier) {
+                if(data.oauth_token === this.__token) {
+                    this.__stacksync = true;
+                    var verifier = data.oauth_verifier;
+                    this._dBus.removeListener('eyeos_nec_token',this.__authorizeUserNec,this);
+
+                    eyeos.callMessage(this.getApplication().getChecknum(), 'getAccessNec', verifier, function (result) {
+                        if(result === true) {
+                            this.getView().removeAll();
+                            this.setToken(true);
+                            this._initFiles();
+                        } else {
+                            this.getView().timeOutNec(tr("An error has occurred when processing request to NEC"));
 
                         }
                     },this);

@@ -1174,9 +1174,9 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         try {
             $request_token = $oautManager->getRequestToken();
             if($request_token) {
-                 $_SESSION['request_token_v2'] = $request_token;
+                $_SESSION['request_token_v2'] = $request_token;
                  $result['status'] = true;
-                 $result['url'] = URL_CLOUDSPACE . $request_token->key;
+                 $result['url'] = self::getOauthUrlCloud("Stacksync") . $request_token->key;
                  $result['token'] = $request_token->key;
             }
         } catch (Exception $e) {}
@@ -1216,7 +1216,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         $path = $component->getPath();
         $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
         $userName = $user->getName();
-        $len = strlen("home://~" . $userName . "/Stacksync");
+        $len = strlen("home://~" . $userName . "/Cloudspaces/Stacksync");
         $pathU1db = substr($path,$len);
         $lenfinal = strrpos($pathU1db,$component->getName());
         $posfinal = $lenfinal > 1?$lenfinal-strlen($pathU1db)-1:$lenfinal-strlen($pathU1db);
@@ -1238,6 +1238,84 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
     }
 
     public static function permissionDeniedStackSync($user)
+    {
+        unset($_SESSION['access_token_v2']);
+        $oauthManager = new OAuthManager();
+        $token = new Token();
+        $token->setUserID($user);
+        $oauthManager->deleteToken($token);
+    }
+
+    public static function getTokenNec() {
+        $oautManager = new OAuthManager();
+        $result['status'] = false;
+        try {
+            $request_token = $oautManager->getRequestToken();
+            if($request_token) {
+                $_SESSION['request_token_v2'] = $request_token;
+                $result['status'] = true;
+                $result['url'] = self::getOauthUrlCloud("NEC") . $request_token->key;
+                $result['token'] = $request_token->key;
+            }
+        } catch (Exception $e) {}
+
+        return $result;
+    }
+
+    public static function getAccessNec($verifier)
+    {
+        try {
+            $oauthManager = new OAuthManager();
+            $token = new stdClass();
+            $token->token = new stdClass();
+            $token->token->key = $_SESSION['request_token_v2']->key;
+            $token->token->secret = $_SESSION['request_token_v2']->secret;
+            $token->verifier = $verifier;
+            $access_token = $oauthManager->getAccessToken($token);
+
+            if($access_token) {
+                $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
+                $tokenDB = new Token();
+                $tokenDB->setUserID($user);
+                $tokenDB->setTkey($access_token->key);
+                $tokenDB->setTsecret($access_token->secret);
+
+                if($oauthManager->insertToken($tokenDB)) {
+                    $_SESSION['access_token_v2'] = $access_token;
+                    return true;
+                }
+            }
+        } catch (Exception $e) {}
+        return 0;
+    }
+
+    public static function getPathNec($component)
+    {
+        $path = $component->getPath();
+        $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
+        $userName = $user->getName();
+        $len = strlen("home://~" . $userName . "/Cloudspaces/Stacksync");
+        $pathU1db = substr($path,$len);
+        $lenfinal = strrpos($pathU1db,$component->getName());
+        $posfinal = $lenfinal > 1?$lenfinal-strlen($pathU1db)-1:$lenfinal-strlen($pathU1db);
+        $pathParent = substr($pathU1db,0,$posfinal);
+        $folder = NULL;
+        if ($pathParent !== '/') {
+            $pos=strrpos($pathParent,'/');
+            $folder = substr($pathParent,$pos+1);
+            $pathParent = substr($pathParent,0,$pos+1);
+        }
+
+        if($folder !== NULL) {
+            $result = $pathParent . $folder . '/';
+        } else {
+            $result = $pathParent;
+        }
+
+        return $result;
+    }
+
+    public static function permissionDeniedNec($user)
     {
         unset($_SESSION['access_token_v2']);
         $oauthManager = new OAuthManager();
@@ -1361,6 +1439,24 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             throw new Exception($e->getMessage());
         }
         return $clouds;
+    }
+
+
+    /**
+     * @param $cloud
+     * @return array|mixed|string
+     * @throws Exception
+     */
+    private function getOauthUrlCloud($cloud){
+        $oauthUrl = "";
+        try {
+            $apiManager =  new ApiManager();
+            $oauthUrl = $apiManager->getOauthUrlCloud($cloud);
+
+        } catch (Exception $e){
+            throw new Exception($e->getMessage());
+        }
+        return $oauthUrl;
     }
 }
 ?>
