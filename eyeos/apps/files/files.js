@@ -1044,10 +1044,10 @@ qx.Class.define('eyeos.files.Controller', {
 		createDialogueCloud: function(cloud) {
             if(cloud == "NEC"){
                 this.getView().removeAll();
-                this.getView().createDialogNec();
+                this.getView().createDialogNec(cloud);
             }else if(cloud == "Stacksync"){
                 this.getView().removeAll();
-                this.getView().createDialogStacksync();
+                this.getView().createDialogStacksync(cloud);
             }
 		},
 		
@@ -1812,12 +1812,12 @@ qx.Class.define('eyeos.files.Controller', {
              this._addSocialBarUpdaterListeners();
              this._browse(true);
         },
-        _getTokenStacksync: function() {
+        _getTokenStacksync: function(cloud) {
             this.__token = null;
             this._dBus.removeListener('eyeos_stacksync_token',this.__authorizeUser,this);
             this._dBus.addListener('eyeos_stacksync_token',this.__authorizeUser,this);
 
-            eyeos.callMessage(this.getApplication().getChecknum(), 'getTokenStacksync', null, function (result) {
+            eyeos.callMessage(this.getApplication().getChecknum(), 'getTokenStacksync', cloud, function (result) {
                 if(result.status === true && result.url && result.token) {
                     this.__token = result.token;
                     window.open(result.url, '_new');
@@ -1859,12 +1859,12 @@ qx.Class.define('eyeos.files.Controller', {
                 }
             }
         },
-        _getTokenNec: function() {
+        _getTokenNec: function(cloud) {
             this.__token = null;
             this._dBus.removeListener('eyeos_nec_token',this.__authorizeUserNec,this);
             this._dBus.addListener('eyeos_nec_token',this.__authorizeUserNec,this);
 
-            eyeos.callMessage(this.getApplication().getChecknum(), 'getTokenNec', null, function (result) {
+            eyeos.callMessage(this.getApplication().getChecknum(), 'getTokenNec', cloud, function (result) {
                 if(result.status === true && result.url && result.token) {
                     this.__token = result.token;
                     window.open(result.url, '_new');

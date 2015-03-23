@@ -1168,15 +1168,20 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         return $result;
     }
 
-    public static function getTokenStacksync() {
+    public static function getTokenStacksync($cloud) {
         $oautManager = new OAuthManager();
         $result['status'] = false;
         try {
-            $request_token = $oautManager->getRequestToken();
+            $oauth_url = self::getOauthUrlCloud($cloud);
+            $request_token = $oautManager->getRequestToken($cloud);
             if($request_token) {
                 $_SESSION['request_token_v2'] = $request_token;
                  $result['status'] = true;
-                 $result['url'] = self::getOauthUrlCloud("Stacksync") . $request_token->key;
+                 if (!isset($result['error'])) {
+                    $result['url'] = $oauth_url . $request_token->key;
+                 } else {
+                    $result['url'] = null;
+                 }
                  $result['token'] = $request_token->key;
             }
         } catch (Exception $e) {}
@@ -1184,7 +1189,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         return $result;
     }
 
-    public static function getAccessStacksync($verifier)
+    public static function getAccessStacksync($cloud, $verifier)
     {
         try {
             $oauthManager = new OAuthManager();
@@ -1192,8 +1197,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $token->token = new stdClass();
             $token->token->key = $_SESSION['request_token_v2']->key;
             $token->token->secret = $_SESSION['request_token_v2']->secret;
-            $token->verifier = $verifier;
-            $access_token = $oauthManager->getAccessToken($token);
+            $access_token = $oauthManager->getAccessToken($cloud, $token, $verifier);
 
             if($access_token) {
                 $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
@@ -1246,15 +1250,20 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         $oauthManager->deleteToken($token);
     }
 
-    public static function getTokenNec() {
+    public static function getTokenNec($cloud) {
         $oautManager = new OAuthManager();
         $result['status'] = false;
         try {
-            $request_token = $oautManager->getRequestToken();
+            $oauth_url = self::getOauthUrlCloud($cloud);
+            $request_token = $oautManager->getRequestToken($cloud);
             if($request_token) {
                 $_SESSION['request_token_v2'] = $request_token;
                 $result['status'] = true;
-                $result['url'] = self::getOauthUrlCloud("NEC") . $request_token->key;
+                if (!isset($result['error'])) {
+                    $result['url'] = $oauth_url . $request_token->key;
+                } else {
+                    $result['url'] = null;
+                }
                 $result['token'] = $request_token->key;
             }
         } catch (Exception $e) {}
@@ -1262,7 +1271,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         return $result;
     }
 
-    public static function getAccessNec($verifier)
+    public static function getAccessNec($cloud, $verifier)
     {
         try {
             $oauthManager = new OAuthManager();
@@ -1270,8 +1279,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $token->token = new stdClass();
             $token->token->key = $_SESSION['request_token_v2']->key;
             $token->token->secret = $_SESSION['request_token_v2']->secret;
-            $token->verifier = $verifier;
-            $access_token = $oauthManager->getAccessToken($token);
+            $access_token = $oauthManager->getAccessToken($cloud, $token, $verifier);
 
             if($access_token) {
                 $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();

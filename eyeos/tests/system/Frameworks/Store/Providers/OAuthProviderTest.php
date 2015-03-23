@@ -18,9 +18,10 @@ class OAuthProviderTest extends PHPUnit_Framework_TestCase
         $this->accessorProviderMock = $this->getMock('AccessorProvider');
         $this->daoMock = $this->getMock('EyeosDAO');
         $this->sut = new OAuthProvider_($this->accessorProviderMock,$this->daoMock);
-        $this->token = new stdClass();
-        $this->token->key = "ABCD";
-        $this->token->secret = "EFG";
+        $this->metadataIn = new stdClass();
+        $this->metadataIn->token = new stdClass();
+        $this->metadataIn->token->key = "ABCD";
+        $this->metadataIn->token->secret = "EFG";
     }
 
     public function tearDown()
@@ -32,66 +33,75 @@ class OAuthProviderTest extends PHPUnit_Framework_TestCase
     /**
      * method: getRequestToken
      * when: called
-     * with: noParams
+     * with: validCloud
      * should: returnToken
      */
-    public function test_getRequestToken_called_noParams_returnToken()
+    public function test_getRequestToken_called_validCloud_returnToken()
     {
+        $cloud = "cloudName";
+        $metadataIn = '{"config":{"cloud":"' . $cloud . '"}}';
         $this->accessorProviderMock->expects($this->once())
             ->method('getProcessOauthCredentials')
+            ->with($metadataIn)
             ->will($this->returnValue('{"key":"ABCD","secret":"EFG"}'));
-        $result = $this->sut->getRequestToken();
-        $this->assertEquals($this->token,$result);
+        $result = $this->sut->getRequestToken($cloud);
+        $this->assertEquals($this->metadataIn->token, $result);
     }
 
     /**
      * method: getRequestToken
      * when: called
-     * with: noParams
+     * with: invalidCloud
      * should: returnInvalidToken
      */
-    public function test_getRequestToken_called_noParams_returnInvalidToken()
+    public function test_getRequestToken_called_invalidCloud_returnInvalidToken()
     {
+        $cloud = "invalidCloudName";
+        $metadataIn = '{"config":{"cloud":"' . $cloud . '"}}';
         $this->accessorProviderMock->expects($this->once())
             ->method('getProcessOauthCredentials')
+            ->with($metadataIn)
             ->will($this->returnValue(''));
-        $result = $this->sut->getRequestToken();
+        $result = $this->sut->getRequestToken($cloud);
         $this->assertEquals(null,$result);
     }
 
     /**
      * method: getAcessToken
      * when. called
-     * with: requestTokenAndVerifier
+     * with: validCloudAndrequestTokenAndVerifier
      * should: returnToken
      */
-    public function test_getAccessToken_called_requestTokenAndVerifier_returnToken()
+    public function test_getAccessToken_called_validCloudAndrequestTokenAndVerifier_returnToken()
     {
-        $this->token->verifier = 'verifier';
+        $this->metadataIn->verifier = 'verifier';
+        $this->metadataIn->config = new stdClass();
+        $this->metadataIn->config->cloud = 'CloudName';
         $expected = '{"key":"HIJK","secret":"MNO"}';
         $this->accessorProviderMock->expects($this->once())
             ->method('getProcessOauthCredentials')
-            ->with(json_encode($this->token))
+            ->with(json_encode($this->metadataIn))
             ->will($this->returnValue($expected));
-        $result = $this->sut->getAccessToken($this->token);
+        $result = $this->sut->getAccessToken($this->metadataIn->config->cloud, $this->metadataIn->token, $this->metadataIn->verifier);
         $this->assertEquals(json_decode($expected),$result);
     }
 
     /**
      * method: getAcessToken
      * when. called
-     * with: requestTokenAndVerifier
+     * with: invalidCloudAndRequestTokenAndVerifier
      * should: returnInvalidToken
      */
-    public function test_getAccessToken_called_requestTokenAndVerifier_returnInvalidToken()
+    public function test_getAccessToken_called_invalidCloudAndRequestTokenAndVerifier_returnInvalidToken()
     {
-        $this->token->verifier = 'verifier';
-
+        $this->metadataIn->verifier = 'verifier';
+        $this->metadataIn->config = new stdClass();
+        $this->metadataIn->config->cloud = 'invalidCloudName';
         $this->accessorProviderMock->expects($this->once())
             ->method('getProcessOauthCredentials')
-            ->with(json_encode($this->token))
+            ->with(json_encode($this->metadataIn))
             ->will($this->returnValue(''));
-        $result = $this->sut->getAccessToken($this->token);
+        $result = $this->sut->getAccessToken($this->metadataIn->config->cloud, $this->metadataIn->token, $this->metadataIn->verifier);
         $this->assertEquals(null,$result);
     }
 

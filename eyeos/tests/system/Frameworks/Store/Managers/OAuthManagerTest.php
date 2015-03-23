@@ -31,31 +31,34 @@ class OAuthManagerTest extends PHPUnit_Framework_TestCase
     /**
      * method: getRequestToken
      * when: called
-     * with: noParams
+     * with: validCloud
      * should: returnToken
      */
-    public function test_getRequestToken_called_noParams_returnToken()
+    public function test_getRequestToken_called_validCloud_returnToken()
     {
+        $cloud = "CloudName";
         $this->oauthProviderMock->expects($this->once())
             ->method('getRequestToken')
+            ->with($cloud)
             ->will($this->returnValue($this->token));
-        $this->sut->getRequestToken();
+        $this->sut->getRequestToken($cloud);
     }
 
     /**
      * method: getAccessToken
      * when: called
-     * with: requestTokenAndVerifier
+     * with: validCloudAndRequestTokenAndVerifier
      * should: returnToken
      */
-    public function test_getAccessToken_called_requestTokenAndVerifier_returnToken()
+    public function test_getAccessToken_called_validCloudAndRequestTokenAndVerifier_returnToken()
     {
-        $this->token->verifier = 'verifier';
+        $verifier = 'verifier';
+        $cloud = 'cloudName';
         $this->oauthProviderMock->expects($this->once())
             ->method('getAccessToken')
-            ->with($this->token)
+            ->with($cloud, $this->token, $verifier)
             ->will($this->returnValue(json_encode('{"key":"JKLM","secret":"JYLM"}')));
-        $this->sut->getAccessToken($this->token);
+        $this->sut->getAccessToken($cloud, $this->token, $verifier);
     }
 
 

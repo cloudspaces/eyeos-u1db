@@ -1383,7 +1383,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->with($cloud)
             ->will($this->returnValue($metadata));
         $result = $this->sut->getOauthUrlCloud($cloud);
-        $this->assertEquals(json_encode($metadata), $result);
+        $this->assertEquals($metadata, $result);
     }
 
     /**

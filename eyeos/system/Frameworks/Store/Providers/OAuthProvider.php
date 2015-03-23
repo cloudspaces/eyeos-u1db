@@ -18,10 +18,10 @@ class OAuthProvider_
         $this->dao = $dao;
     }
 
-    public function getRequestToken()
+    public function getRequestToken($cloud)
     {
         $token = null;
-        $aux = $this->accessorProvider->getProcessOauthCredentials();
+        $aux = $this->accessorProvider->getProcessOauthCredentials($this->getRequest($cloud));
 
         if(strlen($aux) > 0) {
             $token = json_decode($aux);
@@ -30,10 +30,10 @@ class OAuthProvider_
         return $token;
     }
 
-    public function getAccessToken($token)
+    public function getAccessToken($cloud, $token, $verifier)
     {
         $result = null;
-        $aux = $this->accessorProvider->getProcessOauthCredentials(json_encode($token));
+        $aux = $this->accessorProvider->getProcessOauthCredentials($this->getRequest($cloud, $token, $verifier));
 
         if(strlen($aux) > 0) {
             $result = json_decode($aux);
@@ -68,6 +68,22 @@ class OAuthProvider_
             return true;
         } catch (Exception $e) {}
         return false;
+    }
+
+    private function getRequest($cloud, $token=NULL, $verifier=NULL)
+    {
+        $request = new stdClass();
+        if ($token) {
+            $request->token = new stdClass();
+            $request->token->key = $token->key;
+            $request->token->secret = $token->secret;
+        }
+        if ($verifier) {
+            $request->verifier = $verifier;
+        }
+        $request->config = new stdClass();
+        $request->config->cloud = $cloud;
+        return json_encode($request);
     }
 }
 

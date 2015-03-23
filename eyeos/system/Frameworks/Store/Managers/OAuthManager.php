@@ -18,14 +18,14 @@ class OAuthManager
         $this->oauthProvider = $oauthProvider;
     }
 
-    public function getRequestToken()
+    public function getRequestToken($cloud)
     {
-        return $this->oauthProvider->getRequestToken();
+        return $this->oauthProvider->getRequestToken($cloud);
     }
 
-    public function getAccessToken($token)
+    public function getAccessToken($cloud, $token, $verifier)
     {
-        return $this->oauthProvider->getAccessToken($token);
+        return $this->oauthProvider->getAccessToken($cloud, $token, $verifier);
     }
 
     public function getToken($user)

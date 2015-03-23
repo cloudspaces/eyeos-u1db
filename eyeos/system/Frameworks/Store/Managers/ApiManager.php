@@ -490,7 +490,7 @@ class ApiManager
         $result['error'] = -1;
         $metadata = $this->apiProvider->getOauthUrlCloud($cloud);
         if (!isset($metadata->error)) {
-            $result = json_encode($metadata);
+            $result = $metadata;
         } else {
             $result['error'] = $metadata->error;
         }

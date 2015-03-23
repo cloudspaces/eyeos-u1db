@@ -399,7 +399,7 @@ qx.Class.define('eyeos.files.ViewManager', {
             this._cursor.setMarginLeft(left);
         },
 
-        createDialogStacksync:function() {
+        createDialogStacksync:function(cloud) {
 
             var dialog = new qx.ui.container.Composite().set({
                 layout: new qx.ui.layout.VBox(),
@@ -448,7 +448,7 @@ qx.Class.define('eyeos.files.ViewManager', {
             });
 
             buttonOK.addListener('execute',function() {
-                this.waitStackSync();
+                this.waitStackSync(cloud);
             },this);
 
             var buttonKO = new qx.ui.form.Button().set({
@@ -470,7 +470,7 @@ qx.Class.define('eyeos.files.ViewManager', {
 
             this.add(dialog);
         },
-        waitStackSync: function() {
+        waitStackSync: function(cloud) {
 
             this.removeAll();
 
@@ -523,7 +523,7 @@ qx.Class.define('eyeos.files.ViewManager', {
 
             this.add(containerWait);
 
-            this.getController()._getTokenStacksync();
+            this.getController()._getTokenStacksync(cloud);
 
         },
         timeOutStakSync: function(message) {
@@ -600,7 +600,7 @@ qx.Class.define('eyeos.files.ViewManager', {
 
         },
 
-        createDialogNec: function (){
+        createDialogNec: function (cloud){
             console.log("Dialogue NEC");
 
             var dialog = new qx.ui.container.Composite().set({
@@ -650,7 +650,7 @@ qx.Class.define('eyeos.files.ViewManager', {
             });
 
             buttonOK.addListener('execute',function() {
-                this.waitNec();
+                this.waitNec(cloud);
             },this);
 
             var buttonKO = new qx.ui.form.Button().set({
@@ -672,7 +672,7 @@ qx.Class.define('eyeos.files.ViewManager', {
 
             this.add(dialog);
         },
-        waitNec: function() {
+        waitNec: function(cloud) {
             console.log("wait NEC");
             this.removeAll();
 
@@ -725,7 +725,7 @@ qx.Class.define('eyeos.files.ViewManager', {
 
             this.add(containerWait);
 
-            this.getController()._getTokenNec();
+            this.getController()._getTokenNec(cloud);
 
         },
         timeOutNec: function(message) {
