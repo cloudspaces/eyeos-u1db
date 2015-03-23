@@ -1177,10 +1177,10 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             if($request_token) {
                 $_SESSION['request_token_v2'] = $request_token;
                  $result['status'] = true;
-                 if (!isset($result['error'])) {
-                    $result['url'] = $oauth_url . $request_token->key;
+                 if (property_exists($oauth_url, "error")) {
+                     $result['url'] = null;
                  } else {
-                    $result['url'] = null;
+                     $result['url'] = $oauth_url . $request_token->key;
                  }
                  $result['token'] = $request_token->key;
             }
@@ -1259,10 +1259,10 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             if($request_token) {
                 $_SESSION['request_token_v2'] = $request_token;
                 $result['status'] = true;
-                if (!isset($result['error'])) {
-                    $result['url'] = $oauth_url . $request_token->key;
-                } else {
+                if (property_exists($oauth_url, "error")) {
                     $result['url'] = null;
+                } else {
+                    $result['url'] = $oauth_url . $request_token->key;
                 }
                 $result['token'] = $request_token->key;
             }
