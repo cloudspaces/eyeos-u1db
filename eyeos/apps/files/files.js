@@ -1,32 +1,32 @@
 /*
 *                 eyeos - The Open Source Cloud's Web Desktop
 *                               Version 2.0
-*                   Copyright (C) 2007 - 2010 eyeos Team 
-* 
+*                   Copyright (C) 2007 - 2010 eyeos Team
+*
 * This program is free software; you can redistribute it and/or modify it under
 * the terms of the GNU Affero General Public License version 3 as published by the
 * Free Software Foundation.
-* 
+*
 * This program is distributed in the hope that it will be useful, but WITHOUT
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 * FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more
 * details.
-* 
+*
 * You should have received a copy of the GNU Affero General Public License
-* version 3 along with this program in the file "LICENSE".  If not, see 
+* version 3 along with this program in the file "LICENSE".  If not, see
 * <http://www.gnu.org/licenses/agpl-3.0.txt>.
-* 
+*
 * See www.eyeos.org for more details. All requests should be sent to licensing@eyeos.org
-* 
+*
 * The interactive user interfaces in modified source and object code versions
 * of this program must display Appropriate Legal Notices, as required under
 * Section 5 of the GNU Affero General Public License version 3.
-* 
+*
 * In accordance with Section 7(b) of the GNU Affero General Public License version 3,
 * these Appropriate Legal Notices must retain the display of the "Powered by
-* eyeos" logo and retain the original copyright notice. If the display of the 
+* eyeos" logo and retain the original copyright notice. If the display of the
 * logo is not reasonably feasible for technical reasons, the Appropriate Legal Notices
-* must display the words "Powered by eyeos" and retain the original copyright notice. 
+* must display the words "Powered by eyeos" and retain the original copyright notice.
 */
 
 function files_application(checknum, pid, args) {
@@ -37,11 +37,11 @@ function files_application(checknum, pid, args) {
 qx.Class.define('eyeos.files.Controller', {
 
 	extend: qx.core.Object,
-	
+
 	construct: function (application, args, defaultView, checknum) {
-		
+
 		arguments.callee.base.call(this);
-		
+
 		// SETTERS
 		this.setApplication(application);
         this.setChecknum(checknum);
@@ -50,14 +50,14 @@ qx.Class.define('eyeos.files.Controller', {
 		 * We fill with a default path in case none is given
 		 * Init of the model and the view manager
 		 */
-		
+
 		var defArgs;
 		if (args[0] == undefined) {
 			defArgs = ['path', 'home:///'];
 		} else {
 			defArgs = ['path', args[0]];
 		}
-		
+
 		this.setModel(new eyeos.files.Model(defaultView, defArgs));
 
 		/*
@@ -85,7 +85,7 @@ qx.Class.define('eyeos.files.Controller', {
 		/*var socialBarUpdater = new eyeos.files.SUManager(this.getView()._socialBar, checknum);
 		this.setSocialBarUpdater(socialBarUpdater);
 		this._addSocialBarUpdaterListeners();
-		
+
 		this._browse(true);*/
 		//this.getView().maximize();
 	},
@@ -99,7 +99,7 @@ qx.Class.define('eyeos.files.Controller', {
 		model: {
 			check: 'Object'
 		},
-		
+
 		view: {
 			check: 'Object'
 		},
@@ -125,7 +125,7 @@ qx.Class.define('eyeos.files.Controller', {
 	members: {
 
 		_dBusListeners: new Array(),
-		
+
 		_filesQueue: eyeos.filesQueue.getInstance(),
 		_dBus: eyeos.messageBus.getInstance(),
         _metadatas: new Array(),
@@ -134,6 +134,7 @@ qx.Class.define('eyeos.files.Controller', {
         __progress: null,
         __size: 0,
         __stacksync: false,
+        __nec: false,
         __token: false,
         _timerComments:null,
         _comments: [],
@@ -165,7 +166,7 @@ qx.Class.define('eyeos.files.Controller', {
 			/*
 			 * eyeos_files_delete - Deletes a file from the Model in case our current path is the same as the source one and updates the view
 			 *
-			 * @receives {Array} [sourcePath: string, files: Array] 
+			 * @receives {Array} [sourcePath: string, files: Array]
 			 */
 
             this.addListener('cloudspacesSelected', function (e){
@@ -289,7 +290,7 @@ qx.Class.define('eyeos.files.Controller', {
 				if (sourcePath.substr(sourcePath.length - 1) != '/') {
 					sourcePath += '/';
 				}
-			
+
 				if (sourcePath == currentPath) {
 
 					var currentFiles = this.getModel().getCurrentFiles();
@@ -309,7 +310,7 @@ qx.Class.define('eyeos.files.Controller', {
 						if (index != -1) {
 							currentFiles[index].setShared(filesToUpdate[i].getShared());
 							currentFiles[index].setRating(filesToUpdate[i].getRating());
-							
+
 						}
 					}
 
@@ -423,7 +424,7 @@ qx.Class.define('eyeos.files.Controller', {
 				}
 
 				this.getView().showBrowse();
-				
+
 			}, this));
 
 			/*
@@ -574,7 +575,7 @@ qx.Class.define('eyeos.files.Controller', {
 				var eventPath = e.getData()['path'];
 				var eventFiles = e.getData()['files'];
 				var currentPath = this.getModel().getCurrentPath()[1];
-				
+
 				if (eventPath == currentPath) {
 					var modelFiles = this.getModel().getCurrentFiles();
 					for (var i = 0; i < modelFiles.length; ++i) {
@@ -700,7 +701,7 @@ qx.Class.define('eyeos.files.Controller', {
 
 			// Empty the array with all the previous files
 			this.getModel().getCurrentFiles().splice(0, this.getModel().getCurrentFiles().length);
-			
+
 			// The Cut/Copy/Paste queue
 			var filesQueue = this._filesQueue.getMoveQueue();
 			var action = this._filesQueue.getAction();
@@ -865,7 +866,7 @@ qx.Class.define('eyeos.files.Controller', {
 			}
 
 		},
-		
+
 		openFile: function () {
 			var filesToOpen = this.getView().returnSelected();
 			var filesForViewer = new Array();
@@ -964,7 +965,7 @@ qx.Class.define('eyeos.files.Controller', {
 				    eyeos.execute('imageviewer', this.getApplication().getChecknum(), filesForImageViewer);
                 }
 			}
-			
+
 			if (filesForDocuments.length >= 1) {
                 if(parent) {
                     this.__openFileStacksync('documents',filesForDocuments);
@@ -1040,17 +1041,14 @@ qx.Class.define('eyeos.files.Controller', {
 				},this);
 			}
 		},
-		
+
 		createDialogueCloud: function(cloud) {
-            if(cloud == "NEC"){
+            if(cloud == "NEC" || cloud == "Stacksync"){
                 this.getView().removeAll();
-                this.getView().createDialogNec(cloud);
-            }else if(cloud == "Stacksync"){
-                this.getView().removeAll();
-                this.getView().createDialogStacksync(cloud);
+                this.getView().createDialogCloud(cloud);
             }
 		},
-		
+
 		newLink: function() {
 		   eyeos.execute('newLink', this.getApplication().getChecknum(), [this.getModel().getCurrentPath()[1]]);
 		},
@@ -1087,7 +1085,7 @@ qx.Class.define('eyeos.files.Controller', {
 				}, this);
 			}
 		},
-		
+
 		deleteFile: function () {
 			var currentPath = this.getModel().getCurrentPath()[1];
 			if (currentPath.substr(0, 8) != 'share://' && currentPath != 'workgroup://') {
@@ -1254,7 +1252,7 @@ qx.Class.define('eyeos.files.Controller', {
 			} else {
 				var selected = file;
 			}
-		
+
 			var absPath = selected.getFile().getAbsolutePath();
 			var currentPath = this.getModel().getCurrentPath()[1];
 			if (selected.getFile().getName() != rename) {
@@ -1314,7 +1312,7 @@ qx.Class.define('eyeos.files.Controller', {
 			    eyeos.execute('download',this.getApplication().getChecknum(), [path]);
             }
 		},
-		
+
 		toolBarBack: function () {
 			if (parseInt(this.getModel().getHistoryIndex() - 1) >= 0) {
 				if (parseInt(this.getModel().getHistoryIndex() - 1) == 0) {
@@ -1801,7 +1799,7 @@ qx.Class.define('eyeos.files.Controller', {
                     this._initFiles();
                 } else {
                     //TODO Disabled open Stacksync dialog
-                    this.getView().createDialogStacksync();
+                    this.getView().createDialogueCloud("Stacksync");
                 }
             },this);
         },
@@ -1830,6 +1828,24 @@ qx.Class.define('eyeos.files.Controller', {
                 }
             },this);
         },
+        _getTokenCloud: function(cloud) {
+            this.__token = null;
+            this._dBus.removeListener('eyeos_'+cloud+'_token',this.__authorizeUser,this);
+            this._dBus.addListener('eyeos_'+cloud+'_token',this.__authorizeUser,this);
+
+            eyeos.callMessage(this.getApplication().getChecknum(), 'getTokenCloud', cloud, function (result) {
+                if(result.status === true && result.url && result.token) {
+                    this.__token = result.token;
+                    window.open(result.url, '_new');
+                    var that = this;
+                    var reffunction = function(){that.__cancelCloud(cloud)};
+                    setTimeout(reffunction,60000);
+                } else {
+                    this.getView().timeOutCloud(tr("An error has occurred when processing request to "+cloud, cloud));
+                    this._dBus.removeListener('eyeos_'+cloud+'_token',this.__authorizeUser,this);
+                }
+            },this);
+        },
 
         __cancelStacksync: function() {
             if(!this.__stacksync && this.__token) {
@@ -1837,69 +1853,33 @@ qx.Class.define('eyeos.files.Controller', {
                 this._dBus.removeListener('eyeos_stacksync_token',this.__authorizeUser,this);
             }
         },
+
+        __cancelCloud: function(cloud) {
+            if(!this.__stacksync && this.__token) {
+                this.getView().timeOutCloud(tr("Time out"), cloud);
+                this._dBus.removeListener('eyeos_'+cloud+'_token',this.__authorizeUser,this);
+            }
+        },
         __authorizeUser: function(e){
             var data = e.getData();
 
             if(data.oauth_token && data.oauth_verifier) {
                 if(data.oauth_token === this.__token) {
-                    this.__stacksync = true;
+                    if(cloud == "Stacksync") {
+                        this.__stacksync = true;
+                    }else if (cloud == "NEC"){
+                        this.__nec = true;
+                    }
                     var verifier = data.oauth_verifier;
-                    this._dBus.removeListener('eyeos_stacksync_token',this.__authorizeUser,this);
+                    this._dBus.removeListener('eyeos_'+cloud+'_token',this.__authorizeUser,this);
 
-                    eyeos.callMessage(this.getApplication().getChecknum(), 'getAccessStacksync', verifier, function (result) {
+                    eyeos.callMessage(this.getApplication().getChecknum(), 'getAccess'+cloud, verifier, function (result) {
                         if(result === true) {
                             this.getView().removeAll();
                             this.setToken(true);
                             this._initFiles();
                         } else {
-                            this.getView().timeOutStakSync(tr("An error has occurred when processing request to Stacksync"));
-
-                        }
-                    },this);
-                }
-            }
-        },
-        _getTokenNec: function(cloud) {
-            this.__token = null;
-            this._dBus.removeListener('eyeos_nec_token',this.__authorizeUserNec,this);
-            this._dBus.addListener('eyeos_nec_token',this.__authorizeUserNec,this);
-
-            eyeos.callMessage(this.getApplication().getChecknum(), 'getTokenNec', cloud, function (result) {
-                if(result.status === true && result.url && result.token) {
-                    this.__token = result.token;
-                    window.open(result.url, '_new');
-                    var that = this;
-                    var reffunction = function(){that.__cancelNec()};
-                    setTimeout(reffunction,60000);
-                } else {
-                    this.getView().timeOutNec(tr("An error has occurred when processing request to NEC"));
-                    this._dBus.removeListener('eyeos_nec_token',this.__authorizeUserNec,this);
-                }
-            },this);
-        },
-
-        __cancelNec: function() {
-            if(!this.__stacksync && this.__token) {
-                this.getView().timeOutStakSync(tr("Time out"));
-                this._dBus.removeListener('eyeos_nec_token',this.__authorizeUserNec,this);
-            }
-        },
-        __authorizeUserNec: function(e){
-            var data = e.getData();
-
-            if(data.oauth_token && data.oauth_verifier) {
-                if(data.oauth_token === this.__token) {
-                    this.__stacksync = true;
-                    var verifier = data.oauth_verifier;
-                    this._dBus.removeListener('eyeos_nec_token',this.__authorizeUserNec,this);
-
-                    eyeos.callMessage(this.getApplication().getChecknum(), 'getAccessNec', verifier, function (result) {
-                        if(result === true) {
-                            this.getView().removeAll();
-                            this.setToken(true);
-                            this._initFiles();
-                        } else {
-                            this.getView().timeOutNec(tr("An error has occurred when processing request to NEC"));
+                            this.getView().timeOutCloud(tr("An error has occurred when processing request to "+cloud), cloud);
 
                         }
                     },this);
