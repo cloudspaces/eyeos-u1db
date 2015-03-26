@@ -1867,6 +1867,7 @@ qx.Class.define('eyeos.files.Controller', {
 
             if(data.oauth_token && data.oauth_verifier) {
                 if(data.oauth_token === this.__token) {
+					this.closeTimer();
                     this._dBus.removeListener('eyeos_cloud_token',this.__authorizeUser,this);
                     var params = new Object();
                     params.cloud = this.__cloud;
