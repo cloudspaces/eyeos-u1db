@@ -139,6 +139,7 @@ qx.Class.define('eyeos.files.Controller', {
         _timerComments:null,
         _comments: [],
         _share: null,
+        __cloud: null,
 
 		_addListeners: function () {
 //			this.addListener('selectedFile', function (e) {
@@ -1810,54 +1811,55 @@ qx.Class.define('eyeos.files.Controller', {
              this._addSocialBarUpdaterListeners();
              this._browse(true);
         },
-        _getTokenStacksync: function(cloud) {
-            this.__token = null;
-            this._dBus.removeListener('eyeos_stacksync_token',this.__authorizeUser,this);
-            this._dBus.addListener('eyeos_stacksync_token',this.__authorizeUser,this);
-
-            eyeos.callMessage(this.getApplication().getChecknum(), 'getTokenStacksync', cloud, function (result) {
-                if(result.status === true && result.url && result.token) {
-                    this.__token = result.token;
-                    window.open(result.url, '_new');
-                    var that = this;
-                    var reffunction = function(){that.__cancelStacksync()};
-                    setTimeout(reffunction,60000);
-                } else {
-                    this.getView().timeOutStakSync(tr("An error has occurred when processing request to Stacksync"));
-                    this._dBus.removeListener('eyeos_stacksync_token',this.__authorizeUser,this);
-                }
-            },this);
-        },
+//        _getTokenStacksync: function(cloud) {
+//            this.__token = null;
+//            this._dBus.removeListener('eyeos_stacksync_token',this.__authorizeUser,this);
+//            this._dBus.addListener('eyeos_stacksync_token',this.__authorizeUser,this);
+//
+//            eyeos.callMessage(this.getApplication().getChecknum(), 'getTokenStacksync', cloud, function (result) {
+//                if(result.status === true && result.url && result.token) {
+//                    this.__token = result.token;
+//                    window.open(result.url, '_new');
+//                    var that = this;
+//                    var reffunction = function(){that.__cancelStacksync()};
+//                    setTimeout(reffunction,60000);
+//                } else {
+//                    this.getView().timeOutStakSync(tr("An error has occurred when processing request to Stacksync"));
+//                    this._dBus.removeListener('eyeos_stacksync_token',this.__authorizeUser,this);
+//                }
+//            },this);
+//        },
         _getTokenCloud: function(cloud) {
             this.__token = null;
-            this._dBus.removeListener('eyeos_'+cloud+'_token',this.__authorizeUser,this);
-            this._dBus.addListener('eyeos_'+cloud+'_token',this.__authorizeUser,this);
+            this.__cloud = cloud;
+            this._dBus.removeListener('eyeos_cloud_token', this.__authorizeUser, this);
+            this._dBus.addListener('eyeos_cloud_token', this.__authorizeUser, this);
 
             eyeos.callMessage(this.getApplication().getChecknum(), 'getTokenCloud', cloud, function (result) {
                 if(result.status === true && result.url && result.token) {
                     this.__token = result.token;
                     window.open(result.url, '_new');
                     var that = this;
-                    var reffunction = function(){that.__cancelCloud(cloud)};
+                    var reffunction = function(){that.__cancelCloud()};
                     setTimeout(reffunction,60000);
                 } else {
-                    this.getView().timeOutCloud(tr("An error has occurred when processing request to "+cloud, cloud));
-                    this._dBus.removeListener('eyeos_'+cloud+'_token',this.__authorizeUser,this);
+                    this.getView().timeOutCloud(tr("An error has occurred when processing request to " + this.__cloud, this.__cloud));
+                    this._dBus.removeListener('eyeos_cloud_token', this.__authorizeUser, this);
                 }
             },this);
         },
 
-        __cancelStacksync: function() {
-            if(!this.__stacksync && this.__token) {
-                this.getView().timeOutStakSync(tr("Time out"));
-                this._dBus.removeListener('eyeos_stacksync_token',this.__authorizeUser,this);
-            }
-        },
+//        __cancelStacksync: function() {
+//            if(!this.__stacksync && this.__token) {
+//                this.getView().timeOutStakSync(tr("Time out"));
+//                this._dBus.removeListener('eyeos_stacksync_token',this.__authorizeUser,this);
+//            }
+//        },
 
-        __cancelCloud: function(cloud) {
+        __cancelCloud: function() {
             if(!this.__stacksync && this.__token) {
-                this.getView().timeOutCloud(tr("Time out"), cloud);
-                this._dBus.removeListener('eyeos_'+cloud+'_token',this.__authorizeUser,this);
+                this.getView().timeOutCloud(tr("Time out"), this.__cloud);
+                this._dBus.removeListener('eyeos_cloud_token',this.__authorizeUser,this);
             }
         },
         __authorizeUser: function(e){
@@ -1865,22 +1867,17 @@ qx.Class.define('eyeos.files.Controller', {
 
             if(data.oauth_token && data.oauth_verifier) {
                 if(data.oauth_token === this.__token) {
-                    if(cloud == "Stacksync") {
-                        this.__stacksync = true;
-                    }else if (cloud == "NEC"){
-                        this.__nec = true;
-                    }
-                    var verifier = data.oauth_verifier;
-                    this._dBus.removeListener('eyeos_'+cloud+'_token',this.__authorizeUser,this);
-
-                    eyeos.callMessage(this.getApplication().getChecknum(), 'getAccess'+cloud, verifier, function (result) {
+                    this._dBus.removeListener('eyeos_cloud_token',this.__authorizeUser,this);
+                    var params = new Object();
+                    params.cloud = this.__cloud;
+                    params.verifier = data.oauth_verifier;
+                    eyeos.callMessage(this.getApplication().getChecknum(), 'getAccessCloud', params, function (result) {
                         if(result === true) {
                             this.getView().removeAll();
                             this.setToken(true);
                             this._initFiles();
                         } else {
-                            this.getView().timeOutCloud(tr("An error has occurred when processing request to "+cloud), cloud);
-
+                            this.getView().timeOutCloud(tr("An error has occurred when processing request to " + this.__cloud), this.__cloud)
                         }
                     },this);
                 }
@@ -1895,7 +1892,7 @@ qx.Class.define('eyeos.files.Controller', {
             this.getView().removeAll();
             this.getView().setShowStatusbar(false);
             this.getView().setCaption('Files');
-            this.getView()._permissionDenied();
+            this.getView()._permissionDenied(this.__cloud);
         },
 
         openCursorLoad: function() {

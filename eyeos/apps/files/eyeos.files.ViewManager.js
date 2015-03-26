@@ -415,7 +415,7 @@ qx.Class.define('eyeos.files.ViewManager', {
             },this);
 
             var logo = new qx.ui.basic.Image().set({
-               source:  "index.php?extern=images/"+cloud+".png",
+               source:  "index.php?extern=images/" + cloud + ".png",
                width: 100,
                height: 100,
                scale: true,
@@ -424,7 +424,7 @@ qx.Class.define('eyeos.files.ViewManager', {
             dialog.add(logo);
 
             var label = new qx.ui.basic.Label().set({
-               value: tr("Do you want to log on "+cloud+"?"),
+               value: tr("Do you want to log on " + cloud + "?"),
                font:  new qx.bom.Font(18, ['Arial', 'sans-serif']),
                alignX: 'center',
                marginTop: 20
@@ -488,7 +488,7 @@ qx.Class.define('eyeos.files.ViewManager', {
             },this);
 
             var logo = new qx.ui.basic.Image().set({
-                source:  "index.php?extern=images/"+cloud+".png",
+                source:  "index.php?extern=images/" + cloud + ".png",
                 width: 100,
                 height: 100,
                 scale: true,
@@ -497,7 +497,7 @@ qx.Class.define('eyeos.files.ViewManager', {
             containerWait.add(logo);
 
             var label = new qx.ui.basic.Label().set({
-                value: tr("Waiting StackSync"),
+                value: tr("Waiting " + cloud),
                 font:  new qx.bom.Font(18, ['Arial', 'sans-serif']),
                 alignX: 'center',
                 marginTop: 20
@@ -543,7 +543,7 @@ qx.Class.define('eyeos.files.ViewManager', {
             },this);
 
             var logo = new qx.ui.basic.Image().set({
-                source:  "index.php?extern=images/stacksync.png",
+                source:  "index.php?extern=images/" + cloud + ".png",
                 width: 100,
                 height: 100,
                 scale: true,
@@ -600,7 +600,7 @@ qx.Class.define('eyeos.files.ViewManager', {
 
         },
 
-        _permissionDenied: function() {
+        _permissionDenied: function(cloud) {
             var permissionDialog = new qx.ui.container.Composite().set({
                 layout: new qx.ui.layout.VBox(),
                 width: this.getWidth(),
@@ -615,7 +615,7 @@ qx.Class.define('eyeos.files.ViewManager', {
             },this);
 
             var logo = new qx.ui.basic.Image().set({
-                source:  "index.php?extern=images/stacksync.png",
+                source:  "index.php?extern=images/" + cloud + ".png",
                 width: 100,
                 height: 100,
                 scale: true,
