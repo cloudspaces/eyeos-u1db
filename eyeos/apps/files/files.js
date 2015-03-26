@@ -133,7 +133,7 @@ qx.Class.define('eyeos.files.Controller', {
         _closeBefore: false,
         __progress: null,
         __size: 0,
-        __stacksync: false,
+        __verifierUser: false,
         __nec: false,
         __token: false,
         _timerComments:null,
@@ -1857,7 +1857,7 @@ qx.Class.define('eyeos.files.Controller', {
 //        },
 
         __cancelCloud: function() {
-            if(!this.__stacksync && this.__token) {
+            if(!this.__verifierUser && this.__token) {
                 this.getView().timeOutCloud(tr("Time out"), this.__cloud);
                 this._dBus.removeListener('eyeos_cloud_token',this.__authorizeUser,this);
             }
@@ -1867,7 +1867,7 @@ qx.Class.define('eyeos.files.Controller', {
 
             if(data.oauth_token && data.oauth_verifier) {
                 if(data.oauth_token === this.__token) {
-					this.closeTimer();
+					this.__verifierUser = true;
                     this._dBus.removeListener('eyeos_cloud_token',this.__authorizeUser,this);
                     var params = new Object();
                     params.cloud = this.__cloud;
@@ -1887,7 +1887,7 @@ qx.Class.define('eyeos.files.Controller', {
         __permissionDenied:function() {
             this.closeTimer();
             this._browsePath('home://~'+eyeos.getCurrentUserName()+'/');
-            this.__stacksync = false;
+            this.__verifierUser = false;
             this.__token = null;
             this.setToken(false);
             this.getView().removeAll();
