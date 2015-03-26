@@ -25,8 +25,7 @@ class MMapStacksync extends Kernel implements IMMap {
     public function processRequest(MMapRequest $request, MMapResponse $response) {
         $oauth_verifier = null;
         $oauth_token = null;
-        //eyeID_EyeosUser_453
-
+        
         if($request->issetGET('verifier')) {
             $oauth_verifier = $request->getGET('verifier');
         }
@@ -78,14 +77,10 @@ class MMapStacksync extends Kernel implements IMMap {
             ProcManager::getInstance()->setCurrentProcess($appProcess);
             kernel::exitSystemMode();
 
-            /*$procManager = ProcManager::getInstance();
-            $procManager->setProcessLoginContext($procManager->getCurrentProcess()->getPid(), $loginContext);*/
-
             $token = new stdClass();
             $token->oauth_verifier = $oauth_verifier;
             $token->oauth_token = $oauth_token;
 
-            //$users = UMManager::getInstance()->getAllUsers();
             $group = UMManager::getInstance()->getGroupByName('users');
             $users = UMManager::getInstance()->getAllUsersFromGroup($group);
 
@@ -93,23 +88,6 @@ class MMapStacksync extends Kernel implements IMMap {
                 $NetSyncMessage = new NetSyncMessage('stacksync', 'token',$user->getId(), $token);
                 NetSyncController::getInstance()->send($NetSyncMessage);
             }
-
-            /*foreach ($users as $user) {
-                if($user->getPrimaryGroupId() == 'eyeID_EyeosGroup_users') {
-                    Logger::getLogger('sebas')->error('Usuario:' . $user->getName() . ' ' . $user->getId());
-                }
-            }*/
-
-            /*$NetSyncMessage = new NetSyncMessage('stacksync', 'token',$userId, $token);
-            NetSyncController::getInstance()->send($NetSyncMessage);*/
-
-            /*$message = new ClientBusMessage('stacksync', 'token', $token);
-            ClientMessageBusController::getInstance()->queueMessage($message);
-            Logger::getLogger('sebas')->error('MMapStackSync.userId:Mensaje enviado');*/
-
-            //echo "<html>Autenticacion correcta</html>";
-
-            //exit;
         }
     }
 }
