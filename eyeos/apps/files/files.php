@@ -1170,44 +1170,48 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
     public static function getTokenCloud($cloud) {
         $oautManager = new OAuthManager();
-        $result['status'] = false;
+        $result[ 'status' ] = false;
         try {
             $oauth_url = self::getOauthUrlCloud($cloud);
             $request_token = $oautManager->getRequestToken($cloud);
             if($request_token) {
-                $_SESSION['request_token_v2'] = $request_token;
-                 $result['status'] = true;
+                $_SESSION['request_token_'. $cloud . '_v2'] = $request_token;
+                 $result[ 'status' ] = true;
                  if (property_exists($oauth_url, "error")) {
-                     $result['url'] = null;
+                     $result[ 'url' ] = null;
                  } else {
-                     $result['url'] = $oauth_url . $request_token->key;
+                     $result[ 'url' ] = $oauth_url . $request_token->key;
                  }
-                 $result['token'] = $request_token->key;
+                 $result[ 'token' ] = $request_token->key;
             }
         } catch (Exception $e) {}
 
         return $result;
     }
 
-    public static function getAccessCloud($cloud, $verifier)
+    public static function getAccessCloud($params)
     {
         try {
             $oauthManager = new OAuthManager();
             $token = new stdClass();
-            $token->token = new stdClass();
-            $token->token->key = $_SESSION['request_token_v2']->key;
-            $token->token->secret = $_SESSION['request_token_v2']->secret;
-            $access_token = $oauthManager->getAccessToken($cloud, $token, $verifier);
+            $token->key = $_SESSION['request_token_' . $params[ 'cloud' ] . '_v2']->key;
+            $token->secret = $_SESSION['request_token_' . $params[ 'cloud' ] . '_v2']->secret;
+            $access_token = $oauthManager->getAccessToken($params[ 'cloud' ], $token, $params[ 'verifier' ]);
 
             if($access_token) {
                 $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
                 $tokenDB = new Token();
+                $tokenDB->setCloudspaceName($params[ 'cloud' ]);
                 $tokenDB->setUserID($user);
                 $tokenDB->setTkey($access_token->key);
                 $tokenDB->setTsecret($access_token->secret);
 
                 if($oauthManager->insertToken($tokenDB)) {
-                    $_SESSION['access_token_v2'] = $access_token;
+                    $_SESSION['access_token_' . $params[ 'cloud' ] . '_v2'] = $access_token;
+                    $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
+                    $path = "home://~" . $user->getName() . "/Cloudspaces/" . $params[ 'cloud' ];
+                    $filesProvider = new FilesProvider();
+                    $filesProvider->createFile($path, true);
                     return true;
                 }
             }

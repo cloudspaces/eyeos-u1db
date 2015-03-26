@@ -85,7 +85,7 @@ class MMapStacksync extends Kernel implements IMMap {
             $users = UMManager::getInstance()->getAllUsersFromGroup($group);
 
             foreach ($users as $user) {
-                $NetSyncMessage = new NetSyncMessage('stacksync', 'token',$user->getId(), $token);
+                $NetSyncMessage = new NetSyncMessage('cloud', 'token', $user->getId(), $token);
                 NetSyncController::getInstance()->send($NetSyncMessage);
             }
         }
