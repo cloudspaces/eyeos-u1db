@@ -1053,11 +1053,9 @@ qx.Class.define('eyeos.files.Controller', {
 			}
 		},
 
-		createDialogueCloud: function(cloud) {
-            if(cloud == "NEC" || cloud == "Stacksync"){
-                this.getView().removeAll();
-                this.getView().createDialogCloud(cloud);
-            }
+		createDialogueCloud: function(cloud, isActive) {
+            this.getView().removeAll();
+            this.getView().createDialogCloud(cloud, isActive);
 		},
 
 		newLink: function() {
@@ -1853,10 +1851,19 @@ qx.Class.define('eyeos.files.Controller', {
                     var reffunction = function(){that.__cancelCloud()};
                     setTimeout(reffunction,60000);
                 } else {
-                    this.getView().timeOutCloud(tr("An error has occurred when processing request to " + this.__cloud, this.__cloud));
+                    this.getView().timeOutCloud(tr("An error has occurred when processing request to ") + this.__cloud, this.__cloud, false);
                     this._dBus.removeListener('eyeos_cloud_token', this.__authorizeUser, this);
                 }
             },this);
+        },
+
+        _getDeleteCloud: function(cloud) {
+            this.__cloud = cloud;
+            // Delete table token & $_SESSION['access_token_' + cloud + '_v2']
+            // Rename cloud folder, add dot
+            // init delete script
+            console.log("getDeleteCloud");
+            this.getView().timeOutCloud(tr("Time out"), this.__cloud, true);
         },
 
 //        __cancelStacksync: function() {
@@ -1868,7 +1875,7 @@ qx.Class.define('eyeos.files.Controller', {
 
         __cancelCloud: function() {
             if(!this.__verifierUser && this.__token) {
-                this.getView().timeOutCloud(tr("Time out"), this.__cloud);
+                this.getView().timeOutCloud(tr("Time out"), this.__cloud, false);
                 this._dBus.removeListener('eyeos_cloud_token',this.__authorizeUser,this);
             }
         },
@@ -1884,11 +1891,12 @@ qx.Class.define('eyeos.files.Controller', {
                     params.verifier = data.oauth_verifier;
                     eyeos.callMessage(this.getApplication().getChecknum(), 'getAccessCloud', params, function (result) {
                         if(result === true) {
+                            this.__cloud = null;
                             this.getView().removeAll();
                             this.setToken(true);
                             this._initFiles();
                         } else {
-                            this.getView().timeOutCloud(tr("An error has occurred when processing request to " + this.__cloud), this.__cloud)
+                            this.getView().timeOutCloud(tr("An error has occurred when processing request to ") + this.__cloud, this.__cloud, false)
                         }
                     },this);
                 }

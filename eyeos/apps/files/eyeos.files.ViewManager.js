@@ -399,7 +399,7 @@ qx.Class.define('eyeos.files.ViewManager', {
             this._cursor.setMarginLeft(left);
         },
 
-        createDialogCloud:function(cloud) {
+        createDialogCloud:function(cloud, isActive) {
 
             var dialog = new qx.ui.container.Composite().set({
                 layout: new qx.ui.layout.VBox(),
@@ -424,7 +424,7 @@ qx.Class.define('eyeos.files.ViewManager', {
             dialog.add(logo);
 
             var label = new qx.ui.basic.Label().set({
-               value: tr("Do you want to log on " + cloud + "?"),
+               value: !isActive? tr("Do you want to log on ") + cloud + "?" : tr("Do you want to logout ") + cloud + "?",
                font:  new qx.bom.Font(18, ['Arial', 'sans-serif']),
                alignX: 'center',
                marginTop: 20
@@ -448,7 +448,7 @@ qx.Class.define('eyeos.files.ViewManager', {
             });
 
             buttonOK.addListener('execute',function() {
-                this.waitCloud(cloud);
+                this.waitCloud(cloud, isActive);
             },this);
 
             var buttonKO = new qx.ui.form.Button().set({
@@ -470,7 +470,7 @@ qx.Class.define('eyeos.files.ViewManager', {
 
             this.add(dialog);
         },
-        waitCloud: function(cloud) {
+        waitCloud: function(cloud, isActive) {
 
             this.removeAll();
 
@@ -497,7 +497,7 @@ qx.Class.define('eyeos.files.ViewManager', {
             containerWait.add(logo);
 
             var label = new qx.ui.basic.Label().set({
-                value: tr("Waiting " + cloud),
+                value: tr("Waiting ") + cloud,
                 font:  new qx.bom.Font(18, ['Arial', 'sans-serif']),
                 alignX: 'center',
                 marginTop: 20
@@ -523,10 +523,14 @@ qx.Class.define('eyeos.files.ViewManager', {
 
             this.add(containerWait);
 
-            this.getController()._getTokenCloud(cloud);
-
+            if (!isActive) {
+               this.getController()._getTokenCloud(cloud);
+            }
+            else {
+                this.getController()._getDeleteCloud(cloud);
+            }
         },
-        timeOutCloud: function(message, cloud) {
+        timeOutCloud: function(message, cloud, isActive) {
             this.removeAll();
 
             var containerTimeout = new qx.ui.container.Composite().set({
@@ -576,7 +580,7 @@ qx.Class.define('eyeos.files.ViewManager', {
             });
 
             buttonReload.addListener('execute',function() {
-                 this.waitCloud(cloud);
+                 this.waitCloud(cloud, isActive);
             },this);
 
             var buttonCancel = new qx.ui.form.Button().set({

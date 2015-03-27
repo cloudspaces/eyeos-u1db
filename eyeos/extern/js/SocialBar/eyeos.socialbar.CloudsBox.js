@@ -123,7 +123,11 @@ qx.Class.define('eyeos.socialbar.CloudsBox', {
                     this._layoutCloudsBox.setCursor('default');
                 }, this);
                 linkCloud.addListener('click', function (e) {
-                    self._controller.createDialogueCloud(e.getTarget().getValue());
+                    var isActive = false;
+                    if (e.getCurrentTarget().getLayoutParent().getChildren().length == 2) {
+                        isActive = true;
+                    }
+                    self._controller.createDialogueCloud(e.getTarget().getValue(), isActive);
                 }, this);
                 layoutCloud.add(linkCloud);
 
