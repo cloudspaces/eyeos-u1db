@@ -330,9 +330,11 @@ qx.Class.define('eyeos.files.IconView', {
 
             item.addListener('selected', function (e) {
                 self.getViewManager().getController().fireDataEvent('selectedFile', self.returnSelected());
-                var file = e.getCurrentTarget().getCurrentPath() + e.getCurrentTarget().getName();
+                var folder = e.getCurrentTarget().getFile().getAbsolutePath();
+                var parentPath = e.getCurrentTarget().getFile().getPath();
+                var cloudsPath = 'home://~' + eyeos.getCurrentUserName() + '/Cloudspaces';
                 var enabled = true;
-                if (file == 'home://~' + eyeos.getCurrentUserName() + '/Cloudspaces') {
+                if (folder == cloudsPath || parentPath == cloudsPath) {
                     enabled = false;
                 }
                 self.getViewManager().getController().fireDataEvent('cloudspacesSelected', enabled);
@@ -360,7 +362,7 @@ qx.Class.define('eyeos.files.IconView', {
 			});
 
 			item.addListener('dblclick', function () {
-				var file = this.getFile();
+                var file = this.getFile();
 				var absolutePath = file.getAbsolutePath();
 				if (file.getType() == 'folder') {
                     if(self.getViewManager().getController().__isStacksync(file.getAbsolutePath())) {
@@ -419,8 +421,10 @@ qx.Class.define('eyeos.files.IconView', {
 							childrens[i].setEnabled(false);
 						}
                         if (itemsToDisable.indexOf(childrens[i].getUserData('id')) != -1) {
+                            var pathClouds = 'home://~' + eyeos.getCurrentUserName() + '/Cloudspaces';
                             for (var j = 0; j < selected.length; j++) {
-                                if (currentPath + selected[j].getName() == 'home://~' + eyeos.getCurrentUserName() + '/Cloudspaces') {
+                                if (selected[j].getFile().getAbsolutePath() == pathClouds ||
+                                    selected[j].getFile().getPath() == pathClouds) {
                                     childrens[i].setEnabled(false);
                                 }
                             }

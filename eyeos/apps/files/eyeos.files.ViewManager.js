@@ -684,15 +684,27 @@ qx.Class.define('eyeos.files.ViewManager', {
             this._view.enabledFiles(enabled);
         },
 
+        enableComponentMenu: function(enabled, menu, posStart, posEnd) {
+            for (var i = posStart; i < posEnd; i++) {
+                menu.getChildren()[i].setEnabled(enabled);
+            }
+        },
+
         enabledMenu: function (enabled) {
             var menuFile = this._menuBar.getMenuButtons()[0].getMenu();
             var menuEdit = this._menuBar.getMenuButtons()[1].getMenu();
-            menuFile.getChildren()[1].setEnabled(enabled);
-            for (var i = 0; i < menuEdit.getChildren().length; i++) {
-                menuEdit.getChildren()[i].setEnabled(enabled);
-            }
-        }
+            this.enableComponentMenu(enabled, menuFile, 1, 2);
+            this.enableComponentMenu(enabled, menuEdit, 0, menuEdit.getChildren().length);
+        },
 
+        enabledCloud: function (enabled) {
+            var menuFile = this._menuBar.getMenuButtons()[0].getMenu();
+            var menuEdit = this._menuBar.getMenuButtons()[1].getMenu();
+            this.enableComponentMenu(enabled, menuFile, 1, menuFile.getChildren().length);
+            this.enableComponentMenu(enabled, menuEdit, 0, menuEdit.getChildren().length);
+            this._toolBar.getChildren()[2].setEnabled(enabled);
+            this._toolBar.getChildren()[3].setEnabled(enabled);
+        }
 	},
 	// function tr() to translate menus and toolbar isn't need here, because apply translate when items is constructing.
 	statics: {

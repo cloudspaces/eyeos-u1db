@@ -730,9 +730,19 @@ qx.Class.define('eyeos.files.Controller', {
 			// We call to the view controller to show the browse
 			var currentPath = this.getModel().getCurrentPath()[1];
 			if (currentPath.substr(0, 8) == 'share://' || currentPath == 'workgroup:///') {
-				this.getView()._view.setContextMenu(null);
+                this.getView().enabledMenu(true);
+                this.getView().enabledCloud(true);
+                this.getView()._view.setContextMenu(null);
 			} else {
-				this.getView()._view.setContextMenu(this.getView()._view._menu);
+				if(currentPath !== 'home://~'+ eyeos.getCurrentUserName()+'/Cloudspaces') {
+                    this.getView().enabledMenu(true);
+                    this.getView().enabledCloud(true);
+                    this.getView()._view.setContextMenu(this.getView()._view._menu);
+                } else {
+                    this.getView().enabledMenu(false);
+                    this.getView().enabledCloud(false);
+                    this.getView()._view.setContextMenu(null);
+                }
 			}
 			this.getView().showBrowse();
 
