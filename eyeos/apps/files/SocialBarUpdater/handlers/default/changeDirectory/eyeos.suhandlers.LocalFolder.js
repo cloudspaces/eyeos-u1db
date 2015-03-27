@@ -42,7 +42,7 @@ qx.Class.define('eyeos.suhandlers.LocalFolder', {
 		updateSocialBar: function (controller) {
             this._controller = controller;
             var path = this.getParams().path;
-            if(this._controller && this._controller.__isCloudspaces(path)) {
+            if(this._controller && this._controller.isRootCloudSpaces(path)) {
                 this.getSocialBar().createCloudSpacesTabs();
                 this._createContentCloudSpacesTab();
             }else {
@@ -57,8 +57,10 @@ qx.Class.define('eyeos.suhandlers.LocalFolder', {
                 this._cloudsBox = new eyeos.socialbar.CloudsBox(clouds, this._controller);
 
                 //Add to Socialbar
-                this.getSocialBar().getTab('Clouds').removeAll();
-                this.getSocialBar().getTab('Clouds').addBox(this._cloudsBox, 'cloudBox');
+                if(this.getSocialBar().getTab('Clouds')) {
+                    this.getSocialBar().getTab('Clouds').removeAll();
+                    this.getSocialBar().getTab('Clouds').addBox(this._cloudsBox, 'cloudBox');
+                }
             }, this);
         }
 	}

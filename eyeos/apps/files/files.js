@@ -734,7 +734,7 @@ qx.Class.define('eyeos.files.Controller', {
                 this.getView().enabledCloud(true);
                 this.getView()._view.setContextMenu(null);
 			} else {
-				if(currentPath !== 'home://~'+ eyeos.getCurrentUserName()+'/Cloudspaces') {
+				if(!this.isRootCloudSpaces(currentPath)) {
                     this.getView().enabledMenu(true);
                     this.getView().enabledCloud(true);
                     this.getView()._view.setContextMenu(this.getView()._view._menu);
@@ -2274,6 +2274,16 @@ qx.Class.define('eyeos.files.Controller', {
             }
 
             return list;
+        },
+
+        isRootCloudSpaces: function(path) {
+            var root = 'home://~'+ eyeos.getCurrentUserName()+'/Cloudspaces';
+
+            if(root == path) {
+                return true;
+            }
+
+            return false;
         }
 	}
 });

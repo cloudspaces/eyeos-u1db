@@ -68,7 +68,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
                 stacksync = true;
                 this.getSocialBar().createStackSyncTabs();
                 this._createContentsCommentsTab();
-            } else if(this._controller && this._controller.__isCloudspaces(path)) {
+            } else if(this._controller && this._controller.isRootCloudSpaces(path)) {
                 this.getSocialBar().createCloudSpacesTabs();
                 this._createContentCloudSpacesTab();
             } else {
@@ -114,8 +114,10 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
                 this._cloudsBox = new eyeos.socialbar.CloudsBox(clouds, this._controller);
 
                 //Add to Socialbar
-                this.getSocialBar().getTab('Clouds').removeAll();
-                this.getSocialBar().getTab('Clouds').addBox(this._cloudsBox, 'cloudBox');
+                if(this.getSocialBar().getTab('Clouds')) {
+                    this.getSocialBar().getTab('Clouds').removeAll();
+                    this.getSocialBar().getTab('Clouds').addBox(this._cloudsBox, 'cloudBox');
+                }
             }, this);
         },
 
