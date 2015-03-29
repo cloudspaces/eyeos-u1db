@@ -7,6 +7,7 @@ from mock import Mock
 from Protocol import Protocol
 import json
 import os
+from settings import settings
 
 class ProtocolTest (unittest.TestCase):
     def setUp(self):
@@ -38,11 +39,11 @@ class ProtocolTest (unittest.TestCase):
     should: returnArray
     """
     def test_protocol_called_typeSelectAndList_returnArray(self):
-        params = '{"type":"select","lista":[{"id":"124568","user_eyeos":"eyeID_EyeosUser_2","path":"/documents/clients"}]}'
-        self.protocol.select = Mock()
-        self.protocol.select.return_value = []
+        params = '{"type":"select","lista":[{"id":"124568", "user_eyeos":"eyeID_EyeosUser_2", "cloud":"Stacksync", "path":"/documents/clients"}]}'
+        self.protocol.newSelect = Mock()
+        self.protocol.newSelect.return_value = []
         result = self.protocol.protocol(params)
-        self.protocol.select.assert_called_once_with("124568","eyeID_EyeosUser_2","/documents/clients")
+        self.protocol.newSelect.assert_called_once_with("124568", "eyeID_EyeosUser_2", "Stacksync", "/documents/clients")
         self.assertEquals('[]',result)
 
     """

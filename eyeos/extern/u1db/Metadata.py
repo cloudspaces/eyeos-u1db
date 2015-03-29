@@ -51,6 +51,20 @@ class Metadata:
             results.append(file.content)
         return results
 
+    def newSelect(self, id, user, cloud, path):
+        results = []
+        if id != "null":
+            self.db.create_index("by-id-path", "id", "user_eyeos", "cloud", "path")
+            files = self.db.get_from_index("by-id-path", str(id), user, cloud, path)
+            for file in files:
+                results.append(file.content)
+
+        self.db.create_index("by-parent-path", "parent_id","user_eyeos", "cloud", "path")
+        files = self.db.get_from_index("by-parent-path", str(id), user, cloud, path + "*")
+        for file in files:
+            results.append(file.content)
+        return results
+
     def update(self,lista):
         self.db.create_index("by-id-parent", "id","user_eyeos","parent_id")
         parent = ''

@@ -3,6 +3,7 @@ __author__ = 'root'
 import json
 from Metadata import Metadata
 import sys
+from settings import settings
 
 class Protocol:
     def __init__(self,test = None):
@@ -26,7 +27,10 @@ class Protocol:
         if type == "insert":
             result = self.insert(lista)
         elif type == "select":
-            result = self.select(lista[0]["id"],lista[0]['user_eyeos'],lista[0]['path'])
+            if settings[ "NEW_CODE" ] == "true":
+                result = self.newSelect(lista[0]["id"], lista[0]['user_eyeos'], lista[0]['cloud'], lista[0]['path'])
+            else:
+                result = self.select(lista[0]["id"],lista[0]['user_eyeos'],lista[0]['path'])
         elif type == "update":
             result = self.update(lista)
         elif type == "delete":
@@ -80,6 +84,9 @@ class Protocol:
 
     def select(self,id,user,path):
         return self.metadata.select(id,user,path)
+
+    def newSelect(self, id, user, cloud, path):
+        return self.metadata.newSelect(id, user, cloud, path)
 
     def update(self,lista):
         self.metadata.update(lista)

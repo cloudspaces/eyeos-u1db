@@ -29,14 +29,14 @@ class MetadataTest (unittest.TestCase):
         self.sut.insert(array)
         self.sut.db.create_index("by-id", "id", "user_eyeos")
         results = self.sut.db.get_from_index("by-id", "32565632156","eyeID_EyeosUser_2")
-        self.assertEquals(array[1],results[0].content)
+        self.assertEquals(array[2],results[0].content)
 
     """
-   method: select
-   when: called
-   with: id
-   should: returnArray
-   """
+    method: select
+    when: called
+    with: id
+    should: returnArray
+    """
     def test_select_called_id_returnArray(self):
         array = self.getArrayInsert()
         self.sut.insert(array)
@@ -45,11 +45,24 @@ class MetadataTest (unittest.TestCase):
         self.assertEquals(2,len(data))
 
     """
-   method: update
-   when: called
-   with: array
-   should: updateCorrect
-   """
+    method: newSelect
+    when: called
+    with: id
+    should: returnArray
+    """
+    def test_newSelect_called_id_returnArray(self):
+        array = self.getArrayInsert()
+        self.sut.insert(array)
+        data = self.sut.newSelect("9873615", "eyeID_EyeosUser_2", "Stacksync", "/")
+        data.sort()
+        self.assertEquals(2,len(data))
+
+    """
+    method: update
+    when: called
+    with: array
+    should: updateCorrect
+    """
     def test_update_called_array_updateCorrect(self):
         array = self.getArrayInsert()
         update = self.getArrayUpdate()
