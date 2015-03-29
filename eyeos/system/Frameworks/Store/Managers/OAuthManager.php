@@ -33,6 +33,11 @@ class OAuthManager
         return $this->oauthProvider->getToken($user);
     }
 
+    public function getTokenUserCloud($user, $cloud)
+    {
+        return $this->oauthProvider->getTokenUserCloud($user, $cloud);
+    }
+
     public function insertToken($token)
     {
         return $this->oauthProvider->insertToken($token);

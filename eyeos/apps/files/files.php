@@ -1394,7 +1394,22 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         $clouds = array();
         try {
             $apiManager =  new ApiManager();
-            $clouds = $apiManager->getCloudsList();
+            $response = json_decode($apiManager->getCloudsList());
+            foreach ($response as $cloud) {
+                $isActive = false;
+                $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
+                $oauthManager = new OAuthManager();
+                $token = $oauthManager->getTokenUserCloud($user, $cloud);
+                if ($token) {
+                    Logger::getLogger('------------TOKEN CLOUD*')->error('size token:' . $token->getCloudspaceName($cloud));
+
+                    if (strlen($token->getTsecret()) > 0) {
+                        Logger::getLogger('TOKEN CLOUD*')->error("tsecret: " . $token->getTsecret());
+                        $isActive = true;
+                    }
+                }
+                array_push($clouds, array("name" => $cloud, "isActive" => $isActive));
+            }
 
         } catch (Exception $e){
             throw new Exception($e->getMessage());

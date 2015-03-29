@@ -52,6 +52,17 @@ class OAuthProvider_
         return $token;
     }
 
+    public function getTokenUserCloud($user, $cloud)
+    {
+        $token = new Token();
+        $token->setUserId($user);
+        $token->setCloudspaceName($cloud);
+        try {
+            $toReturn = current($this->dao->search($token));
+        } catch(EyeResultNotFoundException $e) {}
+        return $toReturn;
+    }
+
     public function insertToken($token)
     {
         try {
