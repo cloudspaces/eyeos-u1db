@@ -1799,6 +1799,7 @@ qx.Class.define('eyeos.files.Controller', {
                 this.__closeProgress();
             }
         },
+
         _getToken: function() {
             this.getView().showCursor();
             eyeos.callMessage(this.getApplication().getChecknum(), 'getToken', null, function (result) {
@@ -1812,6 +1813,7 @@ qx.Class.define('eyeos.files.Controller', {
                 }
             },this);
         },
+
         _initFiles: function() {
              this.getView().initFiles();
              var socialBarUpdater = new eyeos.files.SUManager(this.getView()._socialBar, this.getChecknum(),this);
@@ -1819,26 +1821,10 @@ qx.Class.define('eyeos.files.Controller', {
              this._addSocialBarUpdaterListeners();
              this._browse(true);
         },
-//        _getTokenStacksync: function(cloud) {
-//            this.__token = null;
-//            this._dBus.removeListener('eyeos_stacksync_token',this.__authorizeUser,this);
-//            this._dBus.addListener('eyeos_stacksync_token',this.__authorizeUser,this);
-//
-//            eyeos.callMessage(this.getApplication().getChecknum(), 'getTokenStacksync', cloud, function (result) {
-//                if(result.status === true && result.url && result.token) {
-//                    this.__token = result.token;
-//                    window.open(result.url, '_new');
-//                    var that = this;
-//                    var reffunction = function(){that.__cancelStacksync()};
-//                    setTimeout(reffunction,60000);
-//                } else {
-//                    this.getView().timeOutStakSync(tr("An error has occurred when processing request to Stacksync"));
-//                    this._dBus.removeListener('eyeos_stacksync_token',this.__authorizeUser,this);
-//                }
-//            },this);
-//        },
+
         _getTokenCloud: function(cloud) {
             this.__token = null;
+            this.__verifierUser = false;
             this.__cloud = cloud;
             this._dBus.removeListener('eyeos_cloud_token', this.__authorizeUser, this);
             this._dBus.addListener('eyeos_cloud_token', this.__authorizeUser, this);
@@ -1859,19 +1845,13 @@ qx.Class.define('eyeos.files.Controller', {
 
         _getDeleteCloud: function(cloud) {
             this.__cloud = cloud;
-            // Delete table token & $_SESSION['access_token_' + cloud + '_v2']
             // Rename cloud folder, add dot
             // init delete script
-            console.log("getDeleteCloud");
-            this.getView().timeOutCloud(tr("Time out"), this.__cloud, true);
+            eyeos.callMessage(this.getApplication().getChecknum(), 'cleanCloud', cloud, function (result) {
+                console.log("getDeleteCloud", result);
+                this.getView().timeOutCloud(tr("Time out"), this.__cloud, true);
+            }, this);
         },
-
-//        __cancelStacksync: function() {
-//            if(!this.__stacksync && this.__token) {
-//                this.getView().timeOutStakSync(tr("Time out"));
-//                this._dBus.removeListener('eyeos_stacksync_token',this.__authorizeUser,this);
-//            }
-//        },
 
         __cancelCloud: function() {
             if(!this.__verifierUser && this.__token) {
@@ -1891,7 +1871,6 @@ qx.Class.define('eyeos.files.Controller', {
                     params.verifier = data.oauth_verifier;
                     eyeos.callMessage(this.getApplication().getChecknum(), 'getAccessCloud', params, function (result) {
                         if(result === true) {
-                            this.__cloud = null;
                             this.getView().removeAll();
                             this.setToken(true);
                             this._initFiles();

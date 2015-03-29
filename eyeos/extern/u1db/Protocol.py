@@ -36,7 +36,7 @@ class Protocol:
         elif type == "deleteFolder":
             result = self.deleteFolder(lista[0]["id"],lista[0]['user_eyeos'],lista[0]['path'])
         elif type == "deleteMetadataUser":
-            result = self.deleteMetadataUser(lista[0]['user_eyeos'])
+            result = self.deleteMetadataUser(lista)
         elif type == "selectMetadataUser":
             result = self.selectMetadataUser(lista[0]['user_eyeos'])
         elif type == "rename":
@@ -96,8 +96,8 @@ class Protocol:
         self.metadata.deleteFolder(idFolder,user,path)
         return True
 
-    def deleteMetadataUser(self,user):
-        self.metadata.deleteMetadataUser(user)
+    def deleteMetadataUser(self, lista):
+        self.metadata.deleteMetadataUser(lista)
         return True
 
     def selectMetadataUser(self,user):

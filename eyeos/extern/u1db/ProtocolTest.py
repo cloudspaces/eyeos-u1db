@@ -106,23 +106,37 @@ class ProtocolTest (unittest.TestCase):
     """
     method: protocol
     when: called
-    with: typeDeleteMetadataUserAndList
+    with: typeDeleteMetadataUserAndListUser
     should: deleteCorrect
     """
-    def test_protocol_called_typeDeleteMetadataUserAndList_deleteCorrect(self):
+    def test_protocol_called_typeDeleteMetadataUserAndListUser_deleteCorrect(self):
         params = '{"type":"deleteMetadataUser","lista":[{"user_eyeos":"eyeID_EyeosUser_2"}]}'
         self.protocol.deleteMetadataUser = Mock()
         self.protocol.deleteMetadataUser.return_value = True
         result = self.protocol.protocol(params)
-        self.protocol.deleteMetadataUser.assert_called_once_with("eyeID_EyeosUser_2")
+        self.protocol.deleteMetadataUser.assert_called_once_with(json.loads(params)['lista'])
         self.assertEquals('true',result)
 
     """
-   method: protocol
-   when: called
-   with: typeSelectMetatadataUserAndList
-   should: returnArray
-   """
+    method: protocol
+    when: called
+    with: typeDeleteMetadataUserAndListUserAndCloud
+    should: deleteCorrect
+    """
+    def test_protocol_called_typeDeleteMetadataUserAndListUserAndCloud_deleteCorrect(self):
+        params = '{"type":"deleteMetadataUser","lista":[{"user_eyeos":"eyeID_EyeosUser_2", "cloud":"Stacksync"}]}'
+        self.protocol.deleteMetadataUser = Mock()
+        self.protocol.deleteMetadataUser.return_value = True
+        result = self.protocol.protocol(params)
+        self.protocol.deleteMetadataUser.assert_called_once_with(json.loads(params)['lista'])
+        self.assertEquals('true',result)
+
+    """
+    method: protocol
+    when: called
+    with: typeSelectMetatadataUserAndList
+    should: returnArray
+    """
     def test_protocol_called_typeSelectMetadataUserAndList_returnArray(self):
         params = '{"type":"selectMetadataUser","lista":[{"user_eyeos":"eyeID_EyeosUser_2"}]}'
         self.protocol.selectMetadataUser = Mock()

@@ -62,7 +62,7 @@ class Metadata:
                 user = data['user_eyeos']
                 files = self.db.get_from_index("by-id-parent",id,user,parent)
                 if len(files) > 0:
-                    file = files[0];
+                    file = files[0]
                     file.set_json(json.dumps(data))
                     self.db.put_doc(file)
 
@@ -100,9 +100,19 @@ class Metadata:
         if len(files) > 0:
             self.db.delete_doc(files[0])
 
-    def deleteMetadataUser(self,user):
-        self.db.create_index("by-usereyeos", "user_eyeos")
-        files = self.db.get_from_index("by-usereyeos",user)
+    def deleteMetadataUser(self, lista):
+        for data in lista:
+            user = data["user_eyeos"]
+            if (data.has_key('cloud')):
+                cloud = data["cloud"]
+            else:
+                cloud = ''
+        if len(cloud) > 0:
+            self.db.create_index("by-user-cloud", "user_eyeos", "cloud")
+            files = self.db.get_from_index("by-user-cloud", user, cloud)
+        else:
+            self.db.create_index("by-usereyeos", "user_eyeos")
+            files = self.db.get_from_index("by-usereyeos", user)
         if len(files) > 0:
             for file in files:
                 id = None
@@ -111,15 +121,19 @@ class Metadata:
                 self.db.delete_doc(file)
 
                 if id != None:
-                    self.db2.create_index("by-id-user","id","user_eyeos")
-                    versions = self.db2.get_from_index("by-id-user",id,user)
+                    if  len(cloud) > 0:
+                        self.db2.create_index("by-id-user-cloud", "id", "user_eyeos", "cloud")
+                        versions = self.db2.get_from_index("by-id-user-cloud", id, user, cloud)
+                    else:
+                        self.db2.create_index("by-id-user", "id", "user_eyeos")
+                        versions = self.db2.get_from_index("by-id-user", id, user)
                     if len(versions) > 0:
                         self.db2.delete_doc(versions[0])
 
     def selectMetadataUser(self,user):
         result = []
         self.db.create_index("by-usereyeos", "user_eyeos")
-        files = self.db.get_from_index("by-usereyeos",user)
+        files = self.db.get_from_index("by-usereyeos", user)
         if len(files) > 0:
             for file in files:
                 result.append(file.content)
@@ -290,8 +304,9 @@ class Metadata:
         except:
             pass"""
 
-    def deleteCalendarUser(self,user):
-        self.deleteMetadataUser(user)
+    def deleteCalendarUser(self, user):
+        list = [{'user_eyeos' : user}]
+        self.deleteMetadataUser(list)
 
     def selectCalendarsAndEvents(self,user):
         result = []

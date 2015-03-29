@@ -1245,6 +1245,37 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         return $result;
     }
 
+    public static function cleanCloud($cloud)
+    {
+        $result[ 'status' ] = false;
+        $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
+        $oauthManager = new OAuthManager();
+        $apiManager = new ApiManager();
+        $token = new Token();
+        $token->setCloudspaceName($cloud);
+        $token->setUserID($user->getId());
+        if ($oauthManager->deleteToken($token)) {
+            if ($apiManager->deleteMetadataUser($user->getId(), $cloud)) {
+                unset($_SESSION['request_token_' . $cloud . '_v2']);
+                unset($_SESSION['access_token_' . $cloud . '_v2']);
+                $path = "home://~" . $user->getName() . "/Cloudspaces/" . $cloud;
+                $folderToRename = FSI::getFile($path);
+                if ($folderToRename->renameTo('.' . $cloud)) {
+                    // Lanzar script 2n plano. Eliminar directorio oculto.
+                    $result['status'] = true;
+                    $result['session'] = $_SESSION;
+                } else {
+                    $result[ 'error' ] = $cloud . ' folder not renamed';
+                }
+            } else {
+                $result[ 'error' ] = 'User metadata table and cloud not deleted';
+            }
+        } else {
+            $result[ 'error' ] = 'Token table not deleted';
+        }
+        return $result;
+    }
+
     public static function permissionDeniedCloud($user)
     {
         unset($_SESSION['access_token_v2']);

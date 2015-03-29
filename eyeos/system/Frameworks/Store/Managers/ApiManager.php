@@ -347,7 +347,7 @@ class ApiManager
         return $result;
     }
 
-    public function callProcessU1db($type,$lista,$credentials=NULL)
+    public function callProcessU1db($type, $lista, $credentials=NULL)
     {
         $json = new stdClass();
         $json->type = $type;
@@ -363,10 +363,13 @@ class ApiManager
         return $this->accessorProvider->getProcessDataU1db(json_encode($json));
     }
 
-    public function deleteMetadataUser($user)
+    public function deleteMetadataUser($user, $cloud=NULL)
     {
         $file = array();
         $file['user_eyeos'] = $user;
+        if ($cloud) {
+            $file['cloud'] = $cloud;
+        }
         return json_decode($this->callProcessU1db("deleteMetadataUser",$file));
     }
 
