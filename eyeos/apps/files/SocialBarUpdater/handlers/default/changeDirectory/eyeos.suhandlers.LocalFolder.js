@@ -51,9 +51,8 @@ qx.Class.define('eyeos.suhandlers.LocalFolder', {
 			this.getSocialBar().removeTab('Share');
 		},
         _createContentCloudSpacesTab: function() {
-            eyeos.callMessage(this.getParams()['checknum'], 'getCloudsList', null, function (results) {
+            eyeos.callMessage(this.getParams()['checknum'], 'getCloudsList', null, function (clouds) {
                 // Update socialbar handlers data struct
-                var clouds = JSON.parse(results);
                 this._cloudsBox = new eyeos.socialbar.CloudsBox(clouds, this._controller);
 
                 //Add to Socialbar

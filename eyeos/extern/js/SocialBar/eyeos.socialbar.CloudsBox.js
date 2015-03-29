@@ -100,7 +100,6 @@ qx.Class.define('eyeos.socialbar.CloudsBox', {
             this._layoutCloudsBox.add(titleLabel);
 
             for (var i = 0; i < clouds.length; i++) {
-
                 var layoutCloud = new qx.ui.container.Composite().set({
                     allowGrowX: false,
                     allowGrowY: true,
@@ -108,7 +107,7 @@ qx.Class.define('eyeos.socialbar.CloudsBox', {
                 });
 
                 var linkCloud = new qx.ui.basic.Label().set({
-                    value: clouds[i],
+                    value: clouds[i].name,
                     rich: true,
                     padding: 0,
                     margin: 0,
@@ -131,8 +130,7 @@ qx.Class.define('eyeos.socialbar.CloudsBox', {
                 }, this);
                 layoutCloud.add(linkCloud);
 
-                //TODO Validate if cloud is configured
-                if (true) {
+                if (clouds[i].isActive === true) {
                     var image = new qx.ui.basic.Image(this._imageCheck).set({
                         allowGrowX: false,
                         allowGrowY: false,
