@@ -27,10 +27,7 @@ class Protocol:
         if type == "insert":
             result = self.insert(lista)
         elif type == "select":
-            if settings[ "NEW_CODE" ] == "true":
-                result = self.newSelect(lista[0]["id"], lista[0]['user_eyeos'], lista[0]['cloud'], lista[0]['path'])
-            else:
-                result = self.select(lista[0]["id"],lista[0]['user_eyeos'],lista[0]['path'])
+            result = self.select(lista)
         elif type == "update":
             result = self.update(lista)
         elif type == "delete":
@@ -82,18 +79,25 @@ class Protocol:
         self.metadata.insert(lista)
         return True
 
-    def select(self,id,user,path):
-        return self.metadata.select(id,user,path)
-
-    def newSelect(self, id, user, cloud, path):
-        return self.metadata.newSelect(id, user, cloud, path)
+    def select(self, lista):
+        data = lista[0]
+        if settings[ 'NEW_CODE' ] == "true":
+            return self.metadata.newSelect(data[ 'id' ], data[ 'user_eyeos' ], data[ 'cloud' ], data[ 'path' ])
+        else:
+            return self.metadata.select(data[ 'id' ], data[ 'user_eyeos' ], data[ 'path' ])
 
     def update(self,lista):
-        self.metadata.update(lista)
+        if settings[ 'NEW_CODE' ] == "true":
+            self.metadata.update(lista)
+        else:
+            self.metadata.newUpdate(lista)
         return True
 
     def delete(self,lista):
-        self.metadata.delete(lista)
+        if settings[ 'NEW_CODE' ] == "true":
+            self.metadata.delete(lista)
+        else:
+            self.metadata.newDelete(lista)
         return True
 
     def getParent(self,path,filename,user):

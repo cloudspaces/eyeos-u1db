@@ -59,14 +59,14 @@ class Metadata:
             for file in files:
                 results.append(file.content)
 
-        self.db.create_index("by-parent-path", "parent_id","user_eyeos", "cloud", "path")
+        self.db.create_index("by-parent-path", "parent_id", "user_eyeos", "cloud", "path")
         files = self.db.get_from_index("by-parent-path", str(id), user, cloud, path + "*")
         for file in files:
             results.append(file.content)
         return results
 
     def update(self,lista):
-        self.db.create_index("by-id-parent", "id","user_eyeos","parent_id")
+        self.db.create_index("by-id-parent", "id", "user_eyeos", "parent_id")
         parent = ''
         for data in lista:
             if data.has_key("parent_old"):
@@ -74,21 +74,48 @@ class Metadata:
             else:
                 id = str(data["id"])
                 user = data['user_eyeos']
-                files = self.db.get_from_index("by-id-parent",id,user,parent)
+                files = self.db.get_from_index("by-id-parent", id, user, parent)
                 if len(files) > 0:
                     file = files[0]
                     file.set_json(json.dumps(data))
                     self.db.put_doc(file)
 
+    def newUpdate(self, lista):
+            self.db.create_index("by-id-parent", "id", "user_eyeos", "cloud", "parent_id")
+            parent = ''
+            for data in lista:
+                if data.has_key( 'parent_old' ):
+                    parent = str(data[ 'parent_old' ])
+                else:
+                    id = str(data[ 'id' ])
+                    user = data[ 'user_eyeos' ]
+                    cloud = data[ 'cloud' ]
+                    files = self.db.get_from_index("by-id-parent", id, user, cloud, parent)
+                    if len(files) > 0:
+                        file = files[0]
+                        file.set_json(json.dumps(data))
+                        self.db.put_doc(file)
+
     def delete(self,lista):
-        self.db.create_index("by-id-parent", "id","user_eyeos","parent_id")
+        self.db.create_index("by-id-parent", "id", "user_eyeos", "parent_id")
         for data in lista:
-            id = str(data["id"])
+            id = str(data[ 'id' ])
             user = data['user_eyeos']
             parent = str(data['parent_id'])
-            files = self.db.get_from_index("by-id-parent",id,user,parent)
+            files = self.db.get_from_index("by-id-parent", id, user, parent)
             if len(files) > 0:
                 self.db.delete_doc(files[0])
+
+    def newDelete(self,lista):
+            self.db.create_index("by-id-parent", "id", "user_eyeos", "cloud", "parent_id")
+            for data in lista:
+                id = str(data[ 'id' ])
+                user = data[ 'user_eyeos' ]
+                cloud = data[ 'cloud' ]
+                parent = str(data[ 'parent_id' ])
+                files = self.db.get_from_index("by-id-parent", id, user, cloud, parent)
+                if len(files) > 0:
+                    self.db.delete_doc(files[0])
 
     def getParent(self,path,filename,user):
         results = []

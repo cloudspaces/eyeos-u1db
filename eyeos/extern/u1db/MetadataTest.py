@@ -78,6 +78,26 @@ class MetadataTest (unittest.TestCase):
         self.assertEquals(update[1],results[0])
 
     """
+    method: newUpdate
+    when: called
+    with: array
+    should: updateCorrect
+    """
+    def test_newUpdate_called_array_updateCorrect(self):
+        array = self.getArrayInsert()
+        update = self.getArrayUpdate()
+        self.sut.insert(array)
+        self.sut.newUpdate(update)
+        self.sut.db.create_index("by-id-parent","id", "user_eyeos", "cloud", "parent_id")
+        files = self.sut.db.get_from_index("by-id-parent","32565632156","eyeID_EyeosUser_2", "Stacksync", "9873615")
+        results = []
+        if len(files) > 0:
+            for file in files:
+                results.append(file.content)
+
+        self.assertEquals(update[1],results[0])
+
+    """
     method: delete
     when: called
     with: array
@@ -90,6 +110,21 @@ class MetadataTest (unittest.TestCase):
         self.sut.delete(list)
         self.sut.db.create_index("by-user", "user_eyeos")
         files = self.sut.db.get_from_index("by-user","eyeID_EyeosUser_2")
+        self.assertEquals(0,len(files))
+
+    """
+    method: newDelete
+    when: called
+    with: array
+    should: deleteCorrect
+    """
+    def test_newDelete_called_array_deleteCorrect(self):
+        array = self.getArrayInsert()
+        self.sut.insert(array)
+        list = self.getArrayDelete()
+        self.sut.newDelete(list)
+        self.sut.db.create_index("by-user", "user_eyeos")
+        files = self.sut.db.get_from_index("by-user", "eyeID_EyeosUser_2")
         self.assertEquals(0,len(files))
 
     """
@@ -290,13 +325,13 @@ class MetadataTest (unittest.TestCase):
 
     def getArrayUpdate(self):
         array = [{u'parent_old':u'9873615'},
-                {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'Client2.pdf',u'path':u'/clients/',u'id':u'32565632156',u'size':775412,u'mimetype':u'application/pdf',u'status':u'CHANGED',u'version':3,u'parent_id':u'9873615',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False}]
+                {u'user_eyeos':u'eyeID_EyeosUser_2',u'cloud':u'Stacksync',u'filename':u'Client2.pdf',u'path':u'/clients/',u'id':u'32565632156',u'size':775412,u'mimetype':u'application/pdf',u'status':u'CHANGED',u'version':3,u'parent_id':u'9873615',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False}]
         return array
 
     def getArrayDelete(self):
-        array = [{u'id': u'9873615',u'user_eyeos': u'eyeID_EyeosUser_2',u'parent_id':u'null'},
-                 {u'id': u'32565632156',u'user_eyeos': u'eyeID_EyeosUser_2',u'parent_id':u'9873615'},
-                 {u'id': u'32565632157',u'user_eyeos': u'eyeID_EyeosUser_2',u'parent_id':u'null'}]
+        array = [{u'id': u'9873615', u'user_eyeos': u'eyeID_EyeosUser_2', u'cloud':u'Stacksync', u'parent_id':u'null'},
+                 {u'id': u'32565632156', u'user_eyeos': u'eyeID_EyeosUser_2', u'cloud':u'Stacksync', u'parent_id':u'9873615'},
+                 {u'id': u'32565632157', u'user_eyeos': u'eyeID_EyeosUser_2', u'cloud':u'Nec', u'parent_id':u'null'}]
         array.sort()
         return array
 

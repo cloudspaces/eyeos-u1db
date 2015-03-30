@@ -24,7 +24,10 @@ class ProtocolTest (unittest.TestCase):
    should: insertCorrect
    """
     def test_protocol_called_typeInsertAndList_insertCorrect(self):
-        params = '{"type":"insert","lista":[{"user_eyeos":"eyeID_EyeosUser_2","status": "NEW", "is_root": false, "version": 1, "filename": "clients", "parent_id": "null", "server_modified": "2013-03-08 10:36:41.997", "path": "/documents/clients", "client_modified": "2013-03-08 10:36:41.997", "id": 9873615, "user": "eyeos","is_folder":true}]}'
+        if settings[ 'NEW_CODE' ] == "true":
+            params = '{"type":"insert","lista":[{"cloud":"Stacksync", "user_eyeos":"eyeID_EyeosUser_2","status": "NEW", "is_root": false, "version": 1, "filename": "clients", "parent_id": "null", "server_modified": "2013-03-08 10:36:41.997", "path": "/documents/clients", "client_modified": "2013-03-08 10:36:41.997", "id": 9873615, "user": "eyeos","is_folder":true}]}'
+        else:
+            params = '{"type":"insert","lista":[{"user_eyeos":"eyeID_EyeosUser_2","status": "NEW", "is_root": false, "version": 1, "filename": "clients", "parent_id": "null", "server_modified": "2013-03-08 10:36:41.997", "path": "/documents/clients", "client_modified": "2013-03-08 10:36:41.997", "id": 9873615, "user": "eyeos","is_folder":true}]}'
         aux = json.loads(params)
         self.protocol.insert = Mock()
         self.protocol.insert.return_value = True
@@ -39,11 +42,15 @@ class ProtocolTest (unittest.TestCase):
     should: returnArray
     """
     def test_protocol_called_typeSelectAndList_returnArray(self):
-        params = '{"type":"select","lista":[{"id":"124568", "user_eyeos":"eyeID_EyeosUser_2", "cloud":"Stacksync", "path":"/documents/clients"}]}'
-        self.protocol.newSelect = Mock()
-        self.protocol.newSelect.return_value = []
+        if settings[ 'NEW_CODE' ] == "true":
+            params = '{"type":"select","lista":[{"id":"124568", "user_eyeos":"eyeID_EyeosUser_2", "cloud":"Stacksync", "path":"/documents/clients"}]}'
+        else:
+            params = '{"type":"select","lista":[{"id":"124568", "user_eyeos":"eyeID_EyeosUser_2", "path":"/documents/clients"}]}'
+        aux = json.loads(params)
+        self.protocol.select = Mock()
+        self.protocol.select.return_value = []
         result = self.protocol.protocol(params)
-        self.protocol.newSelect.assert_called_once_with("124568", "eyeID_EyeosUser_2", "Stacksync", "/documents/clients")
+        self.protocol.select.assert_called_once_with(aux['lista'])
         self.assertEquals('[]',result)
 
     """
@@ -53,7 +60,10 @@ class ProtocolTest (unittest.TestCase):
     should: updateCorrect
     """
     def test_protocol_called_typeUpdateAndList_updateCorrect(self):
-        params = '{"type":"update","lista":[{"parent_old":"null"},{"user_eyeos":"eyeID_EyeosUser_2","status": "NEW", "is_root": false, "version": 1, "filename": "clients", "parent_id": "null", "server_modified": "2013-03-08 10:36:41.997", "path": "/documents/clients", "client_modified": "2013-03-08 10:36:41.997", "id": "9873615", "user": "eyeos","is_folder":true}]}'
+        if settings[ 'NEW_CODE' ] == "true":
+            params = '{"type":"update","lista":[{"parent_old":"null"},{"cloud": "Stacksync", "user_eyeos": "eyeID_EyeosUser_2", "status": "NEW", "is_root": false, "version": 1, "filename": "clients", "parent_id": "null", "server_modified": "2013-03-08 10:36:41.997", "path": "/documents/clients", "client_modified": "2013-03-08 10:36:41.997", "id": "9873615", "user": "eyeos","is_folder":true}]}'
+        else:
+            params = '{"type":"update","lista":[{"parent_old":"null"},{"user_eyeos":"eyeID_EyeosUser_2","status": "NEW", "is_root": false, "version": 1, "filename": "clients", "parent_id": "null", "server_modified": "2013-03-08 10:36:41.997", "path": "/documents/clients", "client_modified": "2013-03-08 10:36:41.997", "id": "9873615", "user": "eyeos","is_folder":true}]}'
         aux = json.loads(params)
         self.protocol.update = Mock()
         self.protocol.update.return_value = True
@@ -68,7 +78,10 @@ class ProtocolTest (unittest.TestCase):
     should: deleteCorrect
     """
     def test_protocol_called_typeDeleteAndList_deleteCorrect(self):
-        params = '{"type":"delete","lista":[{"id":1234,"user_eyeos":"eyeID_EyeosUser_2","parent_id":"3456"},{"id":"8907","user_eyeos":"eyeID_EyeosUser_2","parent_id":"3456"}]}'
+        if settings[ 'NEW_CODE' ] == "true":
+            params = '{"type":"delete","lista":[{"id":1234, "user_eyeos":"eyeID_EyeosUser_2", "cloud": "Stacksync", "parent_id":"3456"},{"id":"8907", "user_eyeos":"eyeID_EyeosUser_2", "cloud": "Stacksync", "parent_id":"3456"}]}'
+        else:
+            params = '{"type":"delete","lista":[{"id":1234,"user_eyeos":"eyeID_EyeosUser_2","parent_id":"3456"},{"id":"8907","user_eyeos":"eyeID_EyeosUser_2","parent_id":"3456"}]}'
         aux = json.loads(params)
         self.protocol.delete = Mock()
         self.protocol.delete.return_value = True
