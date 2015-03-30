@@ -27,7 +27,7 @@ class Protocol:
         if type == "insert":
             result = self.insert(lista)
         elif type == "select":
-            result = self.select(lista)
+            result = self.select(lista[0])
         elif type == "update":
             result = self.update(lista)
         elif type == "delete":
@@ -35,7 +35,7 @@ class Protocol:
         elif type == "parent":
             result = self.getParent(lista[0]['path'],lista[0]['filename'],lista[0]['user_eyeos'])
         elif type == "deleteFolder":
-            result = self.deleteFolder(lista[0]["id"],lista[0]['user_eyeos'],lista[0]['path'])
+            result = self.deleteFolder(lista[0])
         elif type == "deleteMetadataUser":
             result = self.deleteMetadataUser(lista)
         elif type == "selectMetadataUser":
@@ -80,11 +80,10 @@ class Protocol:
         return True
 
     def select(self, lista):
-        data = lista[0]
         if settings[ 'NEW_CODE' ] == "true":
-            return self.metadata.newSelect(data[ 'id' ], data[ 'user_eyeos' ], data[ 'cloud' ], data[ 'path' ])
+            return self.metadata.newSelect(lista[ 'id' ], lista[ 'user_eyeos' ], lista[ 'cloud' ], lista[ 'path' ])
         else:
-            return self.metadata.select(data[ 'id' ], data[ 'user_eyeos' ], data[ 'path' ])
+            return self.metadata.select(lista[ 'id' ], lista[ 'user_eyeos' ], lista[ 'path' ])
 
     def update(self,lista):
         if settings[ 'NEW_CODE' ] == "true":
@@ -103,8 +102,11 @@ class Protocol:
     def getParent(self,path,filename,user):
         return self.metadata.getParent(path,filename,user)
 
-    def deleteFolder(self,idFolder,user,path):
-        self.metadata.deleteFolder(idFolder,user,path)
+    def deleteFolder(self, lista):
+        if settings[ 'NEW_CODE' ] == "true":
+            self.metadata.newDeleteFolder(lista[ 'id' ], lista[ 'user_eyeos' ], lista[ 'cloud' ], lista[ 'path' ])
+        else:
+            self.metadata.deleteFolder(lista[ 'id' ], lista[ 'user_eyeos' ], lista[ 'path' ])
         return True
 
     def deleteMetadataUser(self, lista):

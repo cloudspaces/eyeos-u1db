@@ -141,6 +141,22 @@ class Metadata:
         if len(files) > 0:
             self.db.delete_doc(files[0])
 
+    def newDeleteFolder(self, idFolder, user, cloud, path):
+            self.db.create_index("by-parent-path", "parent_id", "user_eyeos", "cloud", "path")
+            files = self.db.get_from_index("by-parent-path", str(idFolder), user, cloud, path + "*")
+
+            if len(files) > 0:
+                for file in files:
+                    if file.content[ "is_folder" ] == True:
+                        self.newDeleteFolder(file.content[ 'id' ], user, cloud, file.content['path'])
+                    else:
+                        self.db.delete_doc(file)
+
+            self.db.create_index("by-id-path", "id", "user_eyeos", "cloud", "path")
+            files = self.db.get_from_index("by-id-path", str(idFolder), user, cloud, path)
+            if len(files) > 0:
+                self.db.delete_doc(files[0])
+
     def deleteMetadataUser(self, lista):
         for data in lista:
             user = data["user_eyeos"]

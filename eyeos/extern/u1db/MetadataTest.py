@@ -153,6 +153,19 @@ class MetadataTest (unittest.TestCase):
         self.assertEquals(1,len(docs[1]))
 
     """
+    method: newDeleteFolder
+    when: called
+    with: idFolder
+    should: returnCorrect
+    """
+    def test_newDeleteFolder_called_idFolder_returnCorrect(self):
+        array = self.getArrayDeleteFolder()
+        self.sut.insert(array)
+        self.sut.newDeleteFolder("9873615","eyeID_EyeosUser_2", "Stacksync", "/documents/")
+        docs = self.sut.db.get_all_docs()
+        self.assertEquals(1,len(docs[1]))
+
+    """
     method: deleteMetadataUser
     when: called
     with: user
@@ -342,9 +355,9 @@ class MetadataTest (unittest.TestCase):
         return array
 
     def getArrayDeleteFolder(self):
-        array = [{u'user_eyeos':u'eyeID_EyeosUser_2',u'status': u'CHANGED', u'is_root': False, u'version': 1, u'filename':u'clients', u'parent_id': u'474411411', u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/documents/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': u'9873615', u'user': u'eyeID_EyeosUser_2',u'is_folder':True},
-                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'Client1.pdf',u'path':u'/documents/clients/',u'id':u'32565632156',u'size':775412,u'mimetype':u'application/pdf',u'status':u'CHANGED',u'version':3,u'parent_id':u'9873615',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False},
-                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'status': u'CHANGED', u'is_root': False, u'version': 1, u'filename':u'datos', u'parent_id': u'474411411', u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/documents/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': u'1478526', u'user': u'eyeID_EyeosUser_2',u'is_folder':True}]
+        array = [{u'user_eyeos':u'eyeID_EyeosUser_2', u'cloud':u'Stacksync', u'status': u'CHANGED', u'is_root': False, u'version': 1, u'filename':u'clients', u'parent_id': u'474411411', u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/documents/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': u'9873615', u'user': u'eyeID_EyeosUser_2',u'is_folder':True},
+                 {u'user_eyeos':u'eyeID_EyeosUser_2', u'cloud':u'Stacksync', u'filename':u'Client1.pdf',u'path':u'/documents/clients/',u'id':u'32565632156',u'size':775412,u'mimetype':u'application/pdf',u'status':u'CHANGED',u'version':3,u'parent_id':u'9873615',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False},
+                 {u'user_eyeos':u'eyeID_EyeosUser_2', u'cloud':u'Nec', u'status': u'CHANGED', u'is_root': False, u'version': 1, u'filename':u'datos', u'parent_id': u'474411411', u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/documents/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': u'1478526', u'user': u'eyeID_EyeosUser_2',u'is_folder':True}]
         array.sort()
         return array
 

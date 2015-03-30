@@ -50,7 +50,7 @@ class ProtocolTest (unittest.TestCase):
         self.protocol.select = Mock()
         self.protocol.select.return_value = []
         result = self.protocol.protocol(params)
-        self.protocol.select.assert_called_once_with(aux['lista'])
+        self.protocol.select.assert_called_once_with(aux['lista'][0])
         self.assertEquals('[]',result)
 
     """
@@ -110,11 +110,15 @@ class ProtocolTest (unittest.TestCase):
     should: deleteCorrect
     """
     def test_protocol_called_typeDeleteFolderAndList_deleteCorrect(self):
-        params = '{"type":"deleteFolder","lista":[{"id":"1234","user_eyeos":"eyeID_EyeosUser_2","path":"/documents/clients"}]}'
+        if settings[ 'NEW_CODE' ] == "true":
+            params = '{"type":"deleteFolder","lista":[{"id":"1234","user_eyeos":"eyeID_EyeosUser_2", "cloud":"Stacksync", "path":"/documents/clients"}]}'
+        else:
+            params = '{"type":"deleteFolder","lista":[{"id":"1234","user_eyeos":"eyeID_EyeosUser_2","path":"/documents/clients"}]}'
+        aux = json.loads(params)
         self.protocol.deleteFolder = Mock()
         self.protocol.deleteFolder.return_value = True
         result = self.protocol.protocol(params)
-        self.protocol.deleteFolder.assert_called_once_with("1234","eyeID_EyeosUser_2","/documents/clients")
+        self.protocol.deleteFolder.assert_called_once_with(aux[ 'lista' ][0])
         self.assertEquals('true',result)
 
     """
