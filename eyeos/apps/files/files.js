@@ -2273,6 +2273,22 @@ qx.Class.define('eyeos.files.Controller', {
             }
 
             return false;
+        },
+
+        __isCloud: function(path) {
+            var result = new Object();
+            result.isCloud = false;
+            var root = 'home://~'+ eyeos.getCurrentUserName()+'/Cloudspaces/';
+
+            if(this.__isCloudspaces(path) && !this.isRootCloudSpaces(path)) {
+                result.isCloud = true;
+                var cloud = path.substring(path.indexOf(root) + root.length);
+                if(cloud.indexOf('/') != -1) {
+                    cloud = cloud.substring(0,cloud.indexOf('/'));
+                }
+                result.cloud = cloud;
+            }
+            return result;
         }
 	}
 });
