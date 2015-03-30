@@ -1847,10 +1847,20 @@ qx.Class.define('eyeos.files.Controller', {
             this.__cloud = cloud;
             // Rename cloud folder, add dot
             // init delete script
+            var currentPath = this.getModel().getCurrentPath()[1];
             eyeos.callMessage(this.getApplication().getChecknum(), 'cleanCloud', cloud, function (result) {
-                console.log("getDeleteCloud", result);
-                this.getView().timeOutCloud(tr("Time out"), this.__cloud, true);
+                if(result.status === true && result.path) {
+                    this.getView().removeAll();
+                    this._initFiles();
+                    this._deleteFolderCloud(result.path);
+                } else {
+                    this.getView().timeOutCloud(tr("Time out"), this.__cloud, true);
+                }
             }, this);
+        },
+
+        _deleteFolderCloud: function(path) {
+            eyeos.callMessage(this.getApplication().getChecknum(), 'deleteFolderCloud', path);
         },
 
         __cancelCloud: function() {

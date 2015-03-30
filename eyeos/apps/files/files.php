@@ -1258,15 +1258,15 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             if ($apiManager->deleteMetadataUser($user->getId(), $cloud)) {
                 unset($_SESSION['request_token_' . $cloud . '_v2']);
                 unset($_SESSION['access_token_' . $cloud . '_v2']);
-                $path = "home://~" . $user->getName() . "/Cloudspaces/" . $cloud;
-                $folderToRename = FSI::getFile($path);
-                if ($folderToRename->renameTo('.' . $cloud)) {
-                    // Lanzar script 2n plano. Eliminar directorio oculto.
-                    $result['status'] = true;
-                    $result['session'] = $_SESSION;
-                } else {
-                    $result[ 'error' ] = $cloud . ' folder not renamed';
-                }
+                $pathOrg = "home://~" . $user->getName() . "/Cloudspaces/" . $cloud;
+                $pathDest = "home://~" . $user->getName() . "/Cloudspaces/." . $cloud;
+                $folderToRename1 = FSI::getFile($pathOrg);
+                $folderToRename2 = FSI::getFile($pathDest);
+                shell_exec('mv ' . AdvancedPathLib::getPhpLocalHackPath($folderToRename1->getRealFile()->getAbsolutePath()) . ' ' .
+                    AdvancedPathLib::getPhpLocalHackPath($folderToRename2->getRealFile()->getAbsolutePath()));
+                $result['status'] = true;
+                $result['path'] = AdvancedPathLib::getPhpLocalHackPath($folderToRename2->getRealFile()->getAbsolutePath());
+                return $result;
             } else {
                 $result[ 'error' ] = 'User metadata table and cloud not deleted';
             }
@@ -1433,6 +1433,13 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             throw new Exception($e->getMessage());
         }
         return $oauthUrl;
+    }
+
+    public static function deleteFolderCloud($path)
+    {
+        if(file_exists($path)) {
+            shell_exec('rm -r ' . $path);
+        }
     }
 }
 ?>
