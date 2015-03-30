@@ -214,16 +214,20 @@ class OauthCredentials:
 if __name__ == "__main__":
     if settings[ 'NEW_CODE' ] == "true":
         result = None
+
         if len(sys.argv) == 2:
             params = json.loads(str(sys.argv[1]))
+
             if params.has_key( 'config' ) and params[ 'config' ].has_key( 'cloud' ):
                 cloud = params[ 'config' ][ 'cloud' ]
+
                 if settings[ 'Clouds' ].has_key( cloud ):
                     settingsCloud = settings[ 'Clouds' ][ cloud ]
                     if params[ 'config' ].has_key( 'type' ):
                         type = params[ 'config' ][ 'type' ]
                         if type == "oauthUrl":
                             result = json.dumps(settingsCloud[ 'urls' ][ 'OAUTH_URL' ])
+
                     else:
                         oauthCredentials = OauthCredentials(settingsCloud[ 'urls' ][ 'REQUEST_TOKEN_URL' ],
                                                             settingsCloud[ 'urls' ][ 'ACCESS_TOKEN_URL' ],
@@ -232,18 +236,30 @@ if __name__ == "__main__":
                         key = settingsCloud[ 'consumer' ][ 'key' ]
                         secret = settingsCloud[ 'consumer' ][ 'secret' ]
                         callbackUrl = settingsCloud[ 'urls' ][ 'CALLBACK_URL' ]
-                        if params.has_key("verifier") and params.has_key('token'):
+                        if params.has_key( 'verifier' ) and params.has_key( 'token' ):
                             token_key = params['token']['key']
                             token_secret = params['token']['secret']
                             verifier = params['verifier']
                             oauth = OAuthRequest(key, client_secret=secret, resource_owner_key=token_key, resource_owner_secret=token_secret, verifier=verifier, signature_method=SIGNATURE_PLAINTEXT)
                             result = oauthCredentials.getAccessToken(oauth)
-                        elif not (params.has_key( 'metadata' ) or params.has_key( 'verifier' ) or params.has_key( 'token' )):
+
+                        elif params.has_key( 'metadata' ) and params.has_key('token'):
+                            token_key = params[ 'token' ][ 'key' ]
+                            token_secret = params[ 'token' ][ 'secret' ]
+                            metadata = params[ 'metadata' ]
+                            type = metadata[ 'type' ]
+                            oauth = OAuthRequest(key, client_secret=secret, resource_owner_key=token_key, resource_owner_secret=token_secret)
+
+                            if type == 'get':
+                                result = oauthCredentials.getMetadata(oauth, metadata[ 'file' ], metadata[ 'id' ], metadata[ 'contents' ])
+
+                        elif not(params.has_key( 'metadata' ) or params.has_key( 'verifier' ) or params.has_key( 'token' )):
                             oauth = OAuthRequest(key, client_secret=secret, callback_uri=callbackUrl, signature_method=SIGNATURE_PLAINTEXT)
                             result = oauthCredentials.getRequestToken(oauth)
 
             if params.has_key( 'config' ) and params[ 'config' ].has_key( 'type' ):
                 type = params[ 'config' ][ 'type' ]
+
                 if type == "cloudsList":
                     result = json.dumps(settings[ 'Clouds' ].keys())
 
