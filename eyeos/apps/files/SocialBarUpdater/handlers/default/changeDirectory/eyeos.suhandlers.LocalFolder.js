@@ -51,7 +51,7 @@ qx.Class.define('eyeos.suhandlers.LocalFolder', {
 			this.getSocialBar().removeTab('Share');
 		},
         _createContentCloudSpacesTab: function() {
-            eyeos.callMessage(this.getParams()['checknum'], 'getCloudsList', null, function (clouds) {
+            /*eyeos.callMessage(this.getParams()['checknum'], 'getCloudsList', null, function (clouds) {
                 // Update socialbar handlers data struct
                 this._cloudsBox = new eyeos.socialbar.CloudsBox(clouds, this._controller);
 
@@ -60,7 +60,10 @@ qx.Class.define('eyeos.suhandlers.LocalFolder', {
                     this.getSocialBar().getTab('Clouds').removeAll();
                     this.getSocialBar().getTab('Clouds').addBox(this._cloudsBox, 'cloudBox');
                 }
-            }, this);
+            }, this);*/
+
+            this._cloudsBox = new eyeos.socialbar.CloudsBox(this._controller,this.getParams()['checknum']);
+            this.getSocialBar().getTab('Clouds').addBox(this._cloudsBox, 'cloudBox');
         }
 	}
 });

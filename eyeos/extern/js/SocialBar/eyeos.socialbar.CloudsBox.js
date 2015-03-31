@@ -47,8 +47,9 @@ qx.Class.define('eyeos.socialbar.CloudsBox', {
      * Constructor of a CloudsBox
      *
      */
-    construct: function (clouds, controller) {
+    construct: function (controller,checknum) {
         this._controller = controller;
+        this._checknum = checknum;
         this.base(arguments);
         this.set({
             marginTop: 20,
@@ -57,7 +58,12 @@ qx.Class.define('eyeos.socialbar.CloudsBox', {
             layout: new qx.ui.layout.HBox(),
             decorator: null
         });
-        this._buildGui(clouds);
+
+        this.addListener('appear',function() {
+            this._loadClouds();
+        },this);
+
+        this._buildGui();
     },
 
     members: {
@@ -70,8 +76,8 @@ qx.Class.define('eyeos.socialbar.CloudsBox', {
          *
          * @param clouds
          */
-        _buildGui: function (clouds) {
-            this._buildCloudsBox(clouds);
+        _buildGui: function () {
+            this._buildCloudsBox();
         },
 
         /**
@@ -79,7 +85,7 @@ qx.Class.define('eyeos.socialbar.CloudsBox', {
          *
          * @param clouds
          */
-        _buildCloudsBox: function (clouds) {
+        _buildCloudsBox: function () {
             this._layoutCloudsBox = new qx.ui.container.Composite().set({
                 allowGrowX: false,
                 allowGrowY: true,
@@ -99,7 +105,17 @@ qx.Class.define('eyeos.socialbar.CloudsBox', {
             });
             this._layoutCloudsBox.add(titleLabel);
 
-            for (var i = 0; i < clouds.length; i++) {
+            var cursor = new qx.ui.basic.Image().set({
+                width: 42,
+                height: 42,
+                source: "index.php?extern=images/loading.gif",
+                marginTop: 10,
+                alignX: 'center'
+            });
+
+            this._layoutCloudsBox.add(cursor);
+
+            /*for (var i = 0; i < clouds.length; i++) {
                 var layoutCloud = new qx.ui.container.Composite().set({
                     allowGrowX: false,
                     allowGrowY: true,
@@ -141,8 +157,62 @@ qx.Class.define('eyeos.socialbar.CloudsBox', {
                 }
 
                 this._layoutCloudsBox.add(layoutCloud);
-            }
+            }*/
+        },
+        _loadClouds: function() {
+            this._controller.loadClouds(this,this._checknum);
+        },
+        insertClouds: function(clouds) {
 
+            if(this._layoutCloudsBox && this._layoutCloudsBox.getChildren().length > 1) {
+                this._layoutCloudsBox.removeAt(this._layoutCloudsBox.getChildren().length - 1);
+
+                if (clouds && clouds.length > 0) {
+                    for (var i = 0; i < clouds.length; i++) {
+                        var layoutCloud = new qx.ui.container.Composite().set({
+                            allowGrowX: false,
+                            allowGrowY: true,
+                            layout: new qx.ui.layout.HBox()
+                        });
+
+                        var linkCloud = new qx.ui.basic.Label().set({
+                            value: clouds[i].name,
+                            rich: true,
+                            padding: 0,
+                            margin: 0,
+                            maxWidth: 190,
+                            width: 190,
+                            minWidth: 180
+                        });
+                        linkCloud.addListener('mouseover', function () {
+                            this._layoutCloudsBox.setCursor('pointer');
+                        }, this);
+                        linkCloud.addListener('mouseout', function () {
+                            this._layoutCloudsBox.setCursor('default');
+                        }, this);
+                        linkCloud.addListener('click', function (e) {
+                            var isActive = false;
+                            if (e.getCurrentTarget().getLayoutParent().getChildren().length == 2) {
+                                isActive = true;
+                            }
+                            self._controller.createDialogueCloud(e.getTarget().getValue(), isActive);
+                        }, this);
+                        layoutCloud.add(linkCloud);
+
+                        if (clouds[i].isActive === true) {
+                            var image = new qx.ui.basic.Image(this._imageCheck).set({
+                                allowGrowX: false,
+                                allowGrowY: false,
+                                alignX: 'right',
+                                alignY: 'middle'
+                            });
+                            layoutCloud.add(image);
+                        }
+
+                        this._layoutCloudsBox.add(layoutCloud);
+                    }
+                }
+            }
         }
     }
 });

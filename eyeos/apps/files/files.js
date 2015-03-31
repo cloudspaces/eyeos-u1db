@@ -2335,6 +2335,13 @@ qx.Class.define('eyeos.files.Controller', {
                 result.cloud = cloud;
             }
             return result;
+        },
+
+        loadClouds: function(cloudBox,checknum) {
+             eyeos.callMessage(checknum, 'getCloudsList', null, function (clouds) {
+                    cloudBox.insertClouds(clouds);
+             }, this);
         }
+
 	}
 });

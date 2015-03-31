@@ -5,6 +5,8 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
         if(self::singleInstanceCheck()) exit;
 
+        self::initClouds();
+
 		//if ($context->getIncludeBody()) {
 			$buffer = '';
 
@@ -1442,6 +1444,11 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         if(file_exists($path)) {
             shell_exec('rm -r ' . $path);
         }
+    }
+
+    public static function initClouds()
+    {
+       self::getCloudsList();
     }
 }
 ?>
