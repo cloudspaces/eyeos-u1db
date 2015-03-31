@@ -5,6 +5,7 @@
  * Date: 23/05/14
  * Time: 13:32
  */
+require_once("/var/www/eyeos/eyeos/system/Frameworks/Store/Managers/OAuthManager.php");
 
 class OAuthManagerTest extends PHPUnit_Framework_TestCase
 {
@@ -114,6 +115,28 @@ class OAuthManagerTest extends PHPUnit_Framework_TestCase
             ->will($this->returnValue(true));
         $this->sut->deleteToken($token);
     }
+
+
+
+    /**
+     * method: getTokenUserCloud
+     * when: called
+     * with: user, cloud
+     * should: returnToken
+     */
+    /*public function test_getTokenUserCloud_called_user_returnToken()
+    {
+        $user = 'eyeID_EyeosUser_15';
+        $cloud = 'Stacksync';
+        echo "Hola";
+        $this->oauthProviderMock->expects($this->once())
+
+            ->method("getToken")
+            ->with($user, $cloud)
+            ->will($this->returnValue("ABCDSESSS"));
+
+        $this->sut->getTokenUserCloud($user, $cloud);
+    }*/
 }
 
 

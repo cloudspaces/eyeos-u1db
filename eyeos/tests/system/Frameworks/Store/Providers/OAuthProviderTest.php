@@ -165,6 +165,32 @@ class OAuthProviderTest extends PHPUnit_Framework_TestCase
         $token->setUserID($userId);
         return $token;
     }
+
+    /*private function getTokenUser($userId, $cloud)
+    {
+        $token = new Token();
+        $token->setUserID($userId);
+        $token->setCloudspaceName($cloud);
+        return $token;
+    }*/
+
+
+    /**
+     * method: getToken
+     * when: called
+     * with: user
+     * should: returnToken
+     */
+    /*public function test_getTokenUserCloud_called_user_returnToken()
+    {
+        $userId = 'eyeID_EyeosUser_15';
+        $cloud = 'Stacksync';
+        $token = $this->getTokenUser($userId, $cloud);
+        $this->daoMock->expects($this->once())
+            ->method("read")
+            ->with($token);
+        $this->sut->getTokenUserCloud($userId, $token);
+    }*/
 }
 
 ?>
