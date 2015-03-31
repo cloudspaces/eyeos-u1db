@@ -109,7 +109,8 @@ qx.Class.define('eyeos.files.HeaderBar', {
 				
 				item.addListener('click',  function () {
 					if (!this._dropped) {
-                        if(this.getManager().getViewManager().getController().__isStacksync(this.getPath())) {
+                        var cloud = this.getManager().getViewManager().getController().isCloud(this.getPath());
+                        if(cloud.isCloud === true) {
                             this.getManager().getViewManager().getController().openCursorLoad();
                         }
 						this.getManager().getViewManager().getController().getModel().setCurrentPath(['path', this.getPath()]);

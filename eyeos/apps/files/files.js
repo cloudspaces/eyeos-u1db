@@ -651,10 +651,17 @@ qx.Class.define('eyeos.files.Controller', {
 		_browsePath: function(path, addToHistory,refresh) {
             if (!this.getCloseCompleted()) {
                 this.closeTimer();
-                if (!this._timer && this.__isStacksync(path)) {
+                var cloud = this.isCloud(path);
+
+                if(this.isRootCloudSpaces(path)) {
+                    this._metadatas = [];
+                }
+
+                if (!this._timer && cloud.isCloud === true) {
                     var params = new Object();
                     params.path = path;
-                    params.id = this.__getFileIdFolder(path);
+                    params.id = this.__getFileIdFolder(path,cloud.cloud);
+                    params.cloud = cloud.cloud;
 
                     if(params.id !== null) {
                         eyeos.callMessage(this.getApplication().getChecknum(), 'getMetadata', params, function (results) {
@@ -1330,9 +1337,15 @@ qx.Class.define('eyeos.files.Controller', {
 					this.getModel().setHistoryIndex(this.getModel().getHistoryIndex() - 1);
 					this.getModel().setCurrentPath(this.getModel().getHistory()[parseInt(this.getModel().getHistoryIndex() - 1)]);
 				}
-                if(this.__isStacksync(this.getModel().getCurrentPath()[1])) {
+
+                var cloud = this.isCloud(this.getModel().getCurrentPath()[1]);
+                if(cloud.isCloud === true) {
                     this.openCursorLoad();
                 }
+
+                /*if(this.__isStacksync(this.getModel().getCurrentPath()[1])) {
+                    this.openCursorLoad();
+                }*/
 				this._browse(false);
 			} else {
 				this.getModel().setHistoryIndex(0);
@@ -1349,9 +1362,16 @@ qx.Class.define('eyeos.files.Controller', {
             if(currentPath) {
                 this.getModel().setHistoryIndex(this.getModel().getHistoryIndex() + 1);
 			    this.getModel().setCurrentPath(currentPath);
-                if(this.__isStacksync(this.getModel().getCurrentPath()[1])) {
+
+                var cloud = this.isCloud(this.getModel().getCurrentPath()[1]);
+                if(cloud.isCloud === true) {
                     this.openCursorLoad();
                 }
+
+                /*if(this.__isStacksync(this.getModel().getCurrentPath()[1])) {
+                    this.openCursorLoad();
+                }*/
+
 			    this._browse(false);
             }
 		},
@@ -1379,8 +1399,34 @@ qx.Class.define('eyeos.files.Controller', {
             return false;
         },
 
-        __getFileIdFolder: function(path) {
+        __getFileIdFolder: function(path,cloud) {
             var name = path.substring(path.lastIndexOf('/')+1);
+            var father = path === 'home://~'+ eyeos.getCurrentUserName()+'/Cloudspaces/' + cloud? path:path.substring(0,path.lastIndexOf('/'));
+            var fileIdFolder = null;
+
+            if (path !== 'home://~'+ eyeos.getCurrentUserName()+'/Cloudspaces/' + cloud) {
+                if(this._metadatas.length >0) {
+                    for(var i in this._metadatas) {
+                        if(this._metadatas[i].path === father) {
+                            if(this._metadatas[i].metadata.contents && this._metadatas[i].metadata.contents.length > 0) {
+                                for(var j in this._metadatas[i].metadata.contents) {
+                                    if(this._metadatas[i].metadata.contents[j].filename === name) {
+                                        fileIdFolder = this._metadatas[i].metadata.contents[j].id;
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+            } else {
+                fileIdFolder = 0;
+            }
+
+            return fileIdFolder;
+
+
+            /*var name = path.substring(path.lastIndexOf('/')+1);
             var father = path === 'home://~'+ eyeos.getCurrentUserName()+'/Stacksync'? path:path.substring(0,path.lastIndexOf('/'));
             var fileIdFolder = null;
 
@@ -1403,7 +1449,7 @@ qx.Class.define('eyeos.files.Controller', {
                 fileIdFolder = 0;
             }
 
-            return fileIdFolder;
+            return fileIdFolder;*/
         },
 
         __insertMetadata: function(metadata,path)
@@ -2275,7 +2321,7 @@ qx.Class.define('eyeos.files.Controller', {
             return false;
         },
 
-        __isCloud: function(path) {
+        isCloud: function(path) {
             var result = new Object();
             result.isCloud = false;
             var root = 'home://~'+ eyeos.getCurrentUserName()+'/Cloudspaces/';

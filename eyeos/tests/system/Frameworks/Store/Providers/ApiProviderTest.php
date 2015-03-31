@@ -13,6 +13,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     private $token;
     private $exception;
     private $permission;
+    private $cloud;
 
     public function setUp()
     {
@@ -23,6 +24,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->token->secret = "EFGH";
         $this->exception = '{"error":-1}';
         $this->permission = '{"error":403}';
+        $this->cloud = 'Stacksync';
     }
 
     public function tearDown()
@@ -39,7 +41,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_getMetadata_called_tokenAndfileAndId_returnCorrectData()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"get","file":true,"id":"123456","contents":null}}';
+        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"get","file":true,"id":"123456","contents":null}}';
         $metadataOut = '{"name":"Client1.pdf","path":"/documents/clients/Client1.pdf","id":"32565632156","size":775412,"mimetype":"application/pdf","status":"DELETED","version":3,"parent_id":"-348534824681","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}';
         $this->exerciseGetMetadata($metadataIn,$metadataOut,$metadataOut,true,123456);
     }
@@ -52,7 +54,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_getMetadata_called_tokenAndFolderAndId_returnCorrectData()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"get","file":false,"id":"9873615","contents":null}}';
+        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"get","file":false,"id":"9873615","contents":null}}';
         $metadataOut = '{"name":"clients","path":"/documents/clients","id":"9873615","status":"NEW","version":1,"parent_id":"-348534824681","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false}';
         $this->exerciseGetMetadata($metadataIn,$metadataOut,$metadataOut,false,9873615);
     }
@@ -65,7 +67,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_getMetadata_called_tokenAndFolderAndIdAndContents_returnCorrectData()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"get","file":false,"id":"9873615","contents":true}}';
+        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"get","file":false,"id":"9873615","contents":true}}';
         $metadataOut = '{"name":"clients","path":"/documents/clients","id":"9873615","status":"NEW","version":1,"parent_id":"-348534824681","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"contents":[{"name":"Client1.pdf","path":"/documents/clients/Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"DELETED","version":3,"parent":-348534824681,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false}]}';
         $this->exerciseGetMetadata($metadataIn,$metadataOut,$metadataOut,false,9873615,true);
 
@@ -79,7 +81,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_getMetadata_called_tokenAndFolderAndId_returnException()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"get","file":false,"id":"9873615","contents":null}}';
+        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"get","file":false,"id":"9873615","contents":null}}';
         $metadataOut = 'false';
         $this->exerciseGetMetadata($metadataIn,$metadataOut,$this->exception,false,9873615);
     }
@@ -92,7 +94,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_getMetadata_called_tokenAndFolderAndId_returnPermissionDenied()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"get","file":false,"id":"9873615","contents":null}}';
+        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"get","file":false,"id":"9873615","contents":null}}';
         $metadataOut = '403';
         $this->exerciseGetMetadata($metadataIn,$metadataOut,$this->permission,false,9873615);
     }
@@ -105,7 +107,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_updateMetadata_called_tokenAndFileAndIdAndNameAndParent_returnMetadataRename()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":"32565632156","filename":"Winter2012_renamed.jpg","parent_id":"12386548974"}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":"32565632156","filename":"Winter2012_renamed.jpg","parent_id":"12386548974"}}';
         $metadataOut = '{"name":"Winter2012_renamed.jpg","path":"/documents/clients/","id":"32565632156","size":775412,"mimetype":"application/pdf","status":"RENAMED","version":2,"parent":"12386548974","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}';
         $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$metadataOut,true,32565632156,"Winter2012_renamed.jpg",12386548974);
     }
@@ -118,7 +120,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_updateMetadata_called_tokenAndFileAndIdAndParent_returnMetadataMove()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":"32565632156","filename":null,"parent_id":"123456"}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":"32565632156","filename":null,"parent_id":"123456"}}';
         $metadataOut = '{"name":"Winter2012_renamed.jpg","path":"/documents/clients/","id":"32565632156","size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent":"123456","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}';
         $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$metadataOut,true,32565632156,null,123456);
     }
@@ -131,7 +133,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_updateMetadata_called_tokenAndFileAndId_returnMetadataMove()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":"32565632156","filename":null,"parent_id":"null"}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":"32565632156","filename":null,"parent_id":"null"}}';
         $metadataOut = '{"name":"Winter2012_renamed.jpg","path":"/documents/clients/","id":"32565632156","size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}';
         $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$metadataOut,true,32565632156);
     }
@@ -144,7 +146,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_updateMeta_called_tokenAndFolderAndIdAndNameAndParent_returnMetadataRename()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":"Winter2012_renamed","parent_id":"12386548974"}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":"Winter2012_renamed","parent_id":"12386548974"}}';
         $metadataOut = '{"name":"Winter2012_renamed","path":"/documents/clients/","id":"32565632156","status":"CHANGED","version":2,"parent":"12386548974","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false}';
         $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$metadataOut,false,32565632156,"Winter2012_renamed",12386548974);
     }
@@ -157,7 +159,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_updateMetadata_called_tokenAndFolderAndIdAndParent_returnMetadataMove()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"123456"}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"123456"}}';
         $metadataOut = '{"name":"Winter2012_renamed","path":"/documents/clients/","id":"32565632156","status":"CHANGED","version":2,"parent":"123456","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false}';
         $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$metadataOut,false,32565632156,null,123456);
     }
@@ -170,7 +172,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_updateMetadata_called_tokenAndFolderAndId_returnMetadataMove()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"null"}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"null"}}';
         $metadataOut = '{"name":"Winter2012_renamed","path":"/documents/clients/","id":"32565632156","status":"CHANGED","version":2,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false}';
         $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$metadataOut,false,32565632156);
     }
@@ -183,7 +185,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_updateMetadata_called_tokenAndFolderAndId_returnException()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"null"}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"null"}}';
         $metadataOut = 'false';
         $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$this->exception,false,32565632156);
     }
@@ -196,7 +198,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_updateMetadata_called_tokenAndFolderAndId_returnPermissionDenied()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"null"}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"null"}}';
         $metadataOut = '403';
         $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$this->permission,false,32565632156);
     }
@@ -209,7 +211,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_createMetadata_called_tokenAndFileAndNameAndParentAndPathAbsolute_returnCorrectData()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":true,"filename":"Client1.pdf","parent_id":"-348534824681","path":"\/home\/eyeos\/Client1.pdf"}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":true,"filename":"Client1.pdf","parent_id":"-348534824681","path":"\/home\/eyeos\/Client1.pdf"}}';
         $metadataOut = '{"filename":"Client1.pdf","id":"32565632156","parent_id":"-348534824681","user":"eyeos"}';
         $pathAbsolute = '/home/eyeos/Client1.pdf';
         $this->exerciseCreateMetadata($metadataIn,$metadataOut,$metadataOut,true,'Client1.pdf',-348534824681,$pathAbsolute);
@@ -223,7 +225,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_createMetadata_called_tokenAndFileAndNameAndPathAbsolute_returnCorrectData()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":true,"filename":"Client1.pdf","parent_id":"null","path":"\/home\/eyeos\/Client1.pdf"}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":true,"filename":"Client1.pdf","parent_id":"null","path":"\/home\/eyeos\/Client1.pdf"}}';
         $metadataOut = '{"filename":"Client1.pdf","id":"32565632156","parent_id":"null","user":"eyeos"}';
         $pathAbsolute = '/home/eyeos/Client1.pdf';
         $this->exerciseCreateMetadata($metadataIn,$metadataOut,$metadataOut,true,'Client1.pdf',null,$pathAbsolute);
@@ -237,7 +239,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_createMetadata_called_tokenAndFolderAndNameAndParentAndPathAbsolute_returnCorrectData()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"filename":"clients","parent_id":"-348534824681","path":null}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"filename":"clients","parent_id":"-348534824681","path":null}}';
         $metadataOut = '{"filename":"clients","id":"9873615","parent_id":"-348534824681","user":"eyeos","is_root":false}';
         $this->exerciseCreateMetadata($metadataIn,$metadataOut,$metadataOut,false,"clients",-348534824681);
     }
@@ -250,7 +252,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_createMetadata_called_tokenAndFolderAndName_returnCorrectData()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"filename":"clients","parent_id":"null","path":null}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"filename":"clients","parent_id":"null","path":null}}';
         $metadataOut = '{"filename":"clients","id":"9873615","parent_id":"null","user":"eyeos","is_root":false}';
         $this->exerciseCreateMetadata($metadataIn,$metadataOut,$metadataOut,false,"clients");
     }
@@ -263,7 +265,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_createMetadata_called_tokenAndFolderAndName_returnException()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"filename":"clients","parent_id":"null","path":null}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"filename":"clients","parent_id":"null","path":null}}';
         $metadataOut = 'false';
         $this->exerciseCreateMetadata($metadataIn,$metadataOut,$this->exception,false,"clients");
     }
@@ -276,7 +278,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_createMetadata_called_tokenAndFolderAndName_returnPermissionDenied()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"filename":"clients","parent_id":"null","path":null}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"filename":"clients","parent_id":"null","path":null}}';
         $metadataOut = '403';
         $this->exerciseCreateMetadata($metadataIn,$metadataOut,$this->permission,false,"clients");
     }
@@ -289,7 +291,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_uploadMetadata_called_tokenAndIdAndPath_returnCorrect()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"upload","id":"1234561","path":"\/var\/www\/eyeos\/client.pdf"}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"upload","id":"1234561","path":"\/var\/www\/eyeos\/client.pdf"}}';
         $metadataOut = '{"status":true}';
         $this->exerciseUploadMetadata($metadataIn,$metadataOut,$metadataOut,1234561,"/var/www/eyeos/client.pdf");
     }
@@ -302,7 +304,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_uploadMetadata_called_tokenAndIdAndPath_returnException()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"upload","id":"1234561","path":"\/var\/www\/eyeos\/client.pdf"}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"upload","id":"1234561","path":"\/var\/www\/eyeos\/client.pdf"}}';
         $metadataOut = 'false';
         $this->exerciseUploadMetadata($metadataIn,$metadataOut,$this->exception,1234561,"/var/www/eyeos/client.pdf");
     }
@@ -315,7 +317,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_uploadMetadata_called_tokenAndIdAndPath_returnPermissionDenied()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"upload","id":"1234561","path":"\/var\/www\/eyeos\/client.pdf"}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"upload","id":"1234561","path":"\/var\/www\/eyeos\/client.pdf"}}';
         $metadataOut = '403';
         $this->exerciseUploadMetadata($metadataIn,$metadataOut,$this->permission,1234561,"/var/www/eyeos/client.pdf");
     }
@@ -367,7 +369,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_deleteMetadata_called_tokenAndFileAndId_returnCorrectData()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"delete","file":true,"id":"32565632156"}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"delete","file":true,"id":"32565632156"}}';
         $metadataOut = '{"name":"Client1.pdf","path":"/documents/clients/Client1.pdf","id":"32565632156","size":775412,"mimetype":"application/pdf","status":"DELETED","version":3,"parent_id":"-348534824681","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}';
         $this->exerciseDeleteMetadata($metadataIn,$metadataOut,$metadataOut,true,32565632156);
     }
@@ -380,7 +382,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_deleteMetadata_called_tokenAndFolderAndId_returnCorrectData()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"delete","file":false,"id":"9873615"}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"delete","file":false,"id":"9873615"}}';
         $metadataOut = '{"name":"clients","path":"/documents/clients","id":"9873615","status":"DELETED","version":3,"parent_id":"-348534824681","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false}';
         $this->exerciseDeleteMetadata($metadataIn,$metadataOut,$metadataOut,false,9873615);
     }
@@ -393,7 +395,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_deleteMetadata_called_tokenAndFolderAndId_returnException()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"delete","file":false,"id":"9873615"}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"delete","file":false,"id":"9873615"}}';
         $metadataOut = 'false';
         $this->exerciseDeleteMetadata($metadataIn,$metadataOut,$this->exception,false,9873615);
     }
@@ -406,7 +408,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_deleteMetadata_called_tokenAndFolderAndId_returnPermissionDenied()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"delete","file":false,"id":"9873615"}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"delete","file":false,"id":"9873615"}}';
         $metadataOut = '403';
         $this->exerciseDeleteMetadata($metadataIn,$metadataOut,$this->permission,false,9873615);
     }
@@ -419,7 +421,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_listVersions_called_tokenAndId_returnCorrectData()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listVersions","id":"153"}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listVersions","id":"153"}}';
         $metadataOut = '{"status": "CHANGED", "mimetype": "text/plain", "versions": [{"status": "CHANGED", "mimetype": "text/plain", "checksum": 2499810342, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 4, "is_folder": false, "chunks": [], "id": 155, "size": 61}, {"status": "RENAMED", "mimetype": "text/plain", "checksum": 1825838054, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 3, "is_folder": false, "chunks": [], "id": 155, "size": 59}, {"status": "RENAMED", "mimetype": "text/plain", "checksum": 1825838054, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 2, "is_folder": false, "chunks": [], "id": 155, "size": 59}, {"status": "NEW", "mimetype": "text/plain", "checksum": 1825838054, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 1, "is_folder": false, "chunks": [], "id": 155, "size": 59}], "checksum": 2499810342, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": "null", "version": 4, "is_folder": false, "chunks": [], "id": 155, "size": 61}';
         $check = '[{"status": "CHANGED", "mimetype": "text/plain", "checksum": 2499810342, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 4, "is_folder": false, "chunks": [], "id": 155, "size": 61}, {"status": "RENAMED", "mimetype": "text/plain", "checksum": 1825838054, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 3, "is_folder": false, "chunks": [], "id": 155, "size": 59}, {"status": "RENAMED", "mimetype": "text/plain", "checksum": 1825838054, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 2, "is_folder": false, "chunks": [], "id": 155, "size": 59}, {"status": "NEW", "mimetype": "text/plain", "checksum": 1825838054, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 1, "is_folder": false, "chunks": [], "id": 155, "size": 59}]';
         $this->exerciseListVersion($metadataIn,$metadataOut,$check,153);
@@ -434,7 +436,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_listVersions_called_tokenAndId_returnPermissionDenied()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listVersions","id":"9873615"}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listVersions","id":"9873615"}}';
         $metadataOut = '403';
         $this->exerciseListVersion($metadataIn,$metadataOut,$this->permission,9873615);
     }
@@ -447,7 +449,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_listVersions_called_tokenAndId_returnException()
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listVersions","id":"9873615"}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listVersions","id":"9873615"}}';
         $metadataOut = 'false';
         $this->exerciseListVersion($metadataIn,$metadataOut,$this->exception,9873615);
     }
@@ -497,7 +499,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     public function test_getListUsersShare_called_tokenAndId_returnCorrectData()
     {
         $id = 153;
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listUsersShare","id":"153"}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listUsersShare","id":"153"}}';
         $metadataOut = '[{"joined_at": "2014-05-27", "is_owner": true, "name": "tester1", "email": "tester1@test.com"}]';
         $this->exerciseListUsersShare($metadataIn,$metadataOut,$metadataOut,$id);
     }
@@ -511,7 +513,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     public function test_getListUsersShare_called_tokenAndId_returnPermissionDenied()
     {
         $id = 153;
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listUsersShare","id":"153"}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listUsersShare","id":"153"}}';
         $metadataOut = '403';
         $this->exerciseListUsersShare($metadataIn,$metadataOut,$this->permission,$id);
     }
@@ -525,7 +527,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     public function test_getListUsersShare_called_tokenAndId_returnException()
     {
         $id = 153;
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listUsersShare","id":"153"}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listUsersShare","id":"153"}}';
         $metadataOut = 'false';
         $this->exerciseListUsersShare($metadataIn,$metadataOut,$this->exception,$id);
     }
@@ -540,7 +542,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     {
         $id = 153;
         $list = array("a@a.com","b@b.com");
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"]}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"]}}';
         $metadataOut = 'true';
         $this->exerciseShareFolder($metadataIn,$metadataOut,'{"status":true}',$id,$list);
     }
@@ -555,7 +557,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     {
         $id = 153;
         $list = array("a@a.com","b@b.com");
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"]}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"]}}';
         $metadataOut = '403';
         $this->exerciseShareFolder($metadataIn,$metadataOut,$this->permission,$id,$list);
     }
@@ -570,7 +572,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     {
         $id = 153;
         $list = array("a@a.com","b@b.com");
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"]}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"]}}';
         $metadataOut = 'false';
         $this->exerciseShareFolder($metadataIn,$metadataOut,$this->exception,$id,$list);
     }
@@ -598,7 +600,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_getOauthUrlCloud_called_ValidCloud_returnList()
     {
-        $metadataIn = '{"config":{"cloud":"Stacksync","type":"oauthUrl"}}';
+        $metadataIn = '{"config":{"type":"oauthUrl","cloud":"Stacksync"}}';
         $metadataOut = 'http://api.stacksync.com:8080/oauth/authorize?oauth_token=';
         $this->exerciseMockMetadata($metadataIn, $metadataOut);
         $actual = $this->sut->getOauthUrlCloud("Stacksync");
@@ -608,7 +610,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     private function exerciseGetMetadata($metadataIn,$metadataOut,$check,$file,$id,$contents = null)
     {
         $this->exerciseMockMetadata($metadataIn,$metadataOut);
-        $result = $this->sut->getMetadata($this->token,$file,$id,$contents);
+        $result = $this->sut->getMetadata($this->cloud,$this->token,$file,$id,$contents);
         $this->assertEquals(json_decode($check),$result);
     }
 
@@ -635,7 +637,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
 
     private function exerciseDownloadMetadata($metadataOut,$check,$id,$path)
     {
-        $metadataIn = '{"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"download","id":"1234561","path":"' . $path . '"}}';
+        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"download","id":"1234561","path":"' . $path . '"}}';
         $metadataIn = json_decode($metadataIn);
         $metadataIn = json_encode($metadataIn);
         $this->exerciseMockMetadata($metadataIn,$metadataOut);
@@ -682,6 +684,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     private function exerciseGetFileVersionData($metadataOut,$check)
     {
         $metadataIn = new stdClass();
+        $metadataIn->config = new stdClass();
         $metadataIn->token = new stdClass();
         $metadataIn->token->key = "ABCD";
         $metadataIn->token->secret = "EFGH";

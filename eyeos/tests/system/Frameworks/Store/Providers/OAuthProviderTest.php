@@ -119,6 +119,7 @@ class OAuthProviderTest extends PHPUnit_Framework_TestCase
         $this->daoMock->expects($this->once())
             ->method("read")
             ->with($token);
+
         $this->sut->getToken($userId);
     }
 

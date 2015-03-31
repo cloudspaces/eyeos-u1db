@@ -365,9 +365,13 @@ qx.Class.define('eyeos.files.IconView', {
                 var file = this.getFile();
 				var absolutePath = file.getAbsolutePath();
 				if (file.getType() == 'folder') {
-                    if(self.getViewManager().getController().__isStacksync(file.getAbsolutePath())) {
+                    var cloud = self.getViewManager().getController().isCloud(file.getAbsolutePath());
+                    if(cloud.isCloud === true) {
                         this.getManager().getViewManager().getController().openCursorLoad();
                     }
+                    /*if(self.getViewManager().getController().__isStacksync(file.getAbsolutePath())) {
+                        this.getManager().getViewManager().getController().openCursorLoad();
+                    }*/
 					this.getManager().getViewManager().getController()._browsePath(absolutePath, true);
 				} else {
 					var checknum = this.getManager().getViewManager().getController().getApplication().getChecknum();

@@ -17,6 +17,8 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     private $token;
     private $path;
     private $user;
+    private $cloud;
+    private $pathCloud;
 
     public function setUp()
     {
@@ -30,6 +32,8 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->token->secret = 'ABCD';
         $this->path = "home://~eyeos/Stacksync";
         $this->user = 'eyeID_EyeosUser_2';
+        $this->cloud = 'Stacksync';
+        $this->pathCloud = "home://~eyeos/Cloudspaces/Stacksync";
     }
 
     public function tearDown()
@@ -59,12 +63,13 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $file = new stdClass();
         $file->id = "null";
         $file->user_eyeos = $this->user;
+        $file->cloud = $this->cloud;
         $file->path = '/';
         array_push($u1dbIn->lista,$file);
         $metadata = '{"filename":"root","id":"null","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":true,"is_folder":true,"contents":[{"filename":"Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"DELETED","version":3,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false},{"filename":"client2","id":44444755856,"size":775412,"mimetype":"application/pdf","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true},{"filename":"Client3.pdf","id":11165632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false}]}';
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
-            ->with($this->token,$isfile,$id,$contents)
+            ->with($this->cloud,$this->token,$isfile,$id,$contents)
             ->will($this->returnValue(json_decode($metadata)));
 
         $this->accessorProviderMock->expects($this->at(0))
@@ -74,18 +79,18 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->filesProviderMock->expects($this->at(0))
             ->method('createFile')
-            ->with($this->path . "/client2",true)
+            ->with($this->pathCloud . "/client2",true)
             ->will($this->returnValue(true));
 
         $this->filesProviderMock->expects($this->at(1))
             ->method('createFile')
-            ->with($this->path . "/Client3.pdf",false)
+            ->with($this->pathCloud . "/Client3.pdf",false)
             ->will($this->returnValue(true));
 
         $u1dbIn = new stdClass();
         $u1dbIn->type = 'insert';
         $u1dbIn->lista = array();
-        $metadata = json_decode('{"user_eyeos":"' . $this->user . '","filename":"client2","id":44444755856,"size":775412,"mimetype":"application/pdf","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true,"path":"/"}');
+        $metadata = json_decode('{"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"client2","id":44444755856,"size":775412,"mimetype":"application/pdf","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true,"path":"/"}');
         array_push($u1dbIn->lista,$metadata);
 
         $this->accessorProviderMock->expects($this->at(1))
@@ -96,7 +101,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $u1dbIn = new stdClass();
         $u1dbIn->type = 'insert';
         $u1dbIn->lista = array();
-        $metadata = json_decode('{"user_eyeos":"' . $this->user . '","filename":"Client3.pdf","id":11165632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false,"path":"/"}');
+        $metadata = json_decode('{"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"Client3.pdf","id":11165632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false,"path":"/"}');
         array_push($u1dbIn->lista,$metadata);
 
         $this->accessorProviderMock->expects($this->at(2))
@@ -107,7 +112,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $u1dbIn = new stdClass();
         $u1dbIn->type = 'insert';
         $u1dbIn->lista = array();
-        $metadata = json_decode('{"user_eyeos":"' . $this->user . '","filename":"root","id":"null","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":true,"is_folder":true,"path":"null"}');
+        $metadata = json_decode('{"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"root","id":"null","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":true,"is_folder":true,"path":"null"}');
         array_push($u1dbIn->lista,$metadata);
 
         $this->accessorProviderMock->expects($this->at(3))
@@ -115,7 +120,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->with(json_encode($u1dbIn))
             ->will($this->returnValue('true'));
 
-        $this->sut->getMetadata($this->token,$id,$this->path,$this->user);
+        $this->sut->getMetadata($this->cloud,$this->token,$id,$this->pathCloud,$this->user);
     }
 
 
@@ -136,17 +141,18 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $file = new stdClass();
         $file->id = "null";
         $file->user_eyeos = $this->user;
+        $file->cloud = $this->cloud;
         $file->path = '/';
         array_push($u1dbIn->lista,$file);
         $metadata = '{"filename":"root","id":"null","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":true,"is_folder":true,"contents":[{"filename":"client2","id":44444755856,"size":775412,"mimetype":"application/pdf","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true},{"filename":"Client3.pdf","id":11165632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false}]}';
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
-            ->with($this->token,$isfile,$id,$contents)
+            ->with($this->cloud,$this->token,$isfile,$id,$contents)
             ->will($this->returnValue(json_decode($metadata)));
 
-        $u1dbOut = '[{"user_eyeos":"' . $this->user . '","filename":"client2","id":44444755856,"size":775412,"mimetype":"application/pdf","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true,"path":"/"},
-                    {"user_eyeos":"' . $this->user . '","filename":"Client3.pdf","id":11165632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false,,"path":"/"},
-                    {"user_eyeos":"' . $this->user . '","filename":"root","id":"null","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":true,"is_folder":true,,"path":"null"}]';
+        $u1dbOut = '[{"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"client2","id":44444755856,"size":775412,"mimetype":"application/pdf","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true,"path":"/"},
+                    {"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"Client3.pdf","id":11165632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false,,"path":"/"},
+                    {"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"root","id":"null","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":true,"is_folder":true,,"path":"null"}]';
         $this->accessorProviderMock->expects($this->at(0))
             ->method('getProcessDataU1db')
             ->with(json_encode($u1dbIn))
@@ -160,7 +166,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->method('deleteFile')
             ->will($this->returnValue(true));
 
-        $this->sut->getMetadata($this->token,$id,$this->path,$this->user);
+        $this->sut->getMetadata($this->cloud,$this->token,$id,$this->pathCloud,$this->user);
     }
 
     /**
@@ -180,6 +186,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $file = new stdClass();
         $file->id = "null";
         $file->user_eyeos = $this->user;
+        $file->cloud = $this->cloud;
         $file->path = "/";
         array_push($u1dbIn->lista,$file);
         $metadata = '{"filename":"root","id":"null","status":"NEW","version":1,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":true,"is_folder":true,
@@ -191,13 +198,13 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
                      ]}';
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
-            ->with($this->token,$isfile,$id,$contents)
+            ->with($this->cloud,$this->token,$isfile,$id,$contents)
             ->will($this->returnValue(json_decode($metadata)));
 
-        $u1dbOut = '[{"user_eyeos":"' . $this->user . '","filename":"root","id":"null","status":"NEW","version":1,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":true,"is_folder":true,"path":"null"},
-                    {"user_eyeos":"' . $this->user . '","filename":"client","id":334254755856,"size":775412,"status":"NEW","version":1,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true,"path":"/"},
-                    {"user_eyeos":"' . $this->user . '","filename":"client1","id":44444755856,"size":775412,"mimetype":"application/pdf","status":"NEW","version":1,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true,"path":"/"},
-                    {"user_eyeos":"' . $this->user . '","filename":"Client3.pdf","id":11165632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false,"path":"/"}]';
+        $u1dbOut = '[{"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"root","id":"null","status":"NEW","version":1,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":true,"is_folder":true,"path":"null"},
+                    {"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"client","id":334254755856,"size":775412,"status":"NEW","version":1,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true,"path":"/"},
+                    {"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"client1","id":44444755856,"size":775412,"mimetype":"application/pdf","status":"NEW","version":1,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true,"path":"/"},
+                    {"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"Client3.pdf","id":11165632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false,"path":"/"}]';
         $this->accessorProviderMock->expects($this->at(0))
             ->method('getProcessDataU1db')
             ->with(json_encode($u1dbIn))
@@ -205,7 +212,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $u1dbIn->type = 'deleteFolder';
         $u1dbIn->lista = array();
-        $metadata = json_decode('{"user_eyeos":"' . $this->user . '","filename":"client","id":334254755856,"size":775412,"status":"DELETED","version":2,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true,"path":"/"}');
+        $metadata = json_decode('{"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"client","id":334254755856,"size":775412,"status":"DELETED","version":2,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true,"path":"/"}');
         array_push($u1dbIn->lista,$metadata);
         $this->accessorProviderMock->expects($this->at(1))
             ->method('getProcessDataU1db')
@@ -214,22 +221,22 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->filesProviderMock->expects($this->at(0))
             ->method('deleteFile')
-            ->with($this->path . '/client', true)
+            ->with($this->pathCloud . '/client', true)
             ->will($this->returnValue(true));
 
         $this->filesProviderMock->expects($this->at(1))
             ->method('createFile')
-            ->with($this->path . '/provider', true)
+            ->with($this->pathCloud . '/provider', true)
             ->will($this->returnValue(true));
 
         $this->filesProviderMock->expects($this->at(2))
             ->method('renameFile')
-            ->with($this->path . '/client1', 'client2')
+            ->with($this->pathCloud . '/client1', 'client2')
             ->will($this->returnValue(true));
 
         $u1dbIn->type = 'update';
         $u1dbIn->lista = array();
-        $metadata = json_decode('{"user_eyeos":"' . $this->user . '","filename":"client2","id":44444755856,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true,"path":"/"}');
+        $metadata = json_decode('{"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"client2","id":44444755856,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true,"path":"/"}');
         array_push($u1dbIn->lista,json_decode('{"parent_old":"null"}'));
         array_push($u1dbIn->lista,$metadata);
         $this->accessorProviderMock->expects($this->at(3))
@@ -239,19 +246,19 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->filesProviderMock->expects($this->at(3))
             ->method('deleteFile')
-            ->with($this->path . '/Client3.pdf', false)
+            ->with($this->pathCloud . '/Client3.pdf', false)
             ->will($this->returnValue(true));
 
         $u1dbIn->type = 'deleteFolder';
         $u1dbIn->lista = array();
-        $metadata = json_decode('{"user_eyeos":"' . $this->user . '","filename":"Client3.pdf","id":11165632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false,"path":"/"}');
+        $metadata = json_decode('{"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"Client3.pdf","id":11165632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false,"path":"/"}');
         array_push($u1dbIn->lista,$metadata);
         $this->accessorProviderMock->expects($this->at(4))
             ->method('getProcessDataU1db')
             ->with(json_encode($u1dbIn))
             ->will($this->returnValue($u1dbOut));
 
-        $this->sut->getMetadata($this->token,$id,$this->path,$this->user);
+        $this->sut->getMetadata($this->cloud,$this->token,$id,$this->pathCloud,$this->user);
     }
 
 
@@ -267,13 +274,13 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $metadata = '{"error":404}';
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
-            ->with($this->token,false,$id,true)
+            ->with($this->cloud,$this->token,false,$id,true)
             ->will($this->returnValue(json_decode($metadata)));
 
         $this->accessorProviderMock->expects($this->never())
             ->method('getProcessDataU1db');
 
-        $this->sut->getMetadata($this->token,$id,$this->path,$this->user);
+        $this->sut->getMetadata($this->cloud,$this->token,$id,$this->pathCloud,$this->user);
 
     }
 
@@ -289,13 +296,13 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $metadata = '{"error":403}';
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
-            ->with($this->token,false,$id,true)
+            ->with($this->cloud,$this->token,false,$id,true)
             ->will($this->returnValue(json_decode($metadata)));
 
         $this->accessorProviderMock->expects($this->never())
             ->method('getProcessDataU1db');
 
-        $this->sut->getMetadata($this->token,$id,$this->path,$this->user);
+        $this->sut->getMetadata($this->cloud,$this->token,$id,$this->pathCloud,$this->user);
 
     }
 
@@ -479,7 +486,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
-            ->with($this->token,true,$parent_id,true)
+            ->with(null,$this->token,true,$parent_id,true)
             ->will($this->returnValue(json_decode($metadataOut)));
 
         $this->apiProviderMock->expects($this->never())
@@ -492,7 +499,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->apiProviderMock->expects($this->at(2))
             ->method('getMetadata')
-            ->with($this->token,true,$id)
+            ->with(null,$this->token,true,$id)
             ->will($this->returnValue(json_decode($metadataFile)));
 
         $u1dbIn = new stdClass();
@@ -581,7 +588,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
-            ->with($this->token,false,$parent_id,true)
+            ->with(null,$this->token,false,$parent_id,true)
             ->will($this->returnValue(json_decode($metadataOut)));
 
         $this->apiProviderMock->expects($this->never())
@@ -605,7 +612,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
-            ->with($this->token,false,$parent_id,true)
+            ->with(null,$this->token,false,$parent_id,true)
             ->will($this->returnValue(json_decode($metadata)));
 
         $this->apiProviderMock->expects($this->never())
@@ -631,7 +638,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
-            ->with($this->token,false,$parent_id,true)
+            ->with(null,$this->token,false,$parent_id,true)
             ->will($this->returnValue(json_decode($metadataOut)));
 
         $this->apiProviderMock->expects($this->at(1))
@@ -667,7 +674,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
-            ->with($this->token,true,$parent_id,true)
+            ->with(null,$this->token,true,$parent_id,true)
             ->will($this->returnValue(json_decode($metadataOut)));
 
         $this->apiProviderMock->expects($this->at(1))
@@ -1436,7 +1443,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
-            ->with($this->token,$file,$parent_id,true)
+            ->with(null,$this->token,$file,$parent_id,true)
             ->will($this->returnValue(json_decode($metadataOut)));
 
         $this->apiProviderMock->expects($this->at(1))

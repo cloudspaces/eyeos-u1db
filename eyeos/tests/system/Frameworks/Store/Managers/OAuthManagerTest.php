@@ -5,7 +5,7 @@
  * Date: 23/05/14
  * Time: 13:32
  */
-require_once("/var/www/eyeos/eyeos/system/Frameworks/Store/Managers/OAuthManager.php");
+//require_once("/var/www/eyeos/eyeos/system/Frameworks/Store/Managers/OAuthManager.php");
 
 class OAuthManagerTest extends PHPUnit_Framework_TestCase
 {
@@ -75,7 +75,7 @@ class OAuthManagerTest extends PHPUnit_Framework_TestCase
         $this->oauthProviderMock->expects($this->once())
             ->method("getToken")
             ->with($user)
-            ->will($this->returnValue("ABCDSESSS"));
+            ->will($this->returnValue($this->token));
 
         $this->sut->getToken($user);
     }

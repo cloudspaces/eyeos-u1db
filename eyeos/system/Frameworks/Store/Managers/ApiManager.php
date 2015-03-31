@@ -24,10 +24,10 @@ class ApiManager
         $this->filesProvider = $filesProvider;
     }
 
-    public function getMetadata($token,$id,$path,$user)
+    public function getMetadata($cloud,$token,$id,$path,$user)
     {
-        $pathMetadata = $this->getPathU1db($path);
-        $metadata = $this->apiProvider->getMetadata($token,false,$id,true);
+        $pathMetadata = $this->getPathU1db($path,$cloud);
+        $metadata = $this->apiProvider->getMetadata($cloud,$token,false,$id,true);
         $this->addPathMetadata($metadata,$pathMetadata);
         $respuesta = json_encode($metadata);
         $files = array();
@@ -43,7 +43,9 @@ class ApiManager
             $u1dbList = new stdClass();
             $u1dbList->id = $id == 'root'?'null':$id;
             $u1dbList->user_eyeos = $user;
+            $u1dbList->cloud = $cloud;
             $u1dbList->path = $pathMetadata;
+
             $u1dbResult = $this->callProcessU1db('select',$u1dbList);
             if($u1dbResult === '[]') {
                 foreach($files as $file) {
@@ -56,7 +58,7 @@ class ApiManager
                         }
                     }
                     if($insert) {
-                        $this->callProcessU1db('insert',$this->setUserEyeos($file,$user));
+                        $this->callProcessU1db('insert',$this->setUserEyeos($file,$user,$cloud));
                     }
                 }
             } else {
@@ -67,7 +69,7 @@ class ApiManager
                         if($this->search($dataU1db,"id",$files[$i]->id) === false){
                             if(!$delete &&  $files[$i]->id !== 'null') {
                                 if($this->filesProvider->createFile($path . "/" . $files[$i]->filename,$files[$i]->is_folder)) {
-                                    $this->callProcessU1db('insert',$this->setUserEyeos($files[$i],$user));
+                                    $this->callProcessU1db('insert',$this->setUserEyeos($files[$i],$user,$cloud));
                                 }
                             }
                         } else {
@@ -77,12 +79,12 @@ class ApiManager
                                     if($this->filesProvider->renameFile($path . "/" . $filenameDb, $files[$i]->filename)) {
                                         $lista = array();
                                         array_push($lista,json_decode('{"parent_old":"' . $files[$i]->parent_id . '"}'));
-                                        array_push($lista,$this->setUserEyeos($files[$i],$user));
+                                        array_push($lista,$this->setUserEyeos($files[$i],$user,$cloud));
                                         $this->callProcessU1db('update',$lista);
                                     }
                                 }
                             } else {
-                                $this->callProcessU1db('deleteFolder',$this->setUserEyeos($files[$i],$user));
+                                $this->callProcessU1db('deleteFolder',$this->setUserEyeos($files[$i],$user,$cloud));
                                 $this->filesProvider->deleteFile($path . "/" . $files[$i]->filename, $files[$i]->is_folder);
                             }
                         }
@@ -118,11 +120,11 @@ class ApiManager
         array_push($metadatas,$metadata);
     }
 
-    public function createMetadata($token,$user,$file,$name,$parent_id,$path,$pathAbsolute=null)
+    public function createMetadata($token,$user,$file,$name,$parent_id,$path,$pathAbsolute=null,$cloud = NULL)
     {
         $result['status'] = 'KO';
         $result['error'] = -1;
-        $metadata = $this->apiProvider->getMetadata($token,$file,$parent_id,true);
+        $metadata = $this->apiProvider->getMetadata($cloud,$token,$file,$parent_id,true);
         if($metadata) {
             if(!isset($metadata->error)) {
                 if(isset($metadata->contents)) {
@@ -161,7 +163,7 @@ class ApiManager
                         if($file) {
                             $resp = $this->apiProvider->uploadMetadata($token,$id,$pathAbsolute);
                             if(isset($resp->status) && $resp->status == true) {
-                                $changedMetadata = $this->apiProvider->getMetadata($token,$file,$id);
+                                $changedMetadata = $this->apiProvider->getMetadata($cloud,$token,$file,$id);
                                 if(!isset($changedMetadata->error)) {
                                     $this->addPathMetadata($changedMetadata,$path);
                                     $metadataUpdate = array();
@@ -198,11 +200,11 @@ class ApiManager
         return $result;
     }
 
-    public function downloadMetadata($token,$id,$path,$user,$isTmp=false)
+    public function downloadMetadata($token,$id,$path,$user,$isTmp=false,$cloud = NULL)
     {
         $result['status'] = 'KO';
         $result['error'] = -1;
-        $metadata = $this->apiProvider->getMetadata($token,true,$id);
+        $metadata = $this->apiProvider->getMetadata($token,true,$id,$cloud);
         $insert = false;
         $type = '';
 
@@ -500,9 +502,12 @@ class ApiManager
         return $result;
     }
 
-    private function setUserEyeos($metadata,$user)
+    private function setUserEyeos($metadata,$user,$cloud = NULL)
     {
         $aux = new stdClass();
+        if($cloud) {
+            $aux->cloud = $cloud;
+        }
         $aux->user_eyeos = $user;
         $metadata = (object)array_merge((array)$aux,(array)$metadata);
         return $metadata;
@@ -535,12 +540,21 @@ class ApiManager
         return $name;
     }
 
-    private function getPathU1db($path)
+    private function getPathU1db($path,$cloud = NULL)
     {
-        preg_match('/home:\/\/~(.*)\/Stacksync/',$path,$match);
-        $username = $match[1];
-        preg_match("/home:\/\/~$username\/Stacksync(.*)/", $path,$match);
-        $pathnew = $match[1] . '/';
+        if($cloud) {
+            preg_match('/home:\/\/~(.*)\/Cloudspaces\/' . $cloud . '/', $path, $match);
+            $username = $match[1];
+            preg_match("/home:\/\/~$username\/Cloudspaces\/$cloud(.*)/", $path, $match);
+            $pathnew = $match[1] . '/';
+
+        } else {
+            preg_match('/home:\/\/~(.*)\/Stacksync/', $path, $match);
+            $username = $match[1];
+            preg_match("/home:\/\/~$username\/Stacksync(.*)/", $path, $match);
+            $pathnew = $match[1] . '/';
+        }
+
         return $pathnew;
     }
 

@@ -710,13 +710,15 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
     public static function getMetadata($params)
     {
-        if(isset($_SESSION['access_token_v2'])) {
+        $cloud = $params['cloud'];
+
+        if(isset($_SESSION['access_token_' . $cloud . '_v2'])) {
             $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
             $path = $params['path'];
             $id = $params['id'];
-            $apiManager = new ApiManager();
-            $result = $apiManager->getMetadata($_SESSION['access_token_v2'],$id,$path,$user);
 
+            $apiManager = new ApiManager();
+            $result = $apiManager->getMetadata($cloud, $_SESSION['access_token_' . $cloud . '_v2'],$id,$path,$user);
             if($result) {
                 if(isset($result['error']) && $result['error'] == 403) {
                     self::permissionDeniedStackSync($user);
@@ -1403,7 +1405,10 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 if ($token) {
                     if (strlen($token->getTsecret()) > 0) {
                         $isActive = true;
-                        $_SESSION['request_token_'. $cloud . '_v2'] = $token;
+                        $tokenAux = new stdClass();
+                        $tokenAux->key = $token->getTKey();
+                        $tokenAux->secret =$token->getTSecret();
+                        $_SESSION['access_token_' . $cloud . '_v2'] = $tokenAux;
                     }
                 }
                 array_push($clouds, array("name" => $cloud, "isActive" => $isActive));
