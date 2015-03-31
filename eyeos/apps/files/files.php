@@ -1396,11 +1396,11 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         $clouds = array();
         try {
             $apiManager =  new ApiManager();
+            $oauthManager = new OAuthManager();
+            $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
             $response = json_decode($apiManager->getCloudsList());
             foreach ($response as $cloud) {
                 $isActive = false;
-                $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
-                $oauthManager = new OAuthManager();
                 $token = $oauthManager->getTokenUserCloud($user, $cloud);
                 if ($token) {
                     if (strlen($token->getTsecret()) > 0) {
@@ -1413,7 +1413,6 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 }
                 array_push($clouds, array("name" => $cloud, "isActive" => $isActive));
             }
-
         } catch (Exception $e){
             throw new Exception($e->getMessage());
         }
