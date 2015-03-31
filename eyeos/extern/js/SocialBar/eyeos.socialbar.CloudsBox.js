@@ -51,6 +51,7 @@ qx.Class.define('eyeos.socialbar.CloudsBox', {
         this._controller = controller;
         this._checknum = checknum;
         this.base(arguments);
+        this._load = false;
         this.set({
             marginTop: 20,
             marginLeft: 10,
@@ -60,7 +61,10 @@ qx.Class.define('eyeos.socialbar.CloudsBox', {
         });
 
         this.addListener('appear',function() {
-            this._loadClouds();
+            if(!this._load) {
+                this._load = true;
+                this._loadClouds();
+            }
         },this);
 
         this._buildGui();
