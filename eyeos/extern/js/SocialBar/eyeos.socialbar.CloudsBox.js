@@ -113,8 +113,8 @@ qx.Class.define('eyeos.socialbar.CloudsBox', {
                 width: 42,
                 height: 42,
                 source: "index.php?extern=images/loading.gif",
-                marginTop: 10,
-                alignX: 'center'
+                marginTop: 130,
+                marginLeft: 80
             });
 
             this._layoutCloudsBox.add(cursor);
