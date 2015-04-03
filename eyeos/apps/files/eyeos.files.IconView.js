@@ -410,7 +410,7 @@ qx.Class.define('eyeos.files.IconView', {
 			var currentPath = this.getViewManager().getModel().getCurrentPath()[1];
 
 			if (currentPath.substr(0, 8) != 'share://' && currentPath != 'workgroup:///') {
-                var itemsToDisable = ['cutFile()', 'editFile()', 'deleteFile()', 'copyFile()', 'pasteFile()'];
+                var itemsToDisable = ['cutFile()', 'editFile()', 'deleteFile()', 'copyFile()', 'pasteFile()', 'downloadFile()', 'shareURLFile()'];
 				item.getContextMenu().addListener('appear', function (e) {
 					var childrens = this.getContextMenu().getChildren();
 					var selected = this.getManager().returnSelected();
@@ -424,6 +424,7 @@ qx.Class.define('eyeos.files.IconView', {
 						if (childrens[i].getUserData('id') == 'editFile()' && selected.length >= 2) {
 							childrens[i].setEnabled(false);
 						}
+
                         if (itemsToDisable.indexOf(childrens[i].getUserData('id')) != -1) {
                             var pathClouds = 'home://~' + eyeos.getCurrentUserName() + '/Cloudspaces';
                             for (var j = 0; j < selected.length; j++) {
