@@ -102,29 +102,29 @@ class ApiManager
         return $respuesta;
     }
 
-    public function getSkel($token,$file,$id,&$metadatas,$path,$pathAbsolute,$pathEyeos) {
-        $contents = $file == false?true:null;
-        $metadata = $this->apiProvider->getMetadata($token,$file,$id,$contents);
+    public function getSkel($cloud, $token, $file, $id, &$metadatas, $path, $pathAbsolute, $pathEyeos) {
+        $contents = $file == false ? true : null;
+        $metadata = $this->apiProvider->getMetadata($cloud, $token, $file, $id, $contents);
         if(!isset($metadata->error)) {
             $metadata->pathAbsolute = $pathAbsolute;
             $metadata->path = $path;
             $metadata->pathEyeos = $pathEyeos . "/" . $metadata->filename;
             if($metadata->is_folder) {
-                $path = $metadata->id == 'null'?'/':$path . $metadata->filename . '/';
-                for ($i=0;$i<count($metadata->contents);$i++){
-                    $this->getSkel($token,!$metadata->contents[$i]->is_folder,$metadata->contents[$i]->id,$metadatas,$path,null,$metadata->pathEyeos);
+                $path = $metadata->id == 'null' ? '/' : $path . $metadata->filename . '/';
+                for ($i=0; $i<count($metadata->contents); $i++){
+                    $this->getSkel($cloud, $token, !$metadata->contents[$i]->is_folder, $metadata->contents[$i]->id, $metadatas, $path, null, $metadata->pathEyeos);
                 }
             }
             unset($metadata->contents);
         }
-        array_push($metadatas,$metadata);
+        array_push($metadatas, $metadata);
     }
 
-    public function createMetadata($cloud,$token,$user,$file,$name,$parent_id,$path,$pathAbsolute=null)
+    public function createMetadata($cloud, $token, $user, $file, $name, $parent_id, $path, $pathAbsolute=NULL)
     {
         $result['status'] = 'KO';
         $result['error'] = -1;
-        $metadata = $this->apiProvider->getMetadata($cloud,$token,$file,$parent_id,true);
+        $metadata = $this->apiProvider->getMetadata($cloud, $token, $file, $parent_id, true);
         if($metadata) {
             if(!isset($metadata->error)) {
                 if(isset($metadata->contents)) {
@@ -136,17 +136,17 @@ class ApiManager
                         }
                     }
                     if($id === null) {
-                        $newMetadata = $this->apiProvider->createMetadata($cloud,$token,$file,$name,$parent_id,$pathAbsolute);
+                        $newMetadata = $this->apiProvider->createMetadata($cloud, $token, $file, $name, $parent_id, $pathAbsolute);
                         if(!isset($newMetadata->error)) {
-                            $this->addPathMetadata($newMetadata,$path);
-                            if($this->callProcessU1db('insert',$this->setUserEyeos($newMetadata,$user,$cloud)) == 'true') {
+                            $this->addPathMetadata($newMetadata, $path);
+                            if($this->callProcessU1db('insert', $this->setUserEyeos($newMetadata, $user, $cloud)) == 'true') {
                                 $ok = true;
                                 if($file) {
                                     $lista = new stdClass();
                                     $lista->id = "" . $newMetadata->id;
                                     $lista->version = $newMetadata->version;
                                     $lista->recover = false;
-                                    $resultU1db = $this->callProcessU1db("insertDownloadVersion",$lista);
+                                    $resultU1db = $this->callProcessU1db("insertDownloadVersion", $lista);
                                     if($resultU1db !== 'true') {
                                         $ok = false;
                                     }
@@ -161,22 +161,22 @@ class ApiManager
                         }
                     } else {
                         if($file) {
-                            $resp = $this->apiProvider->uploadMetadata($token,$id,$pathAbsolute);
+                            $resp = $this->apiProvider->uploadMetadata($token, $id, $pathAbsolute);
                             if(isset($resp->status) && $resp->status == true) {
-                                $changedMetadata = $this->apiProvider->getMetadata($cloud,$token,$file,$id);
+                                $changedMetadata = $this->apiProvider->getMetadata($cloud, $token, $file, $id);
                                 if(!isset($changedMetadata->error)) {
-                                    $this->addPathMetadata($changedMetadata,$path);
+                                    $this->addPathMetadata($changedMetadata, $path);
                                     $metadataUpdate = array();
                                     $old = new stdClass();
                                     $old->parent_old = $changedMetadata->parent_id;
                                     array_push($metadataUpdate, $old);
-                                    array_push($metadataUpdate, $this->setUserEyeos($changedMetadata,$user));
-                                    if($this->callProcessU1db('update',$metadataUpdate) == 'true') {
+                                    array_push($metadataUpdate, $this->setUserEyeos($changedMetadata, $user));
+                                    if($this->callProcessU1db('update', $metadataUpdate) == 'true') {
                                         $lista = new stdClass();
                                         $lista->id = "" . $changedMetadata->id;
                                         $lista->version = $changedMetadata->version;
                                         $lista->recover = false;
-                                        $resultU1db = $this->callProcessU1db("updateDownloadVersion",$lista);
+                                        $resultU1db = $this->callProcessU1db("updateDownloadVersion", $lista);
                                         if($resultU1db === 'true') {
                                             $result['status'] = 'OK';
                                             unset($result['error']);

@@ -900,23 +900,23 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         $apiManager = new ApiManager();
         $metadatas = array();
         $result = array();
-        $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
+        $cloud = $params['cloud'];
 
-        if($params['action'] == 'copy' || !(($params['stacksyncOrig'] == true && $params['stacksyncDest'] == true) || ($params['stacksyncOrig'] == false && $params['stacksyncDest'] == false))) {
+        if($params['action'] == 'copy' || !(($params['cloudOrig'] == true && $params['cloudDest'] == true) || ($params['cloudOrig'] == false && $params['cloudDest'] == false))) {
             for($i = 0; $i < count($params['files']); $i++) {
                 if(is_array($params['files'][$i])) {
                     $component = FSI::getFile($params['files'][$i]['path']);
-                    $path = self::getPathStacksync($component);
-                    $apiManager->getSkel($_SESSION['access_token_v2'],$params['files'][$i]['is_file'],$params['files'][$i]['id'],$metadatas,$path,$params['files'][$i]['path'],$component->getParentPath());
+                    $path = self::getPathCloud($component, $cloud);
+                    $apiManager->getSkel($cloud, $_SESSION['access_token_' . $cloud . '_v2'], $params['files'][$i]['is_file'], $params['files'][$i]['id'], $metadatas, $path, $params['files'][$i]['path'], $component->getParentPath());
                 } else {
-                    self::getSkelLocal($params['files'][$i],$metadatas,null);
+                    self::getSkelLocal($params['files'][$i], $metadatas, null);
                 }
             }
 
             for($i = 0;$i < count($metadatas);$i++) {
                 if(isset($metadatas[$i]->error)) {
                     if($metadatas[$i]->error == 403) {
-                        self::permissionDeniedStackSync($user);
+                        self::permissionDeniedCloud($cloud);
                     }
                     $result['error'] = $metadatas[$i]->error;
                     return $result;
@@ -940,8 +940,6 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             }
         }
 
-        //$size = 0;
-        //$result['size'] = $size;
         $result['metadatas'] = $metadatas;
         return $result;
     }
@@ -980,21 +978,22 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
     {
         $apiManager = new ApiManager();
         $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
-        $stacksync = false;
+        $cloudspace = false;
+        $cloud = $params['cloud'];
 
-        $pathStackSync = "home://~" . $user->getName() . "/Stacksync";
+        $pathCloud = "home://~" . $user->getName() . "/Cloudspaces/" . $cloud;
         $pathOrig = null;
 
-        if(strpos($params['orig'],$pathStackSync) !== false) {
-            if ($pathStackSync == $params['orig']) {
+        if(strpos($params['orig'], $pathCloud) !== false) {
+            if ($pathCloud == $params['orig']) {
                 $pathOrig = "/";
             } else {
-                $pathOrig = substr($params['orig'],strlen($pathStackSync)) . "/";
+                $pathOrig = substr($params['orig'], strlen($pathCloud)) . "/";
             }
         }
 
-        if(strpos($params['dest'],$pathStackSync) !== false) {
-            $stacksync = true;
+        if(strpos($params['dest'], $pathCloud) !== false) {
+            $cloudspace = true;
         }
 
         $file = null;
@@ -1059,7 +1058,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 $params['filenameChange'] = $nameForCheck;
 
                 if(!array_key_exists('parent',$params['file'])) {
-                    $params['pathChange'] = substr($params['orig'],strlen($pathStackSync));
+                    $params['pathChange'] = substr($params['orig'], strlen($pathCloud));
                 }
             }
 
@@ -1069,8 +1068,8 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $filename = $params['file']['filename'];
         }
 
-        if ($stacksync) {
-            $pathParent = substr($params['dest'],strlen($pathStackSync));
+        if ($cloudspace) {
+            $pathParent = substr($params['dest'], strlen($pathCloud));
             if (array_key_exists('parent',$params['file'])) {
                 if (strlen($pathParent) == 0 && !$params['file']['parent']) {
                     $pathParent = '/';
@@ -1080,17 +1079,17 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 }
 
             } else {
-                $pathParent .= '/' . substr($params['file']['path'],strlen($pathOrig));
+                $pathParent .= '/' . substr($params['file']['path'], strlen($pathOrig));
                 if(strlen($pathParent) > 1) {
-                    $pathParent = substr($pathParent,0,-1);
+                    $pathParent = substr($pathParent, 0, -1);
                 }
             }
 
             $folder = NULL;
             if ($pathParent !== '/') {
-                $pos=strrpos($pathParent,'/');
-                $folder = substr($pathParent,$pos+1);
-                $pathParent = substr($pathParent,0,$pos+1);
+                $pos=strrpos($pathParent, '/');
+                $folder = substr($pathParent, $pos+1);
+                $pathParent = substr($pathParent, 0, $pos+1);
             }
 
             $parentId = false;
@@ -1098,10 +1097,11 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             if($folder) {
                 $path = $pathParent . $folder . '/';
                 $lista = new stdClass();
+                $lista->cloud = $cloud;
                 $lista->path = $pathParent;
                 $lista->filename = $folder;
                 $lista->user_eyeos = $user->getId();
-                $u1db = json_decode($apiManager->callProcessU1db('parent',$lista));
+                $u1db = json_decode($apiManager->callProcessU1db('parent', $lista));
 
                 if($u1db !== NULL && count($u1db) > 0) {
                     $parentId = $u1db[0]->id;
@@ -1112,16 +1112,15 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             }
 
             if($parentId) {
-                $metadata = $apiManager->createMetadata($_SESSION['access_token_v2'],$user->getId(),!$isFolder,$filename,$parentId,$path,$pathAbsolute);
+                $metadata = $apiManager->createMetadata($cloud, $_SESSION['access_token_' . $cloud . '_v2'], $user->getId(), !$isFolder, $filename, $parentId, $path, $pathAbsolute);
                 if($metadata['status'] == 'KO') {
                     if($metadata['error'] == 403) {
-                        self::permissionDeniedStackSync($user->getId());
+                        self::permissionDeniedCloud($cloud);
                     }
                     return $metadata;
                 }
             }
         }
-
 
         $pathDest = null;
         if (array_key_exists('parent',$params['file'])) {
@@ -1134,7 +1133,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             if ($pathOrig == $params['file']['path']) {
                 $pathDest = $params['dest'] . '/';
             } else {
-                $pathDest = $params['dest'] . '/' . substr($params['file']['path'],strlen($pathOrig));
+                $pathDest = $params['dest'] . '/' . substr($params['file']['path'], strlen($pathOrig));
             }
         }
 
@@ -1146,11 +1145,9 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $tmpFile->copyTo($newFile);
         }
 
-
         if($tmpFile) {
             $tmpFile->delete();
         }
-
 
         return $params;
     }
@@ -1292,11 +1289,6 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
     public static function permissionDeniedCloud($cloud)
     {
-        /*unset($_SESSION['access_token_v2']);
-        $oauthManager = new OAuthManager();
-        $token = new Token();
-        $token->setUserID($user);
-        $oauthManager->deleteToken($token);*/
         return self::cleanCloud($cloud);
     }
 
@@ -1463,21 +1455,21 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
     }
 
 
-    public static function getPathCloud($component,$cloud)
+    public static function getPathCloud($component, $cloud)
     {
         $path = $component->getPath();
         $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
         $userName = $user->getName();
         $len = strlen("home://~" . $userName . "/Cloudspaces/$cloud");
         $pathU1db = substr($path,$len);
-        $lenfinal = strrpos($pathU1db,$component->getName());
-        $posfinal = $lenfinal > 1?$lenfinal-strlen($pathU1db)-1:$lenfinal-strlen($pathU1db);
-        $pathParent = substr($pathU1db,0,$posfinal);
+        $lenfinal = strrpos($pathU1db, $component->getName());
+        $posfinal = $lenfinal > 1 ? $lenfinal-strlen($pathU1db)-1 : $lenfinal-strlen($pathU1db);
+        $pathParent = substr($pathU1db, 0, $posfinal);
         $folder = NULL;
         if ($pathParent !== '/') {
-            $pos=strrpos($pathParent,'/');
-            $folder = substr($pathParent,$pos+1);
-            $pathParent = substr($pathParent,0,$pos+1);
+            $pos=strrpos($pathParent, '/');
+            $folder = substr($pathParent, $pos+1);
+            $pathParent = substr($pathParent, 0, $pos+1);
         }
 
         if($folder !== NULL) {

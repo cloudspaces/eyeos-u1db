@@ -309,15 +309,16 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     /**
      * method: getSkel
      * when: called
-     * with: tokenAndIsFileAndIdAndMetadatas
+     * with: cloudAndTokenAndIsFileAndIdAndMetadatas
      * should: callMetadataFileApiStore
      */
-    public function test_getSkel_called_tokenAndIsFileAndIdAndMetadatas_callMetadataFileApiStore()
+    public function test_getSkel_called_cloudAndTokenAndIsFileAndIdAndMetadatas_callMetadataFileApiStore()
     {
         $id = 142555444;
         $metadatas = array();
+        $cloud = "Stacksync";
         $path = '/documents/';
-        $metadata = '{"filename":"Client1.pdf","id":142555444,"size":775412,"mimetype":"application/pdf","status":"DELETED","version":3,"parent_id":32565632156,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false}';
+        $metadata = '{"filename": "Client1.pdf", "id": 142555444, "size": 775412, "mimetype": "application/pdf", "status": "DELETED", "version": 3, "parent_id": 32565632156, "user": "eyeos", "client_modified": "2013-03-08 10:36:41.997", "server_modified": "2013-03-08 10:36:41.997", "is_folder": false}';
         $newmetadata = json_decode($metadata);
         $newmetadata->pathAbsolute = $this->path . $path . 'Client1.pdf';
         $newmetadata->path = $path;
@@ -325,32 +326,33 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $expected = array($newmetadata);
         $this->apiProviderMock->expects($this->once())
             ->method('getMetadata')
-            ->with($this->token,true,$id)
+            ->with($cloud, $this->token,true,$id)
             ->will($this->returnValue(json_decode($metadata)));
 
-        $this->sut->getSkel($this->token,true,$id,$metadatas,$path,$newmetadata->pathAbsolute,$this->path . "/documents");
-        $this->assertEquals($expected,$metadatas);
+        $this->sut->getSkel($cloud, $this->token, true, $id, $metadatas, $path, $newmetadata->pathAbsolute, $this->path . "/documents");
+        $this->assertEquals($expected, $metadatas);
     }
 
     /**
      * method: getSkel
      * when: called
-     * with:tokenAndIsFileAndIdAndMetadatas
+     * with: cloudAndtokenAndIsFileAndIdAndMetadatas
      * should: callMetadataFileApiStore
      */
-    public function test_getSkel_called_tokenAndIsFolderAndIdAndMetadatas_callMetadataFolderApiStore()
+    public function test_getSkel_called_cloudAndTokenAndIsFolderAndIdAndMetadatas_callMetadataFolderApiStore()
     {
         $id = -8090905582480578692;
         $metadatas = array();
+        $cloud = "Stacksync";
         $path = '/';
-        $metadataFile2 = '{"filename":"Client1.pdf","id":142555444,"size":775412,"mimetype":"application/pdf","status":"DELETED","version":3,"parent_id":32565632156,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false}';
-        $metadataFile = '{"id":32565632156,"parent_id":-8090905582480578692,"filename":"a","is_folder":true,"status":"NEW","server_modified":"2014-03-11 14:22:45.757","client_modified":"2014-03-11 14:22:45.757","user":"web","version":1,"checksum":589445744,"size":166,"mimetype":"text/plain","chunks":[],"is_root":false,
+        $metadataFile2 = '{"filename": "Client1.pdf", "id": 142555444, "size": 775412, "mimetype": "application/pdf", "status": "DELETED", "version": 3, "parent_id": 32565632156, "user": "eyeos", "client_modified": "2013-03-08 10:36:41.997", "server_modified": "2013-03-08 10:36:41.997", "is_folder": false}';
+        $metadataFile = '{"id": 32565632156, "parent_id": -8090905582480578692, "filename": "a", "is_folder": true, "status": "NEW", "server_modified": "2014-03-11 14:22:45.757", "client_modified": "2014-03-11 14:22:45.757", "user": "web", "version": 1, "checksum": 589445744, "size": 166, "mimetype": "text/plain", "chunks": [], "is_root": false,
                           "contents":[
-                                {"filename":"Client1.pdf","id":142555444,"size":775412,"mimetype":"application/pdf","status":"DELETED","version":3,"parent_id":32565632156,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false}
+                                {"filename": "Client1.pdf", "id": 142555444, "size": 775412, "mimetype": "application/pdf", "status": "DELETED", "version": 3, "parent_id": 32565632156, "user": "eyeos", "client_modified": "2013-03-08 10:36:41.997", "server_modified": "2013-03-08 10:36:41.997", "is_folder":false}
                          ]}';
-        $metadata='{"id":-8090905582480578692,"parent_id":null,"filename":"Cloudspaces","is_folder":true,"status":"NEW","server_modified":"2014-03-11 14:22:45.757","client_modified":"2014-03-11 14:22:45.757","user":"web","version":1,"checksum":589445744,"size":166,"mimetype":"text/plain","chunks":[],"is_root":false,
+        $metadata='{"id": -8090905582480578692, "parent_id": null, "filename": "Cloudspaces", "is_folder": true, "status": "NEW", "server_modified": "2014-03-11 14:22:45.757", "client_modified": "2014-03-11 14:22:45.757", "user": "web", "version": 1, "checksum": 589445744, "size": 166, "mimetype": "text/plain", "chunks": [], "is_root": false,
                     "contents":[
-                        {"id":32565632156,"parent_id":-8090905582480578692,"filename":"a","is_folder":true,"status":"NEW","server_modified":"2014-03-11 14:22:45.757","client_modified":"2014-03-11 14:22:45.757","user":"web","version":1,"checksum":589445744,"size":166,"mimetype":"text/plain","chunks":[],"is_root":false}
+                        {"id": 32565632156, "parent_id": -8090905582480578692, "filename": "a", "is_folder": true, "status": "NEW", "server_modified": "2014-03-11 14:22:45.757", "client_modified": "2014-03-11 14:22:45.757", "user": "web", "version": 1, "checksum": 589445744, "size": 166, "mimetype": "text/plain", "chunks": [], "is_root": false}
                     ]}';
 
         $expected = array();
@@ -375,56 +377,57 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
-            ->with($this->token,false,$id,true)
+            ->with($cloud, $this->token, false, $id, true)
             ->will($this->returnValue(json_decode($metadata)));
 
         $this->apiProviderMock->expects($this->at(1))
             ->method('getMetadata')
-            ->with($this->token,false,32565632156,true)
+            ->with($cloud, $this->token, false, 32565632156, true)
             ->will($this->returnValue(json_decode($metadataFile)));
 
         $this->apiProviderMock->expects($this->at(2))
             ->method('getMetadata')
-            ->with($this->token,true,142555444,null)
+            ->with($cloud, $this->token, true, 142555444, null)
             ->will($this->returnValue(json_decode($metadataFile2)));
 
-        $this->sut->getSkel($this->token,false,$id,$metadatas,$path,$data->pathAbsolute, $this->path);
+        $this->sut->getSkel($cloud, $this->token, false, $id, $metadatas, $path, $data->pathAbsolute, $this->path);
         $this->assertEquals($expected,$metadatas);
     }
 
     /**
      * method: getSkel
      * when: called
-     * with:tokenAndIsFileAndIdAndMetadatas
+     * with: cloudAndTokenAndIsFileAndIdAndMetadatas
      * should: returnPermissionDenied
      */
-    public function test_getSkel_called_tokenAndIsFolderAndIdAndMetadatas_returnPermissionDenied()
+    public function test_getSkel_called_cloudAndTokenAndIsFolderAndIdAndMetadatas_returnPermissionDenied()
     {
-        $metadata='{"id":-8090905582480578692,"parent_id":null,"filename":"Cloudspaces","is_folder":true,"status":"NEW","server_modified":"2014-03-11 14:22:45.757","client_modified":"2014-03-11 14:22:45.757","user":"web","version":1,"checksum":589445744,"size":166,"mimetype":"text/plain","chunks":[],"is_root":false,
+        $metadata='{"id": -8090905582480578692, "parent_id": null, "filename": "Cloudspaces", "is_folder": true, "status": "NEW", "server_modified": "2014-03-11 14:22:45.757", "client_modified": "2014-03-11 14:22:45.757", "user": "web", "version": 1, "checksum": 589445744, "size": 166, "mimetype": "text/plain", "chunks": [], "is_root": false,
                     "contents":[
-                        {"id":32565632156,"parent_id":-8090905582480578692,"filename":"a","is_folder":true,"status":"NEW","server_modified":"2014-03-11 14:22:45.757","client_modified":"2014-03-11 14:22:45.757","user":"web","version":1,"checksum":589445744,"size":166,"mimetype":"text/plain","chunks":[],"is_root":false}
+                        {"id": 32565632156, "parent_id": -8090905582480578692, "filename": "a", "is_folder": true, "status": "NEW", "server_modified": "2014-03-11 14:22:45.757", "client_modified": "2014-03-11 14:22:45.757", "user": "web", "version": 1, "checksum": 589445744, "size": 166, "mimetype": "text/plain", "chunks": [], "is_root": false}
                     ]}';
 
-        $metadataError = '{"error":403}';
+        $metadataError = '{"error": 403}';
+        $cloud = "Stacksync";
         $id = -8090905582480578692;
         $path = '/';
         $metadatas = array();
         $expected = array();
         array_push($expected,json_decode($metadataError));
-        array_push($expected,json_decode('{"id":-8090905582480578692,"parent_id":null,"filename":"Cloudspaces","is_folder":true,"status":"NEW","server_modified":"2014-03-11 14:22:45.757","client_modified":"2014-03-11 14:22:45.757","user":"web","version":1,"checksum":589445744,"size":166,"mimetype":"text/plain","chunks":[],"is_root":false,"path":"/","pathAbsolute":null,"pathEyeos":"' . $this->path . '/Cloudspaces"}'));
+        array_push($expected,json_decode('{"id": -8090905582480578692, "parent_id": null, "filename": "Cloudspaces", "is_folder": true, "status": "NEW", "server_modified": "2014-03-11 14:22:45.757", "client_modified": "2014-03-11 14:22:45.757", "user": "web", "version": 1, "checksum": 589445744, "size": 166, "mimetype": "text/plain", "chunks": [], "is_root": false, "path": "/", "pathAbsolute": null, "pathEyeos": "' . $this->path . '/Cloudspaces"}'));
 
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
-            ->with($this->token,false,$id,true)
+            ->with($cloud, $this->token, false, $id, true)
             ->will($this->returnValue(json_decode($metadata)));
 
         $this->apiProviderMock->expects($this->at(1))
             ->method('getMetadata')
-            ->with($this->token,false,32565632156,true)
+            ->with($cloud, $this->token, false, 32565632156, true)
             ->will($this->returnValue(json_decode($metadataError)));
 
-        $this->sut->getSkel($this->token,false,$id,$metadatas,$path,null,$this->path);
-        $this->assertEquals($expected,$metadatas);
+        $this->sut->getSkel($cloud, $this->token, false, $id, $metadatas, $path, null, $this->path);
+        $this->assertEquals($expected, $metadatas);
     }
 
     /**
