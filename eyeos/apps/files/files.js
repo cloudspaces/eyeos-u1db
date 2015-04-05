@@ -1202,8 +1202,8 @@ qx.Class.define('eyeos.files.Controller', {
 
 		pasteFile: function () {
 			var filesToPaste = this._filesQueue.getMoveQueue();
-            this.__checkFilesToPaste(filesToPaste);
-			if (filesToPaste.length >= 1) {
+            this.closeTimer();
+            if (filesToPaste.length >= 1) {
 				var source = this._filesQueue.getMoveSource();
 				var target = this.getModel().getCurrentPath()[1];
 				var action = this._filesQueue.getAction();
@@ -1839,14 +1839,6 @@ qx.Class.define('eyeos.files.Controller', {
         __closeProgressUser: function() {
             if(this.__progress) {
                 this.__progress.close();
-            }
-        },
-
-        __checkFilesToPaste: function(files) {
-            for(var i in files) {
-                if(files[i].getAbsolutePath() === 'home://~'+ eyeos.getCurrentUserName()+'/Stacksync') {
-                    files.splice(i,1);
-                }
             }
         },
 
