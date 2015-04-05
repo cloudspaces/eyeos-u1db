@@ -211,7 +211,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_createMetadata_called_tokenAndFileAndNameAndParentAndPathAbsolute_returnCorrectData()
     {
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":true,"filename":"Client1.pdf","parent_id":"-348534824681","path":"\/home\/eyeos\/Client1.pdf"}}';
+        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":true,"filename":"Client1.pdf","parent_id":"-348534824681","path":"\/home\/eyeos\/Client1.pdf"}}';
         $metadataOut = '{"filename":"Client1.pdf","id":"32565632156","parent_id":"-348534824681","user":"eyeos"}';
         $pathAbsolute = '/home/eyeos/Client1.pdf';
         $this->exerciseCreateMetadata($metadataIn,$metadataOut,$metadataOut,true,'Client1.pdf',-348534824681,$pathAbsolute);
@@ -225,7 +225,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_createMetadata_called_tokenAndFileAndNameAndPathAbsolute_returnCorrectData()
     {
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":true,"filename":"Client1.pdf","parent_id":"null","path":"\/home\/eyeos\/Client1.pdf"}}';
+        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":true,"filename":"Client1.pdf","parent_id":"null","path":"\/home\/eyeos\/Client1.pdf"}}';
         $metadataOut = '{"filename":"Client1.pdf","id":"32565632156","parent_id":"null","user":"eyeos"}';
         $pathAbsolute = '/home/eyeos/Client1.pdf';
         $this->exerciseCreateMetadata($metadataIn,$metadataOut,$metadataOut,true,'Client1.pdf',null,$pathAbsolute);
@@ -239,7 +239,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_createMetadata_called_tokenAndFolderAndNameAndParentAndPathAbsolute_returnCorrectData()
     {
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"filename":"clients","parent_id":"-348534824681","path":null}}';
+        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"filename":"clients","parent_id":"-348534824681","path":null}}';
         $metadataOut = '{"filename":"clients","id":"9873615","parent_id":"-348534824681","user":"eyeos","is_root":false}';
         $this->exerciseCreateMetadata($metadataIn,$metadataOut,$metadataOut,false,"clients",-348534824681);
     }
@@ -252,7 +252,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_createMetadata_called_tokenAndFolderAndName_returnCorrectData()
     {
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"filename":"clients","parent_id":"null","path":null}}';
+        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"filename":"clients","parent_id":"null","path":null}}';
         $metadataOut = '{"filename":"clients","id":"9873615","parent_id":"null","user":"eyeos","is_root":false}';
         $this->exerciseCreateMetadata($metadataIn,$metadataOut,$metadataOut,false,"clients");
     }
@@ -265,7 +265,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_createMetadata_called_tokenAndFolderAndName_returnException()
     {
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"filename":"clients","parent_id":"null","path":null}}';
+        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"filename":"clients","parent_id":"null","path":null}}';
         $metadataOut = 'false';
         $this->exerciseCreateMetadata($metadataIn,$metadataOut,$this->exception,false,"clients");
     }
@@ -278,7 +278,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_createMetadata_called_tokenAndFolderAndName_returnPermissionDenied()
     {
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"filename":"clients","parent_id":"null","path":null}}';
+        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"filename":"clients","parent_id":"null","path":null}}';
         $metadataOut = '403';
         $this->exerciseCreateMetadata($metadataIn,$metadataOut,$this->permission,false,"clients");
     }
@@ -624,7 +624,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     private function exerciseCreateMetadata($metadataIn,$metadataOut,$check,$file,$name,$parent = null,$pathAbsolute = null)
     {
         $this->exerciseMockMetadata($metadataIn,$metadataOut);
-        $result = $this->sut->createMetadata($this->token,$file,$name,$parent,$pathAbsolute);
+        $result = $this->sut->createMetadata($this->cloud,$this->token,$file,$name,$parent,$pathAbsolute);
         $this->assertEquals(json_decode($check),$result);
     }
 

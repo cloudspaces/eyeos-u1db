@@ -120,7 +120,7 @@ class ApiManager
         array_push($metadatas,$metadata);
     }
 
-    public function createMetadata($token,$user,$file,$name,$parent_id,$path,$pathAbsolute=null,$cloud = NULL)
+    public function createMetadata($cloud,$token,$user,$file,$name,$parent_id,$path,$pathAbsolute=null)
     {
         $result['status'] = 'KO';
         $result['error'] = -1;
@@ -136,10 +136,10 @@ class ApiManager
                         }
                     }
                     if($id === null) {
-                        $newMetadata = $this->apiProvider->createMetadata($token,$file,$name,$parent_id,$pathAbsolute);
+                        $newMetadata = $this->apiProvider->createMetadata($cloud,$token,$file,$name,$parent_id,$pathAbsolute);
                         if(!isset($newMetadata->error)) {
                             $this->addPathMetadata($newMetadata,$path);
-                            if($this->callProcessU1db('insert',$this->setUserEyeos($newMetadata,$user)) == 'true') {
+                            if($this->callProcessU1db('insert',$this->setUserEyeos($newMetadata,$user,$cloud)) == 'true') {
                                 $ok = true;
                                 if($file) {
                                     $lista = new stdClass();

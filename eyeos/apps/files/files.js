@@ -1079,18 +1079,32 @@ qx.Class.define('eyeos.files.Controller', {
 
                 var params = new Array(currentPath, name);
 
-                if(this.__isStacksync(currentPath)) {
+                /*if(this.__isStacksync(currentPath)) {
                     var fileId = this.__getFileIdFolder(currentPath);
                     if(fileId !== null) {
                         params.splice(params.length,0,fileId);
+                    }
+                }*/
+
+                var cloud = this.isCloud(currentPath);
+
+                if(cloud.isCloud === true) {
+                    var fileId = this.__getFileIdFolder(currentPath,cloud.cloud);
+                    if(fileId !== null) {
+                        params.splice(params.length,0,fileId);
+                        params.splice(params.length,0,cloud.cloud);
                     }
                 }
 
                 this.closeTimer();
 
+                this.openCursorLoad();
+
 				eyeos.callMessage(this.getApplication().getChecknum(), 'mkdir',params, function (results) {
-                    if(this.__isStacksync(currentPath)) {
+                    this.closeCursorLoad();
+                    if(cloud.isCloud === true) {
                         if(!results.error) {
+                            this.openCursorLoad();
                             this._browsePath(currentPath);
                         } else if(results.error == 403) {
                             this.__permissionDenied();

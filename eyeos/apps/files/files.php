@@ -484,11 +484,14 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
 		$dirToCreate->mkdir();
 
-        if(count($params) === 3) {
+        if(count($params) === 4) {
             $apiManager = new ApiManager();
             $idParent = $params[2]; //$params[2] === 0?'null':$params[2];
-            $path = self::getPathStacksync($dirToCreate);
-            $result = $apiManager->createMetadata($_SESSION['access_token_v2'],$currentUser->getId(),false,$dirToCreate->getName(),$idParent,$path);
+            $cloud = $params[3];
+            $path = self::getPathCloud($dirToCreate,$cloud);
+            //$result = $apiManager->createMetadata($_SESSION['access_token_v2'],$currentUser->getId(),false,$dirToCreate->getName(),$idParent,$path);
+            $result = $apiManager->createMetadata($cloud,$_SESSION['access_token_' . $cloud . '_v2'],$currentUser->getId(),false,$dirToCreate->getName(),$idParent,$path);
+
             if($result) {
                 if (isset($result['error']) && $result['error'] === 403) {
                     $dirToCreate->delete();
@@ -1449,6 +1452,33 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
     public static function initClouds()
     {
        self::getCloudsList();
+    }
+
+
+    public static function getPathCloud($component,$cloud)
+    {
+        $path = $component->getPath();
+        $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
+        $userName = $user->getName();
+        $len = strlen("home://~" . $userName . "/Cloudspaces/$cloud");
+        $pathU1db = substr($path,$len);
+        $lenfinal = strrpos($pathU1db,$component->getName());
+        $posfinal = $lenfinal > 1?$lenfinal-strlen($pathU1db)-1:$lenfinal-strlen($pathU1db);
+        $pathParent = substr($pathU1db,0,$posfinal);
+        $folder = NULL;
+        if ($pathParent !== '/') {
+            $pos=strrpos($pathParent,'/');
+            $folder = substr($pathParent,$pos+1);
+            $pathParent = substr($pathParent,0,$pos+1);
+        }
+
+        if($folder !== NULL) {
+            $result = $pathParent . $folder . '/';
+        } else {
+            $result = $pathParent;
+        }
+
+        return $result;
     }
 }
 ?>
