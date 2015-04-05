@@ -1104,7 +1104,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 $u1db = json_decode($apiManager->callProcessU1db('parent', $lista));
 
                 if($u1db !== NULL && count($u1db) > 0) {
-                    $parentId = $u1db[0]->id == null ? 0 : $u1db[0]->id;
+                    $parentId = $u1db[0]->id;
                 }
             } else {
                 $parentId = 'null';
@@ -1112,6 +1112,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             }
 
             if($parentId) {
+                $parentId = $parentId === 'null' ? 0 : $parentId;
                 $metadata = $apiManager->createMetadata($cloud, $_SESSION['access_token_' . $cloud . '_v2'], $user->getId(), !$isFolder, $filename, $parentId, $path, $pathAbsolute);
                 if($metadata['status'] == 'KO') {
                     if($metadata['error'] == 403) {

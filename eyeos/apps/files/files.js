@@ -1222,51 +1222,53 @@ qx.Class.define('eyeos.files.Controller', {
 				if (files.length >= 1) {
 					files.unshift(target);
 
-                    var stacksync = false;
+                    var cloudspaces = false;
 
                     if(action == 'copy' || action == 'move') {
                         var params = new Object();
                         params.folder = files[0];
                         files.splice(0,1);
-                        params.files =files;
+                        params.files = files;
 
-                        if(this.__isStacksync(params.folder) || this.__isStacksync(files[0])) {
-                            stacksync = true;
-                            var idParent = this.__getFileIdFolder(params.folder);
+                        var cloudDestination = this.isCloud(params.folder);
+                        var cloudOrigin = this.isCloud(files[0]);
+
+                        if (cloudDestination.isCloud === true || cloudOrigin.isCloud === true) {
+                            params.cloud = cloudDestination.isCloud ? cloudDestination.cloud : cloudOrigin.cloud;
+                            cloudspaces = true;
+                            var idParent = this.__getFileIdFolder(params.folder, params.cloud);
                             var filesAux = [];
 
                             if(idParent === null) {
-                                idParent = this.__getFileIdFolder(files[0]);
+                                idParent = this.__getFileIdFolder(files[0], params.cloud);
                             }
 
                             if(idParent !== null) {
                                 params.idParent = idParent;
                                 for(var i in filesToPaste) {
-                                    var idFile = this.__getFileId(source,filesToPaste[i].getName());
+                                    var idFile = this.__getFileId(source, filesToPaste[i].getName());
                                     if(idFile !== null) {
                                         var file = new Object();
                                         file.id = idFile;
                                         file.path = filesToPaste[i].getAbsolutePath();
-                                        file.is_file = filesToPaste[i].getType() == "file"?true:false;
-                                        filesAux.splice(filesAux.length,0,file);
+                                        file.is_file = filesToPaste[i].getType() == "file" ? true : false;
+                                        filesAux.splice(filesAux.length, 0, file);
                                     } else {
-                                        filesAux.splice(filesAux.length,0,filesToPaste[i].getAbsolutePath());
+                                        filesAux.splice(filesAux.length, 0, filesToPaste[i].getAbsolutePath());
                                     }
                                 }
-
                                 params.files = filesAux;
                             }
                         }
-
                     } else {
                         params = files;
                     }
 
                     if(action == 'copy' || action == 'move') {
-                        this.__createWindowProgress(params,action);
+                        this.__createWindowProgress(params, action);
                     } else {
                         eyeos.callMessage(this.getApplication().getChecknum(), action, params, function (results) {
-                            if((action == "copy" || action == "move") && stacksync === true) {
+                            if((action == "copy" || action == "move") && cloudspaces === true) {
                                 this._browsePath(target);
                             } else {
                                 this._dBus.send('files', 'paste', [filesToPaste, action, source, target, results]);
@@ -1434,7 +1436,7 @@ qx.Class.define('eyeos.files.Controller', {
             return false;
         },
 
-        __getFileIdFolder: function(path,cloud) {
+        __getFileIdFolder: function(path, cloud) {
             var name = path.substring(path.lastIndexOf('/')+1);
             var father = path === 'home://~'+ eyeos.getCurrentUserName()+'/Cloudspaces/' + cloud? path:path.substring(0,path.lastIndexOf('/'));
             var fileIdFolder = null;
@@ -1567,11 +1569,11 @@ qx.Class.define('eyeos.files.Controller', {
             this._timer = setTimeout(reffunction,10000);
         },
 
-        __getFileId: function(path,filename,socialBar) {
+        __getFileId: function(path, filename, socialBar) {
             var fileId = null;
             var metadata = null;
 
-            if(this._metadatas.length >0) {
+            if(this._metadatas.length > 0) {
                 for(var i in this._metadatas) {
                     if(this._metadatas[i].path === path) {
                         if(this._metadatas[i].metadata.contents && this._metadatas[i].metadata.contents.length > 0) {
@@ -1635,7 +1637,7 @@ qx.Class.define('eyeos.files.Controller', {
             }
         },
 
-        __createWindowProgress: function(params,action)  {
+        __createWindowProgress: function(params, action)  {
             if(!this.__progress) {
                 this.__size = 0;
                 this.closeTimer();
@@ -1679,9 +1681,9 @@ qx.Class.define('eyeos.files.Controller', {
                 this.__progress.center();
                 this.__progress.open();
 
-                this.__progress.addListener('beforeClose',function() {
+                this.__progress.addListener('beforeClose', function() {
                     this.__progress = null;
-                    this._browsePath(params['folder'], true,true);
+                    this._browsePath(params['folder'], true, true);
                 },this);
 
                 this.__progress.getChildren()[0].getChildren()[0].setWidth(3);
@@ -1690,19 +1692,19 @@ qx.Class.define('eyeos.files.Controller', {
                 var pathOrig = '';
 
                 if(params.files[0].id) {
-                    pathOrig = params.files[0].path.substring(0,params.files[0].path.lastIndexOf('/'));
+                    pathOrig = params.files[0].path.substring(0, params.files[0].path.lastIndexOf('/'));
                 } else {
-                    pathOrig = params.files[0].substring(0,params.files[0].lastIndexOf('/'));
+                    pathOrig = params.files[0].substring(0, params.files[0].lastIndexOf('/'));
                 }
 
-                params.stacksyncOrig = this.__isStacksync(pathOrig);
-                params.stacksyncDest = this.__isStacksync(params.folder);
+                params.cloudOrig = (this.isCloud(pathOrig)).isCloud;
+                params.cloudDest = (this.isCloud(params.folder)).isCloud;
                 params.action = action;
 
-                eyeos.callMessage(this.getApplication().getChecknum(),'startProgress',params,function(result) {
+                eyeos.callMessage(this.getApplication().getChecknum(), 'startProgress', params, function(result) {
                    if(result && result.metadatas && result.metadatas.length > 0) {
                        if (action == 'copy') {
-                            this.__copyFile(result,result.metadatas.length - 1,params.folder,pathOrig);
+                           this.__copyFile(params.cloud, result, result.metadatas.length - 1, params.folder, pathOrig);
                        } else {
                            var listDelete = this.__getFilesDelete(result.metadatas);
                            this.__moveFile(result.metadatas,result.metadatas.length - 1,pathOrig,params.folder,params.idParent,params.stacksyncOrig,params.stacksyncDest,listDelete);
@@ -1760,23 +1762,24 @@ qx.Class.define('eyeos.files.Controller', {
             }
         },
 
-        __copyFile: function(data,pos,dest,pathOrig)
+        __copyFile: function(cloud, data, pos, dest, pathOrig)
         {
             if(pos > -1) {
                 var params = new Object();
+                params.cloud = cloud;
                 params.file = data.metadatas[pos];
                 params.dest = dest;
                 params.orig = pathOrig;
-                eyeos.callMessage(this.getApplication().getChecknum(),'copyFile',params,function(result) {
+                eyeos.callMessage(this.getApplication().getChecknum(), 'copyFile', params, function(result) {
                     if(!result.error) {
                         if(result.filenameChange) {
-                            this.__replacePath(params.file.filename,result.filenameChange,data.metadatas,pos-1,result.pathChange);
+                            this.__replacePath(params.file.filename, result.filenameChange, data.metadatas, pos-1, result.pathChange);
                         }
                         this.__size += 1;
                         this.__updateProgress(data.metadatas.length);
 
                         pos--;
-                        this.__copyFile(data,pos,dest,pathOrig);
+                        this.__copyFile(cloud, data, pos, dest, pathOrig);
                     } else {
                         this.closeProgress();
                         if(result.error == 403) {
@@ -1803,7 +1806,7 @@ qx.Class.define('eyeos.files.Controller', {
             this.__progress.getChildren()[0].getChildren()[1].setValue(percent + "%");
         },
 
-        __replacePath: function(filenameOld,filenameNew,data,pos,dirChange) {
+        __replacePath: function(filenameOld, filenameNew, data, pos, dirChange) {
             filenameOld = '/' + filenameOld;
             filenameNew = '/' + filenameNew;
 
@@ -1815,7 +1818,7 @@ qx.Class.define('eyeos.files.Controller', {
             for(var i = pos;i > -1;i--) {
                 if(data[i].hasOwnProperty("parent")) {
                     if(data[i].parent.length >= filenameOld.length) {
-                        var file = data[i].parent.substring(0,filenameOld.length);
+                        var file = data[i].parent.substring(0, filenameOld.length);
                         if(file === filenameOld) {
                             var path = filenameNew + data[i].parent.substring(filenameOld.length);
                             data[i].parent = path;
@@ -1823,7 +1826,7 @@ qx.Class.define('eyeos.files.Controller', {
                     }
                 } else {
                     if(data[i].path.length >= filenameOld.length) {
-                        var file = data[i].path.substring(0,filenameOld.length);
+                        var file = data[i].path.substring(0, filenameOld.length);
                         if(file === filenameOld) {
                             var path = filenameNew + data[i].path.substring(filenameOld.length);
                             data[i].path = path;
