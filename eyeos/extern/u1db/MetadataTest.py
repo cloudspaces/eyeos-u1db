@@ -328,6 +328,17 @@ class MetadataTest (unittest.TestCase):
         self.assertEquals(0,len(files[1]))
 
 
+    def test_newRecursiveDeleteVersion_called_id_deleteCorrect(self):
+        array = self.getArrayInsertVersionMetadata()
+        self.sut.insert(array)
+        arrayVersion = self.getArrayInsertVersion()
+        for version in arrayVersion:
+            self.sut.db2.create_doc_from_json(json.dumps(version))
+        self.sut.newRecursiveDeleteVersion("9873615","eyeID_EyeosUser_2","Stacksync")
+        files = self.sut.db2.get_all_docs()
+        self.assertEquals(0,len(files[1]))
+
+
     def getArrayInsert(self):
         array = [{u'user_eyeos':u'eyeID_EyeosUser_2',u'cloud':u'Stacksync',u'status': u'NEW', u'is_root': False, u'version': 1, u'filename': u'clients', u'parent_id': u'null', u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': u'9873615', u'user': u'eyeID_EyeosUser_2',u'is_folder':True},
                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'cloud':u'Stacksync',u'filename':u'Client1.pdf',u'path':u'/clients/',u'id':u'32565632156',u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':3,u'parent_id':u'9873615',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False},
@@ -389,17 +400,17 @@ class MetadataTest (unittest.TestCase):
         return array
 
     def getArrayInsertVersionMetadata(self):
-        array = [{u'user_eyeos':u'eyeID_EyeosUser_2',u'status': u'NEW', u'is_root': False, u'version': 1, u'filename': u'clients', u'parent_id': u'null', u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': u'9873615', u'user': u'eyeID_EyeosUser_2',u'is_folder':True},
-                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'Client1.pdf',u'path':u'/clients/',u'id':u'32565632156',u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':3,u'parent_id':u'9873615',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False},
-                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'B',u'path':u'/',u'id':u'11111',u'size':0,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':2,u'parent_id':u'9873615',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':True},
-                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'c.pdf',u'path':u'/',u'id':u'222333',u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':3,u'parent_id':u'11111',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False},
-                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'Client1.pdf',u'path':u'/',u'id':u'32565632157',u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':3,u'parent_id':u'null',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False}]
+        array = [{u'user_eyeos':u'eyeID_EyeosUser_2',u'cloud':u'Stacksync',u'status': u'NEW', u'is_root': False, u'version': 1, u'filename': u'clients', u'parent_id': u'null', u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': u'9873615', u'user': u'eyeID_EyeosUser_2',u'is_folder':True},
+                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'cloud':u'Stacksync',u'filename':u'Client1.pdf',u'path':u'/clients/',u'id':u'32565632156',u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':3,u'parent_id':u'9873615',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False},
+                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'cloud':u'Stacksync',u'filename':u'B',u'path':u'/',u'id':u'11111',u'size':0,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':2,u'parent_id':u'9873615',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':True},
+                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'cloud':u'Stacksync',u'filename':u'c.pdf',u'path':u'/',u'id':u'222333',u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':3,u'parent_id':u'11111',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False},
+                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'cloud':u'Stacksync',u'filename':u'Client1.pdf',u'path':u'/',u'id':u'32565632157',u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':3,u'parent_id':u'null',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False}]
         array.sort()
         return array
 
     def getArrayInsertVersion(self):
-        array = [{u'id':u'32565632156',u'user_eyeos':u'eyeID_EyeosUser_2',u'version':2,u'recover':False},
-                 {u'id':u'222333',u'user_eyeos':u'eyeID_EyeosUser_2',u'version':2,u'recover':False}]
+        array = [{u'id':u'32565632156',u'user_eyeos':u'eyeID_EyeosUser_2',u'cloud':u'Stacksync',u'version':2,u'recover':False},
+                 {u'id':u'222333',u'user_eyeos':u'eyeID_EyeosUser_2',u'cloud':u'Stacksync',u'version':2,u'recover':False}]
         array.sort()
         return array
 

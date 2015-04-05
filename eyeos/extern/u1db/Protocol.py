@@ -51,7 +51,8 @@ class Protocol:
         elif type == "getDownloadVersion":
             result = self.getDownloadVersion(lista[0]['id'],lista[0]['user_eyeos'])
         elif type == "recursiveDeleteVersion":
-            result = self.recursiveDeleteVersion(lista[0]['id'],lista[0]['user_eyeos'])
+            #result = self.recursiveDeleteVersion(lista[0]['id'],lista[0]['user_eyeos'])
+            result = self.recursiveDeleteVersion(lista[0])
         elif type == "deleteEvent":
             result = self.deleteEvent(lista)
         elif type == "updateEvent":
@@ -135,8 +136,11 @@ class Protocol:
     def getDownloadVersion(self,id,user):
         return self.metadata.getDownloadVersion(id,user)
 
-    def recursiveDeleteVersion(self,id,user):
-        self.metadata.recursiveDeleteVersion(id,user)
+    def recursiveDeleteVersion(self,lista):
+        if settings[ 'NEW_CODE' ] == "true":
+            self.metadata.newRecursiveDeleteVersion(lista['id'],lista['user'],lista['cloud'])
+        else:
+            self.metadata.recursiveDeleteVersion(lista['id'],lista['user'])
         return True
 
     def deleteEvent(self,lista):

@@ -256,6 +256,27 @@ class Metadata:
                 self.db2.delete_doc(file)
 
 
+    def recursiveDeleteVersion(self,id,user):
+        self.db.create_index("by-parent", "parent_id")
+        files = self.db.get_from_index("by-parent",str(id))
+        for file in files:
+            if file.content['is_folder'] == True:
+                self.recursiveDeleteVersion(file.content['id'],user)
+            self.db2.create_index("by-id-user","id","user_eyeos")
+            files = self.db2.get_from_index("by-id-user",str(file.content['id']),user)
+            for file in files:
+                self.db2.delete_doc(file)
+
+    def newRecursiveDeleteVersion(self,id,user,cloud):
+        self.db.create_index("by-parent", "parent_id","cloud")
+        files = self.db.get_from_index("by-parent",str(id),cloud)
+        for file in files:
+            if file.content['is_folder'] == True:
+                self.newRecursiveDeleteVersion(file.content['id'],user,cloud)
+            self.db2.create_index("by-id-user","id","user_eyeos","cloud")
+            files = self.db2.get_from_index("by-id-user",str(file.content['id']),user,cloud)
+            for file in files:
+                self.db2.delete_doc(file)
 
     """
     ##################################################################################################################################################

@@ -246,11 +246,16 @@ class ProtocolTest (unittest.TestCase):
     should: deleteCorrect
     """
     def test_protocol_called_typeRecursiveDeleteVersionAndList_deleteCorrect(self):
-        params = '{"type":"recursiveDeleteVersion","lista":[{"id":"9873615","user_eyeos":"eyeID_EyeosUser_2"}]}'
+        if settings[ 'NEW_CODE' ] == "true":
+            params = '{"type":"recursiveDeleteVersion","lista":[{"cloud":"Stacksync","id":"9873615","user_eyeos":"eyeID_EyeosUser_2"}]}'
+        else:
+            params = '{"type":"recursiveDeleteVersion","lista":[{"id":"9873615","user_eyeos":"eyeID_EyeosUser_2"}]}'
+
+        aux = json.loads(params)
         self.protocol.recursiveDeleteVersion = Mock()
         self.protocol.recursiveDeleteVersion.return_value = True
         result = self.protocol.protocol(params)
-        self.protocol.recursiveDeleteVersion.assert_called_once_with("9873615","eyeID_EyeosUser_2")
+        self.protocol.recursiveDeleteVersion.assert_called_once_with(aux['lista'][0])
         self.assertEquals('true',result)
 
     """
