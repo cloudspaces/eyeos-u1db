@@ -96,11 +96,15 @@ class ProtocolTest (unittest.TestCase):
     should: returnArray
     """
     def test_protocol_called_typeGetParentAndList_returnArray(self):
-        params = '{"type":"parent","lista":[{"path":"/Documents/","filename":"prueba","user_eyeos":"eyeID_EyeosUser_2"}]}'
+        if settings[ 'NEW_CODE' ] == "true":
+            params = '{"type":"parent", "lista":[{"cloud": "Stacksync", "path":"/Documents/", "filename":"prueba", "user_eyeos":"eyeID_EyeosUser_2"}]}'
+        else:
+            params = '{"type":"parent", "lista":[{"path":"/Documents/", "filename":"prueba", "user_eyeos":"eyeID_EyeosUser_2"}]}'
+        aux = json.loads(params)
         self.protocol.getParent = Mock()
         self.protocol.getParent.return_value = []
         result = self.protocol.protocol(params)
-        self.protocol.getParent.assert_called_once_with("/Documents/","prueba","eyeID_EyeosUser_2")
+        self.protocol.getParent.assert_called_once_with(aux[ 'lista' ][0])
         self.assertEquals('[]',result)
 
     """

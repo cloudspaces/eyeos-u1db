@@ -33,7 +33,7 @@ class Protocol:
         elif type == "delete":
             result = self.delete(lista)
         elif type == "parent":
-            result = self.getParent(lista[0]['path'],lista[0]['filename'],lista[0]['user_eyeos'])
+            result = self.getParent(lista[0])
         elif type == "deleteFolder":
             result = self.deleteFolder(lista[0])
         elif type == "deleteMetadataUser":
@@ -76,7 +76,7 @@ class Protocol:
 
         return json.dumps(result)
 
-    def insert(self,lista):
+    def insert(self, lista):
         self.metadata.insert(lista)
         return True
 
@@ -86,22 +86,25 @@ class Protocol:
         else:
             return self.metadata.select(lista[ 'id' ], lista[ 'user_eyeos' ], lista[ 'path' ])
 
-    def update(self,lista):
+    def update(self, lista):
         if settings[ 'NEW_CODE' ] == "true":
             self.metadata.update(lista)
         else:
             self.metadata.newUpdate(lista)
         return True
 
-    def delete(self,lista):
+    def delete(self, lista):
         if settings[ 'NEW_CODE' ] == "true":
             self.metadata.delete(lista)
         else:
             self.metadata.newDelete(lista)
         return True
 
-    def getParent(self,path,filename,user):
-        return self.metadata.getParent(path,filename,user)
+    def getParent(self, lista):
+        if settings[ 'NEW_CODE' ] == "true":
+            return self.metadata.newGetParent(lista[ 'cloud' ], lista[ 'path' ], lista[ 'filename' ], lista[ 'user_eyeos' ])
+        else:
+            return self.metadata.getParent(lista[ 'path' ], lista[ 'filename' ], lista[ 'user_eyeos' ])
 
     def deleteFolder(self, lista):
         if settings[ 'NEW_CODE' ] == "true":

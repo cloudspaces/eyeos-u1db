@@ -140,6 +140,18 @@ class MetadataTest (unittest.TestCase):
         self.assertEquals(array[0],data[0])
 
     """
+    method: newGetParent
+    when: called
+    with: path
+    should: returnArray
+    """
+    def test_newGetParent_called_path_returnArray(self):
+        array = self.getArrayParent()
+        self.sut.insert(array)
+        data = self.sut.newGetParent("Stacksync", "/documents/", "clients", "eyeID_EyeosUser_2")
+        self.assertEquals(array[0], data[0])
+
+    """
     method: deleteFolder
     when: called
     with: idFolder
@@ -360,8 +372,8 @@ class MetadataTest (unittest.TestCase):
         return array
 
     def getArrayParent(self):
-        array = [{u'user_eyeos':u'eyeID_EyeosUser_2',u'status': u'CHANGED', u'is_root': False, u'version': 1, u'filename':u'clients', u'parent_id': u'null', u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/documents/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': u'9873615', u'user': u'eyeID_EyeosUser_2',u'is_folder':True},
-                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'Client1.pdf',u'path':u'/documents/clients/',u'id':u'32565632156',u'size':775412,u'mimetype':u'application/pdf',u'status':u'CHANGED',u'version':3,u'parent_id':u'null',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False}]
+        array = [{u'user_eyeos': u'eyeID_EyeosUser_2', u'cloud': u'Stacksync', u'status': u'CHANGED', u'is_root': False, u'version': 1, u'filename':u'clients', u'parent_id': u'null', u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/documents/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': u'9873615', u'user': u'eyeID_EyeosUser_2', u'is_folder': True},
+                 {u'user_eyeos': u'eyeID_EyeosUser_2', u'cloud': u'Stacksync', u'filename': u'Client1.pdf', u'path': u'/documents/clients/', u'id': u'32565632156', u'size': 775412, u'mimetype': u'application/pdf', u'status': u'CHANGED', u'version': 3, u'parent_id': u'null', u'user': u'eyeos', u'client_modified': u'2013-03-08 10:36:41.997', u'server_modified': u'2013-03-08 10:36:41.997', u'is_folder': False}]
         array.sort()
         return array
 
