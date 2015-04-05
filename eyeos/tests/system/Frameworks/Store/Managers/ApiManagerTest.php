@@ -863,7 +863,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     {
         $id = 8888888;
         $metadata = '{"filename":"prueba.pdf","id":"8888888","status":"DELETED","version":1,"parent_id":"32565632156","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false}';
-        $this->exerciseDeleteMetadata($metadata,true,$id,"/cloudSpaces/",$this->path . "/cloudSpaces");
+        $this->exerciseDeleteMetadata($metadata,true,$id,"/cloudSpaces/",$this->pathCloud . "/cloudSpaces");
     }
 
     /**
@@ -876,7 +876,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     {
         $id = 1544444;
         $metadata = '{"filename":"prueba","id":"1544444","status":"DELETED","version":2,"parent_id":"32565632156","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true}';
-        $this->exerciseDeleteMetadata($metadata,false,$id,"/cloudSpaces/",$this->path . "/cloudSpaces");
+        $this->exerciseDeleteMetadata($metadata,false,$id,"/cloudSpaces/",$this->pathCloud . "/cloudSpaces");
     }
 
     /**
@@ -891,13 +891,13 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $metadata = '{"error":403}';
         $this->apiProviderMock->expects($this->at(0))
             ->method('deleteMetadata')
-            ->with($this->token,false,$id)
+            ->with($this->cloud,$this->token,false,$id)
             ->will($this->returnValue(json_decode($metadata)));
 
         $this->accessorProviderMock->expects($this->never())
             ->method('getProcessDataU1db');
 
-        $this->sut->deleteMetadata($this->token,false,$id,$this->user,"/cloudSpaces/",$this->path . "/cloudSpaces");
+        $this->sut->deleteMetadata($this->cloud,$this->token,false,$id,$this->user,"/cloudSpaces/",$this->pathCloud . "/cloudSpaces");
     }
 
     /**
@@ -1485,7 +1485,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     {
         $this->apiProviderMock->expects($this->at(0))
             ->method('deleteMetadata')
-            ->with($this->token,$file,$id)
+            ->with($this->cloud,$this->token,$file,$id)
             ->will($this->returnValue(json_decode($metadata)));
 
         $params = new stdClass();
@@ -1494,6 +1494,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $aux = new stdClass();
         $aux->id = "" . $id;
         $aux->user_eyeos = $this->user;
+        $aux->cloud = $this->cloud;
         array_push($params->lista,$aux);
 
         $this->accessorProviderMock->expects($this->at(0))
@@ -1504,6 +1505,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $metadataU1db = new stdClass();
         $metadataU1db->id = "" . $id;
         $metadataU1db->user_eyeos = $this->user;
+        $metadataU1db->cloud = $this->cloud;
         $metadataU1db->path = $path;
 
         $u1dbIn = new stdClass();
@@ -1516,7 +1518,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->with(json_encode($u1dbIn))
             ->will($this->returnValue('true'));
 
-        $this->sut->deleteMetadata($this->token,$file,$id,$this->user,$pathOrig);
+        $this->sut->deleteMetadata($this->cloud,$this->token,$file,$id,$this->user,$pathOrig);
     }
 
     private function exerciseRenameMetadata($file,$id,$parent,$path,$name)

@@ -72,9 +72,9 @@ class ApiProvider
         return $resp;
     }
 
-    public function deleteMetadata($token, $file, $id)
+    public function deleteMetadata($cloud,$token, $file, $id)
     {
-        $request = $this->getRequest('delete', $token);
+        $request = $this->getRequest('delete', $token,$cloud);
         $request->metadata->file = $file;
         $request->metadata->id = "" . $id;
         return $this->exerciseMetadata($request);

@@ -1126,6 +1126,7 @@ qx.Class.define('eyeos.files.Controller', {
 
 		deleteFile: function () {
 			var currentPath = this.getModel().getCurrentPath()[1];
+            var cloud = this.isCloud(currentPath);
 			if (currentPath.substr(0, 8) != 'share://' && currentPath != 'workgroup://') {
 				var filesToDelete = this.getView().returnSelected();
 				var files = new Array();
@@ -1133,12 +1134,20 @@ qx.Class.define('eyeos.files.Controller', {
 					if(filesToDelete[i].getFile().getAbsolutePath() != 'home://~' + eyeos.getCurrentUserName() + '/Desktop') {
                         var params = new Object();
                         params.file = filesToDelete[i].getFile().getAbsolutePath();
-                        if (this.__isStacksync(currentPath)) {
+                        /*if (this.__isStacksync(currentPath)) {
                             var id = this.__getFileId(currentPath,filesToDelete[i].getFile().getName());
                             if (id !== null) {
                                 params.id =  id;
                             }
+                        }*/
+                        if(cloud.isCloud === true) {
+                            var id = this.__getFileId(currentPath,filesToDelete[i].getFile().getName());
+                            if (id !== null) {
+                                params.id =  id;
+                                params.cloud = cloud.cloud;
+                            }
                         }
+
 						files.push(params);
 					}
 				}
@@ -1148,16 +1157,20 @@ qx.Class.define('eyeos.files.Controller', {
 				}
 
                 this.closeTimer();
-                if(this.__isStacksync(currentPath)) {
-                    this.openCursorLoad();
-                }
+
+
+                this.openCursorLoad();
 
 				eyeos.callMessage(this.getApplication().getChecknum(), 'delete', files, function (results) {
                     this.closeCursorLoad();
-                    if(this.__isStacksync(currentPath)) {
+                    if(cloud.isCloud === true) {
                         if(results.error == 403) {
-                            this.__permissionDenied();
+                            this.__cloud = cloud.cloud;
+                            if(results.path) {
+                                this._deleteFolderCloud(results.path);
+                            }
                         } else {
+                            this.openCursorLoad();
                             this._browsePath(currentPath);
                         }
                     } else {

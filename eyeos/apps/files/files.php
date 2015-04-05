@@ -429,10 +429,14 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 			if($fileToRemove->delete(true)) {
 			    self::removeUrlShareInfo($param['file']);
                 if(isset($param['id'])) {
-                    $result = $apiManager->deleteMetadata($_SESSION['access_token_v2'],$isFile,$param['id'],$currentUser->getId(),$fileToRemove->getParentPath());
+                    $cloud = $param['cloud'];
+                    //$result = $apiManager->deleteMetadata($_SESSION['access_token_v2'],$isFile,$param['id'],$currentUser->getId(),$fileToRemove->getParentPath());
+                    $result = $apiManager->deleteMetadata($cloud,$_SESSION['access_token_' . $cloud . '_v2'],$isFile,$param['id'],$currentUser->getId(),$fileToRemove->getParentPath());
                     if($result) {
                         if(isset($result['error']) && $result['error'] == 403) {
-                            self::permissionDeniedStackSync($currentUser->getId());
+                            //self::permissionDeniedStackSync($currentUser->getId());
+                            $denied = self::permissionDeniedCloud($cloud);
+                            $result['path'] = $denied['path'];
                             return $result;
                         }
                     }

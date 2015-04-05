@@ -260,21 +260,24 @@ class ApiManager
         return $result;
     }
 
-    public function deleteMetadata($token,$file,$id,$user,$path)
+    public function deleteMetadata($cloud,$token,$file,$id,$user,$path)
     {
         $result['status'] = 'KO';
         $result['error'] = -1;
-        $metadata = $this->apiProvider->deleteMetadata($token,$file,$id);
+        $metadata = $this->apiProvider->deleteMetadata($cloud,$token,$file,$id);
         if(!isset($metadata->error)) {
             $lista = new stdClass();
             $lista->id = "" . $id;
             $lista->user_eyeos = $user;
+            $lista->cloud = $cloud;
             $resultU1db = $this->callProcessU1db("recursiveDeleteVersion",$lista);
             if($resultU1db === 'true') {
                 $data = new stdClass();
                 $data->id = "" . $id;
                 $data->user_eyeos = $user;
-                $data->path = $this->getPathU1db($path);
+                $data->cloud = $cloud;
+                $data->path = $this->getPathU1db($path,$cloud);
+
                 if($this->callProcessU1db('deleteFolder',$data) === 'true') {
                     $result['status'] = 'OK';
                     unset($result['error']);

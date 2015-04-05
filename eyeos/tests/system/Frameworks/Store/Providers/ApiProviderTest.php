@@ -369,7 +369,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_deleteMetadata_called_tokenAndFileAndId_returnCorrectData()
     {
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"delete","file":true,"id":"32565632156"}}';
+        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"delete","file":true,"id":"32565632156"}}';
         $metadataOut = '{"name":"Client1.pdf","path":"/documents/clients/Client1.pdf","id":"32565632156","size":775412,"mimetype":"application/pdf","status":"DELETED","version":3,"parent_id":"-348534824681","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}';
         $this->exerciseDeleteMetadata($metadataIn,$metadataOut,$metadataOut,true,32565632156);
     }
@@ -382,7 +382,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_deleteMetadata_called_tokenAndFolderAndId_returnCorrectData()
     {
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"delete","file":false,"id":"9873615"}}';
+        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"delete","file":false,"id":"9873615"}}';
         $metadataOut = '{"name":"clients","path":"/documents/clients","id":"9873615","status":"DELETED","version":3,"parent_id":"-348534824681","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false}';
         $this->exerciseDeleteMetadata($metadataIn,$metadataOut,$metadataOut,false,9873615);
     }
@@ -395,7 +395,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_deleteMetadata_called_tokenAndFolderAndId_returnException()
     {
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"delete","file":false,"id":"9873615"}}';
+        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"delete","file":false,"id":"9873615"}}';
         $metadataOut = 'false';
         $this->exerciseDeleteMetadata($metadataIn,$metadataOut,$this->exception,false,9873615);
     }
@@ -408,7 +408,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_deleteMetadata_called_tokenAndFolderAndId_returnPermissionDenied()
     {
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"delete","file":false,"id":"9873615"}}';
+        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"delete","file":false,"id":"9873615"}}';
         $metadataOut = '403';
         $this->exerciseDeleteMetadata($metadataIn,$metadataOut,$this->permission,false,9873615);
     }
@@ -648,7 +648,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     private function exerciseDeleteMetadata($metadataIn,$metadataOut,$check,$file,$id)
     {
         $this->exerciseMockMetadata($metadataIn,$metadataOut);
-        $result = $this->sut->deleteMetadata($this->token,$file,$id);
+        $result = $this->sut->deleteMetadata($this->cloud,$this->token,$file,$id);
         $this->assertEquals(json_decode($check),$result);
     }
 

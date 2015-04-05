@@ -141,9 +141,9 @@ class Protocol:
 
     def recursiveDeleteVersion(self,lista):
         if settings[ 'NEW_CODE' ] == "true":
-            self.metadata.newRecursiveDeleteVersion(lista['id'],lista['user'],lista['cloud'])
+            self.metadata.newRecursiveDeleteVersion(lista['id'],lista['user_eyeos'],lista['cloud'])
         else:
-            self.metadata.recursiveDeleteVersion(lista['id'],lista['user'])
+            self.metadata.recursiveDeleteVersion(lista['id'],lista['user_eyeos'])
         return True
 
     def deleteEvent(self,lista):
