@@ -1104,7 +1104,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 $u1db = json_decode($apiManager->callProcessU1db('parent', $lista));
 
                 if($u1db !== NULL && count($u1db) > 0) {
-                    $parentId = $u1db[0]->id;
+                    $parentId = $u1db[0]->id == null ? 0 : $u1db[0]->id;
                 }
             } else {
                 $parentId = 'null';
