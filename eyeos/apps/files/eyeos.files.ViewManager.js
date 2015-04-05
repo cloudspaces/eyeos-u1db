@@ -683,6 +683,8 @@ qx.Class.define('eyeos.files.ViewManager', {
             this._header.enabledItems(enabled);
             this._menuBar.setEnabled(enabled);
             this._toolBar.setEnabled(enabled);
+            this._toolBar.getChildren()[2].setEnabled(enabled);
+            this._toolBar.getChildren()[3].setEnabled(enabled);
             this._searchBox.setEnabled(enabled);
             this._sideBar.setEnabled(enabled);
             this._socialBar.setEnabled(enabled);
