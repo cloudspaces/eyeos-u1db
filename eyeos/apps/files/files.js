@@ -1564,9 +1564,15 @@ qx.Class.define('eyeos.files.Controller', {
         },
 
         __refreshFolder: function(path,addToHistory,refresh) {
-            var that = this;
-            var reffunction = function(){that._browsePath(path,addToHistory,refresh)};
-            this._timer = setTimeout(reffunction,10000);
+            var cloud = this.isCloud(path);
+
+            if(cloud.isCloud === true) {
+                var that = this;
+                var reffunction = function () {
+                    that._browsePath(path, addToHistory, refresh)
+                };
+                this._timer = setTimeout(reffunction, 10000);
+            }
         },
 
         __getFileId: function(path, filename, socialBar) {
