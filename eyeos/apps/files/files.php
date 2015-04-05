@@ -494,8 +494,10 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
             if($result) {
                 if (isset($result['error']) && $result['error'] === 403) {
-                    $dirToCreate->delete();
-                    self::permissionDeniedStackSync($currentUser->getId());
+                    //$dirToCreate->delete();
+                    //self::permissionDeniedStackSync($currentUser->getId());
+                    $denied = self::permissionDeniedCloud($cloud);
+                    $result['path'] = $denied['path'];
                 }
                 return $result;
             }
@@ -726,7 +728,8 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $result = $apiManager->getMetadata($cloud, $_SESSION['access_token_' . $cloud . '_v2'],$id,$path,$user);
             if($result) {
                 if(isset($result['error']) && $result['error'] == 403) {
-                    self::permissionDeniedStackSync($user);
+                    $denied = self::permissionDeniedCloud($cloud);
+                    $result['path'] = $denied['path'];
                 }
             }
         } else {
@@ -1283,13 +1286,14 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         return $result;
     }
 
-    public static function permissionDeniedCloud($user)
+    public static function permissionDeniedCloud($cloud)
     {
-        unset($_SESSION['access_token_v2']);
+        /*unset($_SESSION['access_token_v2']);
         $oauthManager = new OAuthManager();
         $token = new Token();
         $token->setUserID($user);
-        $oauthManager->deleteToken($token);
+        $oauthManager->deleteToken($token);*/
+        return self::cleanCloud($cloud);
     }
 
     public static function createComment($params)

@@ -675,6 +675,10 @@ qx.Class.define('eyeos.files.Controller', {
                                         this.__refreshFolder(path,addToHistory,true);
                                     }
                                 } else if (metadata.error == 403) {
+                                    this.__cloud = cloud.cloud;
+                                    if(metadata.path) {
+                                        this._deleteFolderCloud(metadata.path);
+                                    }
                                     this.__permissionDenied();
                                 }
                             } else {
@@ -1107,6 +1111,10 @@ qx.Class.define('eyeos.files.Controller', {
                             this.openCursorLoad();
                             this._browsePath(currentPath);
                         } else if(results.error == 403) {
+                            this.__cloud = cloud.cloud;
+                            if(results.path) {
+                                this._deleteFolderCloud(results.path);
+                            }
                             this.__permissionDenied();
                         }
                     } else {

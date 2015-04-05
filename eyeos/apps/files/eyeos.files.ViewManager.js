@@ -652,7 +652,8 @@ qx.Class.define('eyeos.files.ViewManager', {
 
             buttonOK.addListener('execute',function() {
                 this.removeAll();
-                this.createDialogStacksync();
+                this.getController()._initFiles();
+                //this.createDialogStacksync();
             },this);
 
             containerButtons.add(buttonOK);
