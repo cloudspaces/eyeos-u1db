@@ -51,7 +51,6 @@ class Protocol:
         elif type == "getDownloadVersion":
             result = self.getDownloadVersion(lista[0]['id'],lista[0]['user_eyeos'])
         elif type == "recursiveDeleteVersion":
-            #result = self.recursiveDeleteVersion(lista[0]['id'],lista[0]['user_eyeos'])
             result = self.recursiveDeleteVersion(lista[0])
         elif type == "deleteEvent":
             result = self.deleteEvent(lista)
@@ -81,36 +80,21 @@ class Protocol:
         return True
 
     def select(self, lista):
-        if settings[ 'NEW_CODE' ] == "true":
-            return self.metadata.newSelect(lista[ 'id' ], lista[ 'user_eyeos' ], lista[ 'cloud' ], lista[ 'path' ])
-        else:
-            return self.metadata.select(lista[ 'id' ], lista[ 'user_eyeos' ], lista[ 'path' ])
+        return self.metadata.select(lista)
 
     def update(self, lista):
-        if settings[ 'NEW_CODE' ] == "true":
-            self.metadata.update(lista)
-        else:
-            self.metadata.newUpdate(lista)
+        self.metadata.update(lista)
         return True
 
     def delete(self, lista):
-        if settings[ 'NEW_CODE' ] == "true":
-            self.metadata.delete(lista)
-        else:
-            self.metadata.newDelete(lista)
+        self.metadata.delete(lista)
         return True
 
     def getParent(self, lista):
-        if settings[ 'NEW_CODE' ] == "true":
-            return self.metadata.newGetParent(lista[ 'cloud' ], lista[ 'path' ], lista[ 'filename' ], lista[ 'user_eyeos' ])
-        else:
-            return self.metadata.getParent(lista[ 'path' ], lista[ 'filename' ], lista[ 'user_eyeos' ])
+        return self.metadata.getParent(lista)
 
     def deleteFolder(self, lista):
-        if settings[ 'NEW_CODE' ] == "true":
-            self.metadata.newDeleteFolder(lista[ 'id' ], lista[ 'user_eyeos' ], lista[ 'cloud' ], lista[ 'path' ])
-        else:
-            self.metadata.deleteFolder(lista[ 'id' ], lista[ 'user_eyeos' ], lista[ 'path' ])
+        self.metadata.deleteFolder(lista)
         return True
 
     def deleteMetadataUser(self, lista):
@@ -120,7 +104,7 @@ class Protocol:
     def selectMetadataUser(self,user):
         return self.metadata.selectMetadataUser(user)
 
-    def renameMetadata(self,metadata):
+    def renameMetadata(self, metadata):
         self.metadata.renameMetadata(metadata)
         return True
 
@@ -140,10 +124,7 @@ class Protocol:
         return self.metadata.getDownloadVersion(id,user)
 
     def recursiveDeleteVersion(self,lista):
-        if settings[ 'NEW_CODE' ] == "true":
-            self.metadata.newRecursiveDeleteVersion(lista['id'],lista['user_eyeos'],lista['cloud'])
-        else:
-            self.metadata.recursiveDeleteVersion(lista['id'],lista['user_eyeos'])
+        self.metadata.recursiveDeleteVersion(lista)
         return True
 
     def deleteEvent(self,lista):

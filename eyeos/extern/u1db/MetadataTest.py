@@ -7,6 +7,7 @@ import u1db
 import os
 from Metadata import Metadata
 import json
+from settings import settings
 
 class MetadataTest (unittest.TestCase):
 
@@ -38,38 +39,40 @@ class MetadataTest (unittest.TestCase):
     should: returnArray
     """
     def test_select_called_id_returnArray(self):
+        settings[ 'NEW_CODE' ] = "false"
         array = self.getArrayInsert()
         self.sut.insert(array)
-        data = self.sut.select("9873615","eyeID_EyeosUser_2","/")
+        data = self.sut.select({u'id': 9873615, u'user_eyeos': u'eyeID_EyeosUser_2', u'path': u'/'})
         data.sort()
         self.assertEquals(2,len(data))
 
     """
-    method: newSelect
+    method: select
     when: called
-    with: id
+    with: idAndUserAndCloudAndPath
     should: returnArray
     """
-    def test_newSelect_called_id_returnArray(self):
+    def test_select_called_idAndUserAndCloudAndPath_returnArray(self):
         array = self.getArrayInsert()
         self.sut.insert(array)
-        data = self.sut.newSelect("9873615", "eyeID_EyeosUser_2", "Stacksync", "/")
+        data = self.sut.select({u'id': 9873615, u'user_eyeos': u'eyeID_EyeosUser_2', u'cloud': u'Stacksync', u'path': u'/'})
         data.sort()
         self.assertEquals(2,len(data))
 
     """
     method: update
     when: called
-    with: array
+    with: arrayWithoutCloud
     should: updateCorrect
     """
-    def test_update_called_array_updateCorrect(self):
+    def test_update_called_arrayWithoutCloud_updateCorrect(self):
+        settings[ 'NEW_CODE' ] = "false"
         array = self.getArrayInsert()
         update = self.getArrayUpdate()
         self.sut.insert(array)
         self.sut.update(update)
-        self.sut.db.create_index("by-id","id","user_eyeos")
-        files = self.sut.db.get_from_index("by-id","32565632156","eyeID_EyeosUser_2")
+        self.sut.db.create_index("by-id", "id", "user_eyeos")
+        files = self.sut.db.get_from_index("by-id", "32565632156", "eyeID_EyeosUser_2")
         results = []
         if len(files) > 0:
             for file in files:
@@ -78,54 +81,55 @@ class MetadataTest (unittest.TestCase):
         self.assertEquals(update[1],results[0])
 
     """
-    method: newUpdate
+    method: update
     when: called
-    with: array
+    with: arrayWithCloud
     should: updateCorrect
     """
-    def test_newUpdate_called_array_updateCorrect(self):
+    def test_update_called_arrayWithCloud_updateCorrect(self):
         array = self.getArrayInsert()
         update = self.getArrayUpdate()
         self.sut.insert(array)
-        self.sut.newUpdate(update)
-        self.sut.db.create_index("by-id-parent","id", "user_eyeos", "cloud", "parent_id")
-        files = self.sut.db.get_from_index("by-id-parent","32565632156","eyeID_EyeosUser_2", "Stacksync", "9873615")
+        self.sut.update(update)
+        self.sut.db.create_index("by-id", "id", "user_eyeos")
+        files = self.sut.db.get_from_index("by-id", "32565632156", "eyeID_EyeosUser_2")
         results = []
         if len(files) > 0:
             for file in files:
                 results.append(file.content)
 
-        self.assertEquals(update[1],results[0])
+        self.assertEquals(update[1], results[0])
 
     """
     method: delete
     when: called
-    with: array
+    with: arrayWithoutCloud
     should: deleteCorrect
     """
-    def test_delete_called_array_deleteCorrect(self):
+    def test_delete_called_arrayWithoutCloud_deleteCorrect(self):
+        settings[ 'NEW_CODE' ] = "false"
         array = self.getArrayInsert()
         self.sut.insert(array)
         list = self.getArrayDelete()
         self.sut.delete(list)
         self.sut.db.create_index("by-user", "user_eyeos")
-        files = self.sut.db.get_from_index("by-user","eyeID_EyeosUser_2")
+        files = self.sut.db.get_from_index("by-user", "eyeID_EyeosUser_2")
         self.assertEquals(0,len(files))
 
     """
-    method: newDelete
+    method: delete
     when: called
-    with: array
+    with: arrayWithCloud
     should: deleteCorrect
     """
-    def test_newDelete_called_array_deleteCorrect(self):
+    def test_delete_called_arrayWithCloud_deleteCorrect(self):
         array = self.getArrayInsert()
         self.sut.insert(array)
         list = self.getArrayDelete()
-        self.sut.newDelete(list)
-        self.sut.db.create_index("by-user", "user_eyeos")
-        files = self.sut.db.get_from_index("by-user", "eyeID_EyeosUser_2")
-        self.assertEquals(0,len(files))
+        self.sut.delete(list)
+        self.sut.db.create_index("by-user", "user_eyeos", "cloud")
+        files = self.sut.db.get_from_index("by-user", "eyeID_EyeosUser_2", "Stacksync")
+        self.assertEquals(0, len(files))
 
     """
     method: getParent
@@ -134,21 +138,22 @@ class MetadataTest (unittest.TestCase):
     should: returnArray
     """
     def test_getParent_called_path_returnArray(self):
+        settings[ 'NEW_CODE' ] = "false";
         array = self.getArrayParent()
         self.sut.insert(array)
-        data = self.sut.getParent('/documents/',"clients","eyeID_EyeosUser_2")
+        data = self.sut.getParent({u'path': u'/documents/', u'filename': u'clients', u'user_eyeos': u'eyeID_EyeosUser_2'})
         self.assertEquals(array[0],data[0])
 
     """
-    method: newGetParent
+    method: getParent
     when: called
-    with: path
+    with: cloudAndPathAndFilenameAndUser
     should: returnArray
     """
-    def test_newGetParent_called_path_returnArray(self):
+    def test_getParent_called_cloudAndPathAndFilenameAndUser_returnArray(self):
         array = self.getArrayParent()
         self.sut.insert(array)
-        data = self.sut.newGetParent("Stacksync", "/documents/", "clients", "eyeID_EyeosUser_2")
+        data = self.sut.getParent({u'cloud': u'Stacksync', u'path': u'/documents/', u'filename': u'clients', u'user_eyeos': u'eyeID_EyeosUser_2'})
         self.assertEquals(array[0], data[0])
 
     """
@@ -158,24 +163,25 @@ class MetadataTest (unittest.TestCase):
     should: returnCorrect
     """
     def test_deleteFolder_called_idFolder_returnCorrect(self):
+        settings[ 'NEW_CODE' ] = "false"
         array = self.getArrayDeleteFolder()
         self.sut.insert(array)
-        self.sut.deleteFolder("9873615","eyeID_EyeosUser_2","/documents/")
+        self.sut.deleteFolder({u'id': 9873615, u'user_eyeos': u'eyeID_EyeosUser_2', u'path': u'/documents/'})
         docs = self.sut.db.get_all_docs()
-        self.assertEquals(1,len(docs[1]))
+        self.assertEquals(1, len(docs[1]))
 
     """
-    method: newDeleteFolder
+    method: deleteFolder
     when: called
-    with: idFolder
+    with: idFolderAndUserAndCloudAndPath
     should: returnCorrect
     """
-    def test_newDeleteFolder_called_idFolder_returnCorrect(self):
+    def test_deleteFolder_called_idFolderAndUserAndCloudAndPath_returnCorrect(self):
         array = self.getArrayDeleteFolder()
         self.sut.insert(array)
-        self.sut.newDeleteFolder("9873615","eyeID_EyeosUser_2", "Stacksync", "/documents/")
+        self.sut.deleteFolder({u'id': 9873615, u'user_eyeos': u'eyeID_EyeosUser_2', u'cloud': u'Stacksync', u'path': u'/documents/'})
         docs = self.sut.db.get_all_docs()
-        self.assertEquals(1,len(docs[1]))
+        self.assertEquals(1, len(docs[1]))
 
     """
     method: deleteMetadataUser
@@ -240,7 +246,7 @@ class MetadataTest (unittest.TestCase):
         array = self.getArrayInsertRename()
         self.sut.insert(array)
         expected = self.getArrayRenameFolder('/A 1/','A 1')
-        self.sut.renameMetadata({u'user_eyeos':u'eyeID_EyeosUser_2',u'status': u'CHANGED', u'is_root': False, u'version': 2, u'filename': u'A 1', u'parent_id': u'null', u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': u'9873615', u'user': u'eyeID_EyeosUser_2', u'is_root':False, u'is_folder':True})
+        self.sut.renameMetadata({u'cloud': u'Stacksync', u'user_eyeos':u'eyeID_EyeosUser_2',u'status': u'CHANGED', u'is_root': False, u'version': 2, u'filename': u'A 1', u'parent_id': u'null', u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': u'9873615', u'user': u'eyeID_EyeosUser_2', u'is_root':False, u'is_folder':True})
         files = self.sut.db.get_all_docs()
         results = []
         for file in files[1]:
@@ -258,7 +264,7 @@ class MetadataTest (unittest.TestCase):
         array = self.getArrayInsertRename()
         self.sut.insert(array)
         expected = self.getArrayRenameFile('B 1.txt')
-        self.sut.renameMetadata({u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'B 1.txt',u'path':u'/A/',u'id':u'32565632156',u'size':775412,u'mimetype':u'application/pdf',u'status':u'CHANGED',u'version':2,u'parent_id':u'9873615',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False})
+        self.sut.renameMetadata({u'cloud': u'Stacksync', u'user_eyeos': u'eyeID_EyeosUser_2', u'filename': u'B 1.txt', u'path': u'/A/', u'id': u'32565632156', u'size': 775412, u'mimetype': u'application/pdf', u'status': u'CHANGED', u'version': 2, u'parent_id': u'9873615', u'user': u'eyeos', u'client_modified': u'2013-03-08 10:36:41.997', u'server_modified': u'2013-03-08 10:36:41.997', u'is_folder': False})
         files = self.sut.db.get_all_docs()
         results = []
         for file in files[1]:
@@ -326,48 +332,63 @@ class MetadataTest (unittest.TestCase):
     """
     method: recursiveDeleteVersion
     when: called
-    with: id
+    with: idAndUser
     should: deleteCorrect
     """
-    def test_recursiveDeleteVersion_called_id_deleteCorrect(self):
+    def test_recursiveDeleteVersion_called_idAndUser_deleteCorrect(self):
+        settings[ 'NEW_CODE' ] = "false"
         array = self.getArrayInsertVersionMetadata()
         self.sut.insert(array)
         arrayVersion = self.getArrayInsertVersion()
         for version in arrayVersion:
             self.sut.db2.create_doc_from_json(json.dumps(version))
-        self.sut.recursiveDeleteVersion("9873615","eyeID_EyeosUser_2")
+        self.sut.recursiveDeleteVersion({u'id': 9873615, u'user_eyeos': u'eyeID_EyeosUser_2'})
         files = self.sut.db2.get_all_docs()
-        self.assertEquals(0,len(files[1]))
+        self.assertEquals(0, len(files[1]))
 
-
-    def test_newRecursiveDeleteVersion_called_id_deleteCorrect(self):
+    """
+    method: recursiveDeleteVersion
+    when: called
+    with: idAndUserAndCloud
+    should: deleteCorrect
+    """
+    def test_recursiveDeleteVersion_called_idAndUserAndCloud_deleteCorrect(self):
         array = self.getArrayInsertVersionMetadata()
         self.sut.insert(array)
         arrayVersion = self.getArrayInsertVersion()
         for version in arrayVersion:
             self.sut.db2.create_doc_from_json(json.dumps(version))
-        self.sut.newRecursiveDeleteVersion("9873615","eyeID_EyeosUser_2","Stacksync")
+        self.sut.recursiveDeleteVersion({u'id': 9873615, u'user_eyeos': u'eyeID_EyeosUser_2', u'cloud': u'Stacksync'})
         files = self.sut.db2.get_all_docs()
-        self.assertEquals(0,len(files[1]))
+        self.assertEquals(0, len(files[1]))
 
 
     def getArrayInsert(self):
-        array = [{u'user_eyeos':u'eyeID_EyeosUser_2',u'cloud':u'Stacksync',u'status': u'NEW', u'is_root': False, u'version': 1, u'filename': u'clients', u'parent_id': u'null', u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': u'9873615', u'user': u'eyeID_EyeosUser_2',u'is_folder':True},
-                {u'user_eyeos':u'eyeID_EyeosUser_2',u'cloud':u'Stacksync',u'filename':u'Client1.pdf',u'path':u'/clients/',u'id':u'32565632156',u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':3,u'parent_id':u'9873615',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False},
-                {u'user_eyeos':u'eyeID_EyeosUser_2',u'cloud':u'Nec',u'filename':u'Client1.pdf',u'path':u'/',u'id':u'32565632157',u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':3,u'parent_id':u'null',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False}]
+        array = [{u'user_eyeos': u'eyeID_EyeosUser_2', u'cloud':u'Stacksync', u'status': u'NEW', u'is_root': False, u'version': 1, u'filename': u'clients', u'parent_id': u'null', u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': u'9873615', u'user': u'eyeID_EyeosUser_2',u'is_folder':True},
+                 {u'user_eyeos': u'eyeID_EyeosUser_2', u'cloud':u'Stacksync', u'filename': u'Client1.pdf', u'path': u'/clients/', u'id': u'32565632156', u'size': 775412, u'mimetype': u'application/pdf', u'status': u'NEW', u'version': 3, u'parent_id': u'9873615', u'user': u'eyeos', u'client_modified': u'2013-03-08 10:36:41.997', u'server_modified': u'2013-03-08 10:36:41.997', u'is_folder': False},
+                 {u'user_eyeos': u'eyeID_EyeosUser_2', u'cloud':u'Nec', u'filename': u'Client1.pdf', u'path': u'/', u'id': u'32565632157', u'size': 775412, u'mimetype': u'application/pdf', u'status': u'NEW', u'version': 3, u'parent_id': u'null', u'user': u'eyeos', u'client_modified': u'2013-03-08 10:36:41.997', u'server_modified': u'2013-03-08 10:36:41.997', u'is_folder': False}]
         array.sort()
         return array
 
 
     def getArrayUpdate(self):
-        array = [{u'parent_old':u'9873615'},
-                {u'user_eyeos':u'eyeID_EyeosUser_2',u'cloud':u'Stacksync',u'filename':u'Client2.pdf',u'path':u'/clients/',u'id':u'32565632156',u'size':775412,u'mimetype':u'application/pdf',u'status':u'CHANGED',u'version':3,u'parent_id':u'9873615',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False}]
+        if settings[ 'NEW_CODE' ] == "true":
+            array = [{u'parent_old': u'9873615'},
+                     {u'user_eyeos': u'eyeID_EyeosUser_2', u'cloud': u'Stacksync', u'filename': u'Client2.pdf', u'path': u'/clients/', u'id': u'32565632156', u'size': 775412, u'mimetype': u'application/pdf', u'status': u'CHANGED', u'version': 3, u'parent_id': u'9873615', u'user': u'eyeos', u'client_modified': u'2013-03-08 10:36:41.997', u'server_modified': u'2013-03-08 10:36:41.997', u'is_folder': False}]
+        else:
+            array = [{u'parent_old': u'9873615'},
+                     {u'user_eyeos': u'eyeID_EyeosUser_2', u'filename': u'Client2.pdf', u'path': u'/clients/', u'id': u'32565632156', u'size': 775412, u'mimetype': u'application/pdf', u'status': u'CHANGED', u'version': 3, u'parent_id': u'9873615', u'user': u'eyeos', u'client_modified': u'2013-03-08 10:36:41.997', u'server_modified': u'2013-03-08 10:36:41.997', u'is_folder': False}]
         return array
 
     def getArrayDelete(self):
-        array = [{u'id': u'9873615', u'user_eyeos': u'eyeID_EyeosUser_2', u'cloud':u'Stacksync', u'parent_id':u'null'},
-                 {u'id': u'32565632156', u'user_eyeos': u'eyeID_EyeosUser_2', u'cloud':u'Stacksync', u'parent_id':u'9873615'},
-                 {u'id': u'32565632157', u'user_eyeos': u'eyeID_EyeosUser_2', u'cloud':u'Nec', u'parent_id':u'null'}]
+        if settings[ 'NEW_CODE' ] == "true":
+            array = [{u'id': u'9873615', u'user_eyeos': u'eyeID_EyeosUser_2', u'cloud':u'Stacksync', u'parent_id':u'null'},
+                     {u'id': u'32565632156', u'user_eyeos': u'eyeID_EyeosUser_2', u'cloud':u'Stacksync', u'parent_id':u'9873615'},
+                     {u'id': u'32565632157', u'user_eyeos': u'eyeID_EyeosUser_2', u'cloud':u'Nec', u'parent_id':u'null'}]
+        else:
+            array = [{u'id': u'9873615', u'user_eyeos': u'eyeID_EyeosUser_2', u'parent_id':u'null'},
+                     {u'id': u'32565632156', u'user_eyeos': u'eyeID_EyeosUser_2', u'parent_id':u'9873615'},
+                     {u'id': u'32565632157', u'user_eyeos': u'eyeID_EyeosUser_2', u'parent_id':u'null'}]
         array.sort()
         return array
 
@@ -385,29 +406,29 @@ class MetadataTest (unittest.TestCase):
         return array
 
     def getArrayInsertRename(self):
-        array = [{u'user_eyeos':u'eyeID_EyeosUser_2',u'status': u'NEW', u'is_root': False, u'version': 1, u'filename': u'A', u'parent_id': u'null', u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': u'9873615', u'user': u'eyeID_EyeosUser_2', u'is_root':False, u'is_folder':True},
-                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'B.txt',u'path':u'/A/',u'id':u'32565632156',u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':1,u'parent_id':u'9873615',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False},
-                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'D.txt',u'path':u'/A/',u'id':u'444441714',u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':1,u'parent_id':u'9873615',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False},
-                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'C',u'path':u'/A/',u'id':u'32565632157',u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':1,u'parent_id':u'9873615',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_root':False, u'is_folder':True},
-                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'E.txt',u'path':u'/A/C/',u'id':u'4415512',u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':1,u'parent_id':u'32565632157',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_root':False, u'is_folder':False}]
+        array = [{u'cloud': u'Stacksync', u'user_eyeos': u'eyeID_EyeosUser_2', u'status': u'NEW', u'is_root': False, u'version': 1, u'filename': u'A', u'parent_id': u'null', u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': u'9873615', u'user': u'eyeID_EyeosUser_2', u'is_root':False, u'is_folder':True},
+                 {u'cloud': u'Stacksync', u'user_eyeos': u'eyeID_EyeosUser_2', u'filename': u'B.txt', u'path': u'/A/', u'id': u'32565632156', u'size': 775412, u'mimetype': u'application/pdf', u'status': u'NEW', u'version': 1, u'parent_id': u'9873615', u'user': u'eyeos', u'client_modified': u'2013-03-08 10:36:41.997', u'server_modified': u'2013-03-08 10:36:41.997', u'is_folder': False},
+                 {u'cloud': u'Stacksync', u'user_eyeos': u'eyeID_EyeosUser_2', u'filename': u'D.txt', u'path': u'/A/', u'id': u'444441714', u'size': 775412, u'mimetype': u'application/pdf', u'status': u'NEW', u'version': 1, u'parent_id': u'9873615', u'user': u'eyeos', u'client_modified': u'2013-03-08 10:36:41.997', u'server_modified': u'2013-03-08 10:36:41.997', u'is_folder': False},
+                 {u'cloud': u'Stacksync', u'user_eyeos': u'eyeID_EyeosUser_2', u'filename': u'C', u'path': u'/A/', u'id': u'32565632157', u'size': 775412, u'mimetype': u'application/pdf', u'status': u'NEW', u'version': 1, u'parent_id': u'9873615', u'user': u'eyeos', u'client_modified': u'2013-03-08 10:36:41.997', u'server_modified': u'2013-03-08 10:36:41.997', u'is_root': False, u'is_folder': True},
+                 {u'cloud': u'Stacksync', u'user_eyeos': u'eyeID_EyeosUser_2', u'filename': u'E.txt', u'path': u'/A/C/', u'id': u'4415512', u'size': 775412, u'mimetype': u'application/pdf', u'status': u'NEW', u'version': 1, u'parent_id': u'32565632157', u'user': u'eyeos', u'client_modified': u'2013-03-08 10:36:41.997', u'server_modified': u'2013-03-08 10:36:41.997', u'is_root': False, u'is_folder': False}]
         array.sort()
         return array
 
     def getArrayRenameFolder(self, path, foldername):
-        array = [{u'user_eyeos':u'eyeID_EyeosUser_2',u'status': u'CHANGED', u'is_root': False, u'version': 2, u'filename': u'' + foldername + '', u'parent_id': u'null', u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': u'9873615', u'user': u'eyeID_EyeosUser_2', u'is_root':False, u'is_folder':True},
-                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'B.txt',u'path':u'' + path + '',u'id':u'32565632156',u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':1,u'parent_id':u'9873615',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False},
-                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'D.txt',u'path':u'' + path + '',u'id':u'444441714',u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':1,u'parent_id':u'9873615',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False},
-                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'C',u'path':u'' + path + '',u'id':u'32565632157',u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':1,u'parent_id':u'9873615',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_root':False, u'is_folder':True},
-                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'E.txt',u'path':u'' + path + 'C/',u'id':u'4415512',u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':1,u'parent_id':u'32565632157',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_root':False, u'is_folder':False}]
+        array = [{u'cloud': u'Stacksync', u'user_eyeos': u'eyeID_EyeosUser_2', u'status': u'CHANGED', u'is_root': False, u'version': 2, u'filename': u'' + foldername + '', u'parent_id': u'null', u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': u'9873615', u'user': u'eyeID_EyeosUser_2', u'is_root':False, u'is_folder':True},
+                 {u'cloud': u'Stacksync', u'user_eyeos': u'eyeID_EyeosUser_2', u'filename': u'B.txt', u'path': u'' + path + '', u'id': u'32565632156', u'size': 775412, u'mimetype': u'application/pdf', u'status': u'NEW', u'version': 1,u'parent_id': u'9873615', u'user': u'eyeos', u'client_modified': u'2013-03-08 10:36:41.997', u'server_modified': u'2013-03-08 10:36:41.997', u'is_folder': False},
+                 {u'cloud': u'Stacksync', u'user_eyeos': u'eyeID_EyeosUser_2', u'filename': u'D.txt', u'path': u'' + path + '', u'id': u'444441714', u'size': 775412, u'mimetype': u'application/pdf', u'status': u'NEW', u'version': 1,u'parent_id': u'9873615', u'user': u'eyeos', u'client_modified': u'2013-03-08 10:36:41.997', u'server_modified': u'2013-03-08 10:36:41.997', u'is_folder': False},
+                 {u'cloud': u'Stacksync', u'user_eyeos': u'eyeID_EyeosUser_2', u'filename': u'C', u'path': u'' + path + '', u'id': u'32565632157', u'size': 775412, u'mimetype': u'application/pdf', u'status': u'NEW', u'version': 1,u'parent_id': u'9873615', u'user': u'eyeos', u'client_modified': u'2013-03-08 10:36:41.997', u'server_modified': u'2013-03-08 10:36:41.997', u'is_root': False, u'is_folder': True},
+                 {u'cloud': u'Stacksync', u'user_eyeos': u'eyeID_EyeosUser_2', u'filename': u'E.txt', u'path': u'' + path + 'C/', u'id': u'4415512', u'size': 775412, u'mimetype': u'application/pdf', u'status': u'NEW', u'version': 1,u'parent_id': u'32565632157', u'user': u'eyeos', u'client_modified': u'2013-03-08 10:36:41.997', u'server_modified': u'2013-03-08 10:36:41.997', u'is_root': False, u'is_folder': False}]
         array.sort()
         return array
 
     def getArrayRenameFile(self, filename):
-        array = [{u'user_eyeos':u'eyeID_EyeosUser_2',u'status': u'NEW', u'is_root': False, u'version': 1, u'filename': u'A', u'parent_id': u'null', u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': u'9873615', u'user': u'eyeID_EyeosUser_2', u'is_root':False, u'is_folder':True},
-                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'' + filename + '',u'path':u'/A/',u'id':u'32565632156',u'size':775412,u'mimetype':u'application/pdf',u'status':u'CHANGED',u'version':2,u'parent_id':u'9873615',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False},
-                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'D.txt',u'path':u'/A/',u'id':u'444441714',u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':1,u'parent_id':u'9873615',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_folder':False},
-                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'C',u'path':u'/A/',u'id':u'32565632157',u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':1,u'parent_id':u'9873615',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_root':False, u'is_folder':True},
-                 {u'user_eyeos':u'eyeID_EyeosUser_2',u'filename':u'E.txt',u'path':u'/A/C/',u'id':u'4415512',u'size':775412,u'mimetype':u'application/pdf',u'status':u'NEW',u'version':1,u'parent_id':u'32565632157',u'user':u'eyeos',u'client_modified':u'2013-03-08 10:36:41.997',u'server_modified':u'2013-03-08 10:36:41.997',u'is_root':False, u'is_folder':False}]
+        array = [{u'cloud': u'Stacksync', u'user_eyeos': u'eyeID_EyeosUser_2', u'status': u'NEW', u'is_root': False, u'version': 1, u'filename': u'A', u'parent_id': u'null', u'server_modified': u'2013-03-08 10:36:41.997', u'path': u'/', u'client_modified': u'2013-03-08 10:36:41.997', u'id': u'9873615', u'user': u'eyeID_EyeosUser_2', u'is_root':False, u'is_folder':True},
+                 {u'cloud': u'Stacksync', u'user_eyeos': u'eyeID_EyeosUser_2', u'filename': u'' + filename + '', u'path': u'/A/', u'id': u'32565632156', u'size': 775412, u'mimetype': u'application/pdf', u'status': u'CHANGED', u'version': 2, u'parent_id': u'9873615', u'user': u'eyeos', u'client_modified': u'2013-03-08 10:36:41.997', u'server_modified': u'2013-03-08 10:36:41.997', u'is_folder': False},
+                 {u'cloud': u'Stacksync', u'user_eyeos': u'eyeID_EyeosUser_2', u'filename': u'D.txt', u'path': u'/A/', u'id': u'444441714', u'size': 775412, u'mimetype': u'application/pdf', u'status': u'NEW', u'version': 1, u'parent_id': u'9873615', u'user':u'eyeos', u'client_modified': u'2013-03-08 10:36:41.997', u'server_modified': u'2013-03-08 10:36:41.997', u'is_folder': False},
+                 {u'cloud': u'Stacksync', u'user_eyeos': u'eyeID_EyeosUser_2', u'filename': u'C', u'path':u'/A/', u'id': u'32565632157', u'size': 775412, u'mimetype': u'application/pdf', u'status': u'NEW', u'version': 1, u'parent_id': u'9873615', u'user': u'eyeos', u'client_modified': u'2013-03-08 10:36:41.997', u'server_modified': u'2013-03-08 10:36:41.997', u'is_root': False, u'is_folder': True},
+                 {u'cloud': u'Stacksync', u'user_eyeos': u'eyeID_EyeosUser_2', u'filename': u'E.txt', u'path': u'/A/C/', u'id': u'4415512', u'size': 775412, u'mimetype': u'application/pdf', u'status': u'NEW', u'version': 1, u'parent_id': u'32565632157', u'user': u'eyeos', u'client_modified': u'2013-03-08 10:36:41.997', u'server_modified': u'2013-03-08 10:36:41.997', u'is_root': False, u'is_folder': False}]
         array.sort()
         return array
 
@@ -421,8 +442,12 @@ class MetadataTest (unittest.TestCase):
         return array
 
     def getArrayInsertVersion(self):
-        array = [{u'id':u'32565632156',u'user_eyeos':u'eyeID_EyeosUser_2',u'cloud':u'Stacksync',u'version':2,u'recover':False},
-                 {u'id':u'222333',u'user_eyeos':u'eyeID_EyeosUser_2',u'cloud':u'Stacksync',u'version':2,u'recover':False}]
+        if settings[ 'NEW_CODE' ] == "true":
+            array = [{u'id': u'32565632156', u'user_eyeos': u'eyeID_EyeosUser_2', u'cloud': u'Stacksync', u'version': 2, u'recover': False},
+                     {u'id': u'222333', u'user_eyeos': u'eyeID_EyeosUser_2', u'cloud': u'Stacksync', u'version': 2, u'recover': False}]
+        else:
+            array = [{u'id': u'32565632156', u'user_eyeos': u'eyeID_EyeosUser_2', u'version': 2, u'recover': False},
+                     {u'id': u'222333', u'user_eyeos': u'eyeID_EyeosUser_2', u'version': 2, u'recover': False}]
         array.sort()
         return array
 
