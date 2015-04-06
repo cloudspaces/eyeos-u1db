@@ -18,20 +18,20 @@ class ApiProvider
 
     public function getMetadata($cloud, $token, $file, $id, $contents = null)
     {
-        $request = $this->getRequest('get',$token,$cloud);
+        $request = $this->getRequest('get', $token, $cloud);
         $request->metadata->file = $file;
         $request->metadata->id = "" . $id;
         $request->metadata->contents = $contents;
         return $this->exerciseMetadata($request);
     }
 
-    public function updateMetadata($token, $file, $id, $name = null, $parent = null)
+    public function updateMetadata($cloud, $token, $file, $id, $name = null, $parent = null)
     {
-        $request = $this->getRequest('update',$token);
+        $request = $this->getRequest('update', $token, $cloud);
         $request->metadata->file = $file;
         $request->metadata->id = "" . $id;
         $request->metadata->filename = $name;
-        $request->metadata->parent_id = $parent === null?'null':"" . $parent;
+        $request->metadata->parent_id = $parent === null ? 'null' : "" . $parent;
         return $this->exerciseMetadata($request);
     }
 

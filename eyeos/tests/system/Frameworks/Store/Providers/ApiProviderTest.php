@@ -102,105 +102,113 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     /**
      * method: updateMetadata
      * when: called
-     * with: tokenAndFileAndIdAndNameAndParent
+     * with: cloudAndTokenAndFileAndIdAndNameAndParent
      * should: returnMetadataRename
      */
-    public function test_updateMetadata_called_tokenAndFileAndIdAndNameAndParent_returnMetadataRename()
+    public function test_updateMetadata_called_cloudAndTokenAndFileAndIdAndNameAndParent_returnMetadataRename()
     {
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":"32565632156","filename":"Winter2012_renamed.jpg","parent_id":"12386548974"}}';
-        $metadataOut = '{"name":"Winter2012_renamed.jpg","path":"/documents/clients/","id":"32565632156","size":775412,"mimetype":"application/pdf","status":"RENAMED","version":2,"parent":"12386548974","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}';
-        $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$metadataOut,true,32565632156,"Winter2012_renamed.jpg",12386548974);
+        $cloud = "Stacksync";
+        $metadataIn = '{"config":{"cloud":"' . $cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":"32565632156","filename":"Winter2012_renamed.jpg","parent_id":"12386548974"}}';
+        $metadataOut = '{"name": "Winter2012_renamed.jpg", "path": "/documents/clients/", "id": "32565632156", "size": 775412, "mimetype": "application/pdf", "status": "RENAMED", "version": 2, "parent": "12386548974", "user": "eyeos", "client_modified": "2013-03-08 10:36:41.997", "server_modified": "2013-03-08 10:36:41.997"}';
+        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $metadataOut, true, 32565632156, "Winter2012_renamed.jpg", 12386548974, $cloud);
     }
 
     /**
      * method: updateMetadata
      * when: called
-     * with: tokenAndFileAndIdAndParent
+     * with: cloudAndTokenAndFileAndIdAndParent
      * should: returnMetadataMove
      */
-    public function test_updateMetadata_called_tokenAndFileAndIdAndParent_returnMetadataMove()
+    public function test_updateMetadata_called_cloudAndTokenAndFileAndIdAndParent_returnMetadataMove()
     {
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":"32565632156","filename":null,"parent_id":"123456"}}';
-        $metadataOut = '{"name":"Winter2012_renamed.jpg","path":"/documents/clients/","id":"32565632156","size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent":"123456","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}';
-        $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$metadataOut,true,32565632156,null,123456);
+        $cloud = "Stacksync";
+        $metadataIn = '{"config":{"cloud":"' . $cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":"32565632156","filename":null,"parent_id":"123456"}}';
+        $metadataOut = '{"name": "Winter2012_renamed.jpg", "path": "/documents/clients/", "id": "32565632156", "size": 775412, "mimetype": "application/pdf", "status": "CHANGED", "version": 2, "parent": "123456", "user": "eyeos", "client_modified": "2013-03-08 10:36:41.997", "server_modified": "2013-03-08 10:36:41.997"}';
+        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $metadataOut, true, 32565632156, null, 123456, $cloud);
     }
 
     /**
      * method: updateMetadata
      * when: called
-     * with: tokenAndFileAndId
+     * with: cloudAndTokenAndFileAndId
      * should: returnMetadataMove
      */
-    public function test_updateMetadata_called_tokenAndFileAndId_returnMetadataMove()
+    public function test_updateMetadata_called_cloudAndTokenAndFileAndId_returnMetadataMove()
     {
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":"32565632156","filename":null,"parent_id":"null"}}';
-        $metadataOut = '{"name":"Winter2012_renamed.jpg","path":"/documents/clients/","id":"32565632156","size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}';
-        $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$metadataOut,true,32565632156);
+        $cloud = "Stacksync";
+        $metadataIn = '{"config":{"cloud":"' . $cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":"32565632156","filename":null,"parent_id":"null"}}';
+        $metadataOut = '{"name": "Winter2012_renamed.jpg", "path": "/documents/clients/", "id": "32565632156", "size": 775412, "mimetype": "application/pdf", "status": "CHANGED", "version": 2, "parent_id": "null", "user": "eyeos", "client_modified": "2013-03-08 10:36:41.997", "server_modified": "2013-03-08 10:36:41.997"}';
+        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $metadataOut, true, 32565632156, null, null, $cloud);
     }
 
     /**
      * method: updateMetadata
      * when: called
-     * with: tokenAndFolderAndIdAndNameAndParent
+     * with: cloudAndTokenAndFolderAndIdAndNameAndParent
      * should: returnMetadataRename
      */
-    public function test_updateMeta_called_tokenAndFolderAndIdAndNameAndParent_returnMetadataRename()
+    public function test_updateMeta_called_cloudAndTokenAndFolderAndIdAndNameAndParent_returnMetadataRename()
     {
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":"Winter2012_renamed","parent_id":"12386548974"}}';
-        $metadataOut = '{"name":"Winter2012_renamed","path":"/documents/clients/","id":"32565632156","status":"CHANGED","version":2,"parent":"12386548974","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false}';
-        $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$metadataOut,false,32565632156,"Winter2012_renamed",12386548974);
+        $cloud = "Stacksync";
+        $metadataIn = '{"config":{"cloud":"' . $cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":"Winter2012_renamed","parent_id":"12386548974"}}';
+        $metadataOut = '{"name": "Winter2012_renamed", "path": "/documents/clients/", "id": "32565632156", "status": "CHANGED", "version": 2, "parent": "12386548974", "user": "eyeos", "client_modified": "2013-03-08 10:36:41.997", "server_modified": "2013-03-08 10:36:41.997", "is_root": false}';
+        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $metadataOut, false, 32565632156, "Winter2012_renamed", 12386548974, $cloud);
     }
 
     /**
      * method: updateMetadata
      * when: called
-     * with: tokenAndFolderAndIdAndParent
+     * with: cloudAndTokenAndFolderAndIdAndParent
      * should: returnMetadataMove
      */
-    public function test_updateMetadata_called_tokenAndFolderAndIdAndParent_returnMetadataMove()
+    public function test_updateMetadata_called_cloudAndTokenAndFolderAndIdAndParent_returnMetadataMove()
     {
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"123456"}}';
-        $metadataOut = '{"name":"Winter2012_renamed","path":"/documents/clients/","id":"32565632156","status":"CHANGED","version":2,"parent":"123456","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false}';
-        $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$metadataOut,false,32565632156,null,123456);
+        $cloud = "Stacksync";
+        $metadataIn = '{"config":{"cloud":"' . $cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"123456"}}';
+        $metadataOut = '{"name": "Winter2012_renamed", "path": "/documents/clients/", "id": "32565632156", "status": "CHANGED", "version": 2, "parent": "123456", "user": "eyeos", "client_modified": "2013-03-08 10:36:41.997", "server_modified": "2013-03-08 10:36:41.997", "is_root": false}';
+        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $metadataOut, false, 32565632156, null, 123456, $cloud);
     }
 
     /**
      * method: updateMetadata
      * when: called
-     * with: tokenAndFolderAndId
+     * with: cloudAndTokenAndFolderAndId
      * should: returnMetadataMove
      */
-    public function test_updateMetadata_called_tokenAndFolderAndId_returnMetadataMove()
+    public function test_updateMetadata_called_cloudAndTokenAndFolderAndId_returnMetadataMove()
     {
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"null"}}';
-        $metadataOut = '{"name":"Winter2012_renamed","path":"/documents/clients/","id":"32565632156","status":"CHANGED","version":2,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false}';
-        $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$metadataOut,false,32565632156);
+        $cloud = "Stacksync";
+        $metadataIn = '{"config":{"cloud":"' . $cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"null"}}';
+        $metadataOut = '{"name": "Winter2012_renamed", "path": "/documents/clients/", "id": "32565632156", "status": "CHANGED", "version": 2, "parent_id": "null", "user": "eyeos", "client_modified": "2013-03-08 10:36:41.997", "server_modified": "2013-03-08 10:36:41.997", "is_root": false}';
+        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $metadataOut, false, 32565632156, null, null, $cloud);
     }
 
     /**
      * method: updateMetadata
      * when: called
-     * with: tokenAndFolderAndId
+     * with: cloudAndTokenAndFolderAndId
      * should: returnException
      */
-    public function test_updateMetadata_called_tokenAndFolderAndId_returnException()
+    public function test_updateMetadata_called_cloudAndTokenAndFolderAndId_returnException()
     {
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"null"}}';
+        $cloud = "Stacksync";
+        $metadataIn = '{"config":{"cloud":"' . $cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"null"}}';
         $metadataOut = 'false';
-        $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$this->exception,false,32565632156);
+        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $this->exception, false, 32565632156, null, null, $cloud);
     }
 
     /**
      * method: updateMetadata
      * when: called
-     * with: tokenAndFolderAndId
+     * with: cloudAndTokenAndFolderAndId
      * should: returnPermissionDenied()
      */
-    public function test_updateMetadata_called_tokenAndFolderAndId_returnPermissionDenied()
+    public function test_updateMetadata_called_cloudAndTokenAndFolderAndId_returnPermissionDenied()
     {
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"null"}}';
+        $cloud = "Stacksync";
+        $metadataIn = '{"config":{"cloud":"' . $cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"null"}}';
         $metadataOut = '403';
-        $this->exerciseUpdateMetadata($metadataIn,$metadataOut,$this->permission,false,32565632156);
+        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $this->permission, false, 32565632156, null, null, $cloud);
     }
 
     /**
@@ -614,11 +622,11 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(json_decode($check),$result);
     }
 
-    private function exerciseUpdateMetadata($metadataIn,$metadataOut,$check,$file,$id,$name = null,$parent = null)
+    private function exerciseUpdateMetadata($metadataIn, $metadataOut, $check, $file, $id, $name = null, $parent = null, $cloud = null)
     {
-        $this->exerciseMockMetadata($metadataIn,$metadataOut);
-        $result = $this->sut->updateMetadata($this->token,$file,$id,$name,$parent);
-        $this->assertEquals(json_decode($check),$result);
+        $this->exerciseMockMetadata($metadataIn, $metadataOut);
+        $result = $this->sut->updateMetadata($cloud, $this->token, $file, $id, $name, $parent);
+        $this->assertEquals(json_decode($check), $result);
     }
 
     private function exerciseCreateMetadata($metadataIn,$metadataOut,$check,$file,$name,$parent = null,$pathAbsolute = null)

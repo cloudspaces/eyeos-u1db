@@ -638,10 +638,11 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 		$settings = MetaManager::getInstance()->retrieveMeta($currentUser);
 		$fileToRename = FSI::getFile($params[0]);
         $apiManager = new ApiManager();
-        $stacksync = count($params) == 5?true:false;
+        $cloudspace = count($params) == 6 ? true : false;
 
-        if($stacksync) {
-            $parent = $params[4] === 0?'null':$params[4];
+        if($cloudspace) {
+            $cloud = $params[5];
+            $parent = $params[4] === 0? 'null' : $params[4];
             if(!$fileToRename->isDirectory()) {
                 $pathAbsolute = AdvancedPathLib::getPhpLocalHackPath($fileToRename->getRealFile()->getAbsolutePath());
                 $metadata = $apiManager->downloadMetadata($_SESSION['access_token_v2'],$params[3],$pathAbsolute,$currentUser->getId());
@@ -670,11 +671,11 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             }
 
             if($fileToRename->renameTo($nameForCheck)) {
-                $path = self::getPathStacksync($renamed);
-                $resultado = $apiManager->renameMetadata($_SESSION['access_token_v2'],!$fileToRename->isDirectory(),$params[3],$renamed->getName(),$path,$currentUser->getId(),$parent);
+                $path = self::getPathCloud($renamed, $cloud);
+                $resultado = $apiManager->renameMetadata($cloud, $_SESSION['access_token_' . $cloud . '_v2'], !$fileToRename->isDirectory(), $params[3], $renamed->getName(), $path, $currentUser->getId(), $parent);
                 if (isset($resultado['error'])) {
                     if ($resultado['error'] == 403) {
-                        self::permissionDeniedStackSync($currentUser->getId());
+                        self::permissionDeniedCloud($cloud);
                     }
                     return $resultado;
                 }
@@ -695,7 +696,6 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 $i++;
                 $renamed = FSI::getFile($params[1] . '/' . $nameForCheck);
             }
-
             $fileToRename->renameTo($nameForCheck);
         }
 

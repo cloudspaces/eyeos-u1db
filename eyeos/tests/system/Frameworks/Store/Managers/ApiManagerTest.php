@@ -906,55 +906,58 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     /**
      * metho: renameMetadata
      * when: called
-     * with: tokenAndIsFileAndIdAndNameAndPathAndUserAndParentId
+     * with: cloudAndTokenAndIsFileAndIdAndNameAndPathAndUserAndParentId
      * should: returnU1dbRename
      */
-    public function test_renameMetadata_called_tokenAndIsFileAndIdAndNameAndPathAndUserAndParentId_returnU1dbRename()
+    public function test_renameMetadata_called_cloudAndTokenAndIsFileAndIdAndNameAndPathAndUserAndParentId_returnU1dbRename()
     {
         $id = 8339393;
         $name = "b.txt";
         $parent = 99999;
         $path = '/A/';
-        $this->exerciseRenameMetadata(true,$id,$parent,$path,$name);
+        $cloud = 'Stacksync';
+        $this->exerciseRenameMetadata(true, $id, $parent, $path, $name, $cloud);
     }
 
     /**
      * method: renameMetadata
      * when: called
-     * with: tokenAndIsFolderAndIdAndNameAndPathAndUserAndParentId
+     * with: cloudAndTokenAndIsFolderAndIdAndNameAndPathAndUserAndParentId
      * should: returnU1dbRename
      */
-    public function test_renameMetadata_called_tokenAndIsFolderAndIdAndNameAndPathAndUserAndParentId_returnU1dbRename()
+    public function test_renameMetadata_called_cloudAndTokenAndIsFolderAndIdAndNameAndPathAndUserAndParentId_returnU1dbRename()
     {
         $id = 8983444;
         $name = "F";
         $parent = 1333555;
         $path = '/D/';
-        $this->exerciseRenameMetadata(false,$id,$parent,$path,$name);
+        $cloud = 'Stacksync';
+        $this->exerciseRenameMetadata(false, $id, $parent, $path, $name, $cloud);
     }
 
     /**
      * method: renameMetadata
      * when: called
-     * with: tokenAndIsFolderAndIdAndNameAndPathAndUserAndParentId
+     * with: cloudAndTokenAndIsFolderAndIdAndNameAndPathAndUserAndParentId
      * should: returnPermissionDenied
      */
-    public function test_renameMetadata_called_tokenAndIsFolderAndIdAndNameAndPathAndUserAndParentId_returnPermissionDenied()
+    public function test_renameMetadata_called_cloudAndTokenAndIsFolderAndIdAndNameAndPathAndUserAndParentId_returnPermissionDenied()
     {
         $id = 8983444;
         $name = "F";
         $parent = 1333555;
         $path = '/D/';
         $metadata = '{"error":403}';
+        $cloud = 'Stacksync';
         $this->apiProviderMock->expects($this->at(0))
             ->method('updateMetadata')
-            ->with($this->token,false,$id,$name,$parent)
+            ->with($cloud, $this->token, false, $id, $name, $parent)
             ->will($this->returnValue(json_decode($metadata)));
 
         $this->accessorProviderMock->expects($this->never())
             ->method('getProcessDataU1db');
 
-        $this->sut->renameMetadata($this->token,false,$id,$name,$path,$this->user,$parent);
+        $this->sut->renameMetadata($cloud, $this->token, false, $id, $name, $path, $this->user, $parent);
     }
 
     /**
@@ -1524,28 +1527,28 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->sut->deleteMetadata($this->cloud,$this->token,$file,$id,$this->user,$pathOrig);
     }
 
-    private function exerciseRenameMetadata($file,$id,$parent,$path,$name)
+    private function exerciseRenameMetadata($file, $id, $parent, $path, $name, $cloud)
     {
-        $type = $file?'false':'true';
-        $metadata = '{"filename":"' . $name .'","id":"' . $id . '","size":775412,"mimetype":"application/pdf","status":"CHANGED","version":4,"parent_id":"'. $parent . '","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":' . $type . '}';
-        $metadataU1db = json_decode('{"user_eyeos":"' . $this->user . '","filename":"' . $name . '","id":"' . $id . '","size":775412,"mimetype":"application/pdf","status":"CHANGED","version":4,"parent_id":"'. $parent . '","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":' . $type . ',"path":"' . $path . '"}');
+        $type = $file ? 'false' : 'true';
+        $metadata = '{"filename": "' . $name .'", "id": "' . $id . '", "size": 775412, "mimetype": "application/pdf", "status": "CHANGED", "version": 4, "parent_id": "'. $parent . '", "user": "eyeos", "client_modified": "2013-03-08 10:36:41.997", "server_modified": "2013-03-08 10:36:41.997", "is_folder": ' . $type . '}';
+        $metadataU1db = json_decode('{"cloud": "' . $cloud . '", "user_eyeos": "' . $this->user . '", "filename": "' . $name . '", "id": "' . $id . '", "size": 775412, "mimetype": "application/pdf", "status": "CHANGED", "version": 4, "parent_id": "'. $parent . '", "user": "eyeos", "client_modified": "2013-03-08 10:36:41.997", "server_modified": "2013-03-08 10:36:41.997", "is_folder": ' . $type . ', "path": "' . $path . '"}');
 
         $this->apiProviderMock->expects($this->at(0))
             ->method('updateMetadata')
-            ->with($this->token,$file,$id,$name,$parent)
+            ->with($cloud, $this->token, $file, $id, $name, $parent)
             ->will($this->returnValue(json_decode($metadata)));
 
         $u1dbIn = new stdClass();
         $u1dbIn->type = 'rename';
         $u1dbIn->lista = array();
-        array_push($u1dbIn->lista,$metadataU1db);
+        array_push($u1dbIn->lista, $metadataU1db);
 
         $this->accessorProviderMock->expects($this->at(0))
             ->method('getProcessDataU1db')
             ->with(json_encode($u1dbIn))
             ->will($this->returnValue('true'));
 
-        $this->sut->renameMetadata($this->token,$file,$id,$name,$path,$this->user,$parent);
+        $this->sut->renameMetadata($cloud, $this->token, $file, $id, $name, $path, $this->user, $parent);
     }
 
     private function exerciseMoveMetadata($id,$filename,$parent,$file,$pathOrig,$pathNew,$metadataMove,$metadataDelete,$metadataInsert,$fileDest = null)

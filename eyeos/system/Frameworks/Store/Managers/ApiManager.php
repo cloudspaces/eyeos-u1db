@@ -291,14 +291,14 @@ class ApiManager
         return $result;
     }
 
-    public function renameMetadata($token,$file,$id,$name,$path,$user,$parent=NULL)
+    public function renameMetadata($cloud, $token, $file, $id, $name, $path, $user, $parent=NULL)
     {
         $result['status'] = 'KO';
         $result['error'] = -1;
-        $metadata = $this->apiProvider->updateMetadata($token,$file,$id,$name,$parent);
+        $metadata = $this->apiProvider->updateMetadata($cloud, $token, $file, $id, $name, $parent);
         if (!isset($metadata->error)) {
-            $this->addPathMetadata($metadata,$path);
-            if($this->callProcessU1db('rename',$this->setUserEyeos($metadata,$user)) == 'true') {
+            $this->addPathMetadata($metadata, $path);
+            if($this->callProcessU1db('rename', $this->setUserEyeos($metadata, $user, $cloud)) == 'true') {
                 $result['status'] = 'OK';
                 unset($result['error']);
             }
@@ -360,7 +360,7 @@ class ApiManager
         if ($type == 'update') {
             $json->lista = $lista;
         } else {
-            array_push($json->lista,$lista);
+            array_push($json->lista, $lista);
         }
         if ($credentials) {
             $json->credentials = $credentials;
@@ -505,14 +505,14 @@ class ApiManager
         return $result;
     }
 
-    private function setUserEyeos($metadata,$user,$cloud = NULL)
+    private function setUserEyeos($metadata, $user, $cloud = NULL)
     {
         $aux = new stdClass();
         if($cloud) {
             $aux->cloud = $cloud;
         }
         $aux->user_eyeos = $user;
-        $metadata = (object)array_merge((array)$aux,(array)$metadata);
+        $metadata = (object)array_merge((array)$aux, (array)$metadata);
         return $metadata;
     }
 
