@@ -41,8 +41,8 @@ class Metadata:
         results = []
         if id != "null":
             if settings[ 'NEW_CODE' ] == "true":
-                self.db.create_index("by-id-path", "id", "user_eyeos", "cloud", "path")
-                files = self.db.get_from_index("by-id-path", str(lista[ 'id' ]), lista[ 'user_eyeos' ], lista[ 'cloud' ], lista[ 'path' ])
+                self.db.create_index("by-id-cloud-path", "id", "user_eyeos", "cloud", "path")
+                files = self.db.get_from_index("by-id-cloud-path", str(lista[ 'id' ]), lista[ 'user_eyeos' ], lista[ 'cloud' ], lista[ 'path' ])
             else:
                 self.db.create_index("by-id-path", "id", "user_eyeos", "path")
                 files = self.db.get_from_index("by-id-path", str(lista[ 'id' ]), lista[ 'user_eyeos' ], lista[ 'path' ])
@@ -50,8 +50,8 @@ class Metadata:
                 results.append(file.content)
 
         if settings[ 'NEW_CODE' ] == "true":
-            self.db.create_index("by-parent-path", "parent_id", "user_eyeos", "cloud", "path")
-            files = self.db.get_from_index("by-parent-path", str(lista[ 'id' ]), lista[ 'user_eyeos' ], lista[ 'cloud' ], lista[ 'path' ] + "*")
+            self.db.create_index("by-parent-cloud-path", "parent_id", "user_eyeos", "cloud", "path")
+            files = self.db.get_from_index("by-parent-cloud-path", str(lista[ 'id' ]), lista[ 'user_eyeos' ], lista[ 'cloud' ], lista[ 'path' ] + "*")
         else:
             self.db.create_index("by-parent-path", "parent_id", "user_eyeos", "path")
             files = self.db.get_from_index("by-parent-path", str(lista[ 'id' ]), lista[ 'user_eyeos' ], lista[ 'path' ] + "*")
@@ -61,7 +61,7 @@ class Metadata:
 
     def update(self, lista):
         if settings[ 'NEW_CODE' ] == "true":
-            self.db.create_index("by-id-parent", "id", "user_eyeos", "cloud", "parent_id")
+            self.db.create_index("by-id-cloud-parent", "id", "user_eyeos", "cloud", "parent_id")
         else:
             self.db.create_index("by-id-parent", "id", "user_eyeos", "parent_id")
         parent = ''
@@ -74,7 +74,7 @@ class Metadata:
                 if data.has_key( 'cloud' ):
                     cloud = data[ 'cloud' ]
                 if settings[ 'NEW_CODE' ] == "true":
-                    files = self.db.get_from_index("by-id-parent", id, user, cloud, parent)
+                    files = self.db.get_from_index("by-id-cloud-parent", id, user, cloud, parent)
                 else:
                     files = self.db.get_from_index("by-id-parent", id, user, parent)
                 if len(files) > 0:
@@ -84,7 +84,7 @@ class Metadata:
 
     def delete(self, lista):
         if settings[ 'NEW_CODE' ] == "true":
-            self.db.create_index("by-id-parent", "id", "user_eyeos", "cloud", "parent_id")
+            self.db.create_index("by-id-cloud-parent", "id", "user_eyeos", "cloud", "parent_id")
         else:
             self.db.create_index("by-id-parent", "id", "user_eyeos", "parent_id")
         for data in lista:
@@ -94,7 +94,7 @@ class Metadata:
             if data.has_key( 'cloud' ):
                 cloud = data[ 'cloud' ]
             if settings[ 'NEW_CODE' ] == "true":
-                files = self.db.get_from_index("by-id-parent", id, user, cloud, parent)
+                files = self.db.get_from_index("by-id-cloud-parent", id, user, cloud, parent)
             else:
                 files = self.db.get_from_index("by-id-parent", id, user, parent)
             if len(files) > 0:
@@ -103,8 +103,8 @@ class Metadata:
     def getParent(self, lista):
         results = []
         if settings[ 'NEW_CODE' ] == "true":
-            self.db.create_index("by-path-filename", "cloud", "path", "filename", "user_eyeos")
-            files = self.db.get_from_index("by-path-filename", lista[ 'cloud' ], lista[ 'path' ], lista[ 'filename' ], lista[ 'user_eyeos' ])
+            self.db.create_index("by-path-cloud-filename", "cloud", "path", "filename", "user_eyeos")
+            files = self.db.get_from_index("by-path-cloud-filename", lista[ 'cloud' ], lista[ 'path' ], lista[ 'filename' ], lista[ 'user_eyeos' ])
         else:
             self.db.create_index("by-path-filename", "path", "filename", "user_eyeos")
             files = self.db.get_from_index("by-path-filename", lista[ 'path' ], lista[ 'filename' ], lista[ 'user_eyeos' ])
@@ -114,8 +114,8 @@ class Metadata:
 
     def deleteFolder(self, lista):
         if settings[ 'NEW_CODE' ] == "true":
-            self.db.create_index("by-parent-path", "parent_id", "user_eyeos", "cloud", "path")
-            files = self.db.get_from_index("by-parent-path", str(lista[ 'id' ]), lista[ 'user_eyeos' ], lista[ 'cloud' ], lista[ 'path' ] + "*")
+            self.db.create_index("by-parent-cloud-path", "parent_id", "user_eyeos", "cloud", "path")
+            files = self.db.get_from_index("by-parent-cloud-path", str(lista[ 'id' ]), lista[ 'user_eyeos' ], lista[ 'cloud' ], lista[ 'path' ] + "*")
         else:
             self.db.create_index("by-parent-path", "parent_id", "user_eyeos", "path")
             files = self.db.get_from_index("by-parent-path",str(lista[ 'id' ]), lista[ 'user_eyeos' ], lista[ 'path' ] + "*")
@@ -128,8 +128,8 @@ class Metadata:
                     self.db.delete_doc(file)
 
         if settings[ 'NEW_CODE' ] == "true":
-            self.db.create_index("by-id-path", "id", "user_eyeos", "cloud", "path")
-            files = self.db.get_from_index("by-id-path", str(lista[ 'id' ]), lista[ 'user_eyeos' ], lista[ 'cloud' ], lista[ 'path' ])
+            self.db.create_index("by-id-cloud-path", "id", "user_eyeos", "cloud", "path")
+            files = self.db.get_from_index("by-id-cloud-path", str(lista[ 'id' ]), lista[ 'user_eyeos' ], lista[ 'cloud' ], lista[ 'path' ])
         else:
             self.db.create_index("by-id-path", "id", "user_eyeos", "path")
             files = self.db.get_from_index("by-id-path", str(lista[ 'id' ]), lista[ 'user_eyeos' ], lista[ 'path' ])
@@ -177,8 +177,8 @@ class Metadata:
 
     def renameMetadata(self, metadata):
         if settings[ 'NEW_CODE' ] == "true":
-            self.db.create_index("by-id-path", "cloud", "id", "user_eyeos", "path")
-            files = self.db.get_from_index("by-id-path", metadata[ 'cloud' ], str(metadata[ 'id' ]), metadata[ 'user_eyeos' ], metadata[ 'path' ])
+            self.db.create_index("by-id-cloud-path", "cloud", "id", "user_eyeos", "path")
+            files = self.db.get_from_index("by-id-cloud-path", metadata[ 'cloud' ], str(metadata[ 'id' ]), metadata[ 'user_eyeos' ], metadata[ 'path' ])
         else:
             self.db.create_index("by-id-path", "id", "user_eyeos", "path")
             files = self.db.get_from_index("by-id-path", str(metadata[ 'id' ]), metadata[ 'user_eyeos' ], metadata[ 'path' ])
@@ -193,8 +193,8 @@ class Metadata:
 
     def renamePath(self, metadata, pathOld, pathNew):
         if settings[ 'NEW_CODE' ] == "true":
-            self.db.create_index("by-parent-path", "parent_id", "cloud", "user_eyeos", "path")
-            files = self.db.get_from_index("by-parent-path", str(metadata[ 'id' ]), metadata[ 'cloud' ], metadata[ 'user_eyeos' ], pathOld)
+            self.db.create_index("by-parent-cloud-path", "parent_id", "cloud", "user_eyeos", "path")
+            files = self.db.get_from_index("by-parent-cloud-path", str(metadata[ 'id' ]), metadata[ 'cloud' ], metadata[ 'user_eyeos' ], pathOld)
         else:
             self.db.create_index("by-parent-path", "parent_id","user_eyeos","path")
             files = self.db.get_from_index("by-parent-path", str(metadata[ 'id' ]), metadata[ 'user_eyeos' ], pathOld)
@@ -233,8 +233,8 @@ class Metadata:
 
     def recursiveDeleteVersion(self, lista):
         if settings[ 'NEW_CODE' ] == "true":
-            self.db.create_index("by-parent", "parent_id", "cloud")
-            files = self.db.get_from_index("by-parent", str(lista[ 'id' ]), lista[ 'cloud' ])
+            self.db.create_index("by-parent-cloud", "parent_id", "cloud")
+            files = self.db.get_from_index("by-parent-cloud", str(lista[ 'id' ]), lista[ 'cloud' ])
         else:
             self.db.create_index("by-parent", "parent_id")
             files = self.db.get_from_index("by-parent", str(lista[ 'id' ]))
@@ -242,8 +242,8 @@ class Metadata:
             if file.content[ 'is_folder' ] == True:
                 self.recursiveDeleteVersion(file.content)
             if settings[ 'NEW_CODE' ] == "true":
-                self.db2.create_index("by-id-user","id","user_eyeos","cloud")
-                files = self.db2.get_from_index("by-id-user", str(file.content[ 'id' ]), lista[ 'user_eyeos' ], lista[ 'cloud' ])
+                self.db2.create_index("by-id-user-cloud","id","user_eyeos","cloud")
+                files = self.db2.get_from_index("by-id-user-cloud", str(file.content[ 'id' ]), lista[ 'user_eyeos' ], lista[ 'cloud' ])
             else:
                 self.db2.create_index("by-id-user","id","user_eyeos")
                 files = self.db2.get_from_index("by-id-user", str(file.content[ 'id' ]), lista[ 'user_eyeos' ])

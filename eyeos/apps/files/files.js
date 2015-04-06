@@ -1309,23 +1309,27 @@ qx.Class.define('eyeos.files.Controller', {
 			var absPath = selected.getFile().getAbsolutePath();
 			var currentPath = this.getModel().getCurrentPath()[1];
 			if (selected.getFile().getName() != rename) {
-
                 var params =  [absPath, currentPath, rename];
+                var cloud = this.isCloud(currentPath);
 
-                if(this.__isStacksync(currentPath)) {
-                    var idFile = this.__getFileId(currentPath,selected.getFile().getName());
-                    var idParent = this.__getFileIdFolder(currentPath);
+                if(cloud.isCloud) {
+                    var idFile = this.__getFileId(currentPath, selected.getFile().getName());
+                    var idParent = this.__getFileIdFolder(currentPath, cloud.cloud);
                     if(idFile !== null && idParent !== null) {
-                       params.splice(params.length,0,idFile);
-                       params.splice(params.length,0,idParent);
+                        params.splice(params.length, 0, idFile);
+                        params.splice(params.length, 0, idParent);
+                        params.splice(params.length, 0, cloud.cloud);
                     }
                 }
 
                 this.closeTimer();
+                this.openCursorLoad();
 
-				eyeos.callMessage(this.getApplication().getChecknum(), 'rename',params, function (results) {
-                    if(this.__isStacksync(currentPath)) {
+				eyeos.callMessage(this.getApplication().getChecknum(), 'rename', params, function (results) {
+                    this.closeCursorLoad();
+                    if(cloud.isCloud) {
                         if(results.error != 403) {
+                            this.openCursorLoad();
                             this._browsePath(currentPath);
                         } else {
                             this.__permissionDenied();
@@ -1972,7 +1976,7 @@ qx.Class.define('eyeos.files.Controller', {
         },
         __permissionDenied:function() {
             this.closeTimer();
-            this._browsePath('home://~'+eyeos.getCurrentUserName()+'/');
+            this._browsePath('home://~' + eyeos.getCurrentUserName() + '/');
             this.__verifierUser = false;
             this.__token = null;
             this.setToken(false);
@@ -2357,7 +2361,7 @@ qx.Class.define('eyeos.files.Controller', {
         isCloud: function(path) {
             var result = new Object();
             result.isCloud = false;
-            var root = 'home://~'+ eyeos.getCurrentUserName()+'/Cloudspaces/';
+            var root = 'home://~' + eyeos.getCurrentUserName() + '/Cloudspaces/';
 
             if(this.__isCloudspaces(path) && !this.isRootCloudSpaces(path)) {
                 result.isCloud = true;
@@ -2366,6 +2370,7 @@ qx.Class.define('eyeos.files.Controller', {
                     cloud = cloud.substring(0,cloud.indexOf('/'));
                 }
                 result.cloud = cloud;
+                this.__cloud = cloud;
             }
             return result;
         },
