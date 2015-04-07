@@ -24,6 +24,24 @@ class StoreListener extends AbstractFileAdapter implements ISharingListener {
         return self::$Instance;
     }
 
+    private function isCloud($path, $user)
+    {
+        $cloud = new stdClass();
+        $cloud->isCloud = false;
+        $cloud->name = "";
+        $cloudspaces = 'home://~' . $user . '/Cloudspaces/';
+        if (strrpos($path, $cloudspaces) != -1 && $path !== $cloudspaces) {
+            $cloud->isCloud = true;
+            $auxCloud = substr($path, strlen($cloudspaces));
+            $posStartSlash = strrpos($auxCloud, '/');
+            if ($posStartSlash != -1) {
+                $cloud->name = substr($auxCloud, 0, $posStartSlash);
+                $cloud->path = $cloudspaces . $cloud->name;
+            }
+        }
+        return $cloud;
+    }
+
     public function fileWritten(FileEvent $e)
     {
         //Logger::getLogger('sebas')->error('MetadataWritten:' . $e->getSource()->getPath());
@@ -31,41 +49,42 @@ class StoreListener extends AbstractFileAdapter implements ISharingListener {
         $path = $e->getSource()->getPath();
         $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
         $userName = $user->getName();
-        if(strpos($path,"home://~" . $userName . "/Stacksync") !== false) {
-            $len = strlen("home://~" . $userName . "/Stacksync");
-            $pathU1db = substr($path,$len);
-            $lenfinal = strrpos($pathU1db,$e->getSource()->getName());
-            $posfinal = $lenfinal > 1?$lenfinal-strlen($pathU1db)-1:$lenfinal-strlen($pathU1db);
-            $pathParent = substr($pathU1db,0,$posfinal);
+        $cloud = $this->isCloud($path, $userName);
+        if($cloud->isCloud) {
+            $pathU1db = substr($path, strlen($cloud->path));
+            $lenfinal = strrpos($pathU1db, $e->getSource()->getName());
+            $posfinal = $lenfinal > 1 ? $lenfinal-strlen($pathU1db)-1 : $lenfinal-strlen($pathU1db);
+            $pathParent = substr($pathU1db, 0, $posfinal);
             $folder = NULL;
             if ($pathParent !== '/') {
                 $pos=strrpos($pathParent,'/');
-                $folder = substr($pathParent,$pos+1);
-                $pathParent = substr($pathParent,0,$pos+1);
+                $folder = substr($pathParent, $pos+1);
+                $pathParent = substr($pathParent, 0, $pos+1);
             }
             $parentId = false;
 
             if($folder !== NULL) {
                 $path = $pathParent . $folder . '/';
                 $lista = new stdClass();
+                $lista->cloud = $cloud->name;
                 $lista->path = $pathParent;
                 $lista->filename = $folder;
                 $lista->user_eyeos = $user->getId();
-                $u1db = json_decode($apiManager->callProcessU1db('parent',$lista));
+                $u1db = json_decode($apiManager->callProcessU1db('parent', $lista));
                 if($u1db !== NULL && count($u1db) > 0) {
                     $parentId = $u1db[0]->id;
                 }
             } else {
-                $parentId = '0'; //'null'
+                $parentId = '0';
                 $path = $pathParent;
             }
 
             if($parentId !== false) {
                 $pathAbsolute = AdvancedPathLib::getPhpLocalHackPath($e->getSource()->getRealFile()->getAbsolutePath());
-                $result = $apiManager->createMetadata($_SESSION['access_token_v2'],$user->getId(),true,$e->getSource()->getName(),$parentId,$path,$pathAbsolute);
+                $result = $apiManager->createMetadata($cloud->name, $_SESSION['access_token_' . $cloud->name . '_v2'], $user->getId(), true, $e->getSource()->getName(), $parentId, $path, $pathAbsolute);
                 if($result['status'] == 'OK') {
                     $params = array($e->getSource()->getParentPath());
-                    $message = new ClientBusMessage('file', 'refreshStackSync',$params);
+                    $message = new ClientBusMessage('file', 'refreshStackSync', $params);
                     ClientMessageBusController::getInstance()->queueMessage($message);
                 } else if($result['error'] == 403) {
                     unset($_SESSION['access_token_v2']);
@@ -77,11 +96,7 @@ class StoreListener extends AbstractFileAdapter implements ISharingListener {
                     ClientMessageBusController::getInstance()->queueMessage($message);
                 }
             }
-
-            /*$message = new ClientBusMessage('file', 'permissionDenied',$e->getSource()->getPath());
-            ClientMessageBusController::getInstance()->queueMessage($message);*/
         }
-
     }
 }
 
