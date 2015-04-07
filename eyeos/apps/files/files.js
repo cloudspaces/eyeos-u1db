@@ -1134,12 +1134,6 @@ qx.Class.define('eyeos.files.Controller', {
 					if(filesToDelete[i].getFile().getAbsolutePath() != 'home://~' + eyeos.getCurrentUserName() + '/Desktop') {
                         var params = new Object();
                         params.file = filesToDelete[i].getFile().getAbsolutePath();
-                        /*if (this.__isStacksync(currentPath)) {
-                            var id = this.__getFileId(currentPath,filesToDelete[i].getFile().getName());
-                            if (id !== null) {
-                                params.id =  id;
-                            }
-                        }*/
                         if(cloud.isCloud === true) {
                             var id = this.__getFileId(currentPath,filesToDelete[i].getFile().getName());
                             if (id !== null) {
@@ -1157,8 +1151,6 @@ qx.Class.define('eyeos.files.Controller', {
 				}
 
                 this.closeTimer();
-
-
                 this.openCursorLoad();
 
 				eyeos.callMessage(this.getApplication().getChecknum(), 'delete', files, function (results) {

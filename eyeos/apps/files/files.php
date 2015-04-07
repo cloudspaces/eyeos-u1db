@@ -419,7 +419,6 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 	 */
 	public static function delete($params) {
 		$currentUser = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
-		$settings = MetaManager::getInstance()->retrieveMeta($currentUser);
 		$filesInfo = array();
         $apiManager = new ApiManager();
 		foreach ($params as $param) {
@@ -430,11 +429,9 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 			    self::removeUrlShareInfo($param['file']);
                 if(isset($param['id'])) {
                     $cloud = $param['cloud'];
-                    //$result = $apiManager->deleteMetadata($_SESSION['access_token_v2'],$isFile,$param['id'],$currentUser->getId(),$fileToRemove->getParentPath());
-                    $result = $apiManager->deleteMetadata($cloud,$_SESSION['access_token_' . $cloud . '_v2'],$isFile,$param['id'],$currentUser->getId(),$fileToRemove->getParentPath());
+                    $result = $apiManager->deleteMetadata($cloud, $_SESSION['access_token_' . $cloud . '_v2'], $isFile, $param['id'], $currentUser->getId(), $fileToRemove->getParentPath());
                     if($result) {
                         if(isset($result['error']) && $result['error'] == 403) {
-                            //self::permissionDeniedStackSync($currentUser->getId());
                             $denied = self::permissionDeniedCloud($cloud);
                             $result['path'] = $denied['path'];
                             return $result;
