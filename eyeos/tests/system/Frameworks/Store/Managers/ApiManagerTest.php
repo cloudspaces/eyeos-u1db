@@ -701,11 +701,12 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     {
         $path = "/home/eyeos/prueba.txt";
         $id = "8888888";
+        $cloud = "Stacksync";
         $metadata = '{"filename":"prueba.pdf","id":"8888888","status":"NEW","version":1,"parent_id":"32565632156","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":false}';
-        $this->getDownloadMetadata($metadata,"null",$id);
+        $this->getDownloadMetadata($metadata, "null", $id, $cloud);
         $this->apiProviderMock->expects($this->at(1))
             ->method('downloadMetadata')
-            ->with($this->token,$id,$path)
+            ->with($cloud, $this->token, $id, $path)
             ->will($this->returnValue('true'));
 
         $params = new stdClass();
@@ -713,6 +714,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $params->lista = array();
         $aux = new stdClass();
         $aux->id = $id;
+        $aux->cloud = $cloud;
         $aux->user_eyeos = $this->user;
         $aux->version = 1;
         $aux->recover = false;
@@ -723,7 +725,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->with(json_encode($params))
             ->will($this->returnValue('true'));
 
-        $this->sut->downloadMetadata($this->token,$id,$path,$this->user,false);
+        $this->sut->downloadMetadata($this->token, $id, $path, $this->user, false, $cloud);
     }
 
     /**
@@ -736,11 +738,12 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     {
         $path = "/home/eyeos/prueba.txt";
         $id = "8888888";
+        $cloud = "Stacksync";
         $metadata = '{"filename":"prueba.pdf","id":"8888888","status":"NEW","version":1,"parent_id":"32565632156","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":false}';
-        $this->getDownloadMetadata($metadata,'{"id":"8888888","version":1,"recover":false}',$id);
+        $this->getDownloadMetadata($metadata, '{"id":"8888888","version":1,"recover":false}', $id, $cloud);
         $this->apiProviderMock->expects($this->never())
             ->method('downloadMetadata');
-        $this->sut->downloadMetadata($this->token,$id,$path,$this->user,false);
+        $this->sut->downloadMetadata($this->token, $id, $path, $this->user, false, $cloud);
     }
 
     /**
@@ -753,12 +756,13 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     {
         $path = "/home/eyeos/prueba.txt";
         $id = "8888888";
+        $cloud = "Stacksync";
         $metadata = '{"filename":"prueba.pdf","id":"8888888","status":"NEW","version":2,"parent_id":"32565632156","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":false}';
-        $this->getDownloadMetadata($metadata,'{"id":"8888888","user_eyeos":"eyeID_EyeosUser_2","version":1,"recover":false}',$id);
+        $this->getDownloadMetadata($metadata, '{"id":"8888888","user_eyeos":"eyeID_EyeosUser_2","version":1,"recover":false}', $id, $cloud);
 
         $this->apiProviderMock->expects($this->at(1))
             ->method('downloadMetadata')
-            ->with($this->token,$id,$path)
+            ->with($cloud, $this->token, $id, $path)
             ->will($this->returnValue('true'));
 
         $params = new stdClass();
@@ -766,6 +770,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $params->lista = array();
         $aux = new stdClass();
         $aux->id = $id;
+        $aux->cloud = $cloud;
         $aux->user_eyeos = $this->user;
         $aux->version = 2;
         $aux->recover = false;
@@ -776,7 +781,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->with(json_encode($params))
             ->will($this->returnValue('true'));
 
-        $this->sut->downloadMetadata($this->token,$id,$path,$this->user,false);
+        $this->sut->downloadMetadata($this->token, $id, $path, $this->user, false, $cloud);
     }
 
     /**
@@ -789,13 +794,14 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     {
         $path = "/home/eyeos/prueba.txt";
         $id = "8888888";
+        $cloud = "Stacksync";
         $metadata = '{"filename":"prueba.pdf","id":"8888888","status":"NEW","version":2,"parent_id":"32565632156","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":false}';
-        $this->getDownloadMetadata($metadata,'{"id":"8888888","user_eyeos":"eyeID_EyeosUser_2","version":1,"recover":true}',$id);
+        $this->getDownloadMetadata($metadata, '{"id":"8888888","user_eyeos":"eyeID_EyeosUser_2","version":1,"recover":true}', $id, $cloud);
 
         $this->apiProviderMock->expects($this->never())
             ->method('downloadMetadata');
 
-        $this->sut->downloadMetadata($this->token,$id,$path,$this->user,false);
+        $this->sut->downloadMetadata($this->token, $id, $path, $this->user, false, $cloud);
     }
 
     /**
@@ -808,10 +814,11 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     {
         $path = "/home/eyeos/prueba.txt";
         $id = "8888888";
+        $cloud = "Stacksync";
         $metadata = '{"filename":"prueba.pdf","id":"8888888","status":"NEW","version":2,"parent_id":"32565632156","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":false}';
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
-            ->with($this->token,true,$id)
+            ->with($cloud, $this->token, true, $id)
             ->will($this->returnValue(json_decode($metadata)));
 
         $params = new stdClass();
@@ -820,19 +827,20 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $aux = new stdClass();
         $aux->id = $id;
         $aux->user_eyeos = $this->user;
+        $aux->cloud = $cloud;
         array_push($params->lista,$aux);
 
         $this->accessorProviderMock->expects($this->exactly(1))
             ->method('getProcessDataU1db')
             ->with(json_encode($params))
-            ->will($this->returnValue('{"id":"8888888","version":1,"recover":false}'));
+            ->will($this->returnValue('{"id": "8888888", "cloud": "Stacksync", "user_eyeos": "eyeos", "version": 1, "recover": false}'));
 
         $this->apiProviderMock->expects($this->at(1))
             ->method('downloadMetadata')
-            ->with($this->token,$id,$path)
+            ->with($cloud, $this->token, $id, $path)
             ->will($this->returnValue('true'));
 
-        $this->sut->downloadMetadata($this->token,$id,$path,$this->user,true);
+        $this->sut->downloadMetadata($this->token, $id, $path, $this->user, true, $cloud);
     }
 
     /**
@@ -845,15 +853,16 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     {
         $path = "/home/eyeos/prueba.txt";
         $id = 8888888;
+        $cloud = "Stacksync";
         $metadata = '{"error":403}';
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
-            ->with($this->token,true,$id)
+            ->with($cloud, $this->token, true, $id)
             ->will($this->returnValue(json_decode($metadata)));
 
         $this->filesProviderMock->expects($this->never())
             ->method('putContents');
-        $this->sut->downloadMetadata($this->token,$id,$path,$this->user,false);
+        $this->sut->downloadMetadata($this->token, $id, $path, $this->user, false, $cloud);
     }
 
     /**
@@ -1601,11 +1610,11 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
     }
 
-    private function getDownloadMetadata($metadata,$expected,$id)
+    private function getDownloadMetadata($metadata, $expected, $id, $cloud)
     {
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
-            ->with($this->token,true,$id)
+            ->with($cloud, $this->token, true, $id)
             ->will($this->returnValue(json_decode($metadata)));
 
         $params = new stdClass();
@@ -1614,7 +1623,8 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $aux = new stdClass();
         $aux->id = $id;
         $aux->user_eyeos = $this->user;
-        array_push($params->lista,$aux);
+        $aux->cloud = $cloud;
+        array_push($params->lista, $aux);
 
         $this->accessorProviderMock->expects($this->at(0))
             ->method('getProcessDataU1db')

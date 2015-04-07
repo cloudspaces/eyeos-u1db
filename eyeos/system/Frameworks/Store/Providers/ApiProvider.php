@@ -53,10 +53,10 @@ class ApiProvider
         return $this->exerciseMetadata($request);
     }
 
-    public function downloadMetadata($token, $id, $path)
+    public function downloadMetadata($cloud, $token, $id, $path)
     {
         $resp = json_decode('{"error":-1}');
-        $request = $this->getRequest('download', $token);
+        $request = $this->getRequest('download', $token, $cloud);
         $request->metadata->id = "" . $id;
         $request->metadata->path = $path;
         $result = $this->accessorProvider->getProcessOauthCredentials(json_encode($request));

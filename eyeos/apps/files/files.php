@@ -644,10 +644,10 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $parent = $params[4] === 0? 'null' : $params[4];
             if(!$fileToRename->isDirectory()) {
                 $pathAbsolute = AdvancedPathLib::getPhpLocalHackPath($fileToRename->getRealFile()->getAbsolutePath());
-                $metadata = $apiManager->downloadMetadata($_SESSION['access_token_v2'],$params[3],$pathAbsolute,$currentUser->getId());
+                $metadata = $apiManager->downloadMetadata($cloud, $_SESSION['access_token_' . $cloud . '_v2'], $params[3], $pathAbsolute, $currentUser->getId());
                 if(isset($metadata['error'])) {
                     if ($metadata['error'] == 403) {
-                        self::permissionDeniedStackSync($currentUser->getId());
+                        self::permissionDeniedCloud($cloud);
                     }
                     return $metadata;
                 }

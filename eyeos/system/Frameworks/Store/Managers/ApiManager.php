@@ -200,11 +200,11 @@ class ApiManager
         return $result;
     }
 
-    public function downloadMetadata($token,$id,$path,$user,$isTmp=false,$cloud = NULL)
+    public function downloadMetadata($token, $id, $path, $user, $isTmp=false, $cloud = NULL)
     {
         $result['status'] = 'KO';
         $result['error'] = -1;
-        $metadata = $this->apiProvider->getMetadata($token,true,$id,$cloud);
+        $metadata = $this->apiProvider->getMetadata($cloud, $token, true, $id);
         $insert = false;
         $type = '';
 
@@ -212,7 +212,8 @@ class ApiManager
             $lista = new stdClass();
             $lista->id = "" . $id;
             $lista->user_eyeos = $user;
-            $metadataU1db = $this->callProcessU1db('getDownloadVersion',$lista);
+            $lista->cloud = $cloud;
+            $metadataU1db = $this->callProcessU1db('getDownloadVersion', $lista);
             if($metadataU1db !== "null") {
                 $metadataU1db = json_decode($metadataU1db);
                 if($metadataU1db) {
@@ -231,15 +232,16 @@ class ApiManager
             }
 
             if($insert) {
-                $content = $this->apiProvider->downloadMetadata($token,$id,$path);
+                $content = $this->apiProvider->downloadMetadata($cloud, $token, $id, $path);
                 if(!isset($content->error)) {
                     if ($isTmp == false) {
                         $lista = new stdClass();
                         $lista->id = "" . $id;
+                        $lista->cloud = $cloud;
                         $lista->user_eyeos = $user;
                         $lista->version = $metadata->version;
                         $lista->recover = false;
-                        $resultU1db = $this->callProcessU1db($type,$lista);
+                        $resultU1db = $this->callProcessU1db($type, $lista);
                         if($resultU1db === 'true') {
                             $result['status'] = 'OK';
                             unset($result['error']);

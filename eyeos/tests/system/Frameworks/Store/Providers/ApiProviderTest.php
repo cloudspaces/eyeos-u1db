@@ -340,7 +340,8 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     {
         $path = "/home/eyeos/prueba1.pdf";
         $metadataOut = 'true';
-        $this->exerciseDownloadMetadata($metadataOut,$metadataOut,1234561,$path);
+        $cloud = "Stacksync";
+        $this->exerciseDownloadMetadata($metadataOut, $metadataOut, 1234561, $path, $cloud);
     }
 
     /**
@@ -353,7 +354,8 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     {
         $path = "/home/eyeos/prueba2.pdf";
         $metadataOut = 'false';
-        $this->exerciseDownloadMetadata($metadataOut,json_decode($this->exception),1234561,$path);
+        $cloud = "Stacksync";
+        $this->exerciseDownloadMetadata($metadataOut, json_decode($this->exception), 1234561, $path, $cloud);
     }
 
     /**
@@ -366,7 +368,8 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     {
         $path = "/home/eyeos/prueba3.pdf";
         $metadataOut = '403';
-        $this->exerciseDownloadMetadata($metadataOut,json_decode($this->permission),1234561,$path);
+        $cloud = "Stacksync";
+        $this->exerciseDownloadMetadata($metadataOut, json_decode($this->permission), 1234561, $path, $cloud);
     }
 
     /**
@@ -643,14 +646,14 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(json_decode($check),$result);
     }
 
-    private function exerciseDownloadMetadata($metadataOut,$check,$id,$path)
+    private function exerciseDownloadMetadata($metadataOut, $check, $id, $path, $cloud)
     {
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"download","id":"1234561","path":"' . $path . '"}}';
+        $metadataIn = '{"config": {"cloud": "' . $cloud . '"}, "token": {"key": "ABCD", "secret": "EFGH"}, "metadata": {"type": "download", "id": "1234561", "path": "' . $path . '"}}';
         $metadataIn = json_decode($metadataIn);
         $metadataIn = json_encode($metadataIn);
         $this->exerciseMockMetadata($metadataIn,$metadataOut);
-        $result = $this->sut->downloadMetadata($this->token,$id,$path);
-        $this->assertEquals($check,$result);
+        $result = $this->sut->downloadMetadata($cloud, $this->token, $id, $path);
+        $this->assertEquals($check, $result);
     }
 
     private function exerciseDeleteMetadata($metadataIn,$metadataOut,$check,$file,$id)
