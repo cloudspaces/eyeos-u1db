@@ -974,8 +974,8 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $pathNew = "/documents/";
         $filename = "prueba.pdf";
         $metadataMove = '{"filename":"' . $filename . '","id":"' . $id . '","size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":"' . $parent . '","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false}';
-        $metadataDelete = '{"id":' . $id . ',"user_eyeos":"' . $this->user . '","path":"' . $pathOrig. '"}';
-        $metadataInsert = json_decode('{"user_eyeos":"' . $this->user . '","filename":"' . $filename . '","id":"' . $id . '","size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":"'. $parent . '","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false,"path":"' . $pathNew . '"}');
+        $metadataDelete = '{"id":' . $id . ',"user_eyeos":"' . $this->user . '","cloud":"' . $this->cloud .'","path":"' . $pathOrig. '"}';
+        $metadataInsert = json_decode('{"cloud":"' . $this->cloud .'","user_eyeos":"' . $this->user . '","filename":"' . $filename . '","id":"' . $id . '","size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":"'. $parent . '","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false,"path":"' . $pathNew . '"}');
         $this->exerciseMoveMetadata($id,$filename,$parent,true,$pathOrig,$pathNew,$metadataMove,$metadataDelete, $metadataInsert);
     }
 
@@ -994,8 +994,8 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $filename = "prueba.pdf";
         $fileDest = "prueba 1.pdf";
         $metadataMove = '{"filename":"' . $fileDest . '","id":"' . $id . '","size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":"' . $parent . '","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false}';
-        $metadataDelete = '{"id":' . $id . ',"user_eyeos":"' . $this->user . '","path":"' . $pathOrig. '"}';
-        $metadataInsert = json_decode('{"user_eyeos":"' . $this->user . '","filename":"' . $fileDest . '","id":"' . $id . '","size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":"'. $parent . '","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false,"path":"' . $pathNew . '"}');
+        $metadataDelete = '{"id":' . $id . ',"user_eyeos":"' . $this->user . '","cloud":"' . $this->cloud .'","path":"' . $pathOrig. '"}';
+        $metadataInsert = json_decode('{"cloud":"' . $this->cloud .'","user_eyeos":"' . $this->user . '","filename":"' . $fileDest . '","id":"' . $id . '","size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":"'. $parent . '","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false,"path":"' . $pathNew . '"}');
         $this->exerciseMoveMetadata($id,$filename,$parent,true,$pathOrig,$pathNew,$metadataMove,$metadataDelete, $metadataInsert,$fileDest);
     }
 
@@ -1013,8 +1013,8 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $pathNew = "/documents/";
         $filename = "prueba";
         $metadataMove = '{"filename":"' . $filename . '","id":"' . $id . '","size":0,"status":"CHANGED","version":2,"parent_id":"' . $parent . '","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":true,"is_root":false}';
-        $metadataDelete = '{"id":' . $id . ',"user_eyeos":"' . $this->user . '","path":"' . $pathOrig. '"}';
-        $metadataInsert = json_decode('{"user_eyeos":"' . $this->user . '","filename":"' . $filename . '","id":"' . $id . '","size":0,"status":"CHANGED","version":2,"parent_id":"'. $parent . '","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":true,"is_root":false,"path":"' . $pathNew . '"}');
+        $metadataDelete = '{"id":' . $id . ',"user_eyeos":"' . $this->user . '","cloud":"' . $this->cloud .'","path":"' . $pathOrig. '"}';
+        $metadataInsert = json_decode('{"cloud":"' . $this->cloud .'","user_eyeos":"' . $this->user . '","filename":"' . $filename . '","id":"' . $id . '","size":0,"status":"CHANGED","version":2,"parent_id":"'. $parent . '","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":true,"is_root":false,"path":"' . $pathNew . '"}');
         $this->exerciseMoveMetadata($id,$filename,$parent,false,$pathOrig,$pathNew,$metadataMove,$metadataDelete,$metadataInsert);
 
     }
@@ -1032,7 +1032,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->apiProviderMock->expects($this->at(0))
             ->method('updateMetadata')
-            ->with($this->token,false,$id,null,$parent)
+            ->with($this->cloud,$this->token,false,$id,null,$parent)
             ->will($this->returnValue(json_decode('{"error":403}')));
 
         $this->accessorProviderMock->expects($this->never())
@@ -1041,7 +1041,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->filesProviderMock->expects($this->never())
             ->method('deleteFile');
 
-        $this->sut->moveMetadata($this->token,false,$id,$this->path,$this->path . "/documents",$this->user,$parent,null);
+        $this->sut->moveMetadata($this->cloud,$this->token,false,$id,$this->path,$this->path . "/documents",$this->user,$parent,null);
     }
 
 
@@ -1106,6 +1106,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $aux = new stdClass();
         $aux->id = $id;
         $aux->user_eyeos = $user;
+        $aux->cloud = $this->cloud;
         array_push($params->lista,$aux);
 
         $this->accessorProviderMock->expects($this->once())
@@ -1113,7 +1114,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->with(json_encode($params))
             ->will($this->returnValue('true'));
 
-        $result = $this->sut->recursiveDeleteVersion($id,$user);
+        $result = $this->sut->recursiveDeleteVersion($this->cloud,$id,$user);
         $this->assertEquals(array("status" =>"OK"),$result);
     }
 
@@ -1555,7 +1556,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     {
         $this->apiProviderMock->expects($this->at(0))
             ->method('updateMetadata')
-            ->with($this->token,$file,$id,$fileDest?$fileDest:$filename,$parent)
+            ->with($this->cloud,$this->token,$file,$id,$fileDest?$fileDest:$filename,$parent)
             ->will($this->returnValue(json_decode($metadataMove)));
 
         $u1dbIn = new stdClass();
@@ -1575,7 +1576,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->filesProviderMock->expects($this->at(0))
             ->method('deleteFile')
-            ->with($this->path . $pathOrig . $filename,!$file)
+            ->with($this->pathCloud . $pathOrig . $filename,!$file)
             ->will($this->returnValue(true));
 
 
@@ -1593,10 +1594,10 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->filesProviderMock->expects($this->at(1))
             ->method('createFile')
-            ->with($this->path . $pathNew . $fileNew,!$file)
+            ->with($this->pathCloud . $pathNew . $fileNew,!$file)
             ->will($this->returnValue(true));
 
-        $this->sut->moveMetadata($this->token,$file,$id,$this->path,$this->path . "/documents",$this->user,$parent,$filename,$fileDest);
+        $this->sut->moveMetadata($this->cloud,$this->token,$file,$id,$this->pathCloud,$this->pathCloud . "/documents",$this->user,$parent,$filename,$fileDest);
 
     }
 

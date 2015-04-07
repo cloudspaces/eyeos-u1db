@@ -308,23 +308,24 @@ class ApiManager
         return $result;
     }
 
-    public function moveMetadata($token,$file,$id,$pathOrig,$pathDest,$user,$parent,$filenameOld,$filenameNew = null)
+    public function moveMetadata($cloud,$token,$file,$id,$pathOrig,$pathDest,$user,$parent,$filenameOld,$filenameNew = null)
     {
         $result['status'] = 'KO';
         $result['error'] = -1;
-        $metadata = $this->apiProvider->updateMetadata($token,$file,$id,$filenameNew?$filenameNew:$filenameOld,$parent);
+        $metadata = $this->apiProvider->updateMetadata($cloud,$token,$file,$id,$filenameNew?$filenameNew:$filenameOld,$parent);
 
         if(!isset($metadata->error)) {
             $delete = new stdClass();
             $delete->id = $id;
             $delete->user_eyeos = $user;
-            $delete ->path = $this->getPathU1db($pathOrig);
+            $delete->cloud = $cloud;
+            $delete ->path = $this->getPathU1db($pathOrig,$cloud);
 
             if($this->callProcessU1db('deleteFolder',$delete) == 'true') {
                 $delete = $this->filesProvider->deleteFile($pathOrig . '/' . $filenameOld, !$file);
                 if($delete) {
-                    $metadata = $this->setUserEyeos($metadata,$user);
-                    $this->addPathMetadata($metadata,$this->getPathU1db($pathDest));
+                    $metadata = $this->setUserEyeos($metadata,$user,$cloud);
+                    $this->addPathMetadata($metadata,$this->getPathU1db($pathDest,$cloud));
                     if($this->callProcessU1db('insert',$metadata) == 'true') {
                         $this->filesProvider->createFile($pathDest . '/' . $metadata->filename,!$file);
                         $result['status'] = 'OK';
@@ -338,12 +339,13 @@ class ApiManager
 
     }
 
-    public function recursiveDeleteVersion($id,$user) {
+    public function recursiveDeleteVersion($cloud,$id,$user) {
         $result['status'] = 'KO';
         $result['error'] = -1;
         $lista = new stdClass();
         $lista->id = "" . $id;
         $lista->user_eyeos = $user;
+        $lista->cloud = $cloud;
         $resultU1db = $this->callProcessU1db("recursiveDeleteVersion",$lista);
         if($resultU1db === 'true') {
             $result['status'] = 'OK';

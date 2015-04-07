@@ -517,10 +517,10 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         $settings = MetaManager::getInstance()->retrieveMeta($currentUser);
         $pathOrig = $params['orig'];
         $pathDest = $params['dest'];
-        $stacksyncDest = $params['stacksyncDest'];
-        $stacksyncOrig = $params['stacksyncOrig'];
+        $cloudDest = $params['cloudDest'];
+        $cloudOrig = $params['cloudOrig'];
 
-        if ($stacksyncOrig === $stacksyncDest) {
+        if ($cloudOrig === $cloudDest) {
 
             $file = null;
 
@@ -561,20 +561,21 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 $change = true;
             }
 
-            if($stacksyncOrig) {
-                $apiManager->recursiveDeleteVersion($params['file']['id'],$currentUser->getId());
+            if($cloudOrig) {
+                $apiManager->recursiveDeleteVersion($params['cloud'],$params['file']['id'],$currentUser->getId());
             }
 
-            if($stacksyncOrig && $stacksyncDest) {
+            if($cloudOrig && $cloudDest) {
                 if($isDirectory) {
                     $filename = $theName;
                 } else {
                     $filename = $theName . '.' . $extension;
                 }
-                $result = $apiManager->moveMetadata($_SESSION['access_token_v2'],!$isDirectory,$params['file']['id'],$pathOrig,$pathDest,$currentUser->getId(),$params['idParent'],$filename,$change == true?$nameForCheck:null);
+                $result = $apiManager->moveMetadata($params['cloud'],$_SESSION['access_token_' . $params['cloud'] . '_v2'],!$isDirectory,$params['file']['id'],$pathOrig,$pathDest,$currentUser->getId(),$params['idParent'],$filename,$change == true?$nameForCheck:null);
                 if($result['status'] == 'KO') {
                     if($result['error'] == 403) {
-                        self::permissionDeniedStackSync($currentUser->getId());
+                        $denied = self::permissionDeniedCloud($params['cloud']);
+                        $result['path'] = $denied['path'];
                     }
                     return $result;
                 }
@@ -587,13 +588,14 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             return $return;
 
         } else {
-            if($stacksyncOrig) {
-                $apiManager->recursiveDeleteVersion($params['file']['id'],$currentUser->getId());
+            if($cloudOrig) {
+                $apiManager->recursiveDeleteVersion($params['cloud'],$params['file']['id'],$currentUser->getId());
             }
             $result = self::copyFile($params);
             if (array_key_exists('error',$result)) {
                 if($result['error'] == 403) {
-                    self::permissionDeniedStackSync($currentUser->getId());
+                    $denied = self::permissionDeniedCloud($params['cloud']);
+                    $result['path'] = $denied['path'];
                 }
             }
             return $result;
@@ -897,7 +899,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         $apiManager = new ApiManager();
         $metadatas = array();
         $result = array();
-        $cloud = $params['cloud'];
+        $cloud = isset($params['cloud'])?$params['cloud']:null;
 
         if($params['action'] == 'copy' || !(($params['cloudOrig'] == true && $params['cloudDest'] == true) || ($params['cloudOrig'] == false && $params['cloudDest'] == false))) {
             for($i = 0; $i < count($params['files']); $i++) {

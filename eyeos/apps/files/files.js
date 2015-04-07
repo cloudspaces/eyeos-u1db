@@ -689,6 +689,7 @@ qx.Class.define('eyeos.files.Controller', {
                         this.__callBrowsePath(path,addToHistory,false);
                     }
                 } else {
+                    this.closeCursorLoad();
                     this.__callBrowsePath(path,addToHistory,false);
                 }
             }
@@ -1682,6 +1683,7 @@ qx.Class.define('eyeos.files.Controller', {
                 this.__progress.addListener('beforeClose', function() {
                     this.__progress = null;
                     this.closeTimer();
+                    this.openCursorLoad();
                     this._browsePath(params['folder'], true, true);
                 },this);
 
@@ -1706,7 +1708,7 @@ qx.Class.define('eyeos.files.Controller', {
                            this.__copyFile(params.cloud, result, result.metadatas.length - 1, params.folder, pathOrig);
                        } else {
                            var listDelete = this.__getFilesDelete(result.metadatas);
-                           this.__moveFile(result.metadatas,result.metadatas.length - 1,pathOrig,params.folder,params.idParent,params.stacksyncOrig,params.stacksyncDest,listDelete);
+                           this.__moveFile(result.metadatas,result.metadatas.length - 1,pathOrig,params.folder,params.idParent,params.cloudOrig,params.cloudDest,listDelete,params.cloud);
                        }
                     } else {
                         this.closeProgress();
@@ -1719,12 +1721,12 @@ qx.Class.define('eyeos.files.Controller', {
             }
         },
 
-        __moveFile: function(files,pos,pathOrig,pathDest,idParent,stacksyncOrig,stacksyncDest,listDelete)
+        __moveFile: function(files,pos,pathOrig,pathDest,idParent,cloudOrig,cloudDest,listDelete,cloud)
         {
             var length = files.length;
             var deleteFiles = false;
 
-            if(stacksyncOrig !== stacksyncDest) {
+            if(cloudOrig !== cloudDest) {
                 length += listDelete.length;
                 deleteFiles = true;
             }
@@ -1735,26 +1737,31 @@ qx.Class.define('eyeos.files.Controller', {
                 params.orig = pathOrig;
                 params.dest = pathDest;
                 params.idParent = idParent;
-                params.stacksyncOrig = stacksyncOrig;
-                params.stacksyncDest = stacksyncDest;
+                params.cloudOrig = cloudOrig;
+                params.cloudDest = cloudDest;
+                params.cloud = cloud;
 
                 eyeos.callMessage(this.getApplication().getChecknum(),'move',params,function(result) {
                     if(result && !result.error){
                         this.__size += 1;
                         this.__updateProgress(length);
                         pos --;
-                        this.__moveFile(files,pos,pathOrig,pathDest,idParent,stacksyncOrig,stacksyncDest,listDelete);
+                        this.__moveFile(files,pos,pathOrig,pathDest,idParent,cloudOrig,cloudDest,listDelete,cloud);
 
                     } else {
                         this.closeProgress();
                         if(result.error == 403) {
+                            this.__cloud = cloud;
+                            if(result.path) {
+                                this._deleteFolderCloud(result.path);
+                            }
                             this.__permissionDenied();
                         }
                     }
                 },this);
             } else {
                 if(deleteFiles) {
-                    this.__deleteComponent(listDelete,0,length);
+                    this.__deleteComponent(listDelete,0,length,cloud);
                 } else {
                     this.__closeProgress();
                 }
@@ -1769,6 +1776,7 @@ qx.Class.define('eyeos.files.Controller', {
                 params.file = data.metadatas[pos];
                 params.dest = dest;
                 params.orig = pathOrig;
+
                 eyeos.callMessage(this.getApplication().getChecknum(), 'copyFile', params, function(result) {
                     if(!result.error) {
                         if(result.filenameChange) {
@@ -1859,8 +1867,12 @@ qx.Class.define('eyeos.files.Controller', {
             return files;
         },
 
-        __deleteComponent: function(deleteFiles,pos,sizeTotal) {
+        __deleteComponent: function(deleteFiles,pos,sizeTotal,cloud) {
+
             if(pos < deleteFiles.length) {
+                if(cloud) {
+                    deleteFiles[pos].cloud = cloud;
+                }
                 eyeos.callMessage(this.getApplication().getChecknum(),'delete',[deleteFiles[pos]],function() {
                     this.__size += 1;
                     this.__updateProgress(sizeTotal);
