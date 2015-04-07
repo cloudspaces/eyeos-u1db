@@ -177,8 +177,8 @@ class Metadata:
 
     def renameMetadata(self, metadata):
         if settings[ 'NEW_CODE' ] == "true":
-            self.db.create_index("by-id-cloud-path", "cloud", "id", "user_eyeos", "path")
-            files = self.db.get_from_index("by-id-cloud-path", metadata[ 'cloud' ], str(metadata[ 'id' ]), metadata[ 'user_eyeos' ], metadata[ 'path' ])
+            self.db.create_index("by-id-cloud-path", "id", "user_eyeos", "cloud", "path")
+            files = self.db.get_from_index("by-id-cloud-path", str(metadata[ 'id' ]), metadata[ 'user_eyeos' ], metadata[ 'cloud' ], metadata[ 'path' ])
         else:
             self.db.create_index("by-id-path", "id", "user_eyeos", "path")
             files = self.db.get_from_index("by-id-path", str(metadata[ 'id' ]), metadata[ 'user_eyeos' ], metadata[ 'path' ])
@@ -193,8 +193,8 @@ class Metadata:
 
     def renamePath(self, metadata, pathOld, pathNew):
         if settings[ 'NEW_CODE' ] == "true":
-            self.db.create_index("by-parent-cloud-path", "parent_id", "cloud", "user_eyeos", "path")
-            files = self.db.get_from_index("by-parent-cloud-path", str(metadata[ 'id' ]), metadata[ 'cloud' ], metadata[ 'user_eyeos' ], pathOld)
+            self.db.create_index("by-parent-cloud-path", "parent_id", "user_eyeos", "cloud", "path")
+            files = self.db.get_from_index("by-parent-cloud-path", str(metadata[ 'id' ]), metadata[ 'user_eyeos' ], metadata[ 'cloud' ], pathOld)
         else:
             self.db.create_index("by-parent-path", "parent_id","user_eyeos","path")
             files = self.db.get_from_index("by-parent-path", str(metadata[ 'id' ]), metadata[ 'user_eyeos' ], pathOld)
