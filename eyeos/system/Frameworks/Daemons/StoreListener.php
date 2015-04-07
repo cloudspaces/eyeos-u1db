@@ -49,6 +49,7 @@ class StoreListener extends AbstractFileAdapter implements ISharingListener {
         $token = new Token();
         $token->setCloudspaceName($cloud);
         $token->setUserID($user->getId());
+        $path = '';
         if ($oauthManager->deleteToken($token)) {
             if ($apiManager->deleteMetadataUser($user->getId(), $cloud)) {
                 unset($_SESSION['request_token_' . $cloud . '_v2']);
@@ -59,8 +60,10 @@ class StoreListener extends AbstractFileAdapter implements ISharingListener {
                 $folderToRename2 = FSI::getFile($pathDest);
                 shell_exec('mv ' . AdvancedPathLib::getPhpLocalHackPath($folderToRename1->getRealFile()->getAbsolutePath()) . ' ' .
                     AdvancedPathLib::getPhpLocalHackPath($folderToRename2->getRealFile()->getAbsolutePath()));
+                $path = AdvancedPathLib::getPhpLocalHackPath($folderToRename2->getRealFile()->getAbsolutePath());
             }
         }
+        return $path;
     }
 
     public function fileWritten(FileEvent $e)
@@ -108,8 +111,9 @@ class StoreListener extends AbstractFileAdapter implements ISharingListener {
                     $message = new ClientBusMessage('file', 'refreshStackSync', $params);
                     ClientMessageBusController::getInstance()->queueMessage($message);
                 } else if($result['error'] == 403) {
-                    $this->cleanCloud($cloud->name, $user);
-                    $message = new ClientBusMessage('file', 'permissionDenied',null);
+                    $path = $this->cleanCloud($cloud->name, $user);
+                    $params = array($path,$cloud->name);
+                    $message = new ClientBusMessage('file', 'permissionDenied',$params);
                     ClientMessageBusController::getInstance()->queueMessage($message);
                 }
             }

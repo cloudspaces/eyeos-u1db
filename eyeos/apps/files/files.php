@@ -915,7 +915,8 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             for($i = 0;$i < count($metadatas);$i++) {
                 if(isset($metadatas[$i]->error)) {
                     if($metadatas[$i]->error == 403) {
-                        self::permissionDeniedCloud($cloud);
+                        $denied = self::permissionDeniedCloud($cloud);
+                        $result['path'] = $denied['path'];
                     }
                     $result['error'] = $metadatas[$i]->error;
                     return $result;
@@ -1010,7 +1011,8 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 $metadata = $apiManager->downloadMetadata($_SESSION['access_token_v2'],$params['file']['id'],$pathAbsolute,$user->getId(),true);
                 if($metadata['status'] == 'KO') {
                     if($metadata['error'] == 403) {
-                        self::permissionDeniedStackSync($user->getId());
+                        $denied = self::permissionDeniedCloud($cloud);
+                        $metadata['path'] = $denied['path'];
                     }
                     return $metadata;
                 } else {
@@ -1115,7 +1117,8 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 $metadata = $apiManager->createMetadata($cloud, $_SESSION['access_token_' . $cloud . '_v2'], $user->getId(), !$isFolder, $filename, $parentId, $path, $pathAbsolute);
                 if($metadata['status'] == 'KO') {
                     if($metadata['error'] == 403) {
-                        self::permissionDeniedCloud($cloud);
+                        $denied = self::permissionDeniedCloud($cloud);
+                        $metadata['path'] = $denied['path'];
                     }
                     return $metadata;
                 }

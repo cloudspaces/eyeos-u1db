@@ -598,7 +598,13 @@ qx.Class.define('eyeos.files.Controller', {
             },this));
 
             this._dBus.addListener('eyeos_file_permissionDenied',function(e){
-                this.__permissionDenied();
+                if(e.getData().length > 0) {
+                    this.__cloud = e.getData()[1];
+                    if(e.getData()[0]) {
+                        this._deleteFolderCloud(e.getData()[0]);
+                    }
+                    this.__permissionDenied();
+                }
             },this);
 		},
 
@@ -1713,6 +1719,10 @@ qx.Class.define('eyeos.files.Controller', {
                     } else {
                         this.closeProgress();
                         if(result.error == 403) {
+                            this.__cloud = params.cloud;
+                            if(result.path) {
+                                this._deleteFolderCloud(result.path);
+                            }
                             this.__permissionDenied();
                         }
                     }
@@ -1790,6 +1800,10 @@ qx.Class.define('eyeos.files.Controller', {
                     } else {
                         this.closeProgress();
                         if(result.error == 403) {
+                            this.__cloud = cloud;
+                            if(result.path) {
+                                this._deleteFolderCloud(result.path);
+                            }
                             this.__permissionDenied();
                         }
                     }
