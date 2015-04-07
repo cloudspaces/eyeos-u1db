@@ -33,7 +33,7 @@ class StoreListener extends AbstractFileAdapter implements ISharingListener {
         if (strrpos($path, $cloudspaces) != -1 && $path !== $cloudspaces) {
             $cloud->isCloud = true;
             $auxCloud = substr($path, strlen($cloudspaces));
-            $posStartSlash = strrpos($auxCloud, '/');
+            $posStartSlash = stripos($auxCloud, '/');
             if ($posStartSlash != -1) {
                 $cloud->name = substr($auxCloud, 0, $posStartSlash);
                 $cloud->path = $cloudspaces . $cloud->name;
