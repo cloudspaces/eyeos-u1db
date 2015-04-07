@@ -42,6 +42,27 @@ class StoreListener extends AbstractFileAdapter implements ISharingListener {
         return $cloud;
     }
 
+    private function cleanCloud($cloud, $user)
+    {
+        $oauthManager = new OAuthManager();
+        $apiManager = new ApiManager();
+        $token = new Token();
+        $token->setCloudspaceName($cloud);
+        $token->setUserID($user->getId());
+        if ($oauthManager->deleteToken($token)) {
+            if ($apiManager->deleteMetadataUser($user->getId(), $cloud)) {
+                unset($_SESSION['request_token_' . $cloud . '_v2']);
+                unset($_SESSION['access_token_' . $cloud . '_v2']);
+                $pathOrg = "home://~" . $user->getName() . "/Cloudspaces/" . $cloud;
+                $pathDest = "home://~" . $user->getName() . "/Cloudspaces/." . $cloud;
+                $folderToRename1 = FSI::getFile($pathOrg);
+                $folderToRename2 = FSI::getFile($pathDest);
+                shell_exec('mv ' . AdvancedPathLib::getPhpLocalHackPath($folderToRename1->getRealFile()->getAbsolutePath()) . ' ' .
+                    AdvancedPathLib::getPhpLocalHackPath($folderToRename2->getRealFile()->getAbsolutePath()));
+            }
+        }
+    }
+
     public function fileWritten(FileEvent $e)
     {
         //Logger::getLogger('sebas')->error('MetadataWritten:' . $e->getSource()->getPath());
@@ -87,11 +108,7 @@ class StoreListener extends AbstractFileAdapter implements ISharingListener {
                     $message = new ClientBusMessage('file', 'refreshStackSync', $params);
                     ClientMessageBusController::getInstance()->queueMessage($message);
                 } else if($result['error'] == 403) {
-                    unset($_SESSION['access_token_v2']);
-                    $oauthManager = new OAuthManager();
-                    $token = new Token();
-                    $token->setUserID($user->getId());
-                    $oauthManager->deleteToken($token);
+                    $this->cleanCloud($cloud->name, $user);
                     $message = new ClientBusMessage('file', 'permissionDenied',null);
                     ClientMessageBusController::getInstance()->queueMessage($message);
                 }
