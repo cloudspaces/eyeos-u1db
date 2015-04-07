@@ -49,7 +49,7 @@ class Protocol:
         elif type == "deleteDownloadVersion":
             result = self.deleteDownloadVersion(lista[0]['id'],lista[0]['user_eyeos'])
         elif type == "getDownloadVersion":
-            result = self.getDownloadVersion(lista[0]['id'],lista[0]['user_eyeos'])
+            result = self.getDownloadVersion(lista[0])
         elif type == "recursiveDeleteVersion":
             result = self.recursiveDeleteVersion(lista[0])
         elif type == "deleteEvent":
@@ -120,8 +120,8 @@ class Protocol:
         self.metadata.deleteDownloadVersion(id,user)
         return True
 
-    def getDownloadVersion(self,id,user):
-        return self.metadata.getDownloadVersion(id,user)
+    def getDownloadVersion(self, lista):
+        return self.metadata.getDownloadVersion(lista)
 
     def recursiveDeleteVersion(self,lista):
         self.metadata.recursiveDeleteVersion(lista)

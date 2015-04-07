@@ -112,8 +112,8 @@ class StoreListener extends AbstractFileAdapter implements ISharingListener {
                     ClientMessageBusController::getInstance()->queueMessage($message);
                 } else if($result['error'] == 403) {
                     $path = $this->cleanCloud($cloud->name, $user);
-                    $params = array($path,$cloud->name);
-                    $message = new ClientBusMessage('file', 'permissionDenied',$params);
+                    $params = array($path, $cloud->name);
+                    $message = new ClientBusMessage('file', 'permissionDenied', $params);
                     ClientMessageBusController::getInstance()->queueMessage($message);
                 }
             }

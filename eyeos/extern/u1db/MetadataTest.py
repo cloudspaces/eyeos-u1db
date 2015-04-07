@@ -275,12 +275,47 @@ class MetadataTest (unittest.TestCase):
     """
     method: insertDownloadVersion
     when: called
-    with: metadata
+    with: metadataWithoutCloud
     should: insertCorrect
     """
-    def test_insertDownloadVersion_called_metadata_insertCorrect(self):
-        expected = {u'id':u'12457988',u'user_eyeos':u'eyeID_EyeosUser_2',u'version': u'2', u'recover': False}
+    def test_insertDownloadVersion_called_metadataWithoutCloud_insertCorrect(self):
+        settings[ 'NEW_CODE' ] = "false"
+        expected = {u'id': u'12457988', u'user_eyeos': u'eyeID_EyeosUser_2', u'version': u'2', u'recover': False}
         self.sut.insertDownloadVersion(expected)
+        results = ''
+        files = self.sut.db.get_all_docs()
+        if len(files[1]) > 0:
+            results = files[1][0].content
+        self.assertEquals(expected,results)
+
+    """
+    method: insertDownloadVersion
+    when: called
+    with: metadataWithCloud
+    should: insertCorrect
+    """
+    def test_insertDownloadVersion_called_metadataWithCloud_insertCorrect(self):
+        expected = {u'id': u'12457988', u'cloud': u'Stacksync', u'user_eyeos': u'eyeID_EyeosUser_2', u'version': u'2', u'recover': False}
+        self.sut.insertDownloadVersion(expected)
+        results = ''
+        files = self.sut.db.get_all_docs()
+        if len(files[1]) > 0:
+            results = files[1][0].content
+        self.assertEquals(expected,results)
+
+
+    """
+    method: updateDownloadVersion
+    when: called
+    with: metadataWithoutCloud
+    should: updateCorrect
+    """
+    def test_updateDownloadVersion_called_metadataWithoutCloud_updateCorrect(self):
+        settings[ 'NEW_CODE' ] = "false"
+        metadata = {u'id': u'12457988', u'user_eyeos': u'eyeID_EyeosUser_2', u'version': u'2', u'recover': False}
+        expected = {u'id': u'12457988', u'user_eyeos': u'eyeID_EyeosUser_2', u'version': u'3', u'recover': True}
+        self.sut.insertDownloadVersion(metadata)
+        self.sut.updateDownloadVersion(expected)
         results = ''
         files = self.sut.db.get_all_docs()
         if len(files[1]) > 0:
@@ -290,12 +325,12 @@ class MetadataTest (unittest.TestCase):
     """
     method: updateDownloadVersion
     when: called
-    with: metadata
+    with: metadataWithCloud
     should: updateCorrect
     """
-    def test_updateDownloadVersion_called_metadata_updateCorrect(self):
-        metadata = {u'id':u'12457988',u'user_eyeos':u'eyeID_EyeosUser_2',u'version': u'2', u'recover': False}
-        expected = {u'id':u'12457988',u'user_eyeos':u'eyeID_EyeosUser_2',u'version': u'3', u'recover': True}
+    def test_updateDownloadVersion_called_metadataWithCloud_updateCorrect(self):
+        metadata = {u'id': u'12457988', u'cloud': u'Stacksync', u'user_eyeos': u'eyeID_EyeosUser_2', u'version': u'2', u'recover': False}
+        expected = {u'id': u'12457988', u'cloud': u'Stacksync', u'user_eyeos': u'eyeID_EyeosUser_2', u'version': u'3', u'recover': True}
         self.sut.insertDownloadVersion(metadata)
         self.sut.updateDownloadVersion(expected)
         results = ''
@@ -320,13 +355,26 @@ class MetadataTest (unittest.TestCase):
     """
     method: getDownloadVersion
     when: called
-    with: id
+    with: idAndUserEyeos
     should: returnMetadata
     """
-    def test_getDownloadVersion_called_id_returnMetadata(self):
-        metadata = {u'id':u'12457988',u'user_eyeos':u'eyeID_EyeosUser_2',u'version': u'2', u'recover': False}
+    def test_getDownloadVersion_called_idAndUserEyeos_returnMetadata(self):
+        settings[ 'NEW_CODE' ] = "false"
+        metadata = {u'id': u'12457988', u'user_eyeos': u'eyeID_EyeosUser_2', u'version': u'2', u'recover': False}
         self.sut.insertDownloadVersion(metadata)
-        result = self.sut.getDownloadVersion("12457988","eyeID_EyeosUser_2")
+        result = self.sut.getDownloadVersion({u'id': u'12457988', u'user_eyeos': u'eyeID_EyeosUser_2'})
+        self.assertEquals(metadata,result)
+
+    """
+    method: getDownloadVersion
+    when: called
+    with: idAndUserEyeosAndCloud
+    should: returnMetadata
+    """
+    def test_getDownloadVersion_called_idAndUserEyeosAndCloud_returnMetadata(self):
+        metadata = {u'id': u'12457988', u'cloud': u'Stacksync', u'user_eyeos': u'eyeID_EyeosUser_2', u'version': u'2', u'recover': False}
+        self.sut.insertDownloadVersion(metadata)
+        result = self.sut.getDownloadVersion({u'id': u'12457988', u'user_eyeos': u'eyeID_EyeosUser_2', u'cloud': u'Stacksync'})
         self.assertEquals(metadata,result)
 
     """

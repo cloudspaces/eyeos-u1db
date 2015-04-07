@@ -198,11 +198,15 @@ class ProtocolTest (unittest.TestCase):
     should: insertCorrect
     """
     def test_protocol_called_typeInsertDownloadVersionAndList_insertCorrect(self):
-        params = '{"type":"insertDownloadVersion","lista":[{"id":"9873615","user_eyeos":"eyeID_EyeosUser_2","version":"2","recover":false}]}'
+        if settings[ 'NEW_CODE' ] == "true":
+            params = '{"type": "insertDownloadVersion", "lista": [{"id": "9873615", "cloud": "Stacksync", "user_eyeos": "eyeID_EyeosUser_2", "version": "2", "recover": false}]}'
+        else:
+            params = '{"type": "insertDownloadVersion", "lista": [{"id": "9873615", "user_eyeos": "eyeID_EyeosUser_2", "version": "2", "recover": false}]}'
+        aux = json.loads(params)
         self.protocol.insertDownloadVersion = Mock()
         self.protocol.insertDownloadVersion.return_value = True
         result = self.protocol.protocol(params)
-        self.protocol.insertDownloadVersion.assert_called_once_with({"id":"9873615","user_eyeos":"eyeID_EyeosUser_2","version":"2","recover":False})
+        self.protocol.insertDownloadVersion.assert_called_once_with(aux[ 'lista' ][0])
         self.assertEquals('true',result)
 
     """
@@ -212,11 +216,15 @@ class ProtocolTest (unittest.TestCase):
     should: updateCorrect
     """
     def test_protocol_called_typeUpdateDownloadVersionAndList_updateCorrect(self):
-        params = '{"type":"updateDownloadVersion","lista":[{"id":"9873615","user_eyeos":"eyeID_EyeosUser_2","version":"3","recover":false}]}'
+        if settings[ 'NEW_CODE' ] == "true":
+            params = '{"type": "updateDownloadVersion", "lista": [{"id": "9873615", "cloud": "Stacksync", "user_eyeos": "eyeID_EyeosUser_2", "version": "3", "recover": false}]}'
+        else:
+            params = '{"type": "updateDownloadVersion", "lista": [{"id": "9873615", "user_eyeos": "eyeID_EyeosUser_2", "version": "3", "recover": false}]}'
+        aux = json.loads(params)
         self.protocol.updateDownloadVersion = Mock()
         self.protocol.updateDownloadVersion.return_value = True
         result = self.protocol.protocol(params)
-        self.protocol.updateDownloadVersion.assert_called_once_with({"id":"9873615","user_eyeos":"eyeID_EyeosUser_2","version":"3","recover":False})
+        self.protocol.updateDownloadVersion.assert_called_once_with(aux[ 'lista' ][0])
         self.assertEquals('true',result)
 
     """
@@ -240,12 +248,18 @@ class ProtocolTest (unittest.TestCase):
     should: returnMetadata
     """
     def test_protocol_called_typeGetDownloadVersionAndList_returnMetadata(self):
-        params = '{"type":"getDownloadVersion","lista":[{"id":"9873615","user_eyeos":"eyeID_EyeosUser_2"}]}'
+        if settings[ 'NEW_CODE' ] == "true":
+            params = '{"type":"getDownloadVersion","lista":[{"id": "9873615", "user_eyeos": "eyeID_EyeosUser_2", "cloud": "Stacksync"}]}'
+            expected = {"id": "9873615", "cloud": "Stacksync", "user_eyeos": "eyeID_EyeosUser_2", "version": "3", "recover": False}
+        else:
+            params = '{"type":"getDownloadVersion","lista":[{"id": "9873615", "user_eyeos": "eyeID_EyeosUser_2"}]}'
+            expected = {"id": "9873615", "user_eyeos": "eyeID_EyeosUser_2", "version": "3", "recover": False}
+        aux = json.loads(params)
         self.protocol.getDownloadVersion = Mock()
-        self.protocol.getDownloadVersion.return_value = {"id":"9873615","user_eyeos":"eyeID_EyeosUser_2","version":"3","recover":False}
+        self.protocol.getDownloadVersion.return_value = expected
         result = self.protocol.protocol(params)
-        self.protocol.getDownloadVersion.assert_called_once_with("9873615","eyeID_EyeosUser_2")
-        self.assertEquals('{"user_eyeos": "eyeID_EyeosUser_2", "recover": false, "id": "9873615", "version": "3"}',result)
+        self.protocol.getDownloadVersion.assert_called_once_with(aux[ 'lista' ][0])
+        self.assertEquals(json.dumps(expected), result)
 
     """
     method: protocol

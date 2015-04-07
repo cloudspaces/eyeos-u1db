@@ -207,12 +207,16 @@ class Metadata:
                     _pathNew = pathNew + file.content[ 'filename' ] + '/'
                     self.renamePath(file.content, _pathOld, _pathNew)
 
-    def insertDownloadVersion(self,metadata):
+    def insertDownloadVersion(self, metadata):
         self.db.create_doc_from_json(json.dumps(metadata))
 
     def updateDownloadVersion(self,metadata):
-        self.db.create_index("by-id-user","id","user_eyeos")
-        files = self.db.get_from_index("by-id-user",metadata['id'],metadata['user_eyeos'])
+        if settings[ 'NEW_CODE' ] == "true":
+            self.db.create_index("by-id-user-cloud", "id", "user_eyeos", "cloud")
+            files = self.db.get_from_index("by-id-user-cloud", metadata[ 'id' ], metadata[ 'user_eyeos' ], metadata[ 'cloud' ])
+        else:
+            self.db.create_index("by-id-user", "id", "user_eyeos")
+            files = self.db.get_from_index("by-id-user", metadata[ 'id' ], metadata[ 'user_eyeos' ])
         if len(files) > 0:
             files[0].set_json(json.dumps(metadata))
             self.db.put_doc(files[0])
@@ -223,10 +227,14 @@ class Metadata:
         if len(files) > 0:
             self.db.delete_doc(files[0])
 
-    def getDownloadVersion(self,id,user):
+    def getDownloadVersion(self, lista):
         result = None
-        self.db.create_index("by-id-user","id","user_eyeos")
-        files = self.db.get_from_index("by-id-user",id,user)
+        if settings[ 'NEW_CODE' ] == "true":
+            self.db.create_index("by-id-user-cloud", "id", "user_eyeos", "cloud")
+            files = self.db.get_from_index("by-id-user-cloud", lista[ 'id' ], lista[ 'user_eyeos' ], lista[ 'cloud' ])
+        else:
+            self.db.create_index("by-id-user", "id", "user_eyeos")
+            files = self.db.get_from_index("by-id-user", lista[ 'id' ], lista[ 'user_eyeos' ])
         if len(files) > 0:
             result = files[0].content
         return result
