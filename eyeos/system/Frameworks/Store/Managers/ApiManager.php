@@ -24,11 +24,11 @@ class ApiManager
         $this->filesProvider = $filesProvider;
     }
 
-    public function getMetadata($cloud,$token,$id,$path,$user)
+    public function getMetadata($cloud, $token, $id, $path, $user)
     {
-        $pathMetadata = $this->getPathU1db($path,$cloud);
-        $metadata = $this->apiProvider->getMetadata($cloud,$token,false,$id,true);
-        $this->addPathMetadata($metadata,$pathMetadata);
+        $pathMetadata = $this->getPathU1db($path, $cloud);
+        $metadata = $this->apiProvider->getMetadata($cloud, $token, false, $id, true);
+        $this->addPathMetadata($metadata, $pathMetadata);
         $respuesta = json_encode($metadata);
         $files = array();
         if(!isset($metadata->error)) {
@@ -36,7 +36,7 @@ class ApiManager
                 $files = $metadata->contents;
                 if ($id === 'root') {
                     unset($metadata->contents);
-                    array_push($files,$metadata);
+                    array_push($files, $metadata);
                 }
             }
             //$this->addPathMetadata($files,$pathMetadata);
@@ -46,7 +46,7 @@ class ApiManager
             $u1dbList->cloud = $cloud;
             $u1dbList->path = $pathMetadata;
 
-            $u1dbResult = $this->callProcessU1db('select',$u1dbList);
+            $u1dbResult = $this->callProcessU1db('select', $u1dbList);
             if($u1dbResult === '[]') {
                 foreach($files as $file) {
                     $insert = true;
@@ -58,41 +58,41 @@ class ApiManager
                         }
                     }
                     if($insert) {
-                        $this->callProcessU1db('insert',$this->setUserEyeos($file,$user,$cloud));
+                        $this->callProcessU1db('insert', $this->setUserEyeos($file, $user, $cloud));
                     }
                 }
             } else {
                 $dataU1db = json_decode($u1dbResult);
                 if ($dataU1db){
-                    for($i = 0;$i < count($files);$i++) {
-                        $delete = $files[$i]->status === 'DELETED'?true:false;
-                        if($this->search($dataU1db,"id",$files[$i]->id) === false){
+                    for($i = 0; $i < count($files); $i++) {
+                        $delete = $files[$i]->status === 'DELETED' ? true : false;
+                        if($this->search($dataU1db, "id", $files[$i]->id) === false){
                             if(!$delete &&  $files[$i]->id !== 'null') {
-                                if($this->filesProvider->createFile($path . "/" . $files[$i]->filename,$files[$i]->is_folder)) {
-                                    $this->callProcessU1db('insert',$this->setUserEyeos($files[$i],$user,$cloud));
+                                if($this->filesProvider->createFile($path . "/" . $files[$i]->filename, $files[$i]->is_folder)) {
+                                    $this->callProcessU1db('insert', $this->setUserEyeos($files[$i], $user, $cloud));
                                 }
                             }
                         } else {
                             if(!$delete) {
-                                $filenameDb = $this->getValue($dataU1db,"id",$files[$i]->id,"filename");
+                                $filenameDb = $this->getValue($dataU1db, "id", $files[$i]->id, "filename");
                                 if ($filenameDb !== $files[$i]->filename){
                                     if($this->filesProvider->renameFile($path . "/" . $filenameDb, $files[$i]->filename)) {
                                         $lista = array();
-                                        array_push($lista,json_decode('{"parent_old":"' . $files[$i]->parent_id . '"}'));
-                                        array_push($lista,$this->setUserEyeos($files[$i],$user,$cloud));
-                                        $this->callProcessU1db('update',$lista);
+                                        array_push($lista, json_decode('{"parent_old":"' . $files[$i]->parent_id . '"}'));
+                                        array_push($lista, $this->setUserEyeos($files[$i], $user, $cloud));
+                                        $this->callProcessU1db('update', $lista);
                                     }
                                 }
                             } else {
-                                $this->callProcessU1db('deleteFolder',$this->setUserEyeos($files[$i],$user,$cloud));
+                                $this->callProcessU1db('deleteFolder', $this->setUserEyeos($files[$i], $user, $cloud));
                                 $this->filesProvider->deleteFile($path . "/" . $files[$i]->filename, $files[$i]->is_folder);
                             }
                         }
                     }
-                    for($i = 0;$i < count($dataU1db);$i++) {
-                        if($this->search($files,"id",$dataU1db[$i]->id) === false && $metadata->id !== $dataU1db[$i]->id){
+                    for($i = 0; $i < count($dataU1db); $i++) {
+                        if($this->search($files, "id", $dataU1db[$i]->id) === false && $metadata->id !== $dataU1db[$i]->id){
                             if($this->filesProvider->deleteFile($path . "/" . $dataU1db[$i]->filename, $dataU1db[$i]->is_folder)) {
-                                 $this->callProcessU1db('deleteFolder',$dataU1db[$i]);
+                                 $this->callProcessU1db('deleteFolder', $dataU1db[$i]);
                             }
                         }
                     }
@@ -202,8 +202,8 @@ class ApiManager
 
     public function downloadMetadata($token, $id, $path, $user, $isTmp=false, $cloud = NULL)
     {
-        $result['status'] = 'KO';
-        $result['error'] = -1;
+        $result[ 'status' ] = 'KO';
+        $result[ 'error' ] = -1;
         $metadata = $this->apiProvider->getMetadata($cloud, $token, true, $id);
         $insert = false;
         $type = '';
@@ -221,9 +221,9 @@ class ApiManager
                         $insert = true;
                         $type = 'updateDownloadVersion';
                     } else {
-                        $result['status'] = 'OK';
-                        $result['local'] = true;
-                        unset($result['error']);
+                        $result[ 'status' ] = 'OK';
+                        $result[ 'local' ] = true;
+                        unset($result[ 'error' ]);
                     }
                 }
             } else {
@@ -243,20 +243,20 @@ class ApiManager
                         $lista->recover = false;
                         $resultU1db = $this->callProcessU1db($type, $lista);
                         if($resultU1db === 'true') {
-                            $result['status'] = 'OK';
-                            unset($result['error']);
+                            $result[ 'status' ] = 'OK';
+                            unset($result[ 'error' ]);
                         }
                     } else {
-                        $result['status'] = 'OK';
-                        unset($result['error']);
+                        $result[ 'status' ] = 'OK';
+                        unset($result[ 'error' ]);
                     }
                 } else {
-                    $result['error'] = $content->error;
+                    $result[ 'error' ] = $content->error;
                 }
             }
 
         } else{
-            $result['error'] = $metadata->error;
+            $result[ 'error' ] = $metadata->error;
         }
 
         return $result;

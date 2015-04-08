@@ -654,7 +654,7 @@ qx.Class.define('eyeos.files.Controller', {
 			this._browsePath(currentPath[1], addToHistory);
 		},
 
-		_browsePath: function(path, addToHistory,refresh) {
+		_browsePath: function(path, addToHistory, refresh) {
             if (!this.getCloseCompleted()) {
                 this.closeTimer();
                 var cloud = this.isCloud(path);
@@ -1331,6 +1331,7 @@ qx.Class.define('eyeos.files.Controller', {
                             this.openCursorLoad();
                             this._browsePath(currentPath);
                         } else {
+                            this._deleteFolderCloud(results.path);
                             this.__permissionDenied();
                         }
                     } else {
