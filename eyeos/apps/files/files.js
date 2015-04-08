@@ -1264,6 +1264,7 @@ qx.Class.define('eyeos.files.Controller', {
                     }
 
                     if(action == 'copy' || action == 'move') {
+                        this.openCursorLoad();
                         this.__createWindowProgress(params, action);
                     } else {
                         eyeos.callMessage(this.getApplication().getChecknum(), action, params, function (results) {
@@ -1715,7 +1716,7 @@ qx.Class.define('eyeos.files.Controller', {
                            this.__copyFile(params.cloud, result, result.metadatas.length - 1, params.folder, pathOrig);
                        } else {
                            var listDelete = this.__getFilesDelete(result.metadatas);
-                           this.__moveFile(result.metadatas,result.metadatas.length - 1,pathOrig,params.folder,params.idParent,params.cloudOrig,params.cloudDest,listDelete,params.cloud);
+                           this.__moveFile(result.metadatas, result.metadatas.length - 1, pathOrig, params.folder, params.idParent, params.cloudOrig, params.cloudDest, listDelete, params.cloud);
                        }
                     } else {
                         this.closeProgress();
@@ -1732,7 +1733,7 @@ qx.Class.define('eyeos.files.Controller', {
             }
         },
 
-        __moveFile: function(files,pos,pathOrig,pathDest,idParent,cloudOrig,cloudDest,listDelete,cloud)
+        __moveFile: function(files, pos, pathOrig, pathDest, idParent, cloudOrig, cloudDest, listDelete, cloud)
         {
             var length = files.length;
             var deleteFiles = false;
@@ -1744,7 +1745,7 @@ qx.Class.define('eyeos.files.Controller', {
 
             if(pos > -1) {
                 var params = new Object();
-                params.file = files[pos];
+                params.file = files[ pos ];
                 params.orig = pathOrig;
                 params.dest = pathDest;
                 params.idParent = idParent;
@@ -1752,12 +1753,12 @@ qx.Class.define('eyeos.files.Controller', {
                 params.cloudDest = cloudDest;
                 params.cloud = cloud;
 
-                eyeos.callMessage(this.getApplication().getChecknum(),'move',params,function(result) {
+                eyeos.callMessage(this.getApplication().getChecknum(), 'move', params, function(result) {
                     if(result && !result.error){
                         this.__size += 1;
                         this.__updateProgress(length);
                         pos --;
-                        this.__moveFile(files,pos,pathOrig,pathDest,idParent,cloudOrig,cloudDest,listDelete,cloud);
+                        this.__moveFile(files, pos, pathOrig, pathDest, idParent, cloudOrig, cloudDest, listDelete, cloud);
 
                     } else {
                         this.closeProgress();
@@ -1772,7 +1773,7 @@ qx.Class.define('eyeos.files.Controller', {
                 },this);
             } else {
                 if(deleteFiles) {
-                    this.__deleteComponent(listDelete,0,length,cloud);
+                    this.__deleteComponent(listDelete, 0, length, cloud);
                 } else {
                     this.__closeProgress();
                 }
@@ -1882,19 +1883,19 @@ qx.Class.define('eyeos.files.Controller', {
             return files;
         },
 
-        __deleteComponent: function(deleteFiles,pos,sizeTotal,cloud) {
+        __deleteComponent: function(deleteFiles, pos, sizeTotal, cloud) {
 
             if(pos < deleteFiles.length) {
                 if(cloud) {
                     deleteFiles[pos].cloud = cloud;
                 }
-                eyeos.callMessage(this.getApplication().getChecknum(),'delete',[deleteFiles[pos]],function() {
+                eyeos.callMessage(this.getApplication().getChecknum(),'delete', [ deleteFiles[ pos ] ], function() {
                     this.__size += 1;
                     this.__updateProgress(sizeTotal);
 
                     pos++;
 
-                    this.__deleteComponent(deleteFiles,pos,sizeTotal);
+                    this.__deleteComponent(deleteFiles, pos, sizeTotal, cloud);
 
                 },this);
             } else {
