@@ -901,48 +901,48 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         $apiManager = new ApiManager();
         $metadatas = array();
         $result = array();
-        $cloud = isset($params['cloud'])?$params['cloud']:null;
+        $cloud = isset($params[ 'cloud' ]) ? $params[ 'cloud' ] : null;
 
-        if($params['action'] == 'copy' || !(($params['cloudOrig'] == true && $params['cloudDest'] == true) || ($params['cloudOrig'] == false && $params['cloudDest'] == false))) {
-            for($i = 0; $i < count($params['files']); $i++) {
-                if(is_array($params['files'][$i])) {
-                    $component = FSI::getFile($params['files'][$i]['path']);
+        if($params[ 'action' ] == 'copy' || !(($params[ 'cloudOrig' ] == true && $params[ 'cloudDest' ] == true) || ($params[ 'cloudOrig' ] == false && $params[ 'cloudDest' ] == false))) {
+            for($i = 0; $i < count($params[ 'files' ]); $i++) {
+                if(is_array($params[ 'files' ][ $i ])) {
+                    $component = FSI::getFile($params[ 'files' ][ $i ][ 'path' ]);
                     $path = self::getPathCloud($component, $cloud);
-                    $apiManager->getSkel($cloud, $_SESSION['access_token_' . $cloud . '_v2'], $params['files'][$i]['is_file'], $params['files'][$i]['id'], $metadatas, $path, $params['files'][$i]['path'], $component->getParentPath());
+                    $apiManager->getSkel($cloud, $_SESSION[ 'access_token_' . $cloud . '_v2' ], $params[ 'files' ][ $i ][ 'is_file' ], $params[ 'files' ][ $i ][ 'id' ], $metadatas, $path, $params[ 'files' ][ $i ][ 'path' ], $component->getParentPath());
                 } else {
-                    self::getSkelLocal($params['files'][$i], $metadatas, null);
+                    self::getSkelLocal($params[ 'files' ][ $i ], $metadatas, null);
                 }
             }
 
-            for($i = 0;$i < count($metadatas);$i++) {
-                if(isset($metadatas[$i]->error)) {
-                    if($metadatas[$i]->error == 403) {
+            for($i = 0; $i < count($metadatas); $i++) {
+                if(isset($metadatas[ $i ]->error)) {
+                    if($metadatas[ $i ]->error == 403) {
                         $denied = self::permissionDeniedCloud($cloud);
-                        $result['path'] = $denied['path'];
+                        $result[ 'path' ] = $denied[ 'path' ];
                     }
-                    $result['error'] = $metadatas[$i]->error;
+                    $result[ 'error' ] = $metadatas[ $i ]->error;
                     return $result;
                 }
             }
         } else {
-            for($i = 0; $i < count($params['files']); $i++) {
+            for($i = 0; $i < count($params[ 'files' ]); $i++) {
                 $object = new stdClass();
-                if(is_array($params['files'][$i]) && array_key_exists('id',$params['files'][$i])){
-                    $object->id = $params['files'][$i]['id'];
-                    $object->is_folder = $params['files'][$i]['is_file']?false:true;
-                    $component = FSI::getFile($params['files'][$i]['path']);
-                    $path = self::getPathStacksync($component);
+                if(is_array($params[ 'files' ][ $i ]) && array_key_exists('id', $params[ 'files' ][ $i ])){
+                    $object->id = $params[ 'files' ][ $i ][ 'id' ];
+                    $object->is_folder = $params[ 'files' ][ $i ][ 'is_file' ] ? false : true;
+                    $component = FSI::getFile($params[ 'files' ][ $i ][ 'path' ]);
+                    $path = self::getPathCloud($component, $cloud);
                     $object->path = $path;
-                    $object->pathAbsolute = $params['files'][$i]['path'];
+                    $object->pathAbsolute = $params[ 'files' ][ $i ][ 'path' ];
                 } else {
-                    $object->path = $params['files'][$i];
+                    $object->path = $params[ 'files' ][ $i ];
                 }
 
-                array_push($metadatas,$object);
+                array_push($metadatas, $object);
             }
         }
 
-        $result['metadatas'] = $metadatas;
+        $result[ 'metadatas' ] = $metadatas;
         return $result;
     }
 
@@ -981,20 +981,20 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         $apiManager = new ApiManager();
         $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
         $cloudspace = false;
-        $cloud = $params['cloud'];
+        $cloud = $params[ 'cloud' ];
 
         $pathCloud = "home://~" . $user->getName() . "/Cloudspaces/" . $cloud;
         $pathOrig = null;
 
-        if(strpos($params['orig'], $pathCloud) !== false) {
-            if ($pathCloud == $params['orig']) {
+        if(strpos($params[ 'orig' ], $pathCloud) !== false) {
+            if ($pathCloud == $params[ 'orig' ]) {
                 $pathOrig = "/";
             } else {
-                $pathOrig = substr($params['orig'], strlen($pathCloud)) . "/";
+                $pathOrig = substr($params[ 'orig' ], strlen($pathCloud)) . "/";
             }
         }
 
-        if(strpos($params['dest'], $pathCloud) !== false) {
+        if(strpos($params[ 'dest' ], $pathCloud) !== false) {
             $cloudspace = true;
         }
 
@@ -1005,84 +1005,84 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         $pathinfo = null;
         $pathAbsolute = null;
 
-        if(!$params['file']['is_folder']) {
+        if(!$params[ 'file' ][ 'is_folder' ]) {
             $isFolder = false;
             $tmpFile = new LocalFile('/var/tmp/' . date('Y_m_d_H_i_s') . '_' . $user->getId());
             $pathAbsolute = AdvancedPathLib::getPhpLocalHackPath($tmpFile->getAbsolutePath());
-            if(array_key_exists('id',$params['file'])) {
-                $metadata = $apiManager->downloadMetadata($_SESSION['access_token_v2'],$params['file']['id'],$pathAbsolute,$user->getId(),true);
-                if($metadata['status'] == 'KO') {
-                    if($metadata['error'] == 403) {
+            if(array_key_exists('id', $params[ 'file' ])) {
+                $metadata = $apiManager->downloadMetadata($_SESSION[ 'access_token_' . $cloud . '_v2'], $params[ 'file' ][ 'id' ], $pathAbsolute, $user->getId(), true, $cloud);
+                if($metadata[ 'status' ] == 'KO') {
+                    if($metadata[ 'error' ] == 403) {
                         $denied = self::permissionDeniedCloud($cloud);
-                        $metadata['path'] = $denied['path'];
+                        $metadata[ 'path' ] = $denied[ 'path' ];
                     }
                     return $metadata;
                 } else {
-                    if(isset($metadata['local'])) {
-                        $file = FSI::getFile($params['file']['pathEyeos']);
+                    if(isset($metadata[ 'local' ])) {
+                        $file = FSI::getFile($params[ 'file' ][ 'pathEyeos' ]);
                         $tmpFile->putContents($file->getContents());
                     }
                 }
             } else {
-                $file = FSI::getFile($params['file']['path']);
+                $file = FSI::getFile($params[ 'file' ][ 'path' ]);
                 $tmpFile->putContents($file->getContents());
             }
         }
 
         if($pathOrig) {
-            if($params['file']['path'] == $pathOrig) {
-                $pathinfo = pathinfo($params['file']['filename']);
+            if($params[ 'file' ][ 'path' ] == $pathOrig) {
+                $pathinfo = pathinfo($params[ 'file' ][ 'filename' ]);
             }
         } else {
-            if($params['file']['parent'] == null) {
-                $pathinfo = pathinfo($params['file']['filename']);
+            if($params[ 'file' ][ 'parent' ] == null) {
+                $pathinfo = pathinfo($params[ 'file' ][ 'filename' ]);
             }
         }
 
         if($pathinfo) {
-            $nameForCheck = $pathinfo['filename'];
+            $nameForCheck = $pathinfo[ 'filename' ];
             $extension = null;
-            if(isset($pathinfo['extension'])) {
-                $extension = $pathinfo['extension'];
+            if(isset($pathinfo[ 'extension' ])) {
+                $extension = $pathinfo[ 'extension' ];
                 $nameForCheck .=  '.' . $extension;
             }
 
             $number = 1;
-            $newFile = FSI::getFile($params['dest'] . "/" . $nameForCheck);
+            $newFile = FSI::getFile($params[ 'dest' ] . "/" . $nameForCheck);
 
             while ($newFile->exists()) {
-                $futureName = Array($pathinfo['filename'], $number);
+                $futureName = Array($pathinfo[ 'filename' ], $number);
                 $nameForCheck = implode(' ', $futureName);
                 if ($extension) {
                     $nameForCheck .= '.' . $extension;
                 }
                 $number++;
-                $newFile = FSI::getFile($params['dest'] . "/" . $nameForCheck);
-                $params['filenameChange'] = $nameForCheck;
+                $newFile = FSI::getFile($params[ 'dest' ] . "/" . $nameForCheck);
+                $params[ 'filenameChange' ] = $nameForCheck;
 
-                if(!array_key_exists('parent',$params['file'])) {
-                    $params['pathChange'] = substr($params['orig'], strlen($pathCloud));
+                if(!array_key_exists('parent', $params[ 'file' ])) {
+                    $params[ 'pathChange' ] = substr($params[ 'orig' ], strlen($pathCloud));
                 }
             }
 
             $filename = $newFile->getName();
 
         } else {
-            $filename = $params['file']['filename'];
+            $filename = $params[ 'file' ][ 'filename' ];
         }
 
         if ($cloudspace) {
-            $pathParent = substr($params['dest'], strlen($pathCloud));
-            if (array_key_exists('parent',$params['file'])) {
-                if (strlen($pathParent) == 0 && !$params['file']['parent']) {
+            $pathParent = substr($params[ 'dest' ], strlen($pathCloud));
+            if (array_key_exists('parent', $params[ 'file' ])) {
+                if (strlen($pathParent) == 0 && !$params[ 'file' ][ 'parent' ]) {
                     $pathParent = '/';
                 }
-                if($params['file']['parent']) {
-                    $pathParent .= $params['file']['parent'];
+                if($params[ 'file' ][ 'parent' ]) {
+                    $pathParent .= $params[ 'file' ][ 'parent' ];
                 }
 
             } else {
-                $pathParent .= '/' . substr($params['file']['path'], strlen($pathOrig));
+                $pathParent .= '/' . substr($params[ 'file' ][ 'path' ], strlen($pathOrig));
                 if(strlen($pathParent) > 1) {
                     $pathParent = substr($pathParent, 0, -1);
                 }
@@ -1110,17 +1110,16 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                     $parentId = $u1db[0]->id;
                 }
             } else {
-                $parentId = 'null';
+                $parentId = '0';
                 $path = $pathParent;
             }
 
-            if($parentId) {
-                $parentId = $parentId === 'null' ? 0 : $parentId;
-                $metadata = $apiManager->createMetadata($cloud, $_SESSION['access_token_' . $cloud . '_v2'], $user->getId(), !$isFolder, $filename, $parentId, $path, $pathAbsolute);
-                if($metadata['status'] == 'KO') {
-                    if($metadata['error'] == 403) {
+            if($parentId !== false) {
+                $metadata = $apiManager->createMetadata($cloud, $_SESSION[ 'access_token_' . $cloud . '_v2' ], $user->getId(), !$isFolder, $filename, $parentId, $path, $pathAbsolute);
+                if($metadata[ 'status' ] == 'KO') {
+                    if($metadata[ 'error' ] == 403) {
                         $denied = self::permissionDeniedCloud($cloud);
-                        $metadata['path'] = $denied['path'];
+                        $metadata[ 'path' ] = $denied[ 'path' ];
                     }
                     return $metadata;
                 }
@@ -1128,17 +1127,17 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         }
 
         $pathDest = null;
-        if (array_key_exists('parent',$params['file'])) {
-            if ($params['file']['parent']) {
-                $pathDest = $params['dest'] . $params['file']['parent'] . '/';
+        if (array_key_exists('parent', $params[ 'file' ])) {
+            if ($params[ 'file' ][ 'parent' ]) {
+                $pathDest = $params[ 'dest' ] . $params ['file' ][ 'parent' ] . '/';
             } else {
-                $pathDest = $params['dest'] . '/';
+                $pathDest = $params[ 'dest' ] . '/';
             }
         } else {
-            if ($pathOrig == $params['file']['path']) {
-                $pathDest = $params['dest'] . '/';
+            if ($pathOrig == $params[ 'file' ][ 'path' ]) {
+                $pathDest = $params[ 'dest' ] . '/';
             } else {
-                $pathDest = $params['dest'] . '/' . substr($params['file']['path'], strlen($pathOrig));
+                $pathDest = $params[ 'dest' ] . '/' . substr($params[ 'file' ][ 'path' ], strlen($pathOrig));
             }
         }
 
