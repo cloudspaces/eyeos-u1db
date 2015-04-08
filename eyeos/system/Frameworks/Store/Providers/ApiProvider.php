@@ -37,7 +37,7 @@ class ApiProvider
 
     public function createMetadata($cloud, $token, $file, $name, $parent = null, $path = null)
     {
-        $request = $this->getRequest('create', $token,$cloud);
+        $request = $this->getRequest('create', $token, $cloud);
         $request->metadata->file = $file;
         $request->metadata->filename = $name;
         $request->metadata->parent_id = $parent === null?'null':"" . $parent;
@@ -45,9 +45,9 @@ class ApiProvider
         return $this->exerciseMetadata($request);
     }
 
-    public function uploadMetadata($token, $id, $path)
+    public function uploadMetadata($cloud, $token, $id, $path)
     {
-        $request = $this->getRequest('upload', $token);
+        $request = $this->getRequest('upload', $token, $cloud);
         $request->metadata->id = "" . $id;
         $request->metadata->path = $path;
         return $this->exerciseMetadata($request);

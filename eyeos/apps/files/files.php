@@ -515,19 +515,19 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         $apiManager = new ApiManager();
         $currentUser = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
         $settings = MetaManager::getInstance()->retrieveMeta($currentUser);
-        $pathOrig = $params['orig'];
-        $pathDest = $params['dest'];
-        $cloudDest = $params['cloudDest'];
-        $cloudOrig = $params['cloudOrig'];
+        $pathOrig = $params[ 'orig' ];
+        $pathDest = $params[ 'dest' ];
+        $cloudDest = $params[ 'cloudDest' ];
+        $cloudOrig = $params[ 'cloudOrig' ];
 
         if ($cloudOrig === $cloudDest) {
 
             $file = null;
 
-            if(is_array($params['file']) && array_key_exists('pathAbsolute',$params['file']))  {
-                $file = FSI::getFile($params['file']['pathAbsolute']);
+            if(is_array($params[ 'file' ]) && array_key_exists('pathAbsolute', $params['file']))  {
+                $file = FSI::getFile($params[ 'file' ][ 'pathAbsolute' ]);
             } else {
-               $file = FSI::getFile($params['file']['path']);
+               $file = FSI::getFile($params[ 'file' ][ 'path' ]);
             }
 
             $isDirectory = $file->isDirectory();
@@ -562,7 +562,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             }
 
             if($cloudOrig) {
-                $apiManager->recursiveDeleteVersion($params['cloud'],$params['file']['id'],$currentUser->getId());
+                $apiManager->recursiveDeleteVersion($params[ 'cloud' ], $params[ 'file' ][ 'id' ], $currentUser->getId());
             }
 
             if($cloudOrig && $cloudDest) {
@@ -571,11 +571,11 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 } else {
                     $filename = $theName . '.' . $extension;
                 }
-                $result = $apiManager->moveMetadata($params['cloud'],$_SESSION['access_token_' . $params['cloud'] . '_v2'],!$isDirectory,$params['file']['id'],$pathOrig,$pathDest,$currentUser->getId(),$params['idParent'],$filename,$change == true?$nameForCheck:null);
-                if($result['status'] == 'KO') {
-                    if($result['error'] == 403) {
-                        $denied = self::permissionDeniedCloud($params['cloud']);
-                        $result['path'] = $denied['path'];
+                $result = $apiManager->moveMetadata($params[ 'cloud' ], $_SESSION['access_token_' . $params['cloud'] . '_v2'], !$isDirectory, $params[ 'file' ][ 'id' ], $pathOrig, $pathDest, $currentUser->getId(), $params[ 'idParent' ], $filename, $change == true ? $nameForCheck : null);
+                if($result[ 'status' ] == 'KO') {
+                    if($result[ 'error' ] == 403) {
+                        $denied = self::permissionDeniedCloud($params[ 'cloud' ]);
+                        $result[ 'path' ] = $denied[ 'path' ];
                     }
                     return $result;
                 }
@@ -589,13 +589,13 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
         } else {
             if($cloudOrig) {
-                $apiManager->recursiveDeleteVersion($params['cloud'],$params['file']['id'],$currentUser->getId());
+                $apiManager->recursiveDeleteVersion($params[ 'cloud' ], $params[ 'file' ][ 'id' ], $currentUser->getId());
             }
             $result = self::copyFile($params);
-            if (array_key_exists('error',$result)) {
-                if($result['error'] == 403) {
-                    $denied = self::permissionDeniedCloud($params['cloud']);
-                    $result['path'] = $denied['path'];
+            if (array_key_exists('error', $result)) {
+                if($result[ 'error' ] == 403) {
+                    $denied = self::permissionDeniedCloud($params[ 'cloud' ]);
+                    $result[ 'path' ] = $denied[ 'path' ];
                 }
             }
             return $result;

@@ -484,12 +484,12 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
                         {"filename":"prueba.pdf","id":"8888888","status":"NEW","version":1,"parent_id":32565632156,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":false},
                         {"filename":"client.pdf","id":"1111111","status":"NEW","version":1,"parent_id":32565632156,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":false,"size":14}
                       ]}';
-        $metadataFile = '{"filename":"client.pdf","id":"1111111","status":"CHANGED","version":2,"parent_id":32565632156,"user":"eyeos","size":134,"client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":false}';
-        $metadataUpdate = '{"user_eyeos":"' . $this->user . '","filename":"client.pdf","id":"1111111","status":"CHANGED","version":2,"parent_id":32565632156,"user":"eyeos","size":134,"client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":false,"path":"/"}';
+        $metadataFile = '{"cloud": "' . $this->cloud . '", "filename":"client.pdf","id":"1111111","status":"CHANGED","version":2,"parent_id":32565632156,"user":"eyeos","size":134,"client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":false}';
+        $metadataUpdate = '{"cloud": "' . $this->cloud . '", "user_eyeos":"' . $this->user . '","filename":"client.pdf","id":"1111111","status":"CHANGED","version":2,"parent_id":32565632156,"user":"eyeos","size":134,"client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":false,"path":"/"}';
 
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
-            ->with($this->cloud,$this->token,true,$parent_id,true)
+            ->with($this->cloud, $this->token, true, $parent_id, true)
             ->will($this->returnValue(json_decode($metadataOut)));
 
         $this->apiProviderMock->expects($this->never())
@@ -497,12 +497,12 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->apiProviderMock->expects($this->at(1))
             ->method('uploadMetadata')
-            ->with($this->token,$id,$pathabsolute)
-            ->will($this->returnValue(json_decode('{"status":true}')));
+            ->with($this->cloud, $this->token, $id, $pathabsolute)
+            ->will($this->returnValue(json_decode('{"status": true}')));
 
         $this->apiProviderMock->expects($this->at(2))
             ->method('getMetadata')
-            ->with($this->cloud,$this->token,true,$id)
+            ->with($this->cloud, $this->token, true, $id)
             ->will($this->returnValue(json_decode($metadataFile)));
 
         $u1dbIn = new stdClass();
@@ -523,6 +523,8 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $params->lista = array();
         $aux = new stdClass();
         $aux->id = "1111111";
+        $aux->user_eyeos = $this->user;
+        $aux->cloud = $this->cloud;
         $aux->version = 2;
         $aux->recover = false;
         array_push($params->lista,$aux);
@@ -532,9 +534,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->with(json_encode($params))
             ->will($this->returnValue('true'));
 
-
-
-        $this->sut->createMetadata($this->cloud,$this->token,$this->user,true,$name,$parent_id,$path,$pathabsolute);
+        $this->sut->createMetadata($this->cloud, $this->token, $this->user, true, $name, $parent_id, $path, $pathabsolute);
     }
 
 
@@ -551,7 +551,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $path = '/';
         $metadataOut = '{"id":32565632156,"parent_id":"null","filename":"root","is_folder":true,"status":"NEW","server_modified":"2014-03-11 14:22:45.757","client_modified":"2014-03-11 14:22:45.757","user":"web","version":1,"checksum":589445744,"size":166,"mimetype":"text/plain","chunks":[],"is_root":false,
                           "contents":[]}';
-        $this->exerciseCreateMetadata(false,$name,$parent_id,$path,null,$metadataOut);
+        $this->exerciseCreateMetadata(false, $name, $parent_id, $path, null, $metadataOut);
     }
 
     /**
@@ -677,18 +677,18 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
-            ->with($this->cloud,$this->token,true,$parent_id,true)
+            ->with($this->cloud, $this->token, true, $parent_id, true)
             ->will($this->returnValue(json_decode($metadataOut)));
 
         $this->apiProviderMock->expects($this->at(1))
             ->method('uploadMetadata')
-            ->with($this->token,8888888,$pathabsolute)
+            ->with($this->cloud, $this->token, 8888888, $pathabsolute)
             ->will($this->returnValue(json_decode($metadata)));
 
         $this->accessorProviderMock->expects($this->never())
             ->method('getProcessDataU1db');
 
-        $this->sut->createMetadata($this->cloud,$this->token,$this->user,true,$name,$parent_id,$path,$pathabsolute);
+        $this->sut->createMetadata($this->cloud, $this->token, $this->user, true, $name, $parent_id, $path, $pathabsolute);
     }
 
     /**
@@ -1451,7 +1451,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($metadataOut, $result);
     }
 
-    private function exerciseCreateMetadata($file,$name,$parent_id,$path,$pathAbsolute,$metadataOut)
+    private function exerciseCreateMetadata($file, $name, $parent_id, $path, $pathAbsolute, $metadataOut)
     {
         $type = $file?'false':'true';
         $metadata = '{"filename":"' . $name .'","id":"142555444","size":775412,"mimetype":"application/pdf","status":"NEW","version":3,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":'  . $type . '}';
@@ -1459,7 +1459,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
-            ->with($this->cloud,$this->token,$file,$parent_id,true)
+            ->with($this->cloud, $this->token, $file, $parent_id, true)
             ->will($this->returnValue(json_decode($metadataOut)));
 
         $this->apiProviderMock->expects($this->at(1))
@@ -1494,7 +1494,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         }
 
-        $this->sut->createMetadata($this->cloud,$this->token,$this->user,$file,$name,$parent_id,$path,$pathAbsolute);
+        $this->sut->createMetadata($this->cloud, $this->token, $this->user, $file,$name, $parent_id, $path, $pathAbsolute);
     }
 
     private function exerciseDeleteMetadata($metadata,$file,$id,$path,$pathOrig)

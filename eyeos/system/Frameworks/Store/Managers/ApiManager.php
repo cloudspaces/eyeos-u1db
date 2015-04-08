@@ -161,7 +161,7 @@ class ApiManager
                         }
                     } else {
                         if($file) {
-                            $resp = $this->apiProvider->uploadMetadata($token, $id, $pathAbsolute);
+                            $resp = $this->apiProvider->uploadMetadata($cloud, $token, $id, $pathAbsolute);
                             if(isset($resp->status) && $resp->status == true) {
                                 $changedMetadata = $this->apiProvider->getMetadata($cloud, $token, $file, $id);
                                 if(!isset($changedMetadata->error)) {
@@ -170,10 +170,12 @@ class ApiManager
                                     $old = new stdClass();
                                     $old->parent_old = $changedMetadata->parent_id;
                                     array_push($metadataUpdate, $old);
-                                    array_push($metadataUpdate, $this->setUserEyeos($changedMetadata, $user));
+                                    array_push($metadataUpdate, $this->setUserEyeos($changedMetadata, $user, $cloud));
                                     if($this->callProcessU1db('update', $metadataUpdate) == 'true') {
                                         $lista = new stdClass();
                                         $lista->id = "" . $changedMetadata->id;
+                                        $lista->user_eyeos = $user;
+                                        $lista->cloud = $cloud;
                                         $lista->version = $changedMetadata->version;
                                         $lista->recover = false;
                                         $resultU1db = $this->callProcessU1db("updateDownloadVersion", $lista);
@@ -310,48 +312,46 @@ class ApiManager
         return $result;
     }
 
-    public function moveMetadata($cloud,$token,$file,$id,$pathOrig,$pathDest,$user,$parent,$filenameOld,$filenameNew = null)
+    public function moveMetadata($cloud, $token, $file, $id, $pathOrig, $pathDest, $user, $parent, $filenameOld, $filenameNew = null)
     {
-        $result['status'] = 'KO';
-        $result['error'] = -1;
-        $metadata = $this->apiProvider->updateMetadata($cloud,$token,$file,$id,$filenameNew?$filenameNew:$filenameOld,$parent);
+        $result[ 'status' ] = 'KO';
+        $result[ 'error' ] = -1;
+        $metadata = $this->apiProvider->updateMetadata($cloud, $token, $file, $id, $filenameNew ? $filenameNew : $filenameOld, $parent);
 
         if(!isset($metadata->error)) {
             $delete = new stdClass();
             $delete->id = $id;
             $delete->user_eyeos = $user;
             $delete->cloud = $cloud;
-            $delete ->path = $this->getPathU1db($pathOrig,$cloud);
+            $delete ->path = $this->getPathU1db($pathOrig, $cloud);
 
-            if($this->callProcessU1db('deleteFolder',$delete) == 'true') {
+            if($this->callProcessU1db('deleteFolder', $delete) == 'true') {
                 $delete = $this->filesProvider->deleteFile($pathOrig . '/' . $filenameOld, !$file);
                 if($delete) {
-                    $metadata = $this->setUserEyeos($metadata,$user,$cloud);
-                    $this->addPathMetadata($metadata,$this->getPathU1db($pathDest,$cloud));
-                    if($this->callProcessU1db('insert',$metadata) == 'true') {
+                    $metadata = $this->setUserEyeos($metadata, $user, $cloud);
+                    $this->addPathMetadata($metadata,$this->getPathU1db($pathDest, $cloud));
+                    if($this->callProcessU1db('insert', $metadata) == 'true') {
                         $this->filesProvider->createFile($pathDest . '/' . $metadata->filename,!$file);
-                        $result['status'] = 'OK';
-                        unset($result['error']);
+                        $result[ 'status' ] = 'OK';
+                        unset($result[ 'error' ]);
                     }
                 }
             }
         }
-
         return $result;
-
     }
 
-    public function recursiveDeleteVersion($cloud,$id,$user) {
-        $result['status'] = 'KO';
-        $result['error'] = -1;
+    public function recursiveDeleteVersion($cloud, $id, $user) {
+        $result[ 'status' ] = 'KO';
+        $result[ 'error' ] = -1;
         $lista = new stdClass();
         $lista->id = "" . $id;
         $lista->user_eyeos = $user;
         $lista->cloud = $cloud;
-        $resultU1db = $this->callProcessU1db("recursiveDeleteVersion",$lista);
+        $resultU1db = $this->callProcessU1db("recursiveDeleteVersion", $lista);
         if($resultU1db === 'true') {
-            $result['status'] = 'OK';
-            unset($result['error']);
+            $result[ 'status' ] = 'OK';
+            unset($result[ 'error' ]);
         }
         return $result;
     }

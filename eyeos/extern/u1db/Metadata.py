@@ -210,7 +210,7 @@ class Metadata:
     def insertDownloadVersion(self, metadata):
         self.db.create_doc_from_json(json.dumps(metadata))
 
-    def updateDownloadVersion(self,metadata):
+    def updateDownloadVersion(self, metadata):
         if settings[ 'NEW_CODE' ] == "true":
             self.db.create_index("by-id-user-cloud", "id", "user_eyeos", "cloud")
             files = self.db.get_from_index("by-id-user-cloud", metadata[ 'id' ], metadata[ 'user_eyeos' ], metadata[ 'cloud' ])

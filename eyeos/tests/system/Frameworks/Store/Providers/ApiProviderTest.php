@@ -299,9 +299,9 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_uploadMetadata_called_tokenAndIdAndPath_returnCorrect()
     {
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"upload","id":"1234561","path":"\/var\/www\/eyeos\/client.pdf"}}';
+        $metadataIn = '{"config":{"cloud":"' . $this->cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"upload","id":"1234561","path":"\/var\/www\/eyeos\/client.pdf"}}';
         $metadataOut = '{"status":true}';
-        $this->exerciseUploadMetadata($metadataIn,$metadataOut,$metadataOut,1234561,"/var/www/eyeos/client.pdf");
+        $this->exerciseUploadMetadata($metadataIn, $metadataOut, $metadataOut, 1234561, "/var/www/eyeos/client.pdf");
     }
 
     /**
@@ -312,9 +312,9 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_uploadMetadata_called_tokenAndIdAndPath_returnException()
     {
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"upload","id":"1234561","path":"\/var\/www\/eyeos\/client.pdf"}}';
+        $metadataIn = '{"config":{"cloud":"' . $this->cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"upload","id":"1234561","path":"\/var\/www\/eyeos\/client.pdf"}}';
         $metadataOut = 'false';
-        $this->exerciseUploadMetadata($metadataIn,$metadataOut,$this->exception,1234561,"/var/www/eyeos/client.pdf");
+        $this->exerciseUploadMetadata($metadataIn, $metadataOut, $this->exception, 1234561, "/var/www/eyeos/client.pdf");
     }
 
     /**
@@ -325,9 +325,9 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_uploadMetadata_called_tokenAndIdAndPath_returnPermissionDenied()
     {
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"upload","id":"1234561","path":"\/var\/www\/eyeos\/client.pdf"}}';
+        $metadataIn = '{"config":{"cloud":"' . $this->cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"upload","id":"1234561","path":"\/var\/www\/eyeos\/client.pdf"}}';
         $metadataOut = '403';
-        $this->exerciseUploadMetadata($metadataIn,$metadataOut,$this->permission,1234561,"/var/www/eyeos/client.pdf");
+        $this->exerciseUploadMetadata($metadataIn, $metadataOut, $this->permission, 1234561, "/var/www/eyeos/client.pdf");
     }
 
     /**
@@ -639,11 +639,11 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(json_decode($check),$result);
     }
 
-    private function exerciseUploadMetadata($metadataIn,$metadataOut,$check,$id,$path)
+    private function exerciseUploadMetadata($metadataIn, $metadataOut, $check, $id, $path)
     {
-        $this->exerciseMockMetadata($metadataIn,$metadataOut);
-        $result = $this->sut->uploadMetadata($this->token,$id,$path);
-        $this->assertEquals(json_decode($check),$result);
+        $this->exerciseMockMetadata($metadataIn, $metadataOut);
+        $result = $this->sut->uploadMetadata($this->cloud, $this->token, $id, $path);
+        $this->assertEquals(json_decode($check), $result);
     }
 
     private function exerciseDownloadMetadata($metadataOut, $check, $id, $path, $cloud)

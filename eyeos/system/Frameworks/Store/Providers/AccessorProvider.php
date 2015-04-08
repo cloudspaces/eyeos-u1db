@@ -44,9 +44,9 @@ class AccessorProvider
     public function getProcessDataU1db($json)
     {
         $path = "python '" . EXTERN_DIR . '/' . U1DB . "/Protocol.py' " . escapeshellarg($json);
-        Logger::getLogger('sebas')->error('PathPython:' . $path);
+        Logger::getLogger('CLOUDS')->error('PathPython:' . $path);
         $result = exec($path);
-        Logger::getLogger('sebas')->error('Calendar: ' . strlen($result) . ' :: ' . $result);
+        Logger::getLogger('CLOUDS')->error('Calendar: ' . strlen($result) . ' :: ' . $result);
         return $result;
     }
 
@@ -57,7 +57,7 @@ class AccessorProvider
             $json = '{"request_token":' . $token . ',"verifier":"' . $verifier . '"}';
             $path .= " " .escapeshellarg($json);
         }
-        Logger::getLogger('sebas')->error('PathPython:' . $path);
+        Logger::getLogger('CLOUDS')->error('PathPython:' . $path);
         return exec($path);
     }
 
@@ -68,9 +68,9 @@ class AccessorProvider
         if($json) {
             $path .= " " .escapeshellarg($json);
         }
-        Logger::getLogger('sebas')->error('PathPython:' . $path);
+        Logger::getLogger('CLOUDS')->error('PathPython:' . $path);
         $result = exec($path);
-        Logger::getLogger('sebas')->error('Credenciales: ' . strlen($result) . ' :: ' . $result);
+        Logger::getLogger('CLOUDS')->error('Credenciales: ' . strlen($result) . ' :: ' . $result);
         //return exec($path);
         return $result;
     }
@@ -78,9 +78,9 @@ class AccessorProvider
     public function getProcessComments($json)
     {
         $path = "python '" . EXTERN_DIR . '/' . U1DB . "/Comments.py' " . escapeshellarg($json);
-        Logger::getLogger('sebas')->error('PathPython:' . $path);
+        Logger::getLogger('CLOUDS')->error('PathPython:' . $path);
         $result = exec($path);
-        Logger::getLogger('sebas')->error('Comments: ' . strlen($result) . ' :: ' . $result);
+        Logger::getLogger('CLOUDS')->error('Comments: ' . strlen($result) . ' :: ' . $result);
         return $result;
     }
 }
