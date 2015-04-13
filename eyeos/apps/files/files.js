@@ -676,6 +676,7 @@ qx.Class.define('eyeos.files.Controller', {
                                 var metadata = JSON.parse(results);
                                 if(!metadata.error) {
                                     if(this.__insertMetadata(metadata,path) || !refresh) {
+                                        this.openCursorLoad();
                                         this.__callBrowsePath(path,addToHistory,true);
                                     } else {
                                         this.__refreshFolder(path,addToHistory,true);
@@ -703,6 +704,7 @@ qx.Class.define('eyeos.files.Controller', {
 
         __callBrowsePath: function(path,addToHistory, refresh) {
             eyeos.callMessage(this.getApplication().getChecknum(), 'browsePath', [path, null, null], function (results) {
+                this.closeCursorLoad();
                 this._browsePath_callback(results, path, addToHistory);
                 if(refresh) {
                     this.__refreshFolder(path,addToHistory,refresh);
