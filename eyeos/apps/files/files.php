@@ -643,14 +643,16 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $cloud = $params[5];
             $parent = $params[4] === 0? 'null' : $params[4];
             if(!$fileToRename->isDirectory()) {
-                $pathAbsolute = AdvancedPathLib::getPhpLocalHackPath($fileToRename->getRealFile()->getAbsolutePath());
-                $metadata = $apiManager->downloadMetadata($_SESSION[ 'access_token_' . $cloud . '_v2' ], $params[3], $pathAbsolute, $currentUser->getId(), false, $cloud);
-                if(isset($metadata[ 'error' ])) {
-                    if ($metadata[ 'error' ] == 403) {
-                        $denied = self::permissionDeniedCloud($cloud);
-                        $metadata[ 'path' ] = $denied[ 'path' ];
+                if($params[3] !== -1) {
+                    $pathAbsolute = AdvancedPathLib::getPhpLocalHackPath($fileToRename->getRealFile()->getAbsolutePath());
+                    $metadata = $apiManager->downloadMetadata($_SESSION['access_token_' . $cloud . '_v2'], $params[3], $pathAbsolute, $currentUser->getId(), false, $cloud);
+                    if (isset($metadata['error'])) {
+                        if ($metadata['error'] == 403) {
+                            $denied = self::permissionDeniedCloud($cloud);
+                            $metadata['path'] = $denied['path'];
+                        }
+                        return $metadata;
                     }
-                    return $metadata;
                 }
             }
 
@@ -672,13 +674,18 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
             if($fileToRename->renameTo($nameForCheck)) {
                 $path = self::getPathCloud($renamed, $cloud);
-                $resultado = $apiManager->renameMetadata($cloud, $_SESSION[ 'access_token_' . $cloud . '_v2' ], !$fileToRename->isDirectory(), $params[3], $renamed->getName(), $path, $currentUser->getId(), $parent);
-                if (isset($resultado[ 'error' ])) {
-                    if ($resultado[ 'error' ] == 403) {
-                        $denied = self::permissionDeniedCloud($cloud);
-                        $resultado[ 'path'] = $denied[ 'path'];
+                if($params[3] !== -1) {
+                    $resultado = $apiManager->renameMetadata($cloud, $_SESSION['access_token_' . $cloud . '_v2'], !$fileToRename->isDirectory(), $params[3], $renamed->getName(), $path, $currentUser->getId(), $parent);
+                    if (isset($resultado['error'])) {
+                        if ($resultado['error'] == 403) {
+                            $denied = self::permissionDeniedCloud($cloud);
+                            $resultado['path'] = $denied['path'];
+                        }
+                        return $resultado;
                     }
-                    return $resultado;
+                } else {
+                    $event = new FileEvent($fileToRename);
+                    $fileToRename->fireEvent('fileWritten',$event);
                 }
             }
         } else {

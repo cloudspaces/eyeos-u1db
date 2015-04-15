@@ -1316,8 +1316,9 @@ qx.Class.define('eyeos.files.Controller', {
 
                 if(cloud.isCloud) {
                     var idFile = this.__getFileId(currentPath, selected.getFile().getName());
+                    idFile = idFile !== null?idFile:-1;
                     var idParent = this.__getFileIdFolder(currentPath, cloud.cloud);
-                    if(idFile !== null && idParent !== null) {
+                    if(idParent !== null) {
                         params.splice(params.length, 0, idFile);
                         params.splice(params.length, 0, idParent);
                         params.splice(params.length, 0, cloud.cloud);
@@ -1331,8 +1332,10 @@ qx.Class.define('eyeos.files.Controller', {
                     this.closeCursorLoad();
                     if(cloud.isCloud) {
                         if(results.error != 403) {
-                            this.openCursorLoad();
-                            this._browsePath(currentPath);
+                            if(idFile !== -1) {
+                                this.openCursorLoad();
+                                this._browsePath(currentPath);
+                            }
                         } else {
                             this._deleteFolderCloud(results.path);
                             this.__permissionDenied();
