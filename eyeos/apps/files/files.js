@@ -918,8 +918,13 @@ qx.Class.define('eyeos.files.Controller', {
 			var extensionsForLink = ['LNK'];
 
             var parent = null;
+            var cloud = this.isCloud(filesToOpen[0].getFile().getPath());
 
-            if(filesToOpen.length > 0 && this.__isStacksync(filesToOpen[0].getFile().getPath())) {
+            /*if(filesToOpen.length > 0 && this.__isStacksync(filesToOpen[0].getFile().getPath())) {
+                parent = filesToOpen[0].getFile().getPath();
+            }*/
+
+            if(filesToOpen.length > 0 && cloud.isCloud === true) {
                 parent = filesToOpen[0].getFile().getPath();
             }
 
@@ -930,51 +935,51 @@ qx.Class.define('eyeos.files.Controller', {
 					foldersToOpen.push(filesToOpen[i].getFile().getAbsolutePath());
 				} else {
 					if (extensionsForViewer.indexOf(extension) != -1) {
-                        if(parent) {
-                            filesForViewer.push(this.__getObjectDownloadStacksync(parent,filesToOpen[i].getFile().getAbsolutePath(),filesToOpen[i].getFile().getName()));
+                        if(cloud.isCloud === true) {
+                            filesForViewer.push(this.__getObjectDownloadCloud(parent,filesToOpen[i].getFile().getAbsolutePath(),filesToOpen[i].getFile().getName(),cloud.cloud));
                         } else {
 						    filesForViewer.push(filesToOpen[i].getFile().getAbsolutePath());
                         }
 					}
 					if (extensionsForImageViewer.indexOf(extension) != -1) {
-                        if(parent) {
-                            filesForImageViewer.push(this.__getObjectDownloadStacksync(parent,filesToOpen[i].getFile().getAbsolutePath(),filesToOpen[i].getFile().getName()));
+                        if(cloud.isCloud === true) {
+                            filesForImageViewer.push(this.__getObjectDownloadCloud(parent,filesToOpen[i].getFile().getAbsolutePath(),filesToOpen[i].getFile().getName(),cloud.cloud));
                         } else {
 						    filesForImageViewer.push(filesToOpen[i].getFile().getAbsolutePath());
                         }
 					}
 					if (extensionsForDocuments.indexOf(extension) != -1) {
-                        if(parent) {
-                            filesForDocuments.push(this.__getObjectDownloadStacksync(parent,filesToOpen[i].getFile().getAbsolutePath(),filesToOpen[i].getFile().getName()));
+                        if(cloud.isCloud === true) {
+                            filesForDocuments.push(this.__getObjectDownloadCloud(parent,filesToOpen[i].getFile().getAbsolutePath(),filesToOpen[i].getFile().getName(),cloud.cloud));
                         } else {
 						    filesForDocuments.push(filesToOpen[i].getFile().getAbsolutePath());
                         }
 					}
 					if (extensionsForFemto.indexOf(extension) != -1) {
-                        if(parent) {
-                            filesForFemto.push(this.__getObjectDownloadStacksync(parent,filesToOpen[i].getFile().getAbsolutePath(),filesToOpen[i].getFile().getName()));
+                        if(cloud.isCloud === true) {
+                            filesForFemto.push(this.__getObjectDownloadCloud(parent,filesToOpen[i].getFile().getAbsolutePath(),filesToOpen[i].getFile().getName(),cloud.cloud));
                         } else {
 						    filesForFemto.push(filesToOpen[i].getFile().getAbsolutePath());
                         }
 
 					}
 					if (extensionsDocPreview.indexOf(extension) != -1) {
-                        if(parent) {
-                            filesForDocPreview.push(this.__getObjectDownloadStacksync(parent,filesToOpen[i].getFile().getAbsolutePath(),filesToOpen[i].getFile().getName()));
+                        if(cloud.isCloud === true) {
+                            filesForDocPreview.push(this.__getObjectDownloadCloud(parent,filesToOpen[i].getFile().getAbsolutePath(),filesToOpen[i].getFile().getName(),cloud.cloud));
                         } else {
 						    filesForDocPreview.push(filesToOpen[i].getFile().getAbsolutePath());
                         }
 					}
 					if (extensionsForPDFViewer.indexOf(extension) != -1) {
-                        if(parent) {
-                            filesForPDFPreview.push(this.__getObjectDownloadStacksync(parent,filesToOpen[i].getFile().getAbsolutePath(),filesToOpen[i].getFile().getName()));
+                        if(cloud.isCloud === true) {
+                            filesForPDFPreview.push(this.__getObjectDownloadCloud(parent,filesToOpen[i].getFile().getAbsolutePath(),filesToOpen[i].getFile().getName(),cloud.cloud));
                         } else {
 						    filesForPDFPreview.push(filesToOpen[i].getFile().getAbsolutePath());
                         }
 					}
 					if (extensionsForLink.indexOf(extension) != -1) {
-                        if(parent) {
-                            filesForPDFPreview.push(this.__getObjectDownloadStacksync(parent,filesToOpen[i].getFile().getAbsolutePath(),filesToOpen[i].getFile().getName()));
+                        if(cloud.isCloud === true) {
+                            filesForPDFPreview.push(this.__getObjectDownloadCloud(parent,filesToOpen[i].getFile().getAbsolutePath(),filesToOpen[i].getFile().getName(),cloud.cloud));
                         } else {
                             filesForOpenLink.push(filesToOpen[i].getFile().getAbsolutePath());
                         }
@@ -982,55 +987,55 @@ qx.Class.define('eyeos.files.Controller', {
 				}
 			}
 			if (filesForViewer.length >= 1) {
-                if(parent) {
-                    this.__openFileStacksync('viewer',filesForViewer);
+                if(cloud.isCloud === true) {
+                    this.__openFileCloud('viewer',filesForViewer);
                 } else {
 				    eyeos.execute('viewer', this.getApplication().getChecknum(), filesForViewer);
                 }
 			}
 
 			if (filesForImageViewer.length >= 1) {
-                if(parent) {
-                    this.__openFileStacksync('imageviewer',filesForImageViewer);
+                if(cloud.isCloud === true) {
+                    this.__openFileCloud('imageviewer',filesForImageViewer);
                 } else {
 				    eyeos.execute('imageviewer', this.getApplication().getChecknum(), filesForImageViewer);
                 }
 			}
 
 			if (filesForDocuments.length >= 1) {
-                if(parent) {
-                    this.__openFileStacksync('documents',filesForDocuments);
+                if(cloud.isCloud === true) {
+                    this.__openFileCloud('documents',filesForDocuments);
                 } else {
 				    eyeos.execute('documents', this.getApplication().getChecknum(), filesForDocuments);
                 }
 			}
 
 			if (filesForDocPreview.length >= 1) {
-                if(parent) {
-                    this.__openFileStacksync('docviewer',filesForDocuments);
+                if(cloud.isCloud === true) {
+                    this.__openFileCloud('docviewer',filesForDocuments);
                 } else {
 				    eyeos.execute('docviewer', this.getApplication().getChecknum(), filesForDocPreview);
                 }
 			}
 
 			if (filesForPDFPreview.length >= 1) {
-                if(parent) {
-                    this.__openFileStacksync('pdfviewer',filesForPDFPreview);
+                if(cloud.isCloud === true) {
+                    this.__openFileCloud('pdfviewer',filesForPDFPreview);
                 } else {
 				    eyeos.execute('pdfviewer', this.getApplication().getChecknum(), filesForPDFPreview);
                 }
 			}
 
 			if (filesForFemto.length >= 1) {
-                if(parent) {
-                    this.__openFileStacksync('notepad',filesForFemto);
+                if(cloud.isCloud === true) {
+                    this.__openFileCloud('notepad',filesForFemto);
                 } else {
 				    eyeos.execute('notepad', this.getApplication().getChecknum(), filesForFemto);
                 }
 			}
 			if (filesForOpenLink.length >= 1) {
-                if(parent) {
-                    this.__openFileStacksync('openLink',filesForOpenLink);
+                if(cloud.isCloud === true) {
+                    this.__openFileCloud('openLink',filesForOpenLink);
                 } else {
 				    eyeos.execute('openLink', this.getApplication().getChecknum(), filesForOpenLink);
                 }
@@ -1041,7 +1046,8 @@ qx.Class.define('eyeos.files.Controller', {
 			}*/
 
             if(foldersToOpen.length > 0) {
-                if(this.__isStacksync(foldersToOpen[0])) {
+                cloud = this.isCloud(foldersToOpen[0])
+                if(cloud.isCloud === true) {
                     this.openCursorLoad();
                 }
                 this.getView().getController()._browsePath(foldersToOpen[0], true);
@@ -1609,19 +1615,20 @@ qx.Class.define('eyeos.files.Controller', {
             }
         },
 
-        __getObjectDownloadStacksync: function(parent,path,name) {
+        __getObjectDownloadCloud: function(parent,path,name,cloud) {
             var file = new Object();
             file.id = this.__getFileId(parent, name);
             file.path = path;
+            file.cloud = cloud;
             return file;
         },
 
-        __openFileStacksync: function(type,files) {
+        __openFileCloud: function(type,files) {
             var listFiles = new Array();
             this.openCursorLoad();
             for(var i in files) {
                 if(files[i].id) {
-                    eyeos.callMessage(this.getApplication().getChecknum(),'downloadFileStacksync',files[i],function(path) {
+                    eyeos.callMessage(this.getApplication().getChecknum(),'downloadFileCloud',files[i],function(path) {
                         if(!path.error) {
                             listFiles.push(path);
                             if(listFiles.length == files.length) {
@@ -1629,7 +1636,11 @@ qx.Class.define('eyeos.files.Controller', {
                                 eyeos.execute(type, this.getApplication().getChecknum(), listFiles);
                             }
                         } else if(path.error == 403) {
+                            this.__cloud = files[i].cloud;
                             this.closeCursorLoad();
+                            if(path.path) {
+                                this._deleteFolderCloud(path.path);
+                            }
                             this.__permissionDenied();
                         }
                     },this);

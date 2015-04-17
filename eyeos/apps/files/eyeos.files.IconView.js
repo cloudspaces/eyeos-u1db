@@ -364,8 +364,9 @@ qx.Class.define('eyeos.files.IconView', {
 			item.addListener('dblclick', function () {
                 var file = this.getFile();
 				var absolutePath = file.getAbsolutePath();
+                var cloud = null;
 				if (file.getType() == 'folder') {
-                    var cloud = self.getViewManager().getController().isCloud(file.getAbsolutePath());
+                    cloud = self.getViewManager().getController().isCloud(file.getAbsolutePath());
                     if(cloud.isCloud === true) {
                         this.getManager().getViewManager().getController().openCursorLoad();
                     }
@@ -375,18 +376,24 @@ qx.Class.define('eyeos.files.IconView', {
 					this.getManager().getViewManager().getController()._browsePath(absolutePath, true);
 				} else {
 					var checknum = this.getManager().getViewManager().getController().getApplication().getChecknum();
-                    if(self.getViewManager().getController().__isStacksync(file.getPath())) {
+                    cloud = self.getViewManager().getController().isCloud(file.getPath());
+                    if(cloud.isCloud === true) {
                         var params = new Object();
                         params.id = self.getViewManager().getController().__getFileId(file.getPath(),file.getName());
                         params.path = absolutePath;
+                        params.cloud = cloud.cloud;
 
                         if(params.id) {
                             this.getManager().getViewManager().getController().openCursorLoad();
-                            eyeos.callMessage(checknum,"downloadFileStacksync",params,function(e) {
+                            eyeos.callMessage(checknum,"downloadFileCloud",params,function(e) {
                                 this.getManager().getViewManager().getController().closeCursorLoad();
                                 if(!e.error) {
                                     eyeos.openFile(absolutePath, checknum);
                                 } else if(e.error == 403) {
+                                    this.getManager().getViewManager().getController().__cloud = cloud.cloud;
+                                    if(e.path) {
+                                        this.getManager().getViewManager().getController()._deleteFolderCloud(e.path);
+                                    }
                                     this.getManager().getViewManager().getController().__permissionDenied();
                                 }
                             },this);
