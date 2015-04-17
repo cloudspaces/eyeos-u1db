@@ -659,14 +659,10 @@ qx.Class.define('eyeos.files.Controller', {
                 this.closeTimer();
                 var cloud = this.isCloud(path);
 
-                if(this.isRootCloudSpaces(path)) {
-                    this._metadatas = [];
-                }
-
                 if (!this._timer && cloud.isCloud === true) {
                     var params = new Object();
                     params.path = path;
-                    params.id = this.__getFileIdFolder(path,cloud.cloud);
+                    params.id = this.__getFileIdFolder(path, cloud.cloud);
                     params.cloud = cloud.cloud;
 
                     if(params.id !== null) {
@@ -675,7 +671,7 @@ qx.Class.define('eyeos.files.Controller', {
                             if(results) {
                                 var metadata = JSON.parse(results);
                                 if(!metadata.error) {
-                                    if(this.__insertMetadata(metadata,path) || !refresh) {
+                                    if(this.__insertMetadata(metadata, path, cloud.cloud) || !refresh) {
                                         this.openCursorLoad();
                                         this.__callBrowsePath(path,addToHistory,true);
                                     } else {
@@ -684,7 +680,7 @@ qx.Class.define('eyeos.files.Controller', {
                                 } else if (metadata.error == 403) {
                                     this.__cloud = cloud.cloud;
                                     if(metadata.path) {
-                                        this._deleteFolderCloud(metadata.path);
+                                        this._deleteFolderCloud(metadata.path, cloud.cloud);
                                     }
                                     this.__permissionDenied();
                                 }
@@ -1108,7 +1104,7 @@ qx.Class.define('eyeos.files.Controller', {
                 var cloud = this.isCloud(currentPath);
 
                 if(cloud.isCloud === true) {
-                    var fileId = this.__getFileIdFolder(currentPath,cloud.cloud);
+                    var fileId = this.__getFileIdFolder(currentPath, cloud.cloud);
                     if(fileId !== null) {
                         params.splice(params.length,0,fileId);
                         params.splice(params.length,0,cloud.cloud);
@@ -1150,7 +1146,7 @@ qx.Class.define('eyeos.files.Controller', {
                         var params = new Object();
                         params.file = filesToDelete[i].getFile().getAbsolutePath();
                         if(cloud.isCloud === true) {
-                            var id = this.__getFileId(currentPath,filesToDelete[i].getFile().getName());
+                            var id = this.__getFileId(currentPath, filesToDelete[i].getFile().getName(), null, cloud.cloud);
                             if (id !== null) {
                                 params.id =  id;
                                 params.cloud = cloud.cloud;
@@ -1253,7 +1249,7 @@ qx.Class.define('eyeos.files.Controller', {
                             if(idParent !== null) {
                                 params.idParent = idParent;
                                 for(var i in filesToPaste) {
-                                    var idFile = this.__getFileId(source, filesToPaste[i].getName());
+                                    var idFile = this.__getFileId(source, filesToPaste[i].getName(), params.cloud);
                                     if(idFile !== null) {
                                         var file = new Object();
                                         file.id = idFile;
@@ -1321,7 +1317,7 @@ qx.Class.define('eyeos.files.Controller', {
                 var cloud = this.isCloud(currentPath);
 
                 if(cloud.isCloud) {
-                    var idFile = this.__getFileId(currentPath, selected.getFile().getName());
+                    var idFile = this.__getFileId(currentPath, selected.getFile().getName(), null, cloud.cloud);
                     idFile = idFile !== null?idFile:-1;
                     var idParent = this.__getFileIdFolder(currentPath, cloud.cloud);
                     if(idParent !== null) {
@@ -1464,13 +1460,14 @@ qx.Class.define('eyeos.files.Controller', {
             var fileIdFolder = null;
 
             if (path !== 'home://~'+ eyeos.getCurrentUserName()+'/Cloudspaces/' + cloud) {
-                if(this._metadatas.length >0) {
-                    for(var i in this._metadatas) {
-                        if(this._metadatas[i].path === father) {
-                            if(this._metadatas[i].metadata.contents && this._metadatas[i].metadata.contents.length > 0) {
-                                for(var j in this._metadatas[i].metadata.contents) {
-                                    if(this._metadatas[i].metadata.contents[j].filename === name) {
-                                        fileIdFolder = this._metadatas[i].metadata.contents[j].id;
+                var listMetadata = this._metadatas[cloud];
+                if(this._metadatas[cloud].length >0) {
+                    for(var i in this._metadatas[cloud]) {
+                        if(this._metadatas[cloud][i].path === father) {
+                            if(this._metadatas[cloud][i].metadata.contents && this._metadatas[cloud][i].metadata.contents.length > 0) {
+                                for(var j in this._metadatas[cloud][i].metadata.contents) {
+                                    if(this._metadatas[cloud][i].metadata.contents[j].filename === name) {
+                                        fileIdFolder = this._metadatas[cloud][i].metadata.contents[j].id;
                                     }
                                 }
                             }
@@ -1511,16 +1508,18 @@ qx.Class.define('eyeos.files.Controller', {
             return fileIdFolder;*/
         },
 
-        __insertMetadata: function(metadata,path)
+        __insertMetadata: function(metadata, path, cloud)
         {
             var encontrado = false;
             var change = false;
 
-            for(var i in this._metadatas) {
-                if(this._metadatas[i].path === path) {
+            this.startMetadatasCloud(cloud);
+
+            for(var i in this._metadatas[cloud]) {
+                if(this._metadatas[cloud][i].path === path) {
                     encontrado = true;
-                    if(this.__changeMetadata(this._metadatas[i].metadata,metadata)) {
-                        this._metadatas[i].metadata = metadata;
+                    if(this.__changeMetadata(this._metadatas[cloud][i].metadata, metadata)) {
+                        this._metadatas[cloud][i].metadata = metadata;
                         change = true;
                     }
                     break;
@@ -1531,7 +1530,7 @@ qx.Class.define('eyeos.files.Controller', {
                 var folder = new Object();
                 folder.path = path;
                 folder.metadata = metadata;
-                this._metadatas.splice(this._metadatas.length,0,folder);
+                this._metadatas[cloud].splice(this._metadatas[cloud].length, 0, folder);
                 change = true;
             }
 
@@ -1553,7 +1552,7 @@ qx.Class.define('eyeos.files.Controller', {
           }
         },
 
-        __changeMetadata: function(metadataOld,metadataNew) {
+        __changeMetadata: function(metadataOld, metadataNew) {
             var change = false;
             var encontrado = false;
 
@@ -1593,18 +1592,18 @@ qx.Class.define('eyeos.files.Controller', {
             this._timer = setTimeout(reffunction, 10000);
         },
 
-        __getFileId: function(path, filename, socialBar) {
+        __getFileId: function(path, filename, socialBar, cloud) {
             var fileId = null;
             var metadata = null;
 
-            if(this._metadatas.length > 0) {
-                for(var i in this._metadatas) {
-                    if(this._metadatas[i].path === path) {
-                        if(this._metadatas[i].metadata.contents && this._metadatas[i].metadata.contents.length > 0) {
-                            for(var j in this._metadatas[i].metadata.contents) {
-                                if(this._metadatas[i].metadata.contents[j].filename === filename) {
-                                    fileId = this._metadatas[i].metadata.contents[j].id;
-                                    metadata = this._metadatas[i].metadata.contents[j];
+            if(this._metadatas[cloud].length > 0) {
+                for(var i in this._metadatas[cloud]) {
+                    if(this._metadatas[cloud][i].path === path) {
+                        if(this._metadatas[cloud][i].metadata.contents && this._metadatas[cloud][i].metadata.contents.length > 0) {
+                            for(var j in this._metadatas[cloud][i].metadata.contents) {
+                                if(this._metadatas[cloud][i].metadata.contents[j].filename === filename) {
+                                    fileId = this._metadatas[cloud][i].metadata.contents[j].id;
+                                    metadata = this._metadatas[cloud][i].metadata.contents[j];
                                     break;
                                 }
                             }
@@ -2421,7 +2420,12 @@ qx.Class.define('eyeos.files.Controller', {
              eyeos.callMessage(checknum, 'getCloudsList', null, function (clouds) {
                     cloudBox.insertClouds(clouds);
              }, this);
-        }
+        },
 
+        startMetadatasCloud: function(cloud) {
+            if (!this._metadatas.hasOwnProperty(cloud)) {
+                this._metadatas[cloud] = [];
+            }
+        }
 	}
 });
