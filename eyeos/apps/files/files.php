@@ -932,7 +932,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         $apiManager = new ApiManager();
         $metadatas = array();
         $result = array();
-        $cloud = isset($params[ 'cloud' ]) ? $params[ 'cloud' ] : null;
+        $cloud = isset($params[ 'cloud' ][ 'origin' ]) && strlen($params[ 'cloud' ][ 'origin' ]) > 0 ? $params[ 'cloud' ]['origin'] : null;
 
         if($params[ 'action' ] == 'copy' || !(($params[ 'cloudOrig' ] == true && $params[ 'cloudDest' ] == true) || ($params[ 'cloudOrig' ] == false && $params[ 'cloudDest' ] == false))) {
             for($i = 0; $i < count($params[ 'files' ]); $i++) {
@@ -1012,20 +1012,21 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         $apiManager = new ApiManager();
         $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
         $cloudspace = false;
-        $cloud = $params[ 'cloud' ];
+        $cloudOrig = $params[ 'cloud' ]['origin'];
+        $cloudDestination = $params[ 'cloud' ]['destination'];
 
-        $pathCloud = "home://~" . $user->getName() . "/Cloudspaces/" . $cloud;
+        $pathCloud = "home://~" . $user->getName() . "/Cloudspaces/";
         $pathOrig = null;
 
-        if(strpos($params[ 'orig' ], $pathCloud) !== false) {
-            if ($pathCloud == $params[ 'orig' ]) {
+        if($cloudOrig) {
+            if ($pathCloud . $cloudOrig == $params[ 'orig' ]) {
                 $pathOrig = "/";
             } else {
-                $pathOrig = substr($params[ 'orig' ], strlen($pathCloud)) . "/";
+                $pathOrig = substr($params[ 'orig' ], strlen($pathCloud . $cloudOrig)) . "/";
             }
         }
 
-        if(strpos($params[ 'dest' ], $pathCloud) !== false) {
+        if($cloudDestination) {
             $cloudspace = true;
         }
 
@@ -1041,10 +1042,10 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $tmpFile = new LocalFile('/var/tmp/' . date('Y_m_d_H_i_s') . '_' . $user->getId());
             $pathAbsolute = AdvancedPathLib::getPhpLocalHackPath($tmpFile->getAbsolutePath());
             if(array_key_exists('id', $params[ 'file' ])) {
-                $metadata = $apiManager->downloadMetadata($_SESSION[ 'access_token_' . $cloud . '_v2'], $params[ 'file' ][ 'id' ], $pathAbsolute, $user->getId(), true, $cloud);
+                $metadata = $apiManager->downloadMetadata($_SESSION[ 'access_token_' . $cloudOrig . '_v2'], $params[ 'file' ][ 'id' ], $pathAbsolute, $user->getId(), true, $cloudOrig);
                 if($metadata[ 'status' ] == 'KO') {
                     if($metadata[ 'error' ] == 403) {
-                        $denied = self::permissionDeniedCloud($cloud);
+                        $denied = self::permissionDeniedCloud($cloudOrig);
                         $metadata[ 'path' ] = $denied[ 'path' ];
                     }
                     return $metadata;
@@ -1092,7 +1093,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 $params[ 'filenameChange' ] = $nameForCheck;
 
                 if(!array_key_exists('parent', $params[ 'file' ])) {
-                    $params[ 'pathChange' ] = substr($params[ 'orig' ], strlen($pathCloud));
+                    $params[ 'pathChange' ] = substr($params[ 'orig' ], strlen($pathCloud . $cloudDestination));
                 }
             }
 
@@ -1103,7 +1104,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         }
 
         if ($cloudspace) {
-            $pathParent = substr($params[ 'dest' ], strlen($pathCloud));
+            $pathParent = substr($params[ 'dest' ], strlen($pathCloud . $cloudDestination));
             if (array_key_exists('parent', $params[ 'file' ])) {
                 if (strlen($pathParent) == 0 && !$params[ 'file' ][ 'parent' ]) {
                     $pathParent = '/';
@@ -1131,7 +1132,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             if($folder) {
                 $path = $pathParent . $folder . '/';
                 $lista = new stdClass();
-                $lista->cloud = $cloud;
+                $lista->cloud = $cloudDestination;
                 $lista->path = $pathParent;
                 $lista->filename = $folder;
                 $lista->user_eyeos = $user->getId();
@@ -1146,10 +1147,10 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             }
 
             if($parentId !== false) {
-                $metadata = $apiManager->createMetadata($cloud, $_SESSION[ 'access_token_' . $cloud . '_v2' ], $user->getId(), !$isFolder, $filename, $parentId, $path, $pathAbsolute);
+                $metadata = $apiManager->createMetadata($cloudDestination, $_SESSION[ 'access_token_' . $cloudDestination . '_v2' ], $user->getId(), !$isFolder, $filename, $parentId, $path, $pathAbsolute);
                 if($metadata[ 'status' ] == 'KO') {
                     if($metadata[ 'error' ] == 403) {
-                        $denied = self::permissionDeniedCloud($cloud);
+                        $denied = self::permissionDeniedCloud($cloudDestination);
                         $metadata[ 'path' ] = $denied[ 'path' ];
                     }
                     return $metadata;
