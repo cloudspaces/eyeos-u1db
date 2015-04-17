@@ -903,6 +903,30 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         }
     }
 
+    public static function downloadFileCloud($params)
+    {
+        if( !isset($params['id']) || !isset($params['path']) || !isset($params['cloud'])) {
+            throw new EyeMissingArgumentException('Missing or invalid file.');
+        }
+
+        $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
+        $file = FSI::getFile($params['path']);
+        $path = AdvancedPathLib::getPhpLocalHackPath($file->getRealFile()->getAbsolutePath());
+        $id = $params['id'];
+        $cloud = $params['cloud'];
+        $apiManager = new ApiManager();
+        $result = $apiManager->downloadMetadata($_SESSION[ 'access_token_' . $cloud . '_v2'], $id, $path, $user, false, $cloud);
+        if($result[ 'status' ] == 'KO') {
+            if($result[ 'error' ] == 403) {
+                $denied = self::permissionDeniedCloud($cloud);
+                $result[ 'path' ] = $denied[ 'path' ];
+            }
+            return $result;
+        } else {
+            return $params['path'];
+        }
+    }
+
     public static function startProgress($params)
     {
         $apiManager = new ApiManager();
