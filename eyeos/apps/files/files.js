@@ -1357,27 +1357,33 @@ qx.Class.define('eyeos.files.Controller', {
 		downloadFile: function (rename) {
 			var selected = this.getView().returnSelected();
             var path = selected[0].getFile().getAbsolutePath();
-            var stacksync = false;
-            if (this.__isStacksync(path)) {
+            var cloud = this.isCloud(path);
+            var download = false;
+            if (cloud.isCloud === true) {
                 var pathFather = selected[0].getFile().getPath();
                 var filename = selected[0].getFile().getName();
                 var params = new Object();
                 params.id = this.__getFileId(pathFather,filename);
                 params.path = path;
+                params.cloud = cloud.cloud;
                 if (params.id) {
-                    stacksync = true;
+                    download = true;
                     this.openCursorLoad();
-                    eyeos.callMessage(this.getApplication().getChecknum(),'downloadFileStacksync',params,function(result){
+                    eyeos.callMessage(this.getApplication().getChecknum(),'downloadFileCloud',params,function(result){
                         this.closeCursorLoad();
                         if(!result.error) {
                             eyeos.execute('download',this.getApplication().getChecknum(), [path]);
                         } else if(result.error == 403) {
+                            this.__cloud = cloud.cloud;
+                            if(result.path) {
+                                this._deleteFolderCloud(result.path);
+                            }
                             this.__permissionDenied();
                         }
                     },this);
                 }
             }
-            if (!stacksync) {
+            if (!download) {
 			    eyeos.execute('download',this.getApplication().getChecknum(), [path]);
             }
 		},

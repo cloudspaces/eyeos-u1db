@@ -878,7 +878,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
 	}
 
-    public static function downloadFileStacksync($params)
+    /*public static function downloadFileStacksync($params)
     {
         if(isset($_SESSION['access_token_v2'])) {
             if( !isset($params['id']) || !isset($params['path'])) {
@@ -901,7 +901,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $result['error'] = -1;
             return $result;
         }
-    }
+    }*/
 
     public static function downloadFileCloud($params)
     {
