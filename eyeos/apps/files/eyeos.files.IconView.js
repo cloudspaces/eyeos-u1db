@@ -379,7 +379,7 @@ qx.Class.define('eyeos.files.IconView', {
                     cloud = self.getViewManager().getController().isCloud(file.getPath());
                     if(cloud.isCloud === true) {
                         var params = new Object();
-                        params.id = self.getViewManager().getController().__getFileId(file.getPath(),file.getName());
+                        params.id = self.getViewManager().getController().__getFileId(file.getPath(),file.getName(),false,cloud.cloud);
                         params.path = absolutePath;
                         params.cloud = cloud.cloud;
 

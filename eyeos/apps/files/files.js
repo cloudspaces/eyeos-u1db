@@ -1042,7 +1042,7 @@ qx.Class.define('eyeos.files.Controller', {
 			}*/
 
             if(foldersToOpen.length > 0) {
-                cloud = this.isCloud(foldersToOpen[0])
+                cloud = this.isCloud(foldersToOpen[0]);
                 if(cloud.isCloud === true) {
                     this.openCursorLoad();
                 }
@@ -1627,7 +1627,7 @@ qx.Class.define('eyeos.files.Controller', {
 
         __getObjectDownloadCloud: function(parent,path,name,cloud) {
             var file = new Object();
-            file.id = this.__getFileId(parent, name);
+            file.id = this.__getFileId(parent, name,false,cloud);
             file.path = path;
             file.cloud = cloud;
             return file;
