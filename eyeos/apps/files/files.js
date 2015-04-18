@@ -1364,7 +1364,7 @@ qx.Class.define('eyeos.files.Controller', {
                 var pathFather = selected[0].getFile().getPath();
                 var filename = selected[0].getFile().getName();
                 var params = new Object();
-                params.id = this.__getFileId(pathFather,filename);
+                params.id = this.__getFileId(pathFather,filename,false,cloud.cloud);
                 params.path = path;
                 params.cloud = cloud.cloud;
                 if (params.id) {
