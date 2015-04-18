@@ -123,6 +123,12 @@ class ApiProvider
         return $this->exerciseMetadata($request);
     }
 
+    public function getControlVersionCloud($cloud)
+    {
+        $request = $this->getRequest('controlVersion',null,$cloud);
+        return $this->exerciseMetadata($request);
+    }
+
     private function getRequest($type, $token = NULL, $cloud = NULL)
     {
         $request = new stdClass();

@@ -64,6 +64,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 			var fileType = this._file.getType();
             var path = this.getParams()['selected'][0].getAbsolutePath();
             var stacksync = false;
+            var cloud = this._controller.isCloud(path);
             if(this._controller && this._controller.__isStacksync(path) && path !== 'home://~'+ eyeos.getCurrentUserName()+'/Stacksync') {
                 stacksync = true;
                 this.getSocialBar().createStackSyncTabs();
@@ -83,11 +84,11 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 				this._createContentShareTab();
 			}
 
-            if(stacksync) {
+            if(cloud.isCloud === true && path !== 'home://~'+ eyeos.getCurrentUserName()+'/Cloudspaces/' + cloud.cloud) {
                 if (fileType == 'file') {
-                    this._createContenActivityTabStacksync(false);
+                    this._createContenActivityTabCloudSpaces(false,cloud.cloud);
                 } else {
-                    this._createContenActivityTabStacksync(true);
+                    this._createContenActivityTabCloudSpaces(true,cloud.cloud);
                     //this._createListUsersActivityTabStacksync();
                 }
             } else {
@@ -643,7 +644,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
             }
         },
 
-        _createContenActivityTabStacksync: function(folder) {
+        _createContenActivityTabCloudSpaces: function(folder,cloud) {
             var activity = this.getSocialBar().getTab('Activity');
             activity.removeAll();
             activity.set({
@@ -693,15 +694,15 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 
             if(this.getParams()['selected'].length == 1) {
                 activity.addListener('appear',function() {
-                    var id = this._controller.__getFileId(this._file.getPath(),this._file.getName());
-                    if(id !== null) {
-                        this._controller.loadActivity(id,activity,this._file,folder);
+                    var metadata = this._controller.__getFileId(this._file.getPath(),this._file.getName(),true,cloud);
+                    if(metadata !== null) {
+                        this._controller.loadActivity(metadata,activity,this._file,folder,cloud);
                     }
                 },this);
             }
         },
 
-        _createContenActivityTabCloudspaces: function(folder) {
+        /*_createContenActivityTabCloudspaces: function(folder) {
             var activity = this.getSocialBar().getTab('Cloudspaces');
             activity.removeAll();
             activity.set({
@@ -757,7 +758,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
                     }
                 },this);
             }
-        },
+        },*/
 
         createListActivity: function(list,listBox,controller,file,type) {
             this.closeTimerVersion();

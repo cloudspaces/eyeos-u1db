@@ -1516,5 +1516,12 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
         return $result;
     }
+
+    public static function getControlVersionCloud($cloud)
+    {
+        $apiManager = new ApiManager();
+        $controlVersion = $apiManager->getControlVersionCloud($cloud);
+        return $controlVersion;
+    }
 }
 ?>

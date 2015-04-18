@@ -30,7 +30,8 @@ settings = {
                 "key": "8224c4148302d09e287ba35fe96f214e0ac5b3c5c",
                 "secret" : "f88a48225a02542ec720dc18cba36023"
             },
-            "version": "v2"
+            "version": "v2",
+            "controlVersion": "true"
         },
         "NEC": {
             "urls": {
@@ -44,7 +45,8 @@ settings = {
                 "key": "8224c4148302d09e287ba35fe96f214e0ac5b3c5c",
                 "secret" : "f88a48225a02542ec720dc18cba36023"
             },
-            "version": "v2"
+            "version": "v2",
+            "controlVersion": "false"
         }
     },
     "NEW_CODE": "true"

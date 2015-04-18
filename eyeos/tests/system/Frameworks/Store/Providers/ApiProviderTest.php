@@ -618,6 +618,21 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(json_decode($metadataOut), $actual);
     }
 
+    /**
+     * method: getControlVersionCloud
+     * when: called
+     * with: ValidCloud
+     * should: returnList
+     */
+    public function test_getControlVersionCloud_called_Valid_Cloud_returnList()
+    {
+        $metadataIn = '{"config":{"type":"controlVersion","cloud":"Stacksync"}}';
+        $metadataOut = '{"controlVersion":"true"}';
+        $this->exerciseMockMetadata($metadataIn, $metadataOut);
+        $actual = $this->sut->getControlVersionCloud("Stacksync");
+        $this->assertEquals(json_decode($metadataOut),$actual);
+    }
+
     private function exerciseGetMetadata($metadataIn,$metadataOut,$check,$file,$id,$contents = null)
     {
         $this->exerciseMockMetadata($metadataIn,$metadataOut);

@@ -2128,9 +2128,26 @@ qx.Class.define('eyeos.files.Controller', {
             return resp;
         },
 
-        loadActivity: function(id,versionsBox,file,type) {
+        loadActivity: function(metadata,versionsBox,file,type,cloud) {
+            if(type) {
+               this.__loadActivityCloud(metadata.id,versionsBox,file,type,cloud);
+            } else {
+                eyeos.callMessage(this.getApplication().getChecknum(), 'getControlVersionCloud', cloud, function (result) {
+                    if(result.controlVersion === 'true') {
+                        this.__loadActivityCloud(metadata.id,versionsBox,file,type,cloud);
+                    } else {
+                        var versions = [];
+                        versions.push({"version":metadata.version,"enabled":true,"is_owner":true,"modified_at":metadata.modified_at});
+                        this.getSocialBarUpdater().createListActivity(versions,versionsBox,this,file,type);
+                    }
+                },this);
+            }
+        },
+
+        __loadActivityCloud: function(id,versionsBox,file,type,cloud) {
             var params = new Object();
             params.id = id;
+            params.cloud = cloud;
             var callFunction = type?'listUsersShare':'listVersions';
 
             eyeos.callMessage(this.getApplication().getChecknum(), callFunction, params, function (results) {
@@ -2139,6 +2156,10 @@ qx.Class.define('eyeos.files.Controller', {
                     if(!metadata.error) {
                         this.getSocialBarUpdater().createListActivity(metadata,versionsBox,this,file,type);
                     } else if (metadata.error == 403) {
+                        this.__cloud = cloud;
+                        if(metadata.path) {
+                            this._deleteFolderCloud(metadata.path);
+                        }
                         this.__permissionDenied();
                     }
                 }

@@ -1451,6 +1451,43 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($metadataOut, $result);
     }
 
+    /**
+     * method: getControlVersionCloud
+     * when: called
+     * with: ValidCloud
+     * should: returnList
+     */
+    public function test_getControlVersionCloud_called_validCloud_returnList()
+    {
+        $cloud = "Stacksync";
+        $metadata = json_decode('{"controlVersion":"true"}');
+        $this->apiProviderMock->expects($this->once())
+            ->method('getControlVersionCloud')
+            ->with($cloud)
+            ->will($this->returnValue($metadata));
+        $result = $this->sut->getControlVersionCloud($cloud);
+        $this->assertEquals($metadata, $result);
+    }
+
+    /**
+     * method: getControlVersionCloud
+     * when: called
+     * with: InvalidCloud
+     * should: returnException
+     */
+    public function test_getControlVersionCloud_called_Invalid_Cloud_returnException()
+    {
+        $cloud = "No_valid_cloud";
+        $metadata =json_decode('{"error":-1}');
+        $metadataOut = array("status" => "KO", "error" => -1);
+        $this->apiProviderMock->expects($this->once())
+            ->method('getControlVersionCloud')
+            ->with($cloud)
+            ->will($this->returnValue($metadata));
+        $result = $this->sut->getControlVersionCloud($cloud);
+        $this->assertEquals($metadataOut, $result);
+    }
+
     private function exerciseCreateMetadata($file, $name, $parent_id, $path, $pathAbsolute, $metadataOut)
     {
         $type = $file?'false':'true';

@@ -509,6 +509,19 @@ class ApiManager
         return $result;
     }
 
+    public function getControlVersionCloud($cloud)
+    {
+        $result['status'] = 'KO';
+        $result['error'] = -1;
+        $metadata = $this->apiProvider->getControlVersionCloud($cloud);
+        if (!isset($metadata->error)) {
+            $result = $metadata;
+        } else {
+            $result['error'] = $metadata->error;
+        }
+        return $result;
+    }
+
     private function setUserEyeos($metadata, $user, $cloud = NULL)
     {
         $aux = new stdClass();

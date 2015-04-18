@@ -227,6 +227,8 @@ if __name__ == "__main__":
                         type = params[ 'config' ][ 'type' ]
                         if type == "oauthUrl":
                             result = json.dumps(settingsCloud[ 'urls' ][ 'OAUTH_URL' ])
+                        elif type == "controlVersion":
+                            result = json.dumps({"controlVersion": "" + settingsCloud['controlVersion'] + ""})
 
                     else:
                         oauthCredentials = OauthCredentials(settingsCloud[ 'urls' ][ 'REQUEST_TOKEN_URL' ],
