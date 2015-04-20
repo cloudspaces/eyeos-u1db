@@ -382,15 +382,16 @@ class ApiManager
         return json_decode($this->callProcessU1db("deleteMetadataUser",$file));
     }
 
-    public function listVersions($token,$id,$user)
+    public function listVersions($cloud,$token,$id,$user)
     {
         $result['status'] = 'KO';
         $result['error'] = -1;
-        $metadata = $this->apiProvider->listVersions($token,$id);
+        $metadata = $this->apiProvider->listVersions($cloud,$token,$id);
         if(!isset($metadata->error)) {
             $lista = new stdClass();
             $lista->id = "" . $id;
             $lista->user_eyeos = $user;
+            $lista->cloud = $cloud;
             $metadataU1db = $this->callProcessU1db('getDownloadVersion',$lista);
             if($metadataU1db !== "null") {
                 $metadataU1db = json_decode($metadataU1db);

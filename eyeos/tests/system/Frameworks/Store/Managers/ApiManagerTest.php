@@ -1141,7 +1141,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->apiProviderMock->expects($this->at(0))
             ->method('listVersions')
-            ->with($this->token,$id)
+            ->with($this->cloud,$this->token,$id)
             ->will($this->returnValue(json_decode($metadata)));
 
         $params = new stdClass();
@@ -1150,6 +1150,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $aux = new stdClass();
         $aux->id = "" . $id;
         $aux->user_eyeos = $this->user;
+        $aux->cloud = $this->cloud;
         array_push($params->lista,$aux);
 
         $this->accessorProviderMock->expects($this->once())
@@ -1157,7 +1158,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->with(json_encode($params))
             ->will($this->returnValue('null'));
 
-        $result = $this->sut->listVersions($this->token,8983444,$this->user);
+        $result = $this->sut->listVersions($this->cloud,$this->token,8983444,$this->user);
         $this->assertEquals($expected,$result);
     }
 
@@ -1175,7 +1176,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->apiProviderMock->expects($this->at(0))
             ->method('listVersions')
-            ->with($this->token,$id)
+            ->with($this->cloud,$this->token,$id)
             ->will($this->returnValue(json_decode($metadata)));
 
         $params = new stdClass();
@@ -1184,6 +1185,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $aux = new stdClass();
         $aux->id = "" . $id;
         $aux->user_eyeos = $this->user;
+        $aux->cloud = $this->cloud;
         array_push($params->lista,$aux);
 
         $this->accessorProviderMock->expects($this->once())
@@ -1191,7 +1193,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->with(json_encode($params))
             ->will($this->returnValue('{"id":"8983444","version":2,"recover":false}'));
 
-        $result = $this->sut->listVersions($this->token,8983444,$this->user);
+        $result = $this->sut->listVersions($this->cloud,$this->token,8983444,$this->user);
         $this->assertEquals($expected,$result);
     }
 
@@ -1206,13 +1208,13 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $id = 8983444;
         $this->apiProviderMock->expects($this->at(0))
             ->method('listVersions')
-            ->with($this->token,$id)
+            ->with($this->cloud,$this->token,$id)
             ->will($this->returnValue(json_decode('{"error":403}')));
 
         $this->accessorProviderMock->expects($this->never())
             ->method('getProcessDataU1db');
 
-        $result = $this->sut->listVersions($this->token,$id,$this->user);
+        $result = $this->sut->listVersions($this->cloud,$this->token,$id,$this->user);
         $this->assertEquals(array("status"=>"KO","error"=>403),$result);
     }
 
@@ -1227,13 +1229,13 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $id = 8983444;
         $this->apiProviderMock->expects($this->at(0))
             ->method('listVersions')
-            ->with($this->token,$id)
+            ->with($this->cloud,$this->token,$id)
             ->will($this->returnValue(json_decode('{"error":-1}')));
 
         $this->accessorProviderMock->expects($this->never())
             ->method('getProcessDataU1db');
 
-        $result = $this->sut->listVersions($this->token,$id,$this->user);
+        $result = $this->sut->listVersions($this->cloud,$this->token,$id,$this->user);
         $this->assertEquals(array("status"=>"KO","error"=>-1),$result);
 
     }

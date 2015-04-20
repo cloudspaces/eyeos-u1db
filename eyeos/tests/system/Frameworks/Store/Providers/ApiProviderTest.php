@@ -432,7 +432,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_listVersions_called_tokenAndId_returnCorrectData()
     {
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listVersions","id":"153"}}';
+        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listVersions","id":"153"}}';
         $metadataOut = '{"status": "CHANGED", "mimetype": "text/plain", "versions": [{"status": "CHANGED", "mimetype": "text/plain", "checksum": 2499810342, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 4, "is_folder": false, "chunks": [], "id": 155, "size": 61}, {"status": "RENAMED", "mimetype": "text/plain", "checksum": 1825838054, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 3, "is_folder": false, "chunks": [], "id": 155, "size": 59}, {"status": "RENAMED", "mimetype": "text/plain", "checksum": 1825838054, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 2, "is_folder": false, "chunks": [], "id": 155, "size": 59}, {"status": "NEW", "mimetype": "text/plain", "checksum": 1825838054, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 1, "is_folder": false, "chunks": [], "id": 155, "size": 59}], "checksum": 2499810342, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": "null", "version": 4, "is_folder": false, "chunks": [], "id": 155, "size": 61}';
         $check = '[{"status": "CHANGED", "mimetype": "text/plain", "checksum": 2499810342, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 4, "is_folder": false, "chunks": [], "id": 155, "size": 61}, {"status": "RENAMED", "mimetype": "text/plain", "checksum": 1825838054, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 3, "is_folder": false, "chunks": [], "id": 155, "size": 59}, {"status": "RENAMED", "mimetype": "text/plain", "checksum": 1825838054, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 2, "is_folder": false, "chunks": [], "id": 155, "size": 59}, {"status": "NEW", "mimetype": "text/plain", "checksum": 1825838054, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 1, "is_folder": false, "chunks": [], "id": 155, "size": 59}]';
         $this->exerciseListVersion($metadataIn,$metadataOut,$check,153);
@@ -447,7 +447,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_listVersions_called_tokenAndId_returnPermissionDenied()
     {
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listVersions","id":"9873615"}}';
+        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listVersions","id":"9873615"}}';
         $metadataOut = '403';
         $this->exerciseListVersion($metadataIn,$metadataOut,$this->permission,9873615);
     }
@@ -460,7 +460,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_listVersions_called_tokenAndId_returnException()
     {
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listVersions","id":"9873615"}}';
+        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listVersions","id":"9873615"}}';
         $metadataOut = 'false';
         $this->exerciseListVersion($metadataIn,$metadataOut,$this->exception,9873615);
     }
@@ -689,7 +689,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     private function exerciseListVersion($metadataIn,$metadataOut,$check,$id)
     {
         $this->exerciseMockMetadata($metadataIn,$metadataOut);
-        $result = $this->sut->listVersions($this->token,$id);
+        $result = $this->sut->listVersions($this->cloud,$this->token,$id);
         $this->assertEquals(json_decode($check),$result);
     }
 

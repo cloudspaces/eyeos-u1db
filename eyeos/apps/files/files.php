@@ -1355,19 +1355,28 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
     public static function listVersions($params)
     {
-        if(isset($_SESSION['access_token_v2'])) {
+        if( !isset($params['id']) || !isset($params['cloud'])) {
+            throw new EyeMissingArgumentException('Missing or invalid file.');
+        }
+
+        $id = $params['id'];
+        $cloud = $params['cloud'];
+
+        if(isset($_SESSION['access_token_' . $cloud . '_v2'])) {
             $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
-            $id = $params['id'];
             $apiManager = new ApiManager();
-            $result = $apiManager->listVersions($_SESSION['access_token_v2'],$id,$user);
-            if($result) {
-                if(isset($result['error']) && $result['error'] == 403) {
-                    self::permissionDeniedStackSync($user);
+            $result = $apiManager->listVersions($cloud, $_SESSION['access_token_' . $cloud . '_v2'], $id, $user);
+
+            if ($result) {
+                if (isset($result['error']) && $result['error'] == 403) {
+                    $denied = self::permissionDeniedCloud($cloud);
+                    $result['path'] = $denied['path'];
                 }
             }
         } else {
             $result = '{"error":-1,"description":"Access token not exists"}';
         }
+
         return $result;
     }
 

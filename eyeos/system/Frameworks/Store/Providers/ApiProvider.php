@@ -80,9 +80,9 @@ class ApiProvider
         return $this->exerciseMetadata($request);
     }
 
-    public function listVersions($token,$id)
+    public function listVersions($cloud,$token,$id)
     {
-        $request = $this->getRequest('listVersions', $token);
+        $request = $this->getRequest('listVersions', $token,$cloud);
         $request->metadata->id = "" . $id;
         return $this->exerciseMetadata($request,true);
     }
