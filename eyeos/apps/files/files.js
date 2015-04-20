@@ -1211,7 +1211,7 @@ qx.Class.define('eyeos.files.Controller', {
 				var target = this.getModel().getCurrentPath()[1];
 				var action = this._filesQueue.getAction();
 				var files = new Array();
-
+debugger;
 				for (var i = 0; i < filesToPaste.length; ++i) {
 					if (action == 'move') {
 						if (target != filesToPaste[i].getPath()) {
@@ -1460,28 +1460,30 @@ qx.Class.define('eyeos.files.Controller', {
         },
 
         __getFileIdFolder: function(path, cloud) {
-            var name = path.substring(path.lastIndexOf('/')+1);
-            var father = path === 'home://~'+ eyeos.getCurrentUserName()+'/Cloudspaces/' + cloud? path:path.substring(0,path.lastIndexOf('/'));
             var fileIdFolder = null;
+            if (cloud) {
+                var name = path.substring(path.lastIndexOf('/')+1);
+                var father = path === 'home://~'+ eyeos.getCurrentUserName()+'/Cloudspaces/' + cloud? path:path.substring(0,path.lastIndexOf('/'));
 
-            if (path !== 'home://~'+ eyeos.getCurrentUserName()+'/Cloudspaces/' + cloud) {
-                var listMetadata = this._metadatas[cloud];
-                if(this._metadatas[cloud].length >0) {
-                    for(var i in this._metadatas[cloud]) {
-                        if(this._metadatas[cloud][i].path === father) {
-                            if(this._metadatas[cloud][i].metadata.contents && this._metadatas[cloud][i].metadata.contents.length > 0) {
-                                for(var j in this._metadatas[cloud][i].metadata.contents) {
-                                    if(this._metadatas[cloud][i].metadata.contents[j].filename === name) {
-                                        fileIdFolder = this._metadatas[cloud][i].metadata.contents[j].id;
+                if (path !== 'home://~'+ eyeos.getCurrentUserName()+'/Cloudspaces/' + cloud) {
+                    var listMetadata = this._metadatas[cloud];
+                    if(this._metadatas[cloud].length >0) {
+                        for(var i in this._metadatas[cloud]) {
+                            if(this._metadatas[cloud][i].path === father) {
+                                if(this._metadatas[cloud][i].metadata.contents && this._metadatas[cloud][i].metadata.contents.length > 0) {
+                                    for(var j in this._metadatas[cloud][i].metadata.contents) {
+                                        if(this._metadatas[cloud][i].metadata.contents[j].filename === name) {
+                                            fileIdFolder = this._metadatas[cloud][i].metadata.contents[j].id;
+                                        }
                                     }
                                 }
+                                break;
                             }
-                            break;
                         }
                     }
+                } else {
+                    fileIdFolder = 0;
                 }
-            } else {
-                fileIdFolder = 0;
             }
 
             return fileIdFolder;
@@ -1601,7 +1603,7 @@ qx.Class.define('eyeos.files.Controller', {
             var fileId = null;
             var metadata = null;
 
-            if(this._metadatas[cloud].length > 0) {
+            if(cloud && this._metadatas[cloud].length > 0) {
                 for(var i in this._metadatas[cloud]) {
                     if(this._metadatas[cloud][i].path === path) {
                         if(this._metadatas[cloud][i].metadata.contents && this._metadatas[cloud][i].metadata.contents.length > 0) {
