@@ -264,6 +264,8 @@ if __name__ == "__main__":
                                 result = oauthCredentials.downloadFile(oauth, metadata['id'], metadata['path'])
                             elif type == 'upload':
                                 result = oauthCredentials.uploadFile(oauth, metadata['id'], metadata['path'])
+                            elif type == 'listVersions':
+                                result = oauthCredentials.getFileVersions(oauth, metadata['id'])
                         elif not(params.has_key( 'metadata' ) or params.has_key( 'verifier' ) or params.has_key( 'token' )):
                             oauth = OAuthRequest(key, client_secret=secret, callback_uri=callbackUrl, signature_method=SIGNATURE_PLAINTEXT)
                             result = oauthCredentials.getRequestToken(oauth)
