@@ -1211,7 +1211,7 @@ qx.Class.define('eyeos.files.Controller', {
 				var target = this.getModel().getCurrentPath()[1];
 				var action = this._filesQueue.getAction();
 				var files = new Array();
-debugger;
+
 				for (var i = 0; i < filesToPaste.length; ++i) {
 					if (action == 'move') {
 						if (target != filesToPaste[i].getPath()) {
@@ -1765,7 +1765,7 @@ debugger;
         {
             var length = files.length;
             var deleteFiles = false;
-            var copyCloud = (cloudOrig === cloudDest && cloud.origin !== cloud.destination);
+            var copyCloud = (cloudOrig && cloudDest && cloud.origin !== cloud.destination);
 
             if(cloudOrig !== cloudDest || copyCloud) {
                 length += listDelete.length;
@@ -1793,6 +1793,9 @@ debugger;
 
                 eyeos.callMessage(this.getApplication().getChecknum(), action, params, function(result) {
                     if(result && !result.error){
+                        if(result.hasOwnProperty('filenameChange') && result.hasOwnProperty('pathChange') && result.filenameChange) {
+                            this.__replacePath(params.file.filename, result.filenameChange, files, pos-1, result.pathChange);
+                        }
                         this.__size += 1;
                         this.__updateProgress(length);
                         pos --;
@@ -1810,7 +1813,7 @@ debugger;
                 },this);
             } else {
                 if(deleteFiles) {
-                    this.__deleteComponent(listDelete, 0, length, cloud);
+                    this.__deleteComponent(listDelete, 0, length, cloud.origin);
                 } else {
                     this.__closeProgress();
                 }
@@ -1925,7 +1928,7 @@ debugger;
                 if(cloud) {
                     deleteFiles[pos].cloud = cloud;
                 }
-                eyeos.callMessage(this.getApplication().getChecknum(),'delete', [ deleteFiles[ pos ] ], function() {
+                eyeos.callMessage(this.getApplication().getChecknum(), 'delete', [ deleteFiles[ pos ] ], function() {
                     this.__size += 1;
                     this.__updateProgress(sizeTotal);
 
