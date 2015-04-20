@@ -694,6 +694,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 
             if(this.getParams()['selected'].length == 1) {
                 activity.addListener('appear',function() {
+                    versions.removeAll();
                     var metadata = this._controller.__getFileId(this._file.getPath(),this._file.getName(),true,cloud);
                     if(metadata !== null) {
                         this._controller.loadActivity(metadata,activity,this._file,folder,cloud);
@@ -762,14 +763,16 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 
         createListActivity: function(list,listBox,controller,file,type) {
             this.closeTimerVersion();
-            var listContainer = listBox.getChildren()[1].getChildren()[0];
-            listContainer.removeAll();
+            if(listBox && listBox.getChildren().length > 0 && listBox.getChildren()[1].getChildren().length > 0) {
+                var listContainer = listBox.getChildren()[1].getChildren()[0];
+                listContainer.removeAll();
 
-            var that = this;
-            var a = function() {
-                that.__createRowActivity(list,listContainer,controller,0,file,type,that);
-            };
-            this._timerVersion = setTimeout(a,0);
+                var that = this;
+                var a = function () {
+                    that.__createRowActivity(list, listContainer, controller, 0, file, type, that);
+                };
+                this._timerVersion = setTimeout(a, 0);
+            }
         },
 
         __createRowActivity: function(list,listContainer,controller,contador,file,type,form) {
@@ -859,6 +862,24 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
                 this.closeTimerVersion();
                 params.controller.getVersion(id,params.version,params.activity,params.file);
             }
+        },
+
+        showCursorLoad: function(container) {
+            container.removeAll();
+
+            var cursor = new qx.ui.basic.Image().set({
+                width: 42,
+                height: 42,
+                source: "index.php?extern=images/loading.gif",
+                marginTop: 130,
+                marginLeft: 80
+            });
+
+            container.add(cursor);
+        },
+
+        closeCursorLoad: function(container) {
+            container.removeAll();
         }
     }
 });
