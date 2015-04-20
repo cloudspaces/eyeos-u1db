@@ -1099,7 +1099,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 $params[ 'filenameChange' ] = $nameForCheck;
 
                 if(!array_key_exists('parent', $params[ 'file' ])) {
-                    $params[ 'pathChange' ] = substr($params[ 'dest' ], strlen($pathCloud . $cloudDestination));
+                    $params[ 'pathChange' ] = substr($params[ 'orig' ], strlen($pathCloud . $cloudOrig));
                 }
             }
 

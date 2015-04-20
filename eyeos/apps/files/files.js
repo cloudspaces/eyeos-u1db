@@ -1740,6 +1740,7 @@ qx.Class.define('eyeos.files.Controller', {
                 params.action = action;
 
                 eyeos.callMessage(this.getApplication().getChecknum(), 'startProgress', params, function(result) {
+                    debugger;
                    if(result && result.metadatas && result.metadatas.length > 0) {
                        if (action == 'copy') {
                            this.__copyFile(params.cloud, result, result.metadatas.length - 1, params.folder, pathOrig);
@@ -1874,7 +1875,6 @@ qx.Class.define('eyeos.files.Controller', {
             filenameNew = '/' + filenameNew;
 
             if(dirChange) {
-                filenameOld = dirChange + filenameOld;
                 filenameNew = dirChange + filenameNew;
             }
 
