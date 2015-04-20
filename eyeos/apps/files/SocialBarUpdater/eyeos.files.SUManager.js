@@ -145,6 +145,18 @@ qx.Class.define('eyeos.files.SUManager', {
             var handlerClass = eval('eyeos.suhandlers.LocalFile');
             var handler = new handlerClass(this.getSocialBar(), null);
             handler.createListActivity(list,listBox,controller,file,type);
+        },
+
+        showCursorLoad: function(container) {
+            var handlerClass = eval('eyeos.suhandlers.LocalFile');
+            var handler = new handlerClass(this.getSocialBar(), null);
+            handler.showCursorLoad(container);
+        },
+
+        closeCursorLoad: function(container) {
+            var handlerClass = eval('eyeos.suhandlers.LocalFile');
+            var handler = new handlerClass(this.getSocialBar(), null);
+            handler.closeCursorLoad(container);
         }
 	}
 });

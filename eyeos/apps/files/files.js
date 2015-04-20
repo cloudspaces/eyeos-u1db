@@ -615,8 +615,9 @@ qx.Class.define('eyeos.files.Controller', {
 					selected: this._getFilesFromIconViews(e.getData()),
 					checknum: this.getApplication().getChecknum()
 				};
-                if (this.__isStacksync(params.path)) {
-                    params.selected = this.__getFilesFromIconViewsStackSync(params.path,params.selected);
+                var cloud = this.isCloud(params.path);
+                if (cloud.isCloud === true) {
+                    params.selected = this.__getFilesFromIconViewsCloud(params.path,params.selected,cloud.cloud);
                 }
 				this.getSocialBarUpdater().selectionChanged(params);
 			}, this);
@@ -630,10 +631,10 @@ qx.Class.define('eyeos.files.Controller', {
 			}, this);
 		},
 
-        __getFilesFromIconViewsStackSync: function(path,list)
+        __getFilesFromIconViewsCloud: function(path,list,cloud)
         {
             for(var i=0; i<list.length; i++) {
-                var metadata = this.__getFileId(path,list[i].getName(),true);
+                var metadata = this.__getFileId(path,list[i].getName(),true,cloud);
                 if (metadata) {
                     list[i].setSize(metadata.size);
                 }
@@ -1211,7 +1212,7 @@ qx.Class.define('eyeos.files.Controller', {
 				var target = this.getModel().getCurrentPath()[1];
 				var action = this._filesQueue.getAction();
 				var files = new Array();
-debugger;
+                
 				for (var i = 0; i < filesToPaste.length; ++i) {
 					if (action == 'move') {
 						if (target != filesToPaste[i].getPath()) {
@@ -2131,13 +2132,17 @@ debugger;
         },
 
         loadActivity: function(metadata,versionsBox,file,type,cloud) {
+            var listContainer = versionsBox.getChildren()[1].getChildren()[0];
+            this.getSocialBarUpdater().showCursorLoad(listContainer);
+
             if(type) {
                this.__loadActivityCloud(metadata.id,versionsBox,file,type,cloud);
             } else {
                 eyeos.callMessage(this.getApplication().getChecknum(), 'getControlVersionCloud', cloud, function (result) {
                     if(result.controlVersion === 'true') {
-                        this.__loadActivityCloud(metadata.id,versionsBox,file,type,cloud);
+                        this.__loadActivityCloud(metadata.id,versionsBox,file,type,cloud,listContainer);
                     } else {
+                        this.getSocialBarUpdater().closeCursorLoad(listContainer);
                         var versions = [];
                         versions.push({"version":metadata.version,"enabled":true,"is_owner":true,"modified_at":metadata.modified_at});
                         this.getSocialBarUpdater().createListActivity(versions,versionsBox,this,file,type);
@@ -2146,13 +2151,14 @@ debugger;
             }
         },
 
-        __loadActivityCloud: function(id,versionsBox,file,type,cloud) {
+        __loadActivityCloud: function(id,versionsBox,file,type,cloud,listContainer) {
             var params = new Object();
             params.id = id;
             params.cloud = cloud;
             var callFunction = type?'listUsersShare':'listVersions';
 
             eyeos.callMessage(this.getApplication().getChecknum(), callFunction, params, function (results) {
+                this.getSocialBarUpdater().closeCursorLoad(listContainer);
                 if(results) {
                     var metadata = JSON.parse(results);
                     if(!metadata.error) {
