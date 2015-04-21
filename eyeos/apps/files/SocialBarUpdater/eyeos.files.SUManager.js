@@ -141,10 +141,10 @@ qx.Class.define('eyeos.files.SUManager', {
             handler.createComments(comments,commentsBox,controller,file);
         },
 
-        createListActivity: function(list,listBox,controller,file,type) {
+        createListActivity: function(cloud, list, listBox, controller, file, type) {
             var handlerClass = eval('eyeos.suhandlers.LocalFile');
             var handler = new handlerClass(this.getSocialBar(), null);
-            handler.createListActivity(list,listBox,controller,file,type);
+            handler.createListActivity(cloud, list, listBox, controller, file, type);
         },
 
         showCursorLoad: function(container) {
