@@ -1388,17 +1388,19 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
     public static function getFileVersionData($params)
     {
-        if (isset($_SESSION['access_token_v2'])) {
+        if (isset($params[ 'cloud' ]) && isset($_SESSION[ 'access_token_' . $params[ 'cloud' ] . '_v2'])) {
+            $cloud = $params[ 'cloud' ];
             $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
-            $id = $params['id'];
-            $version = $params['version'];
-            $file = FSI::getFile($params['path']);
+            $id = $params[ 'id' ];
+            $version = $params[ 'version' ];
+            $file = FSI::getFile($params[ 'path' ]);
             $apiManager = new ApiManager();
             $path = AdvancedPathLib::getPhpLocalHackPath($file->getRealFile()->getAbsolutePath());
-            $result = $apiManager->getFileVersionData($_SESSION['access_token_v2'],$id,$version,$path,$user);
+            $result = $apiManager->getFileVersionData($cloud, $_SESSION['access_token_' . $cloud . '_v2'], $id, $version, $path, $user);
             if($result) {
-                if(isset($result['error']) && $result['error'] == 403) {
-                    self::permissionDeniedStackSync($user);
+                if(isset($result[ 'error' ]) && $result[ 'error' ] == 403) {
+                    $denied = self::permissionDeniedCloud($cloud);
+                    $result['path'] = $denied['path'];
                 }
             }
         } else {
