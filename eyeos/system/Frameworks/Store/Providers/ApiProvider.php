@@ -80,16 +80,16 @@ class ApiProvider
         return $this->exerciseMetadata($request);
     }
 
-    public function listVersions($cloud,$token,$id)
+    public function listVersions($cloud, $token, $id)
     {
-        $request = $this->getRequest('listVersions', $token,$cloud);
+        $request = $this->getRequest('listVersions', $token, $cloud);
         $request->metadata->id = "" . $id;
-        return $this->exerciseMetadata($request,true);
+        return $this->exerciseMetadata($request, true);
     }
 
-    public function getFileVersionData($token, $id, $version, $path)
+    public function getFileVersionData($cloud, $token, $id, $version, $path)
     {
-        $request = $this->getRequest("getFileVersion", $token);
+        $request = $this->getRequest("getFileVersion", $token, $cloud);
         $request->metadata->id = "" . $id;
         $request->metadata->version = "" . $version;
         $request->metadata->path = $path;
@@ -125,7 +125,7 @@ class ApiProvider
 
     public function getControlVersionCloud($cloud)
     {
-        $request = $this->getRequest('controlVersion',null,$cloud);
+        $request = $this->getRequest('controlVersion', null, $cloud);
         return $this->exerciseMetadata($request);
     }
 

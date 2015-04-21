@@ -444,7 +444,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $pathabsolute = '/home/eyeos/' . $name;
         $metadataOut = '{"id":32565632156,"parent_id":"null","filename":"root","is_folder":true,"status":"NEW","server_modified":"2014-03-11 14:22:45.757","client_modified":"2014-03-11 14:22:45.757","user":"web","version":1,"checksum":589445744,"size":166,"mimetype":"text/plain","chunks":[],"is_root":false,
                           "contents":[]}';
-        $this->exerciseCreateMetadata(true,$name,$parent_id,$path,$pathabsolute,$metadataOut);
+        $this->exerciseCreateMetadata(true, $name, $parent_id, $path, $pathabsolute, $metadataOut);
     }
 
     /**
@@ -1251,7 +1251,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $id = 8983444;
         $version = 2;
         $path = "/home/eyeos/client1.pdf";
-        $this->exerciseGetFileVersionData("null",'{"status":true}',array("status" => "OK"),$id,$version,$path,"insertDownloadVersion");
+        $this->exerciseGetFileVersionData("null", '{"status": true}', array("status" => "OK"), $id, $version, $path, "insertDownloadVersion");
 
     }
 
@@ -1266,7 +1266,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $id = 8983444;
         $version = 2;
         $path = "/home/eyeos/client1.pdf";
-        $this->exerciseGetFileVersionData('{"id":"8983444","version":1,"recover":false}','{"status":true}',array("status" => "OK"),$id,$version,$path,"updateDownloadVersion");
+        $this->exerciseGetFileVersionData('{"id": "8983444", "version": 1, "recover": false}', '{"status": true}', array("status" => "OK"), $id, $version, $path, "updateDownloadVersion");
     }
 
     /**
@@ -1280,7 +1280,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $id = 8983444;
         $version = 2;
         $path = "/home/eyeos/client1.pdf";
-        $this->exerciseGetFileVersionData('{"id":"8983444","version":1,"recover":false}','{"error":403}',array("status" => "KO","error" => 403),$id,$version,$path,'',true);
+        $this->exerciseGetFileVersionData('{"id": "8983444", "version": 1,"recover": false}', '{"error":403}', array("status" => "KO", "error" => 403), $id, $version, $path, '', true);
     }
 
     /**
@@ -1294,7 +1294,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $id = 8983444;
         $version = 2;
         $path = "/home/eyeos/client1.pdf";
-        $this->exerciseGetFileVersionData('{"id":"8983444","version":1,"recover":false}','{"error":-1}',array("status" => "KO","error" => -1),$id,$version,$path,'',true);
+        $this->exerciseGetFileVersionData('{"id": "8983444", "version": 1, "recover": false}', '{"error":-1}', array("status" => "KO", "error" => -1), $id, $version, $path, '', true);
     }
 
     /**
@@ -1522,6 +1522,8 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             $params->lista = array();
             $aux = new stdClass();
             $aux->id = "142555444";
+            $aux->cloud = $this->cloud;
+            $aux->user_eyeos = $this->user;
             $aux->version = 3;
             $aux->recover = false;
             array_push($params->lista,$aux);
@@ -1671,7 +1673,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->will($this->returnValue($expected));
     }
 
-    private function exerciseGetFileVersionData($metadataU1db,$metadataOut,$expected,$id,$version,$path,$type,$exception = false)
+    private function exerciseGetFileVersionData($metadataU1db, $metadataOut, $expected, $id, $version, $path, $type, $exception = false)
     {
         $params = new stdClass();
         $params->type = "getDownloadVersion";
@@ -1679,7 +1681,8 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $aux = new stdClass();
         $aux->id = "" . $id;
         $aux->user_eyeos = $this->user;
-        array_push($params->lista,$aux);
+        $aux->cloud = $this->cloud;
+        array_push($params->lista, $aux);
 
         if($exception) {
             $this->accessorProviderMock->expects($this->exactly(1))
@@ -1695,7 +1698,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->apiProviderMock->expects($this->at(0))
             ->method('getFileVersionData')
-            ->with($this->token,$id,$version,$path)
+            ->with($this->cloud, $this->token, $id, $version, $path)
             ->will($this->returnValue(json_decode($metadataOut)));
 
 
@@ -1705,6 +1708,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             $params->lista = array();
             $aux = new stdClass();
             $aux->id = "" . $id;
+            $aux->cloud = $this->cloud;
             $aux->user_eyeos = $this->user;
             $aux->version = $version;
             $aux->recover = true;
@@ -1716,8 +1720,8 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
                 ->will($this->returnValue('true'));
         }
 
-        $result = $this->sut->getFileVersionData($this->token,$id,$version,$path,$this->user);
-        $this->assertEquals($expected,$result);
+        $result = $this->sut->getFileVersionData($this->cloud, $this->token, $id, $version, $path, $this->user);
+        $this->assertEquals($expected, $result);
     }
 
     private function exerciseGetListUsersShare($metadata,$id,$expected)

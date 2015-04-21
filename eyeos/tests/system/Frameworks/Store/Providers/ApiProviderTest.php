@@ -474,7 +474,8 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     public function test_getFileVersionData_called_tokenAndIdAndVersionAndPath_returnCorrectDownloadVersion()
     {
         $metadataOut = "true";
-        $this->exerciseGetFileVersionData($metadataOut,'{"status":true}');
+        $cloud = "Stacksync";
+        $this->exerciseGetFileVersionData($metadataOut, '{"status":true}', $cloud);
     }
 
     /**
@@ -486,7 +487,8 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     public function test_getFileVersionData_called_tokenAndIdAndVersionAndPath_returnPermissionDenied()
     {
         $metadataOut = "403";
-        $this->exerciseGetFileVersionData($metadataOut,$this->permission);
+        $cloud = "Stacksync";
+        $this->exerciseGetFileVersionData($metadataOut, $this->permission, $cloud);
     }
 
     /**
@@ -498,7 +500,8 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     public function test_getFileVersionData_called_tokenAndIdAndVersionAndPath_returnException()
     {
         $metadataOut = "false";
-        $this->exerciseGetFileVersionData($metadataOut,$this->exception);
+        $cloud = "Stacksync";
+        $this->exerciseGetFileVersionData($metadataOut, $this->exception, $cloud);
     }
 
     /**
@@ -707,10 +710,13 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(json_decode($check),$result);
     }
 
-    private function exerciseGetFileVersionData($metadataOut,$check)
+    private function exerciseGetFileVersionData($metadataOut, $check, $cloud=NULL)
     {
         $metadataIn = new stdClass();
         $metadataIn->config = new stdClass();
+        if ($cloud) {
+            $metadataIn->config->cloud = $cloud;
+        }
         $metadataIn->token = new stdClass();
         $metadataIn->token->key = "ABCD";
         $metadataIn->token->secret = "EFGH";
@@ -719,8 +725,8 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $metadataIn->metadata->id = "9873615";
         $metadataIn->metadata->version = "2";
         $metadataIn->metadata->path = "/home/eyeos/prueba3.pdf";
-        $this->exerciseMockMetadata(json_encode($metadataIn),$metadataOut);
-        $result = $this->sut->getFileVersionData($this->token,"9873615",2,"/home/eyeos/prueba3.pdf");
+        $this->exerciseMockMetadata(json_encode($metadataIn), $metadataOut);
+        $result = $this->sut->getFileVersionData($cloud, $this->token, "9873615", 2, "/home/eyeos/prueba3.pdf");
         $this->assertEquals(json_decode($check),$result);
     }
 }

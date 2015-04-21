@@ -144,6 +144,8 @@ class ApiManager
                                 if($file) {
                                     $lista = new stdClass();
                                     $lista->id = "" . $newMetadata->id;
+                                    $lista->cloud = $cloud;
+                                    $lista->user_eyeos = $user;
                                     $lista->version = $newMetadata->version;
                                     $lista->recover = false;
                                     $resultU1db = $this->callProcessU1db("insertDownloadVersion", $lista);
@@ -418,7 +420,7 @@ class ApiManager
         return $result;
     }
 
-    public function getFileVersionData($token,$id,$version,$path,$user)
+    public function getFileVersionData($cloud, $token, $id, $version, $path, $user)
     {
         $result['status'] = 'KO';
         $result['error'] = -1;
@@ -427,7 +429,8 @@ class ApiManager
         $lista = new stdClass();
         $lista->id = "" . $id;
         $lista->user_eyeos = $user;
-        $metadataU1db = $this->callProcessU1db('getDownloadVersion',$lista);
+        $lista->cloud = $cloud;
+        $metadataU1db = $this->callProcessU1db('getDownloadVersion', $lista);
         if($metadataU1db !== "null") {
             $metadataU1db = json_decode($metadataU1db);
             if($metadataU1db) {
@@ -438,14 +441,15 @@ class ApiManager
         }
 
         if($type) {
-            $metadata = $this->apiProvider->getFileVersionData($token,$id,$version,$path);
+            $metadata = $this->apiProvider->getFileVersionData($cloud, $token, $id, $version, $path);
             if(!isset($metadata->error)) {
                 $lista = new stdClass();
                 $lista->id = "" . $id;
+                $lista->cloud = $cloud;
                 $lista->user_eyeos = $user;
                 $lista->version = $version;
                 $lista->recover = true;
-                $metadataU1db = $this->callProcessU1db($type,$lista);
+                $metadataU1db = $this->callProcessU1db($type, $lista);
                 if($metadataU1db == "true") {
                     $result['status'] = 'OK';
                     unset($result['error']);
