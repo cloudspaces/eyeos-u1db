@@ -2409,24 +2409,32 @@ qx.Class.define('eyeos.files.Controller', {
         __sendShareMail: function(e) {
             var file = e.getCurrentTarget().getUserData('file');
             var containerMail = e.getCurrentTarget().getUserData('containerMail');
-            var id = this.__getFileIdFolder(file.getFile().getAbsolutePath());
-            if(id !== null) {
-                var params = new Object();
-                params.id = id;
-                params.list = this.__getListMails(containerMail);
-                this._share.close();
-                this.closeTimer();
-                this.openCursorLoad();
-                var currentPath = file.getFile().getPath();
+            var cloud = this.isCloud(file.getFile().getAbsolutePath());
+            if (cloud.isCloud) {
+                var id = this.__getFileIdFolder(file.getFile().getAbsolutePath(), cloud.cloud);
+                if(id !== null) {
+                    var params = new Object();
+                    params.id = id;
+                    params.list = this.__getListMails(containerMail);
+                    params.cloud = cloud.cloud;
+                    this._share.close();
+                    this.closeTimer();
+                    this.openCursorLoad();
+                    var currentPath = file.getFile().getPath();
 
-                eyeos.callMessage(this.getApplication().getChecknum(), 'shareFolder', params, function (results) {
-                    if(results.error == 403) {
-                        this.closeCursorLoad();
-                        this.__permissionDenied();
-                    } else {
-                        this._browsePath(currentPath);
-                    }
-                },this);
+                    eyeos.callMessage(this.getApplication().getChecknum(), 'shareFolder', params, function (results) {
+                        if(results.error == 403) {
+                            this.closeCursorLoad();
+                            this.__cloud = cloud.cloud;
+                            if(results.path) {
+                                this._deleteFolderCloud(results.path);
+                            }
+                            this.__permissionDenied();
+                        } else {
+                            this._browsePath(currentPath);
+                        }
+                    },this);
+                }
             }
         },
 
