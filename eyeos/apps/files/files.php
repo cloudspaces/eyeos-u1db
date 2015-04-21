@@ -1380,7 +1380,8 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 }
             }
         } else {
-            $result = '{"error":-1,"description":"Access token not exists"}';
+            $result[ 'error' ] = -1;
+            $result[ 'description' ] = "Access token not exists";
         }
 
         return $result;
@@ -1404,7 +1405,8 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 }
             }
         } else {
-            $result = '{"error":-1,"description":"Access token not exists"}';
+            $result[ 'error' ] = -1;
+            $result[ 'description' ] = "Access token not exists";
         }
         return $result;
     }
@@ -1422,7 +1424,8 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 }
             }
         } else {
-            $result = '{"error":-1,"description":"Access token not exists"}';
+            $result[ 'error' ] = -1;
+            $result[ 'description' ] = "Access token not exists";
         }
         return $result;
     }
@@ -1441,7 +1444,8 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 }
             }
         } else {
-            $result = '{"error":-1,"description":"Access token not exists"}';
+            $result[ 'error' ] = -1;
+            $result[ 'description' ] = "Access token not exists";
         }
         return $result;
     }

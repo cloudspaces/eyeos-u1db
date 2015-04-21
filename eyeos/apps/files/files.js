@@ -2193,6 +2193,10 @@ qx.Class.define('eyeos.files.Controller', {
                     }
                 } else {
                     if(result.error == 403) {
+                        this.__cloud = cloud;
+                        if(result.path) {
+                            this._deleteFolderCloud(result.path);
+                        }
                         this.__permissionDenied();
                     }
                 }
