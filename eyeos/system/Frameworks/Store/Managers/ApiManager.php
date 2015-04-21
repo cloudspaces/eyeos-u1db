@@ -474,16 +474,16 @@ class ApiManager
         return $result;
     }
 
-    public function shareFolder($token,$id,$list)
+    public function shareFolder($cloud, $token, $id, $list)
     {
-        $result['status'] = 'KO';
-        $result['error'] = -1;
-        $metadata = $this->apiProvider->shareFolder($token,$id,$list);
+        $result[ 'status' ] = 'KO';
+        $result[ 'error' ] = -1;
+        $metadata = $this->apiProvider->shareFolder($cloud, $token, $id, $list);
         if (!isset($metadata->error)) {
-            $result['status'] = 'OK';
-            unset($result['error']);
+            $result[ 'status' ] = 'OK';
+            unset($result[ 'error' ]);
         } else {
-            $result['error'] = $metadata->error;
+            $result[ 'error' ] = $metadata->error;
         }
         return $result;
     }

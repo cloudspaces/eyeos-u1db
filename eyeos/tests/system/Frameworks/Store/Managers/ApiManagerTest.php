@@ -1350,7 +1350,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $list = array("a@a.com","b@b.com");
         $metadata = '{"status":true}';
         $metadataOut = array("status" => "OK");
-        $this->exerciseShareFolder($metadata,$id,$list,$metadataOut);
+        $this->exerciseShareFolder($metadata, $id, $list, $metadataOut);
     }
 
     /**
@@ -1362,10 +1362,10 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     public function test_shareFolder_called_tokenAndIdAndList_returnPermissionDenied()
     {
         $id = 123;
-        $list = array("a@a.com","b@b.com");
+        $list = array("a@a.com", "b@b.com");
         $metadata = '{"error":403}';
         $metadataOut = array("status" => "KO", "error" => 403);
-        $this->exerciseShareFolder($metadata,$id,$list,$metadataOut);
+        $this->exerciseShareFolder($metadata, $id, $list, $metadataOut);
     }
 
     /**
@@ -1377,10 +1377,10 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     public function test_shareFolder_called_tokenAndIdAndList_returnException()
     {
         $id = 123;
-        $list = array("a@a.com","b@b.com");
+        $list = array("a@a.com", "b@b.com");
         $metadata = '{"error":-1}';
         $metadataOut = array("status" => "KO", "error" => -1);
-        $this->exerciseShareFolder($metadata,$id,$list,$metadataOut);
+        $this->exerciseShareFolder($metadata, $id, $list, $metadataOut);
     }
 
     /**
@@ -1734,15 +1734,15 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($expected,$result);
     }
 
-    private function exerciseShareFolder($metadata,$id,$list,$expected)
+    private function exerciseShareFolder($metadata, $id, $list, $expected)
     {
         $this->apiProviderMock->expects($this->once())
             ->method('shareFolder')
-            ->with($this->token,$id,$list)
+            ->with($this->cloud, $this->token, $id, $list)
             ->will($this->returnValue(json_decode($metadata)));
 
-        $result = $this->sut->shareFolder($this->token,$id,$list);
-        $this->assertEquals($expected,$result);
+        $result = $this->sut->shareFolder($this->cloud, $this->token, $id, $list);
+        $this->assertEquals($expected, $result);
     }
 }
 
