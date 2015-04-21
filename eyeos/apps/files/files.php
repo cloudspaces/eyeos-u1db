@@ -1401,7 +1401,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             if($result) {
                 if(isset($result[ 'error' ]) && $result[ 'error' ] == 403) {
                     $denied = self::permissionDeniedCloud($cloud);
-                    $result['path'] = $denied['path'];
+                    $result[ 'path' ] = $denied[ 'path' ];
                 }
             }
         } else {
@@ -1432,15 +1432,17 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
     public static function shareFolder($params)
     {
-        if(isset($_SESSION['access_token_v2'])) {
+        if(isset($params[ 'cloud' ]) && isset($_SESSION['access_token_' . $params[ 'cloud' ] . '_v2'])) {
+            $cloud = $params[ 'cloud' ];
             $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
-            $id = $params['id'];
-            $list = $params['list'];
+            $id = $params[ 'id' ];
+            $list = $params[ 'list' ];
             $apiManager = new ApiManager();
-            $result = $apiManager->shareFolder($_SESSION['access_token_v2'],$id,$list);
+            $result = $apiManager->shareFolder($cloud, $_SESSION[ 'access_token_' . $cloud . '_v2' ], $id, $list);
             if($result) {
-                if(isset($result['error']) && $result['error'] == 403) {
-                    self::permissionDeniedStackSync($user);
+                if(isset($result[ 'error' ]) && $result[ 'error' ] == 403) {
+                    $denied = self::permissionDeniedCloud($cloud);
+                    $result[ 'path' ] = $denied[ 'path' ];
                 }
             }
         } else {
