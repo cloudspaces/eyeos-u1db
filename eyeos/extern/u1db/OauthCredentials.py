@@ -133,8 +133,8 @@ class OauthCredentials:
                 file.write(result)
                 file.close()
             metadata = 'true'
-        elif isinstance(result, dict) and result.has_key('error') and result['error'] == 403:
-            metadata = result['error']
+        elif isinstance(result, dict) and result.has_key( 'error' ) and result[ 'error' ] == 403:
+            metadata = result[ 'error' ]
         return metadata
 
     def getListUsersShare(self, oauth, id):
@@ -261,11 +261,13 @@ if __name__ == "__main__":
                             elif type == "update":
                                 result = oauthCredentials.updateMetadata(oauth, metadata[ 'file' ], metadata[ 'id' ], metadata[ 'filename' ], metadata[ 'parent_id' ])
                             elif type == 'download':
-                                result = oauthCredentials.downloadFile(oauth, metadata['id'], metadata['path'])
+                                result = oauthCredentials.downloadFile(oauth, metadata[ 'id' ], metadata[ 'path' ])
                             elif type == 'upload':
-                                result = oauthCredentials.uploadFile(oauth, metadata['id'], metadata['path'])
+                                result = oauthCredentials.uploadFile(oauth, metadata[ 'id' ], metadata[ 'path' ])
                             elif type == 'listVersions':
-                                result = oauthCredentials.getFileVersions(oauth, metadata['id'])
+                                result = oauthCredentials.getFileVersions(oauth, metadata[ 'id' ])
+                            elif type == "getFileVersion":
+                                result = oauthCredentials.getFileVersionData(oauth, metadata[ 'id' ], metadata[ 'version' ], metadata[ 'path' ])
                         elif not(params.has_key( 'metadata' ) or params.has_key( 'verifier' ) or params.has_key( 'token' )):
                             oauth = OAuthRequest(key, client_secret=secret, callback_uri=callbackUrl, signature_method=SIGNATURE_PLAINTEXT)
                             result = oauthCredentials.getRequestToken(oauth)

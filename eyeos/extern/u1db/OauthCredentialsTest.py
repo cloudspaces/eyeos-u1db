@@ -439,7 +439,7 @@ class OauthCredentialsTest (unittest.TestCase):
     """
     def test_getFileVersionData_called_accessTokenAndIdAndVersionAndPath_returnCorrect(self):
         id = 123456
-        self.exerciseGetFileVersionData(id,"true","true")
+        self.exerciseGetFileVersionData(id, "true", "true")
 
     """
     method: getFileVersionData
@@ -449,7 +449,7 @@ class OauthCredentialsTest (unittest.TestCase):
     """
     def test_getFileVersionData_called_accessTokenAndIdAndVersionAndPath_returnException(self):
         id = 123456
-        self.exerciseGetFileVersionData(id,403,{"error":403, "description": "Forbidden. The requester does not have permission to access the specified resource."})
+        self.exerciseGetFileVersionData(id, 403, {"error": 403, "description": "Forbidden. The requester does not have permission to access the specified resource."})
 
     """
     method: getListUserShare
@@ -580,13 +580,13 @@ class OauthCredentialsTest (unittest.TestCase):
         oauth.delete.assert_called_once_with(self.resourceurl + self.getResource(file) + "/" + str(fileId))
         self.assertEquals(metadataOut,result)
 
-    def exerciseGetFileVersionData(self,id,check,returnValue):
+    def exerciseGetFileVersionData(self, id, check, returnValue):
         path = "prueba.txt"
         version = 2
         oauth = self.createOauthSession()
         oauth.get = Mock()
         oauth.get.return_value = returnValue
-        result = self.oauthCredentials.getFileVersionData(oauth,id,version,path)
+        result = self.oauthCredentials.getFileVersionData(oauth, id, version, path)
         oauth.get.assert_called_once_with(self.resourceurl + "file/" + str(id) + "/version/" + str(version) + "/data")
         self.assertEquals(check,result)
 
