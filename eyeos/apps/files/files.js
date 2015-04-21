@@ -2134,38 +2134,38 @@ qx.Class.define('eyeos.files.Controller', {
             return resp;
         },
 
-        loadActivity: function(metadata,versionsBox,file,type,cloud) {
+        loadActivity: function(metadata, versionsBox, file, type, cloud) {
             var listContainer = versionsBox.getChildren()[1].getChildren()[0];
             this.getSocialBarUpdater().showCursorLoad(listContainer);
 
             if(type) {
-               this.__loadActivityCloud(metadata.id,versionsBox,file,type,cloud);
+               this.__loadActivityCloud(metadata.id, versionsBox, file, type, cloud);
             } else {
                 eyeos.callMessage(this.getApplication().getChecknum(), 'getControlVersionCloud', cloud, function (result) {
                     if(result.controlVersion === 'true') {
-                        this.__loadActivityCloud(metadata.id,versionsBox,file,type,cloud,listContainer);
+                        this.__loadActivityCloud(metadata.id, versionsBox, file, type, cloud, listContainer);
                     } else {
                         this.getSocialBarUpdater().closeCursorLoad(listContainer);
                         var versions = [];
                         versions.push({"version":metadata.version,"enabled":true,"is_owner":true,"modified_at":metadata.modified_at});
-                        this.getSocialBarUpdater().createListActivity(versions,versionsBox,this,file,type);
+                        this.getSocialBarUpdater().createListActivity(cloud, versions, versionsBox, this, file, type);
                     }
                 },this);
             }
         },
 
-        __loadActivityCloud: function(id,versionsBox,file,type,cloud,listContainer) {
+        __loadActivityCloud: function(id, versionsBox, file, type, cloud, listContainer) {
             var params = new Object();
             params.id = id;
             params.cloud = cloud;
-            var callFunction = type?'listUsersShare':'listVersions';
+            var callFunction = type ? 'listUsersShare' : 'listVersions';
 
             eyeos.callMessage(this.getApplication().getChecknum(), callFunction, params, function (results) {
                 this.getSocialBarUpdater().closeCursorLoad(listContainer);
                 if(results) {
                     var metadata = JSON.parse(results);
                     if(!metadata.error) {
-                        this.getSocialBarUpdater().createListActivity(metadata,versionsBox,this,file,type);
+                        this.getSocialBarUpdater().createListActivity(cloud, metadata, versionsBox, this, file, type);
                     } else if (metadata.error == 403) {
                         this.__cloud = cloud;
                         if(metadata.path) {
@@ -2177,17 +2177,19 @@ qx.Class.define('eyeos.files.Controller', {
             },this);
         },
 
-        getVersion: function(id,version,versionBox,file) {
+        getVersion: function(id, version, versionBox, file, cloud) {
             var params = new Object();
             params.id = id;
             params.version = version;
             params.path = file.getAbsolutePath();
+            params.cloud = cloud;
 
             eyeos.callMessage(this.getApplication().getChecknum(), 'getFileVersionData', params, function (result) {
-                versionBox.getChildren()[1].getChildren()[0].setEnabled(true);
+                var listContainer = versionBox.getChildren()[1].getChildren()[0];
+                listContainer.setEnabled(true);
                 if(!result.error) {
                     if(result.status == "OK") {
-                        this.loadActivity(id,versionBox,file);
+                        this.__loadActivityCloud(id, versionBox, file, false, cloud, listContainer);
                     }
                 } else {
                     if(result.error == 403) {

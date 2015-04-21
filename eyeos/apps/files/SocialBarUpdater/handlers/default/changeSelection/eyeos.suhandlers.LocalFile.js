@@ -86,9 +86,9 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 
             if(cloud.isCloud === true && path !== 'home://~'+ eyeos.getCurrentUserName()+'/Cloudspaces/' + cloud.cloud) {
                 if (fileType == 'file') {
-                    this._createContenActivityTabCloudSpaces(false,cloud.cloud);
+                    this._createContenActivityTabCloudSpaces(false, cloud.cloud);
                 } else {
-                    this._createContenActivityTabCloudSpaces(true,cloud.cloud);
+                    this._createContenActivityTabCloudSpaces(true, cloud.cloud);
                     //this._createListUsersActivityTabStacksync();
                 }
             } else {
@@ -644,7 +644,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
             }
         },
 
-        _createContenActivityTabCloudSpaces: function(folder,cloud) {
+        _createContenActivityTabCloudSpaces: function(folder, cloud) {
             var activity = this.getSocialBar().getTab('Activity');
             activity.removeAll();
             activity.set({
@@ -697,7 +697,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
                     versions.removeAll();
                     var metadata = this._controller.__getFileId(this._file.getPath(),this._file.getName(),true,cloud);
                     if(metadata !== null) {
-                        this._controller.loadActivity(metadata,activity,this._file,folder,cloud);
+                        this._controller.loadActivity(metadata, activity, this._file, folder, cloud);
                     }
                 },this);
             }
@@ -761,7 +761,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
             }
         },*/
 
-        createListActivity: function(list,listBox,controller,file,type) {
+        createListActivity: function(cloud, list, listBox, controller, file, type) {
             this.closeTimerVersion();
             if(listBox && listBox.getChildren().length > 0 && listBox.getChildren()[1].getChildren().length > 0) {
                 var listContainer = listBox.getChildren()[1].getChildren()[0];
@@ -769,13 +769,13 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 
                 var that = this;
                 var a = function () {
-                    that.__createRowActivity(list, listContainer, controller, 0, file, type, that);
+                    that.__createRowActivity(cloud, list, listContainer, controller, 0, file, type, that);
                 };
                 this._timerVersion = setTimeout(a, 0);
             }
         },
 
-        __createRowActivity: function(list,listContainer,controller,contador,file,type,form) {
+        __createRowActivity: function(cloud, list, listContainer, controller, contador, file, type, form) {
             if(list[contador]) {
                 var containerRow = new qx.ui.container.Composite().set({
                     layout: new qx.ui.layout.HBox()
@@ -806,13 +806,13 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 
                 if((!type && list[contador].enabled === true) || (type && list[contador].is_owner === true)) {
                     var imageCheck = new qx.ui.basic.Image("eyeos/extern/images/16x16/actions/dialog-ok.png").set({
-                        marginLeft: type?35:2
+                        marginLeft: type ? 35 : 2
                     });
                     containerRow.add(imageCheck);
                 } else {
                     if (!type){
-                        containerRow.addListener('mouseover',form.__mouseOver,form);
-                        containerRow.addListener('mouseout',form.__mouseOut,form);
+                        containerRow.addListener('mouseover', form.__mouseOver, form);
+                        containerRow.addListener('mouseout', form.__mouseOut, form);
 
                         var pos = containerRow.getLayoutParent().indexOf(containerRow);
                         if(pos !== -1) {
@@ -821,9 +821,10 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
                             params.version = list[pos].version;
                             params.controller = controller;
                             params.activity = this.getSocialBar().getTab('Activity');
+                            params.cloud = cloud;
 
-                            containerRow.setUserData("params",params);
-                            containerRow.addListener('click',form.__getVersion,form);
+                            containerRow.setUserData("params", params);
+                            containerRow.addListener('click', form.__getVersion, form);
                         }
                     }
                 }
@@ -831,8 +832,8 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
                 if((contador + 1) < list.length) {
                     contador ++;
                     var that = form;
-                    var a = function() {that.__createRowActivity(list,listContainer,controller,contador,file,type,that);};
-                    form._timerVersion = setTimeout(a,0);
+                    var a = function() {that.__createRowActivity(cloud, list, listContainer, controller, contador, file, type, that);};
+                    form._timerVersion = setTimeout(a, 0);
                 } else {
                     form.closeTimerVersion();
                 }
@@ -856,11 +857,11 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 
         __getVersion: function(e) {
             var params = e.getCurrentTarget().getUserData('params');
-            var id = params.controller.__getFileId(params.file.getPath(),params.file.getName());
+            var id = params.controller.__getFileId(params.file.getPath(), params.file.getName(), false, params.cloud);
             if(id !== -1) {
                 params.activity.getChildren()[1].getChildren()[0].setEnabled(false);
                 this.closeTimerVersion();
-                params.controller.getVersion(id,params.version,params.activity,params.file);
+                params.controller.getVersion(id, params.version, params.activity, params.file, params.cloud);
             }
         },
 
