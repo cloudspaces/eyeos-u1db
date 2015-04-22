@@ -144,9 +144,12 @@ class OauthCredentials:
         result = oauth.get(url)
         return self.createRequest(result)
 
-    def shareFolder(self, oauth, id, list):
+    def shareFolder(self, oauth, id, list, isShared):
         url = self.getUrl(False, id)
-        url += "/share"
+        if isShared == True:
+            url += "/unshare"
+        else:
+            url += "/share"
         self.createHeader(oauth)
         result = oauth.post(url, json.dumps(list))
         if len(result) == 0:
@@ -269,7 +272,7 @@ if __name__ == "__main__":
                             elif type == "getFileVersion":
                                 result = oauthCredentials.getFileVersionData(oauth, metadata[ 'id' ], metadata[ 'version' ], metadata[ 'path' ])
                             elif type == "shareFolder":
-                                result = oauthCredentials.shareFolder(oauth, metadata[ 'id' ], metadata[ 'list' ])
+                                result = oauthCredentials.shareFolder(oauth, metadata[ 'id' ], metadata[ 'list' ], metadata[ 'shared' ])
                             elif type == "listUsersShare":
                                 result = oauthCredentials.getListUsersShare(oauth, metadata[ 'id' ])
                         elif not(params.has_key( 'metadata' ) or params.has_key( 'verifier' ) or params.has_key( 'token' )):
