@@ -1413,14 +1413,15 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
     public static function listUsersShare($params)
     {
-        if(isset($_SESSION['access_token_v2'])) {
-            $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
+        if(isset($params[ 'cloud' ]) && isset($_SESSION[ 'access_token_' . $params[ 'cloud' ] . '_v2' ])) {
+            $cloud = $params[ 'cloud' ];
             $id = $params['id'];
             $apiManager = new ApiManager();
-            $result = $apiManager->getListUsersShare($_SESSION['access_token_v2'],$id);
+            $result = $apiManager->getListUsersShare($cloud, $_SESSION[ 'access_token_' . $cloud . '_v2' ], $id);
             if($result) {
                 if(isset($result['error']) && $result['error'] == 403) {
-                    self::permissionDeniedStackSync($user);
+                    $denied = self::permissionDeniedCloud($cloud);
+                    $result[ 'path' ] = $denied[ 'path' ];
                 }
             }
         } else {
@@ -1434,7 +1435,6 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
     {
         if(isset($params[ 'cloud' ]) && isset($_SESSION['access_token_' . $params[ 'cloud' ] . '_v2'])) {
             $cloud = $params[ 'cloud' ];
-            $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
             $id = $params[ 'id' ];
             $list = $params[ 'list' ];
             $apiManager = new ApiManager();
