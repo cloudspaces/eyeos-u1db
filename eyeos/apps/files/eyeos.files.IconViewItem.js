@@ -183,7 +183,7 @@ qx.Class.define('eyeos.files.IconViewItem', {
 						}
 					];
 
-                    if(this.getManager().getViewManager().getController().__isStacksync(this.getCurrentPath()) && this.getFile().getType() === 'folder') {
+                    if((this.getManager().getViewManager().getController().isCloud(this.getCurrentPath())).isCloud && this.getFile().getType() === 'folder') {
                         menu[menu.length -1].label = tr('Share');
                         menu[menu.length -1].id = 'shareFolder()'
                     }

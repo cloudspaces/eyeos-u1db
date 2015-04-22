@@ -65,27 +65,30 @@ class ApiManager
                 $dataU1db = json_decode($u1dbResult);
                 if ($dataU1db){
                     for($i = 0; $i < count($files); $i++) {
-                        $delete = $files[$i]->status === 'DELETED' ? true : false;
-                        if($this->search($dataU1db, "id", $files[$i]->id) === false){
-                            if(!$delete &&  $files[$i]->id !== 'null') {
-                                if($this->filesProvider->createFile($path . "/" . $files[$i]->filename, $files[$i]->is_folder)) {
-                                    $this->callProcessU1db('insert', $this->setUserEyeos($files[$i], $user, $cloud));
-                                }
-                            }
-                        } else {
-                            if(!$delete) {
-                                $filenameDb = $this->getValue($dataU1db, "id", $files[$i]->id, "filename");
-                                if ($filenameDb !== $files[$i]->filename){
-                                    if($this->filesProvider->renameFile($path . "/" . $filenameDb, $files[$i]->filename)) {
-                                        $lista = array();
-                                        array_push($lista, json_decode('{"parent_old":"' . $files[$i]->parent_id . '"}'));
-                                        array_push($lista, $this->setUserEyeos($files[$i], $user, $cloud));
-                                        $this->callProcessU1db('update', $lista);
+                        $cloudFolder = isset($files[$i]->resource_url) ? true : false;
+                        if (!$cloudFolder) {
+                            $delete = $files[$i]->status === 'DELETED' ? true : false;
+                            if($this->search($dataU1db, "id", $files[$i]->id) === false){
+                                if(!$delete &&  $files[$i]->id !== 'null') {
+                                    if($this->filesProvider->createFile($path . "/" . $files[$i]->filename, $files[$i]->is_folder)) {
+                                        $this->callProcessU1db('insert', $this->setUserEyeos($files[$i], $user, $cloud));
                                     }
                                 }
                             } else {
-                                $this->callProcessU1db('deleteFolder', $this->setUserEyeos($files[$i], $user, $cloud));
-                                $this->filesProvider->deleteFile($path . "/" . $files[$i]->filename, $files[$i]->is_folder);
+                                if(!$delete) {
+                                    $filenameDb = $this->getValue($dataU1db, "id", $files[$i]->id, "filename");
+                                    if ($filenameDb !== $files[$i]->filename){
+                                        if($this->filesProvider->renameFile($path . "/" . $filenameDb, $files[$i]->filename)) {
+                                            $lista = array();
+                                            array_push($lista, json_decode('{"parent_old":"' . $files[$i]->parent_id . '"}'));
+                                            array_push($lista, $this->setUserEyeos($files[$i], $user, $cloud));
+                                            $this->callProcessU1db('update', $lista);
+                                        }
+                                    }
+                                } else {
+                                    $this->callProcessU1db('deleteFolder', $this->setUserEyeos($files[$i], $user, $cloud));
+                                    $this->filesProvider->deleteFile($path . "/" . $files[$i]->filename, $files[$i]->is_folder);
+                                }
                             }
                         }
                     }
@@ -130,7 +133,7 @@ class ApiManager
                 if(isset($metadata->contents)) {
                     $id = null;
                     foreach($metadata->contents as $data) {
-                        if($data->filename == $name) {
+                        if(!isset($data->resource_url) && $data->filename == $name) {
                             $id = $data->id;
                             break;
                         }

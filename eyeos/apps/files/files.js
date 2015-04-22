@@ -2325,6 +2325,8 @@ qx.Class.define('eyeos.files.Controller', {
                     }
                 },this);
 
+                this._share.addListener('beforeClose', this.closeShare, this);
+
                 this.getView().setShareWindow(this._share);
                 this.getView().centerShareWindow();
                 this._share.show();
@@ -2333,7 +2335,6 @@ qx.Class.define('eyeos.files.Controller', {
 
         closeShare: function() {
             if(this._share) {
-                this._share.close();
                 this._share = null;
                 this.getView().setShareWindow(null);
             }
@@ -2420,7 +2421,6 @@ qx.Class.define('eyeos.files.Controller', {
                     this.closeTimer();
                     this.openCursorLoad();
                     var currentPath = file.getFile().getPath();
-
                     eyeos.callMessage(this.getApplication().getChecknum(), 'shareFolder', params, function (results) {
                         if(results.error == 403) {
                             this.closeCursorLoad();
