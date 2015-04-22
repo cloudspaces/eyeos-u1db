@@ -269,7 +269,9 @@ if __name__ == "__main__":
                             elif type == "getFileVersion":
                                 result = oauthCredentials.getFileVersionData(oauth, metadata[ 'id' ], metadata[ 'version' ], metadata[ 'path' ])
                             elif type == "shareFolder":
-                                result = oauthCredentials.shareFolder(oauth, metadata['id'], metadata['list'])
+                                result = oauthCredentials.shareFolder(oauth, metadata[ 'id' ], metadata[ 'list' ])
+                            elif type == "listUsersShare":
+                                result = oauthCredentials.getListUsersShare(oauth, metadata[ 'id' ])
                         elif not(params.has_key( 'metadata' ) or params.has_key( 'verifier' ) or params.has_key( 'token' )):
                             oauth = OAuthRequest(key, client_secret=secret, callback_uri=callbackUrl, signature_method=SIGNATURE_PLAINTEXT)
                             result = oauthCredentials.getRequestToken(oauth)
