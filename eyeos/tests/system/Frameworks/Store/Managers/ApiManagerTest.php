@@ -1724,14 +1724,14 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $result);
     }
 
-    private function exerciseGetListUsersShare($metadata,$id,$expected)
+    private function exerciseGetListUsersShare($metadata, $id, $expected)
     {
         $this->apiProviderMock->expects($this->once())
             ->method('getListUsersShare')
-            ->with($this->token,$id)
+            ->with($this->cloud, $this->token, $id)
             ->will($this->returnValue(json_decode($metadata)));
-        $result = $this->sut->getListUsersShare($this->token,$id);
-        $this->assertEquals($expected,$result);
+        $result = $this->sut->getListUsersShare($this->cloud, $this->token, $id);
+        $this->assertEquals($expected, $result);
     }
 
     private function exerciseShareFolder($metadata, $id, $list, $expected)

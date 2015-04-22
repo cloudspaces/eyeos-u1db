@@ -464,15 +464,15 @@ class ApiManager
         return $result;
     }
 
-    public function getListUsersShare($token,$id)
+    public function getListUsersShare($cloud, $token, $id)
     {
-        $result['status'] = 'KO';
-        $result['error'] = -1;
-        $metadata = $this->apiProvider->getListUsersShare($token,$id);
+        $result[ 'status' ] = 'KO';
+        $result[ 'error' ] = -1;
+        $metadata = $this->apiProvider->getListUsersShare($cloud, $token, $id);
         if (!isset($metadata->error)){
             $result = json_encode($metadata);
         } else {
-            $result['error'] = $metadata->error;
+            $result[ 'error' ] = $metadata->error;
         }
         return $result;
     }
@@ -493,39 +493,39 @@ class ApiManager
 
     public function getCloudsList()
     {
-        $result['status'] = 'KO';
-        $result['error'] = -1;
+        $result[ 'status' ] = 'KO';
+        $result[ 'error' ] = -1;
         $metadata = $this->apiProvider->getCloudsList();
         if (!isset($metadata->error)) {
             $result = json_encode($metadata);
         } else {
-            $result['error'] = $metadata->error;
+            $result[ 'error' ] = $metadata->error;
         }
         return $result;
     }
 
     public function getOauthUrlCloud($cloud)
     {
-        $result['status'] = 'KO';
-        $result['error'] = -1;
+        $result[ 'status' ] = 'KO';
+        $result[ 'error' ] = -1;
         $metadata = $this->apiProvider->getOauthUrlCloud($cloud);
         if (!isset($metadata->error)) {
             $result = $metadata;
         } else {
-            $result['error'] = $metadata->error;
+            $result[ 'error' ] = $metadata->error;
         }
         return $result;
     }
 
     public function getControlVersionCloud($cloud)
     {
-        $result['status'] = 'KO';
-        $result['error'] = -1;
+        $result[ 'status' ] = 'KO';
+        $result[ 'error' ] = -1;
         $metadata = $this->apiProvider->getControlVersionCloud($cloud);
         if (!isset($metadata->error)) {
             $result = $metadata;
         } else {
-            $result['error'] = $metadata->error;
+            $result[ 'error' ] = $metadata->error;
         }
         return $result;
     }

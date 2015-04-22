@@ -513,7 +513,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     public function test_getListUsersShare_called_tokenAndId_returnCorrectData()
     {
         $id = 153;
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listUsersShare","id":"153"}}';
+        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listUsersShare","id":"153"}}';
         $metadataOut = '[{"joined_at": "2014-05-27", "is_owner": true, "name": "tester1", "email": "tester1@test.com"}]';
         $this->exerciseListUsersShare($metadataIn,$metadataOut,$metadataOut,$id);
     }
@@ -527,7 +527,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     public function test_getListUsersShare_called_tokenAndId_returnPermissionDenied()
     {
         $id = 153;
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listUsersShare","id":"153"}}';
+        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listUsersShare","id":"153"}}';
         $metadataOut = '403';
         $this->exerciseListUsersShare($metadataIn,$metadataOut,$this->permission,$id);
     }
@@ -541,7 +541,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     public function test_getListUsersShare_called_tokenAndId_returnException()
     {
         $id = 153;
-        $metadataIn = '{"config":{},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listUsersShare","id":"153"}}';
+        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listUsersShare","id":"153"}}';
         $metadataOut = 'false';
         $this->exerciseListUsersShare($metadataIn,$metadataOut,$this->exception,$id);
     }
@@ -696,11 +696,11 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(json_decode($check),$result);
     }
 
-    private function exerciseListUsersShare($metadataIn,$metadataOut,$check,$id)
+    private function exerciseListUsersShare($metadataIn, $metadataOut, $check, $id)
     {
-        $this->exerciseMockMetadata($metadataIn,$metadataOut);
-        $result = $this->sut->getListUsersShare($this->token,$id);
-        $this->assertEquals(json_decode($check),$result);
+        $this->exerciseMockMetadata($metadataIn, $metadataOut);
+        $result = $this->sut->getListUsersShare($this->cloud, $this->token, $id);
+        $this->assertEquals(json_decode($check), $result);
     }
 
     private function exerciseShareFolder($metadataIn, $metadataOut, $check, $id, $list)
