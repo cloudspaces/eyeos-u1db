@@ -2138,7 +2138,7 @@ qx.Class.define('eyeos.files.Controller', {
             this.getSocialBarUpdater().showCursorLoad(listContainer);
 
             if(type) {
-               this.__loadActivityCloud(metadata.id, versionsBox, file, type, cloud);
+               this.__loadActivityCloud(metadata.id, versionsBox, file, type, cloud, listContainer);
             } else {
                 eyeos.callMessage(this.getApplication().getChecknum(), 'getControlVersionCloud', cloud, function (result) {
                     if(result.controlVersion === 'true') {
