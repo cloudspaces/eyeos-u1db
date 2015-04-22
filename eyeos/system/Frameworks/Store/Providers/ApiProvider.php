@@ -103,11 +103,12 @@ class ApiProvider
         return $this->exerciseMetadata($request);
     }
 
-    public function shareFolder($cloud, $token, $id, $list)
+    public function shareFolder($cloud, $token, $id, $list, $shared=false)
     {
         $request = $this->getRequest('shareFolder', $token, $cloud);
         $request->metadata->id = "" . $id;
         $request->metadata->list = $list;
+        $request->metadata->shared = $shared;
         return $this->exerciseMetadata($request);
     }
 

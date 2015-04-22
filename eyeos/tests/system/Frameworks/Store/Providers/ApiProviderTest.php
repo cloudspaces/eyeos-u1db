@@ -556,9 +556,10 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     {
         $id = 153;
         $list = array("a@a.com","b@b.com");
-        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"]}}';
+        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"],"shared":false}}';
         $metadataOut = 'true';
-        $this->exerciseShareFolder($metadataIn,$metadataOut,'{"status":true}',$id,$list);
+        $shared = false;
+        $this->exerciseShareFolder($metadataIn, $metadataOut, '{"status":true}', $id, $list, $shared);
     }
 
     /**
@@ -571,9 +572,10 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     {
         $id = 153;
         $list = array("a@a.com","b@b.com");
-        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"]}}';
+        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"],"shared":false}}';
         $metadataOut = '403';
-        $this->exerciseShareFolder($metadataIn,$metadataOut,$this->permission,$id,$list);
+        $shared = false;
+        $this->exerciseShareFolder($metadataIn, $metadataOut, $this->permission, $id, $list, $shared);
     }
 
     /**
@@ -586,9 +588,10 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     {
         $id = 153;
         $list = array("a@a.com","b@b.com");
-        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"]}}';
+        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"],"shared":false}}';
         $metadataOut = 'false';
-        $this->exerciseShareFolder($metadataIn,$metadataOut,$this->exception,$id,$list);
+        $shared = false;
+        $this->exerciseShareFolder($metadataIn, $metadataOut, $this->exception, $id, $list, $shared);
     }
 
     /**
@@ -703,10 +706,10 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(json_decode($check), $result);
     }
 
-    private function exerciseShareFolder($metadataIn, $metadataOut, $check, $id, $list)
+    private function exerciseShareFolder($metadataIn, $metadataOut, $check, $id, $list, $shared)
     {
         $this->exerciseMockMetadata($metadataIn, $metadataOut);
-        $result = $this->sut->shareFolder($this->cloud, $this->token, $id, $list);
+        $result = $this->sut->shareFolder($this->cloud, $this->token, $id, $list, $shared);
         $this->assertEquals(json_decode($check), $result);
     }
 
