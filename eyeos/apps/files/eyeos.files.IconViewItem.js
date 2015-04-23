@@ -316,9 +316,9 @@ qx.Class.define('eyeos.files.IconViewItem', {
 					}
 					
 				} else if (this.getFile().getContentSize() == 0) {
-					image = 'index.php?extern=images/48x48/places/folder.png';
+                    image = this.getFile().getSharedByCloud() ? 'index.php?extern=images/48x48/places/folder-share.png' : 'index.php?extern=images/48x48/places/folder.png';
 				} else {
-					image = 'index.php?extern=images/48x48/places/folder-documents.png';
+					image = this.getFile().getSharedByCloud() ? 'index.php?extern=images/48x48/places/folder-documents-share.png' : 'index.php?extern=images/48x48/places/folder-documents.png';
 				}
 			} else {
 				if (this._docExtensions.indexOf(this.getFile().getExtension()) != -1) {

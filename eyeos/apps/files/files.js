@@ -674,9 +674,9 @@ qx.Class.define('eyeos.files.Controller', {
                                 if(!metadata.error) {
                                     if(this.__insertMetadata(metadata, path, cloud.cloud) || !refresh) {
                                         this.openCursorLoad();
-                                        this.__callBrowsePath(path,addToHistory,true);
+                                        this.__callBrowsePath(path, addToHistory, true);
                                     } else {
-                                        this.__refreshFolder(path,addToHistory,true);
+                                        this.__refreshFolder(path, addToHistory, true);
                                     }
                                 } else if (metadata.error == 403) {
                                     this.__cloud = cloud.cloud;
@@ -686,25 +686,25 @@ qx.Class.define('eyeos.files.Controller', {
                                     this.__permissionDenied();
                                 }
                             } else {
-                                this.__refreshFolder(path,addToHistory,true);
+                                this.__refreshFolder(path, addToHistory, true);
                             }
                         }, this, null, 12000);
                     } else {
-                        this.__callBrowsePath(path,addToHistory,false);
+                        this.__callBrowsePath(path, addToHistory, false);
                     }
                 } else {
                     this.closeCursorLoad();
-                    this.__callBrowsePath(path,addToHistory,false);
+                    this.__callBrowsePath(path, addToHistory, false);
                 }
             }
 		},
 
-        __callBrowsePath: function(path,addToHistory, refresh) {
+        __callBrowsePath: function(path, addToHistory, refresh) {
             eyeos.callMessage(this.getApplication().getChecknum(), 'browsePath', [path, null, null], function (results) {
                 this.closeCursorLoad();
                 this._browsePath_callback(results, path, addToHistory);
                 if(refresh) {
-                    this.__refreshFolder(path,addToHistory,refresh);
+                    this.__refreshFolder(path, addToHistory, refresh);
                 }
             }, this, null, 12000);
         } ,
@@ -728,11 +728,31 @@ qx.Class.define('eyeos.files.Controller', {
 				filesQueuePath.push(filesQueue[i].getAbsolutePath());
 			}
 
+            var cloud = this.isCloud(path);
+
 			// Foreach file we will create a "file object" that will contain all the data of the file
 			for (var i = 0; i < results.files.length; ++i) {
 				if(path == 'share:///') {
 					results.files[i].sharedByContacts = true;
 				}
+
+                if (cloud.isCloud) {
+                    found = false;
+                    for(var j in this._metadatas[cloud.cloud]) {
+                        if(this._metadatas[cloud.cloud][j].path === path) {
+                            var contents = this._metadatas[cloud.cloud][j].metadata.contents;
+                            for(pos in contents) {
+                                if (contents[pos].filename === results.files[i].name) {
+                                    results.files[i].sharedByCloud = contents[pos].is_shared;
+                                    console.log("browsePath_callback: ", results.files[i]);
+                                    found = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (found) break;
+                    }
+                }
 
 				var item = new eyeos.files.File(results.files[i]);
 

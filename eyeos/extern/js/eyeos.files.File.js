@@ -75,6 +75,11 @@ qx.Class.define('eyeos.files.File', {
 			check: 'Object'
 		},
 
+        sharedByCloud: {
+            check: 'Boolean',
+            init: false
+        },
+
 		absolutePath: {
 			check: 'String'
 		},
@@ -125,6 +130,12 @@ qx.Class.define('eyeos.files.File', {
 			} else {
 				this.setUserData('sharedByContacts', false);
 			}
+
+            if (file.sharedByCloud) {
+                this.setSharedByCloud(file.sharedByCloud);
+            } else {
+                this.setSharedByCloud(false);
+            }
 			
 			if (file.contentsize) {
 				this.setContentSize(file.contentsize);
