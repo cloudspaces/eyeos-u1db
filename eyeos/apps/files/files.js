@@ -744,7 +744,6 @@ qx.Class.define('eyeos.files.Controller', {
                             for(pos in contents) {
                                 if (contents[pos].filename === results.files[i].name) {
                                     results.files[i].sharedByCloud = contents[pos].is_shared;
-                                    console.log("browsePath_callback: ", results.files[i]);
                                     found = true;
                                     break;
                                 }
@@ -1590,7 +1589,8 @@ qx.Class.define('eyeos.files.Controller', {
                       for(var j in metadataNew.contents) {
                           if(metadataOld.contents[i].id == metadataNew.contents[j].id) {
                               encontrado =  true;
-                              if(metadataOld.contents[i].filename != metadataNew.contents[j].filename) {
+                              if(metadataOld.contents[i].filename != metadataNew.contents[j].filename ||
+                                  metadataOld.contents[i].is_shared != metadataNew.contents[j].is_shared) {
                                 change = true;
                               }
                               break;
