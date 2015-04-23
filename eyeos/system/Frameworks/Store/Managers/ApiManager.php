@@ -29,6 +29,7 @@ class ApiManager
         $pathMetadata = $this->getPathU1db($path, $cloud);
         $metadata = $this->apiProvider->getMetadata($cloud, $token, false, $id, true);
         $this->addPathMetadata($metadata, $pathMetadata);
+        $this->addShareMetadata($metadata, $cloud, $token);
         $respuesta = json_encode($metadata);
         $files = array();
         if(!isset($metadata->error)) {
@@ -77,13 +78,16 @@ class ApiManager
                             } else {
                                 if(!$delete) {
                                     $filenameDb = $this->getValue($dataU1db, "id", $files[$i]->id, "filename");
-                                    if ($filenameDb !== $files[$i]->filename){
-                                        if($this->filesProvider->renameFile($path . "/" . $filenameDb, $files[$i]->filename)) {
-                                            $lista = array();
+                                    $sharedDb = $this->getValue($dataU1db, "id", $files[$i]->id, "is_shared");
+                                    $updateRename = $filenameDb !== $files[$i]->filename;
+                                    $updateShare = $sharedDb !== $files[$i]->is_shared;
+                                    if ($updateRename || $updateShare){
+                                        $lista = array();
+                                        if($updateRename && $this->filesProvider->renameFile($path . "/" . $filenameDb, $files[$i]->filename)) {
                                             array_push($lista, json_decode('{"parent_old":"' . $files[$i]->parent_id . '"}'));
-                                            array_push($lista, $this->setUserEyeos($files[$i], $user, $cloud));
-                                            $this->callProcessU1db('update', $lista);
                                         }
+                                        array_push($lista, $this->setUserEyeos($files[$i], $user, $cloud));
+                                        $this->callProcessU1db('update', $lista);
                                     }
                                 } else {
                                     $this->callProcessU1db('deleteFolder', $this->setUserEyeos($files[$i], $user, $cloud));
@@ -560,7 +564,7 @@ class ApiManager
         if (is_array($array)) {
             foreach($array as $data) {
                 if($data->$key == $value){
-                    $name = $data->$keyFind;
+                    $name = property_exists($data, $keyFind) ? $data->$keyFind : '';
                     break;
                 }
             }
@@ -596,6 +600,31 @@ class ApiManager
                 }
             }
         }
+    }
+
+    private function addShareMetadata(&$metadata, $cloud, $token)
+    {
+        if (!isset($metadata->error)) {
+            $metadata->is_shared = $this->validateFolderShared($cloud, $token, $metadata->id, $metadata->is_folder, $metadata->status);
+            if(isset($metadata->contents)) {
+                foreach($metadata->contents as $data) {
+                    $data->is_shared = $this->validateFolderShared($cloud, $token, $data->id, $data->is_folder, $data->status);
+                }
+            }
+        }
+    }
+
+    private function validateFolderShared($cloud, $token, $id, $isFolder, $status)
+    {
+        $result = false;
+        if ($isFolder && $id !== 'null' && $status !== 'DELETED') {
+            $data = $this->getListUsersShare($cloud, $token, $id);
+            $data = json_decode($data);
+            if (!isset($data->error) && is_array($data) && count($data) > 1) {
+                $result = true;
+            }
+        }
+        return $result;
     }
 }
 

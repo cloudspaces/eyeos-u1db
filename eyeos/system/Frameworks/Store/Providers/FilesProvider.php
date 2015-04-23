@@ -8,7 +8,7 @@
 
 class FilesProvider
 {
-    public function createFile($path,$isFolder = false)
+    public function createFile($path, $isFolder = false)
     {
         try {
             $node = FSI::getFile($path);
@@ -24,7 +24,7 @@ class FilesProvider
         }
     }
 
-    public function deleteFile($path,$isFolder = false)
+    public function deleteFile($path, $isFolder = false)
     {
         try {
             $node = FSI::getFile($path);
@@ -35,7 +35,7 @@ class FilesProvider
         }
     }
 
-    public function renameFile($path,$fileName) {
+    public function renameFile($path, $fileName) {
         try {
             $node = FSI::getFile($path);
             return $node->renameTo($fileName);
@@ -45,7 +45,7 @@ class FilesProvider
         }
     }
 
-    public function putContents($path,$content) {
+    public function putContents($path, $content) {
         try {
             $node = FSI::getFile($path);
             $bytes = $node->getRealFile()->putContents($content);
