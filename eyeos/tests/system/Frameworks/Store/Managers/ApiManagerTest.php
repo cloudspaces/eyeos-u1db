@@ -66,7 +66,13 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $file->cloud = $this->cloud;
         $file->path = '/';
         array_push($u1dbIn->lista,$file);
-        $metadata = '{"filename":"root","id":"null","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":true,"is_folder":true,"contents":[{"filename":"Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"DELETED","version":3,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false},{"filename":"client2","id":44444755856,"size":775412,"mimetype":"application/pdf","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true},{"filename":"Client3.pdf","id":11165632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false}]}';
+        $metadata = '{"filename":"root","id":"null","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":true,"is_folder":true,
+                      "contents":[
+                            {"filename":"Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"DELETED","version":3,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false},
+                            {"filename":"client2","id":44444755856,"size":775412,"mimetype":"application/pdf","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true},
+                            {"filename":"Client3.pdf","id":11165632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false},
+                            {"name":"cloudFolder","access_token_key":"tXn77oo5xmgq4C9koISxf0dSr46Naw","resource_url":"http://ast3-deim.urv.cat/v1/folder/1972","access_token_secret":"Ug40pvqYjNtXD6xBGZZ5rgHR3nLINr"}
+                            ]}';
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
             ->with($this->cloud, $this->token, $isfile, $id, $contents)
@@ -84,12 +90,17 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->filesProviderMock->expects($this->at(0))
             ->method('createFile')
-            ->with($this->pathCloud . "/client2",true)
+            ->with($this->pathCloud . "/client2", true)
             ->will($this->returnValue(true));
 
         $this->filesProviderMock->expects($this->at(1))
             ->method('createFile')
-            ->with($this->pathCloud . "/Client3.pdf",false)
+            ->with($this->pathCloud . "/Client3.pdf", false)
+            ->will($this->returnValue(true));
+
+        $this->filesProviderMock->expects($this->at(2))
+            ->method('createFile')
+            ->with($this->pathCloud . "/cloudFolder", true)
             ->will($this->returnValue(true));
 
         $u1dbIn = new stdClass();
@@ -117,10 +128,21 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $u1dbIn = new stdClass();
         $u1dbIn->type = 'insert';
         $u1dbIn->lista = array();
-        $metadata = json_decode('{"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"root","id":"null","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":true,"is_folder":true,"path":"null","is_shared":false}');
+        $metadata = json_decode('{"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","name":"cloudFolder","access_token_key":"tXn77oo5xmgq4C9koISxf0dSr46Naw","resource_url":"http://ast3-deim.urv.cat/v1/folder/1972","access_token_secret":"Ug40pvqYjNtXD6xBGZZ5rgHR3nLINr","path":"/","is_shared":false,"id":"1972_Stacksync","parent_id":"null"}');
         array_push($u1dbIn->lista,$metadata);
 
         $this->accessorProviderMock->expects($this->at(3))
+            ->method('getProcessDataU1db')
+            ->with(json_encode($u1dbIn))
+            ->will($this->returnValue('true'));
+
+        $u1dbIn = new stdClass();
+        $u1dbIn->type = 'insert';
+        $u1dbIn->lista = array();
+        $metadata = json_decode('{"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"root","id":"null","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":true,"is_folder":true,"path":"null","is_shared":false}');
+        array_push($u1dbIn->lista,$metadata);
+
+        $this->accessorProviderMock->expects($this->at(4))
             ->method('getProcessDataU1db')
             ->with(json_encode($u1dbIn))
             ->will($this->returnValue('true'));
@@ -149,15 +171,21 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $file->cloud = $this->cloud;
         $file->path = '/';
         array_push($u1dbIn->lista,$file);
-        $metadata = '{"filename":"root","id":"null","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":true,"is_folder":true,"contents":[{"filename":"client2","id":44444755856,"size":775412,"mimetype":"application/pdf","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true},{"filename":"Client3.pdf","id":11165632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false}]}';
+        $metadata = '{"filename":"root","id":"null","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":true,"is_folder":true,
+                      "contents":[
+                            {"filename":"client2","id":44444755856,"size":775412,"mimetype":"application/pdf","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true},
+                            {"filename":"Client3.pdf","id":11165632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false},
+                            {"name":"cloudFolder","access_token_key":"tXn77oo5xmgq4C9koISxf0dSr46Naw","resource_url":"http://ast3-deim.urv.cat/v1/folder/1972","access_token_secret":"Ug40pvqYjNtXD6xBGZZ5rgHR3nLINr"}
+                            ]}';
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
             ->with($this->cloud,$this->token,$isfile,$id,$contents)
             ->will($this->returnValue(json_decode($metadata)));
 
-        $u1dbOut = '[{"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"client2","id":44444755856,"size":775412,"mimetype":"application/pdf","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true,"path":"/"},
-                    {"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"Client3.pdf","id":11165632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false,,"path":"/"},
-                    {"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"root","id":"null","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":true,"is_folder":true,,"path":"null"}]';
+        $u1dbOut = '[{"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"client2","id":44444755856,"size":775412,"mimetype":"application/pdf","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true,"path":"/","is_shared":true},
+                    {"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"Client3.pdf","id":11165632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false,"path":"/","is_shared":false},
+                    {"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","name":"cloudFolder","access_token_key":"tXn77oo5xmgq4C9koISxf0dSr46Naw","resource_url":"http://ast3-deim.urv.cat/v1/folder/1972","access_token_secret":"Ug40pvqYjNtXD6xBGZZ5rgHR3nLINr","path":"/","is_shared":fasle,"id":"1972_Stacksync","parent_id":"null"},
+                    {"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"root","id":"null","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":true,"is_folder":true,"path":"null","is_shared":false}]';
         $this->accessorProviderMock->expects($this->at(0))
             ->method('getProcessDataU1db')
             ->with(json_encode($u1dbIn))
@@ -204,7 +232,9 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
                         {"filename":"Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"DELETED","version":3,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false},
                         {"filename":"client","id":334254755856,"size":775412,"status":"DELETED","version":2,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true},
                         {"filename":"provider","id":885526111,"size":775412,"status":"NEW","version":1,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true},
-                        {"filename":"client2","id":44444755856,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true}
+                        {"filename":"client2","id":44444755856,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true},
+                        {"name":"cloudFolder","access_token_key":"tXn77oo5xmgq4C9koISxf0dSr46Naw","resource_url":"http://ast3-deim.urv.cat/v1/folder/1972","access_token_secret":"Ug40pvqYjNtXD6xBGZZ5rgHR3nLINr"},
+                        {"name":"cloudFolder2","access_token_key":"tXn77oo5xmgq4C9koISxf0dSr46Naw","resource_url":"http://ast3-deim.urv.cat/v1/folder/1973","access_token_secret":"Ug40pvqYjNtXD6xBGZZ5rgHR3nLINr"}
                      ]}';
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
@@ -221,10 +251,12 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->with($this->cloud, $this->token, "44444755856")
             ->will($this->returnValue(json_decode('[{"joined_at": "2015-03-27", "is_owner": true, "name": "eyeos", "email": "eyeos@test.com"}, {"joined_at": "2015-03-27", "is_owner": false, "name": "aaaaa", "email": "aaaaa@test.com"}]')));
 
-        $u1dbOut = '[{"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"root","id":"null","status":"NEW","version":1,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":true,"is_folder":true,"path":"null"},
-                    {"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"client","id":334254755856,"size":775412,"status":"NEW","version":1,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true,"path":"/"},
-                    {"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"client1","id":44444755856,"size":775412,"mimetype":"application/pdf","status":"NEW","version":1,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true,"path":"/"},
-                    {"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"Client3.pdf","id":11165632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false,"path":"/"}]';
+        $u1dbOut = '[{"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"root","id":"null","status":"NEW","version":1,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":true,"is_folder":true,"path":"null","is_shared":false},
+                    {"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"client","id":334254755856,"size":775412,"status":"NEW","version":1,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true,"path":"/","is_shared":false},
+                    {"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"client1","id":44444755856,"size":775412,"mimetype":"application/pdf","status":"NEW","version":1,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true,"path":"/","is_shared":false},
+                    {"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"Client3.pdf","id":11165632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false,"path":"/","is_shared":false},
+                    {"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","name":"cloudFolder1","access_token_key":"tXn77oo5xmgq4C9koISxf0dSr46Naw","resource_url":"http://ast3-deim.urv.cat/v1/folder/1973","access_token_secret":"Ug40pvqYjNtXD6xBGZZ5rgHR3nLINr","path":"/","is_shared":false,"id":"1973_Stacksync","parent_id":"null"},
+                    {"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","name":"cloudFolder_44","access_token_key":"tXn77oo5xmgq4C9koISxf0dSr46New","resource_url":"http://ast3-deim.urv.cat/v1/folder/1974","access_token_secret":"Ug40pvqYjNtXD6xBGZZ5rgHR3nLINr","path":"/","is_shared":false,"id":"1974_Stacksync","parent_id":"null"}]';
         $this->accessorProviderMock->expects($this->at(0))
             ->method('getProcessDataU1db')
             ->with(json_encode($u1dbIn))
@@ -237,7 +269,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->accessorProviderMock->expects($this->at(1))
             ->method('getProcessDataU1db')
             ->with(json_encode($u1dbIn))
-            ->will($this->returnValue($u1dbOut));
+            ->will($this->returnValue(true));
 
         $this->filesProviderMock->expects($this->at(0))
             ->method('deleteFile')
@@ -256,7 +288,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->accessorProviderMock->expects($this->at(2))
             ->method('getProcessDataU1db')
             ->with(json_encode($u1dbIn))
-            ->will($this->returnValue($u1dbOut));
+            ->will($this->returnValue(true));
 
         $this->filesProviderMock->expects($this->at(2))
             ->method('renameFile')
@@ -271,33 +303,66 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->accessorProviderMock->expects($this->at(3))
             ->method('getProcessDataU1db')
             ->with(json_encode($u1dbIn))
-            ->will($this->returnValue($u1dbOut));
+            ->will($this->returnValue(true));
 
-        $u1dbIn->type = 'update';
+        $this->filesProviderMock->expects($this->at(3))
+            ->method('createFile')
+            ->with($this->pathCloud . '/cloudFolder', true)
+            ->will($this->returnValue(true));
+
+        $u1dbIn->type = 'insert';
         $u1dbIn->lista = array();
-        $metadata = json_decode('{"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"root","id":"null","status":"NEW","version":1,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":true,"is_folder":true,"path":"null","is_shared":false}');
-        array_push($u1dbIn->lista,$metadata);
+        $metadata = json_decode('{"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","name":"cloudFolder","access_token_key":"tXn77oo5xmgq4C9koISxf0dSr46Naw","resource_url":"http://ast3-deim.urv.cat/v1/folder/1972","access_token_secret":"Ug40pvqYjNtXD6xBGZZ5rgHR3nLINr","path":"/","is_shared":false,"id":"1972_Stacksync","parent_id":"null"}');
+        array_push($u1dbIn->lista, $metadata);
         $this->accessorProviderMock->expects($this->at(4))
             ->method('getProcessDataU1db')
             ->with(json_encode($u1dbIn))
-            ->will($this->returnValue($u1dbOut));
+            ->will($this->returnValue(true));
+
+        $this->filesProviderMock->expects($this->at(4))
+            ->method('renameFile')
+            ->with($this->pathCloud . '/cloudFolder1', 'cloudFolder2')
+            ->will($this->returnValue(true));
+
+        $u1dbIn->type = 'update';
+        $u1dbIn->lista = array();
+        $metadata = json_decode('{"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","name":"cloudFolder2","access_token_key":"tXn77oo5xmgq4C9koISxf0dSr46Naw","resource_url":"http://ast3-deim.urv.cat/v1/folder/1973","access_token_secret":"Ug40pvqYjNtXD6xBGZZ5rgHR3nLINr","path":"/","is_shared":false,"id":"1973_Stacksync","parent_id":"null"}');
+        array_push($u1dbIn->lista, $metadata);
+        $this->accessorProviderMock->expects($this->at(5))
+            ->method('getProcessDataU1db')
+            ->with(json_encode($u1dbIn))
+            ->will($this->returnValue(true));
 
 
-        $this->filesProviderMock->expects($this->at(3))
+        $this->filesProviderMock->expects($this->at(5))
             ->method('deleteFile')
             ->with($this->pathCloud . '/Client3.pdf', false)
             ->will($this->returnValue(true));
 
         $u1dbIn->type = 'deleteFolder';
         $u1dbIn->lista = array();
-        $metadata = json_decode('{"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"Client3.pdf","id":11165632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false,"path":"/"}');
+        $metadata = json_decode('{"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","filename":"Client3.pdf","id":11165632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":"null","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false,"path":"/","is_shared":false}');
         array_push($u1dbIn->lista,$metadata);
-        $this->accessorProviderMock->expects($this->at(5))
+        $this->accessorProviderMock->expects($this->at(6))
             ->method('getProcessDataU1db')
             ->with(json_encode($u1dbIn))
-            ->will($this->returnValue($u1dbOut));
+            ->will($this->returnValue(true));
 
-        $this->sut->getMetadata($this->cloud,$this->token,$id,$this->pathCloud,$this->user);
+        $this->filesProviderMock->expects($this->at(6))
+            ->method('deleteFile')
+            ->with($this->pathCloud . '/cloudFolder_44', true)
+            ->will($this->returnValue(true));
+
+        $u1dbIn->type = 'deleteFolder';
+        $u1dbIn->lista = array();
+        $metadata = json_decode('{"cloud":"' . $this->cloud . '","user_eyeos":"' . $this->user . '","name":"cloudFolder_44","access_token_key":"tXn77oo5xmgq4C9koISxf0dSr46New","resource_url":"http://ast3-deim.urv.cat/v1/folder/1974","access_token_secret":"Ug40pvqYjNtXD6xBGZZ5rgHR3nLINr","path":"/","is_shared":false,"id":"1974_Stacksync","parent_id":"null"}');
+        array_push($u1dbIn->lista, $metadata);
+        $this->accessorProviderMock->expects($this->at(7))
+            ->method('getProcessDataU1db')
+            ->with(json_encode($u1dbIn))
+            ->will($this->returnValue(true));
+
+        $this->sut->getMetadata($this->cloud, $this->token, $id, $this->pathCloud, $this->user);
     }
 
 
