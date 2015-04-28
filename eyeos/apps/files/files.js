@@ -663,10 +663,18 @@ qx.Class.define('eyeos.files.Controller', {
                 if (!this._timer && cloud.isCloud === true) {
                     var params = new Object();
                     params.path = path;
-                    params.id = this.__getFileIdFolder(path, cloud.cloud);
+                    var id = this.__getFileIdFolder(path, cloud.cloud);
+                    var isObject = id === Object(id);
                     params.cloud = cloud.cloud;
+                    if(!isObject) {
+                        params.id = id;
+                    } else {
+                        params.resource_url = id.resource_url;
+                        params.access_token_key = id.access_token_key;
+                        params.access_token_secret = id.access_token_secret;
+                    }
 
-                    if(params.id !== null) {
+                    if(id !== null) {
                         eyeos.callMessage(this.getApplication().getChecknum(), 'getMetadata', params, function (results) {
                             this.closeCursorLoad();
                             if(results) {
@@ -1486,7 +1494,6 @@ qx.Class.define('eyeos.files.Controller', {
                 var father = path === 'home://~'+ eyeos.getCurrentUserName()+'/Cloudspaces/' + cloud? path:path.substring(0,path.lastIndexOf('/'));
 
                 if (path !== 'home://~'+ eyeos.getCurrentUserName()+'/Cloudspaces/' + cloud) {
-                    var listMetadata = this._metadatas[cloud];
                     if(this._metadatas[cloud].length >0) {
                         for(var i in this._metadatas[cloud]) {
                             if(this._metadatas[cloud][i].path === father) {
@@ -1494,6 +1501,10 @@ qx.Class.define('eyeos.files.Controller', {
                                     for(var j in this._metadatas[cloud][i].metadata.contents) {
                                         if(this._metadatas[cloud][i].metadata.contents[j].filename === name) {
                                             fileIdFolder = this._metadatas[cloud][i].metadata.contents[j].id;
+                                            break;
+                                        } else if(this._metadatas[cloud][i].metadata.contents[j].name === name) {
+                                            fileIdFolder = this._metadatas[cloud][i].metadata.contents[j];
+                                            break;
                                         }
                                     }
                                 }
