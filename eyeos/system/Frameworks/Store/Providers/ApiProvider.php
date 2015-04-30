@@ -16,9 +16,9 @@ class ApiProvider
         $this->accessorProvider = $accessorProvider;
     }
 
-    public function getMetadata($cloud, $token, $file, $id, $contents = null)
+    public function getMetadata($cloud, $token, $file, $id, $contents = null,$resourceUrl = null)
     {
-        $request = $this->getRequest('get', $token, $cloud);
+        $request = $this->getRequest('get', $token, $cloud,$resourceUrl);
         $request->metadata->file = $file;
         $request->metadata->id = "" . $id;
         $request->metadata->contents = $contents;
@@ -130,7 +130,7 @@ class ApiProvider
         return $this->exerciseMetadata($request);
     }
 
-    private function getRequest($type, $token = NULL, $cloud = NULL)
+    private function getRequest($type, $token = NULL, $cloud = NULL, $resourceUrl = NULL)
     {
         $request = new stdClass();
         $request->config = new stdClass();
@@ -146,6 +146,10 @@ class ApiProvider
         }
         if($cloud) {
             $request->config->cloud = $cloud;
+        }
+
+        if($resourceUrl) {
+            $request->config->resource_url = $resourceUrl;
         }
 
         return $request;
