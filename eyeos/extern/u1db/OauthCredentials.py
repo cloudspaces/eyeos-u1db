@@ -234,9 +234,14 @@ if __name__ == "__main__":
                             result = json.dumps({"controlVersion": "" + settingsCloud['controlVersion'] + ""})
 
                     else:
+                        if params[ 'config' ].has_key( 'resource_url' ):
+                            resource_url = params['config']['resource_url']
+                        else:
+                            resource_url = settingsCloud[ 'urls' ][ 'RESOURCE_URL' ]
+
                         oauthCredentials = OauthCredentials(settingsCloud[ 'urls' ][ 'REQUEST_TOKEN_URL' ],
                                                             settingsCloud[ 'urls' ][ 'ACCESS_TOKEN_URL' ],
-                                                            settingsCloud[ 'urls' ][ 'RESOURCE_URL' ],
+                                                            resource_url,
                                                             settingsCloud[ 'version' ])
                         key = settingsCloud[ 'consumer' ][ 'key' ]
                         secret = settingsCloud[ 'consumer' ][ 'secret' ]
