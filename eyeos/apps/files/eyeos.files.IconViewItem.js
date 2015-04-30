@@ -183,10 +183,22 @@ qx.Class.define('eyeos.files.IconViewItem', {
 						}
 					];
 
-                    if((this.getManager().getViewManager().getController().isCloud(this.getCurrentPath())).isCloud && this.getFile().getType() === 'folder') {
+                    var cloud = this.getManager().getViewManager().getController().isCloud(this.getCurrentPath());
+
+                    /*if((this.getManager().getViewManager().getController().isCloud(this.getCurrentPath())).isCloud && this.getFile().getType() === 'folder') {
                         menu[menu.length -1].label = tr('Share');
                         menu[menu.length -1].id = 'shareFolder()'
+                    }*/
+
+                    if(cloud.isCloud === true && this.getFile().getType() === 'folder') {
+                        var metadata = this.getManager().getViewManager().getController().__getFileIdFolder(this.getFile().getAbsolutePath(), cloud.cloud);
+                        var isObject = metadata === Object(metadata);
+                        if(!(isObject && metadata.id.indexOf('_' + cloud.cloud) !== -1)) {
+                            menu[menu.length -1].label = tr('Share');
+                            menu[menu.length -1].id = 'shareFolder()';
+                        }
                     }
+
 
 				} else {
 					menu = [

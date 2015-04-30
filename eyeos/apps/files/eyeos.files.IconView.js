@@ -332,10 +332,24 @@ qx.Class.define('eyeos.files.IconView', {
                 self.getViewManager().getController().fireDataEvent('selectedFile', self.returnSelected());
                 var folder = e.getCurrentTarget().getFile().getAbsolutePath();
                 var parentPath = e.getCurrentTarget().getFile().getPath();
-                var cloudsPath = 'home://~' + eyeos.getCurrentUserName() + '/Cloudspaces';
+                /*var cloudsPath = 'home://~' + eyeos.getCurrentUserName() + '/Cloudspaces';
                 var enabled = true;
                 if (folder == cloudsPath || parentPath == cloudsPath) {
                     enabled = false;
+                }*/
+                var enabled = true;
+                if(self.getViewManager().getController().isRootCloudSpaces(folder) ||
+                    self.getViewManager().getController().isRootCloudSpaces(parentPath)) {
+                    enabled = false;
+                } else {
+                    var cloud = self.getViewManager().getController().isCloud(folder);
+                    if(cloud.isCloud === true) {
+                        var metadata = self.getViewManager().getController().__getFileIdFolder(folder, cloud.cloud);
+                        var isObject = metadata === Object(metadata);
+                        if(isObject && metadata.id.indexOf("_" + cloud.cloud) !== - 1) {
+                            enabled = false;
+                        }
+                    }
                 }
                 self.getViewManager().getController().fireDataEvent('cloudspacesSelected', enabled);
             }, this);
@@ -433,11 +447,26 @@ qx.Class.define('eyeos.files.IconView', {
 						}
 
                         if (itemsToDisable.indexOf(childrens[i].getUserData('id')) != -1) {
-                            var pathClouds = 'home://~' + eyeos.getCurrentUserName() + '/Cloudspaces';
+                            //var pathClouds = 'home://~' + eyeos.getCurrentUserName() + '/Cloudspaces';
                             for (var j = 0; j < selected.length; j++) {
-                                if (selected[j].getFile().getAbsolutePath() == pathClouds ||
+                                /*if (selected[j].getFile().getAbsolutePath() == pathClouds ||
                                     selected[j].getFile().getPath() == pathClouds) {
                                     childrens[i].setEnabled(false);
+                                }*/
+
+                                if(self.getViewManager().getController().isRootCloudSpaces(selected[j].getFile().getAbsolutePath()) ||
+                                    self.getViewManager().getController().isRootCloudSpaces( selected[j].getFile().getPath())) {
+                                    childrens[i].setEnabled(false);
+                                } else {
+                                    var cloud =  self.getViewManager().getController().isCloud(selected[j].getFile().getAbsolutePath());
+                                    if(cloud.isCloud === true) {
+                                        var metadata = self.getViewManager().getController().__getFileIdFolder(selected[j].getFile().getAbsolutePath(), cloud.cloud);
+                                        var isObject = metadata === Object(metadata);
+                                        if(isObject && metadata.id.indexOf('_' + cloud.cloud) !== -1) {
+                                            childrens[i].setEnabled(false);
+                                        }
+
+                                    }
                                 }
                             }
                         }
