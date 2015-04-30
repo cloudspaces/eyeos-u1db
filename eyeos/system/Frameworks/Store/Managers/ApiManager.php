@@ -24,13 +24,14 @@ class ApiManager
         $this->filesProvider = $filesProvider;
     }
 
-    public function getMetadata($cloud, $token, $id, $path, $user, $url=NULL)
+    public function getMetadata($cloud, $token, $id, $path, $user, $resourceUrl=NULL)
     {
         $pathMetadata = $this->getPathU1db($path, $cloud);
-        $metadata = $this->apiProvider->getMetadata($cloud, $token, false, $id, true);
+        $contents = true;
+        $metadata = $this->apiProvider->getMetadata($cloud, $token, false, $id, $contents,$resourceUrl);
         $this->addPathMetadata($metadata, $pathMetadata);
         $this->addShareMetadata($metadata, $cloud, $token);
-        $this->addUrlMetadata($metadata, $cloud, $token, $url);
+        $this->addUrlMetadata($metadata, $cloud, $token, $resourceUrl);
         $respuesta = json_encode($metadata);
         $files = array();
         if(!isset($metadata->error)) {
@@ -52,7 +53,7 @@ class ApiManager
                 foreach($files as $file) {
                     $insert = true;
                     if(isset($file->resource_url) || (isset($file->id) && $file->id !== 'null')) {
-                        if (isset($file->resource_url) || $file->status !== 'DELETED') {
+                        if ((isset($file->resource_url) && (!(isset($file->status) && $file->status == 'DELETED'))) || $file->status !== 'DELETED') {
                             $insert = $this->filesProvider->createFile($path . "/" . $this->fixValueFilename($file), $this->fixValueIsFolder($file));
                         } else {
                             $insert = false;
@@ -67,7 +68,7 @@ class ApiManager
                 if ($dataU1db){
                     for($i = 0; $i < count($files); $i++) {
                         $cloudFolder = isset($files[$i]->resource_url) ? true : false;
-                        if (!$cloudFolder) {
+                        if (!$cloudFolder || isset($files[$i]->filename)) {
                             $delete = (isset($files[$i]->status) && $files[$i]->status === 'DELETED') ? true : false;
                             if($this->search($dataU1db, "id", $files[$i]->id) === false){
                                 if(!$delete &&  $files[$i]->id !== 'null') {
@@ -105,7 +106,7 @@ class ApiManager
                                 }
                             } else {
                                 $filenameDb = $this->getValue($dataU1db, "id", $id, "name");
-                                if ($filenameDb !== $files[$i]->name) {
+                                if ($filenameDb !==$files[$i]->name) {
                                     if($this->filesProvider->renameFile($path . "/" . $filenameDb, $files[$i]->name)) {
                                         $lista = array();
                                         array_push($lista, $this->setUserEyeos($files[$i], $user, $cloud));
@@ -116,7 +117,9 @@ class ApiManager
                         }
                     }
                     for($i = 0; $i < count($dataU1db); $i++) {
-                        if($this->search($files, "id", $dataU1db[$i]->id) === false && $metadata->id !== $dataU1db[$i]->id){
+                        $id = substr($dataU1db[$i]->id,0,strpos($dataU1db[$i]->id,'_' . $cloud));
+                        if($this->search($files, "id", $dataU1db[$i]->id) === false
+                            && $metadata->id !== $dataU1db[$i]->id && $metadata->id !== $id){
                             if($this->filesProvider->deleteFile($path . "/" . $this->fixValueFilename($dataU1db[$i]), $this->fixValueIsFolder($dataU1db[$i]))) {
                                  $this->callProcessU1db('deleteFolder', $dataU1db[$i]);
                             }
@@ -635,7 +638,7 @@ class ApiManager
 
     private function addUrlMetadata(&$metadata, $cloud, $token, $url)
     {
-        if ($url) {
+        if ($url && !isset($metadata->error)) {
             $metadata->resource_url = $url;
             $metadata->access_token_key = $token->key;
             $metadata->access_token_secret = $token->secret;
@@ -646,13 +649,14 @@ class ApiManager
                     $data->access_token_secret = $token->secret;
                 }
             }
-        }
-        $parent_id = isset($metadata->parent_id) ? $metadata->parent_id : 'null';
-        $this->fixValueAllIds($metadata, $cloud, $parent_id);
-        $parent_id = isset($metadata->id) ? $metadata->id : 'null';
-        if(isset($metadata->contents)) {
-            foreach($metadata->contents as $data) {
-                $this->fixValueAllIds($data, $cloud, $parent_id);
+        } else {
+            $parent_id = isset($metadata->parent_id) ? $metadata->parent_id : 'null';
+            $this->fixValueAllIds($metadata, $cloud, $parent_id);
+            $parent_id = isset($metadata->id) ? $metadata->id : 'null';
+            if (isset($metadata->contents)) {
+                foreach ($metadata->contents as $data) {
+                    $this->fixValueAllIds($data, $cloud, $parent_id);
+                }
             }
         }
     }
@@ -662,6 +666,7 @@ class ApiManager
         if (isset($metadata->resource_url)) {
             if (!isset($metadata->id)) {
                 $metadata->id = $this->fixValueId($metadata) . '_' . $cloud;
+                $metadata->resource_url = $this->getResourceUrl($metadata->resource_url);
             }
             $metadata->parent_id = $parent_id;
         }
@@ -672,8 +677,15 @@ class ApiManager
         preg_match('/\/folder\/(.*)/', $url, $match);
         if (count($match) == 2) {
             return $match[1];
+
         }
         return 'null';
+    }
+
+    private function getResourceUrl($url)
+    {
+        $resource_url = substr($url,0,strpos($url,"/folder")) . '/';
+        return $resource_url;
     }
 
     private function fixValueId($metadata)
