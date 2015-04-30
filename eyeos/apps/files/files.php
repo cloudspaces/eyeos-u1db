@@ -738,9 +738,19 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
             $path = $params[ 'path' ];
             $id = $params[ 'id' ];
+            $resource_url = null;
+
+            $token = new stdClass();
+            if(isset($params['resource_url'])) {
+                $token->key = $params['access_token_key'];
+                $token->secret = $params['access_token_secret'];
+                $resource_url = $params['resource_url'];
+            } else {
+                $token = $_SESSION[ 'access_token_' . $cloud . '_v2' ];
+            }
 
             $apiManager = new ApiManager();
-            $result = $apiManager->getMetadata($cloud, $_SESSION[ 'access_token_' . $cloud . '_v2' ],$id,$path,$user);
+            $result = $apiManager->getMetadata($cloud,$token,$id,$path,$user,$resource_url);
             if($result) {
                 if(isset($result[ 'error' ]) && $result[ 'error' ] == 403) {
                     $denied = self::permissionDeniedCloud($cloud);

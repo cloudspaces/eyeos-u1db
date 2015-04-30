@@ -669,12 +669,13 @@ qx.Class.define('eyeos.files.Controller', {
                     if(!isObject) {
                         params.id = id;
                     } else {
+                        params.id = this.__getResourceUrlId(id.id,cloud.cloud);
                         params.resource_url = id.resource_url;
                         params.access_token_key = id.access_token_key;
                         params.access_token_secret = id.access_token_secret;
                     }
 
-                    if(id !== null) {
+                    if(params.id !== null) {
                         eyeos.callMessage(this.getApplication().getChecknum(), 'getMetadata', params, function (results) {
                             this.closeCursorLoad();
                             if(results) {
@@ -2515,6 +2516,15 @@ qx.Class.define('eyeos.files.Controller', {
             if (!this._metadatas.hasOwnProperty(cloud)) {
                 this._metadatas[cloud] = [];
             }
+        },
+        __getResourceUrlId:function(id,cloud) {
+            var file_id = id;
+
+            if(id.indexOf('_' + cloud) !== -1) {
+                file_id = id.substring(0,id.indexOf('_' + cloud));
+            }
+
+            return file_id;
         }
 	}
 });
