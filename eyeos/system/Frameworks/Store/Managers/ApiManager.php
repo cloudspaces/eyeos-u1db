@@ -30,7 +30,7 @@ class ApiManager
         $contents = true;
         $metadata = $this->apiProvider->getMetadata($cloud, $token, false, $id, $contents,$resourceUrl);
         $this->addPathMetadata($metadata, $pathMetadata);
-        $this->addShareMetadata($metadata, $cloud, $token);
+        $this->addShareMetadata($metadata, $cloud, $token,$resourceUrl);
         $this->addUrlMetadata($metadata, $cloud, $token, $resourceUrl);
         $respuesta = json_encode($metadata);
         $files = array();
@@ -131,9 +131,9 @@ class ApiManager
         return $respuesta;
     }
 
-    public function getSkel($cloud, $token, $file, $id, &$metadatas, $path, $pathAbsolute, $pathEyeos) {
+    public function getSkel($cloud, $token, $file, $id, &$metadatas, $path, $pathAbsolute, $pathEyeos, $resourceUrl = null) {
         $contents = $file == false ? true : null;
-        $metadata = $this->apiProvider->getMetadata($cloud, $token, $file, $id, $contents);
+        $metadata = $this->apiProvider->getMetadata($cloud, $token, $file, $id, $contents, $resourceUrl);
         if(!isset($metadata->error)) {
             $metadata->pathAbsolute = $pathAbsolute;
             $metadata->path = $path;
@@ -141,7 +141,7 @@ class ApiManager
             if($metadata->is_folder) {
                 $path = $metadata->id == 'null' ? '/' : $path . $metadata->filename . '/';
                 for ($i=0; $i<count($metadata->contents); $i++){
-                    $this->getSkel($cloud, $token, !$metadata->contents[$i]->is_folder, $metadata->contents[$i]->id, $metadatas, $path, null, $metadata->pathEyeos);
+                    $this->getSkel($cloud, $token, !$metadata->contents[$i]->is_folder, $metadata->contents[$i]->id, $metadatas, $path, null, $metadata->pathEyeos, $resourceUrl);
                 }
             }
             unset($metadata->contents);
@@ -149,11 +149,11 @@ class ApiManager
         array_push($metadatas, $metadata);
     }
 
-    public function createMetadata($cloud, $token, $user, $file, $name, $parent_id, $path, $pathAbsolute=NULL)
+    public function createMetadata($cloud, $token, $user, $file, $name, $parent_id, $path, $pathAbsolute=NULL,$resourceUrl=NULL)
     {
         $result['status'] = 'KO';
         $result['error'] = -1;
-        $metadata = $this->apiProvider->getMetadata($cloud, $token, $file, $parent_id, true);
+        $metadata = $this->apiProvider->getMetadata($cloud, $token, $file, $parent_id, true,$resourceUrl);
         if($metadata) {
             if(!isset($metadata->error)) {
                 if(isset($metadata->contents)) {
@@ -165,10 +165,10 @@ class ApiManager
                         }
                     }
                     if($id === null) {
-                        $newMetadata = $this->apiProvider->createMetadata($cloud, $token, $file, $name, $parent_id, $pathAbsolute);
+                        $newMetadata = $this->apiProvider->createMetadata($cloud, $token, $file, $name, $parent_id, $pathAbsolute,$resourceUrl);
                         if(!isset($newMetadata->error)) {
                             $this->addPathMetadata($newMetadata, $path);
-                            if($this->callProcessU1db('insert', $this->setUserEyeos($newMetadata, $user, $cloud)) == 'true') {
+                            if($this->callProcessU1db('insert', $this->setUserEyeos($newMetadata, $user, $cloud,$resourceUrl,$token)) == 'true') {
                                 $ok = true;
                                 if($file) {
                                     $lista = new stdClass();
@@ -192,16 +192,16 @@ class ApiManager
                         }
                     } else {
                         if($file) {
-                            $resp = $this->apiProvider->uploadMetadata($cloud, $token, $id, $pathAbsolute);
+                            $resp = $this->apiProvider->uploadMetadata($cloud, $token, $id, $pathAbsolute, $resourceUrl);
                             if(isset($resp->status) && $resp->status == true) {
-                                $changedMetadata = $this->apiProvider->getMetadata($cloud, $token, $file, $id);
+                                $changedMetadata = $this->apiProvider->getMetadata($cloud, $token, $file, $id,null,$resourceUrl);
                                 if(!isset($changedMetadata->error)) {
                                     $this->addPathMetadata($changedMetadata, $path);
                                     $metadataUpdate = array();
                                     $old = new stdClass();
                                     $old->parent_old = $changedMetadata->parent_id;
                                     array_push($metadataUpdate, $old);
-                                    array_push($metadataUpdate, $this->setUserEyeos($changedMetadata, $user, $cloud));
+                                    array_push($metadataUpdate, $this->setUserEyeos($changedMetadata, $user, $cloud,$resourceUrl,$token));
                                     if($this->callProcessU1db('update', $metadataUpdate) == 'true') {
                                         $lista = new stdClass();
                                         $lista->id = "" . $changedMetadata->id;
@@ -233,11 +233,11 @@ class ApiManager
         return $result;
     }
 
-    public function downloadMetadata($token, $id, $path, $user, $isTmp=false, $cloud = NULL)
+    public function downloadMetadata($token, $id, $path, $user, $isTmp=false, $cloud = NULL, $resourceUrl = NULL)
     {
         $result[ 'status' ] = 'KO';
         $result[ 'error' ] = -1;
-        $metadata = $this->apiProvider->getMetadata($cloud, $token, true, $id);
+        $metadata = $this->apiProvider->getMetadata($cloud, $token, true, $id, null, $resourceUrl);
         $insert = false;
         $type = '';
 
@@ -265,7 +265,7 @@ class ApiManager
             }
 
             if($insert) {
-                $content = $this->apiProvider->downloadMetadata($cloud, $token, $id, $path);
+                $content = $this->apiProvider->downloadMetadata($cloud, $token, $id, $path, $resourceUrl);
                 if(!isset($content->error)) {
                     if ($isTmp == false) {
                         $lista = new stdClass();
@@ -295,11 +295,11 @@ class ApiManager
         return $result;
     }
 
-    public function deleteMetadata($cloud,$token,$file,$id,$user,$path)
+    public function deleteMetadata($cloud,$token,$file,$id,$user,$path,$resourceUrl = NULL)
     {
         $result['status'] = 'KO';
         $result['error'] = -1;
-        $metadata = $this->apiProvider->deleteMetadata($cloud,$token,$file,$id);
+        $metadata = $this->apiProvider->deleteMetadata($cloud,$token,$file,$id,$resourceUrl);
         if(!isset($metadata->error)) {
             $lista = new stdClass();
             $lista->id = "" . $id;
@@ -326,14 +326,14 @@ class ApiManager
         return $result;
     }
 
-    public function renameMetadata($cloud, $token, $file, $id, $name, $path, $user, $parent=NULL)
+    public function renameMetadata($cloud, $token, $file, $id, $name, $path, $user, $parent=NULL,$resourceUrl = NULL)
     {
         $result['status'] = 'KO';
         $result['error'] = -1;
-        $metadata = $this->apiProvider->updateMetadata($cloud, $token, $file, $id, $name, $parent);
+        $metadata = $this->apiProvider->updateMetadata($cloud, $token, $file, $id, $name, $parent,$resourceUrl);
         if (!isset($metadata->error)) {
             $this->addPathMetadata($metadata, $path);
-            if($this->callProcessU1db('rename', $this->setUserEyeos($metadata, $user, $cloud)) == 'true') {
+            if($this->callProcessU1db('rename', $this->setUserEyeos($metadata, $user, $cloud,$resourceUrl,$token)) == 'true') {
                 $result['status'] = 'OK';
                 unset($result['error']);
             }
@@ -343,11 +343,11 @@ class ApiManager
         return $result;
     }
 
-    public function moveMetadata($cloud, $token, $file, $id, $pathOrig, $pathDest, $user, $parent, $filenameOld, $filenameNew = null)
+    public function moveMetadata($cloud, $token, $file, $id, $pathOrig, $pathDest, $user, $parent, $filenameOld, $filenameNew = null, $resourceUrl = null)
     {
         $result[ 'status' ] = 'KO';
         $result[ 'error' ] = -1;
-        $metadata = $this->apiProvider->updateMetadata($cloud, $token, $file, $id, $filenameNew ? $filenameNew : $filenameOld, $parent);
+        $metadata = $this->apiProvider->updateMetadata($cloud, $token, $file, $id, $filenameNew ? $filenameNew : $filenameOld, $parent, $resourceUrl);
 
         if(!isset($metadata->error)) {
             $delete = new stdClass();
@@ -359,7 +359,7 @@ class ApiManager
             if($this->callProcessU1db('deleteFolder', $delete) == 'true') {
                 $delete = $this->filesProvider->deleteFile($pathOrig . '/' . $filenameOld, !$file);
                 if($delete) {
-                    $metadata = $this->setUserEyeos($metadata, $user, $cloud);
+                    $metadata = $this->setUserEyeos($metadata, $user, $cloud,$resourceUrl, $token);
                     $this->addPathMetadata($metadata,$this->getPathU1db($pathDest, $cloud));
                     if($this->callProcessU1db('insert', $metadata) == 'true') {
                         $this->filesProvider->createFile($pathDest . '/' . $metadata->filename,!$file);
@@ -413,11 +413,11 @@ class ApiManager
         return json_decode($this->callProcessU1db("deleteMetadataUser",$file));
     }
 
-    public function listVersions($cloud,$token,$id,$user)
+    public function listVersions($cloud,$token,$id,$user,$resourceUrl=null)
     {
         $result['status'] = 'KO';
         $result['error'] = -1;
-        $metadata = $this->apiProvider->listVersions($cloud,$token,$id);
+        $metadata = $this->apiProvider->listVersions($cloud,$token,$id,$resourceUrl);
         if(!isset($metadata->error)) {
             $lista = new stdClass();
             $lista->id = "" . $id;
@@ -449,7 +449,7 @@ class ApiManager
         return $result;
     }
 
-    public function getFileVersionData($cloud, $token, $id, $version, $path, $user)
+    public function getFileVersionData($cloud, $token, $id, $version, $path, $user,$resourceUrl = null)
     {
         $result['status'] = 'KO';
         $result['error'] = -1;
@@ -470,7 +470,7 @@ class ApiManager
         }
 
         if($type) {
-            $metadata = $this->apiProvider->getFileVersionData($cloud, $token, $id, $version, $path);
+            $metadata = $this->apiProvider->getFileVersionData($cloud, $token, $id, $version, $path, $resourceUrl);
             if(!isset($metadata->error)) {
                 $lista = new stdClass();
                 $lista->id = "" . $id;
@@ -490,11 +490,11 @@ class ApiManager
         return $result;
     }
 
-    public function getListUsersShare($cloud, $token, $id)
+    public function getListUsersShare($cloud, $token, $id, $resourceUrl = null)
     {
         $result[ 'status' ] = 'KO';
         $result[ 'error' ] = -1;
-        $metadata = $this->apiProvider->getListUsersShare($cloud, $token, $id);
+        $metadata = $this->apiProvider->getListUsersShare($cloud, $token, $id, $resourceUrl);
         if (!isset($metadata->error)){
             $result = json_encode($metadata);
         } else {
@@ -503,11 +503,11 @@ class ApiManager
         return $result;
     }
 
-    public function shareFolder($cloud, $token, $id, $list)
+    public function shareFolder($cloud, $token, $id, $list,$resourceUrl = null)
     {
         $result[ 'status' ] = 'KO';
         $result[ 'error' ] = -1;
-        $metadata = $this->apiProvider->shareFolder($cloud, $token, $id, $list);
+        $metadata = $this->apiProvider->shareFolder($cloud, $token, $id, $list, false,$resourceUrl);
         if (!isset($metadata->error)) {
             $result[ 'status' ] = 'OK';
             unset($result[ 'error' ]);
@@ -556,13 +556,21 @@ class ApiManager
         return $result;
     }
 
-    private function setUserEyeos($metadata, $user, $cloud = NULL)
+    private function setUserEyeos($metadata, $user, $cloud = NULL, $resourceUrl = NULL, $token = NULL)
     {
         $aux = new stdClass();
         if($cloud) {
             $aux->cloud = $cloud;
         }
+
         $aux->user_eyeos = $user;
+
+        if($resourceUrl) {
+            $aux->resource_url = $resourceUrl;
+            $aux->access_token_key = $token->key;
+            $aux->access_token_secret = $token->secret;
+        }
+
         $metadata = (object)array_merge((array)$aux, (array)$metadata);
         return $metadata;
     }
@@ -624,13 +632,13 @@ class ApiManager
         }
     }
 
-    private function addShareMetadata(&$metadata, $cloud, $token)
+    private function addShareMetadata(&$metadata, $cloud, $token,$resourceUrl = null)
     {
         if (!isset($metadata->error)) {
-            $metadata->is_shared = $this->validateFolderShared($cloud, $token, $this->fixValueId($metadata), $this->fixValueIsFolder($metadata), $this->fixValueStatus($metadata));
+            $metadata->is_shared = $this->validateFolderShared($cloud, $token, $this->fixValueId($metadata), $this->fixValueIsFolder($metadata), $this->fixValueStatus($metadata),$resourceUrl);
             if(isset($metadata->contents)) {
                 foreach($metadata->contents as $data) {
-                    $data->is_shared = $this->validateFolderShared($cloud, $token, $this->fixValueId($data), $this->fixValueIsFolder($data), $this->fixValueStatus($data));
+                    $data->is_shared = $this->validateFolderShared($cloud, $token, $this->fixValueId($data), $this->fixValueIsFolder($data), $this->fixValueStatus($data),$resourceUrl);
                 }
             }
         }
@@ -711,11 +719,11 @@ class ApiManager
         return isset($metadata->filename) ? $metadata->filename : $filename;
     }
 
-    private function validateFolderShared($cloud, $token, $id, $isFolder, $status)
+    private function validateFolderShared($cloud, $token, $id, $isFolder, $status, $resourceUrl = null)
     {
         $result = false;
         if ($isFolder && $id !== 'null' && $status !== 'DELETED') {
-            $data = $this->getListUsersShare($cloud, $token, $id);
+            $data = $this->getListUsersShare($cloud, $token, $id, $resourceUrl);
             $data = json_decode($data);
             if (!isset($data->error) && is_array($data) && count($data) > 1) {
                 $result = true;
