@@ -14,6 +14,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     private $exception;
     private $permission;
     private $cloud;
+    private $resourceUrl;
 
     public function setUp()
     {
@@ -25,6 +26,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->exception = '{"error":-1}';
         $this->permission = '{"error":403}';
         $this->cloud = 'Stacksync';
+        $this->resourceUrl = "http://ast3-deim.urv.cat/v1";
     }
 
     public function tearDown()
@@ -54,10 +56,9 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_getMetadata_called_tokenAndFileAndIdAndResourceUrl_returnCorrectData()
     {
-        $resourceUrl = "http://ast3-deim.urv.cat/v1";
         $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"get","file":true,"id":"123456","contents":null}}';
         $metadataOut = '{"name":"Client1.pdf","path":"/documents/clients/Client1.pdf","id":"32565632156","size":775412,"mimetype":"application/pdf","status":"DELETED","version":3,"parent_id":"-348534824681","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}';
-        $this->exerciseGetMetadata($metadataIn,$metadataOut,$metadataOut,true,123456,null,$resourceUrl);
+        $this->exerciseGetMetadata($metadataIn,$metadataOut,$metadataOut,true,123456,null,$this->resourceUrl);
     }
 
     /**
@@ -81,10 +82,9 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_getMetadata_called_tokenAndFolderAndIdAndResourceUrl_returnCorrectData()
     {
-        $resourceUrl = "http://ast3-deim.urv.cat/v1";
         $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"get","file":false,"id":"9873615","contents":null}}';
         $metadataOut = '{"name":"clients","path":"/documents/clients","id":"9873615","status":"NEW","version":1,"parent_id":"-348534824681","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false}';
-        $this->exerciseGetMetadata($metadataIn,$metadataOut,$metadataOut,false,9873615,null,$resourceUrl);
+        $this->exerciseGetMetadata($metadataIn,$metadataOut,$metadataOut,false,9873615,null,$this->resourceUrl);
     }
 
     /**
@@ -109,10 +109,9 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_getMetadata_called_tokenAndFolderAndIdAndContentsAndResourceUrl_returnCorrectData()
     {
-        $resourceUrl = "http://ast3-deim.urv.cat/v1";
         $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"get","file":false,"id":"9873615","contents":true}}';
         $metadataOut = '{"name":"clients","path":"/documents/clients","id":"9873615","status":"NEW","version":1,"parent_id":"-348534824681","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"contents":[{"name":"Client1.pdf","path":"/documents/clients/Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"DELETED","version":3,"parent":-348534824681,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false}]}';
-        $this->exerciseGetMetadata($metadataIn,$metadataOut,$metadataOut,false,9873615,true,$resourceUrl);
+        $this->exerciseGetMetadata($metadataIn,$metadataOut,$metadataOut,false,9873615,true,$this->resourceUrl);
     }
 
     /**
@@ -136,10 +135,9 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_getMetadata_called_tokenAndFolderAndIdAndResourceUrl_returnException()
     {
-        $resourceUrl = "http://ast3-deim.urv.cat/v1";
         $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"get","file":false,"id":"9873615","contents":null}}';
         $metadataOut = 'false';
-        $this->exerciseGetMetadata($metadataIn,$metadataOut,$this->exception,false,9873615,null,$resourceUrl);
+        $this->exerciseGetMetadata($metadataIn,$metadataOut,$this->exception,false,9873615,null,$this->resourceUrl);
     }
 
 
@@ -164,10 +162,9 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_getMetadata_called_tokenAndFolderAndIdAndResourceUrl_returnPermissionDenied()
     {
-        $resourceUrl = "http://ast3-deim.urv.cat/v1";
         $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"get","file":false,"id":"9873615","contents":null}}';
         $metadataOut = '403';
-        $this->exerciseGetMetadata($metadataIn,$metadataOut,$this->permission,false,9873615,null,$resourceUrl);
+        $this->exerciseGetMetadata($metadataIn,$metadataOut,$this->permission,false,9873615,null,$this->resourceUrl);
     }
 
     /**
@@ -178,11 +175,24 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_updateMetadata_called_cloudAndTokenAndFileAndIdAndNameAndParent_returnMetadataRename()
     {
-        $cloud = "Stacksync";
-        $metadataIn = '{"config":{"cloud":"' . $cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":"32565632156","filename":"Winter2012_renamed.jpg","parent_id":"12386548974"}}';
+        $metadataIn = '{"config":{"cloud":"' . $this->cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":"32565632156","filename":"Winter2012_renamed.jpg","parent_id":"12386548974"}}';
         $metadataOut = '{"name": "Winter2012_renamed.jpg", "path": "/documents/clients/", "id": "32565632156", "size": 775412, "mimetype": "application/pdf", "status": "RENAMED", "version": 2, "parent": "12386548974", "user": "eyeos", "client_modified": "2013-03-08 10:36:41.997", "server_modified": "2013-03-08 10:36:41.997"}';
-        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $metadataOut, true, 32565632156, "Winter2012_renamed.jpg", 12386548974, $cloud);
+        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $metadataOut, true, 32565632156, "Winter2012_renamed.jpg", 12386548974, $this->cloud);
     }
+
+    /**
+     * method: updateMetadata
+     * when: called
+     * with: cloudAndTokenAndFileAndIdAndNameAndParentAndResourceUrl
+     * should: returnMetadataRename
+     */
+    public function test_updateMetadata_called_cloudAndTokenAndFileAndIdAndNameAndParentAndResource_returnMetadataRename()
+    {
+        $metadataIn = '{"config":{"cloud":"' . $this->cloud . '","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":"32565632156","filename":"Winter2012_renamed.jpg","parent_id":"12386548974"}}';
+        $metadataOut = '{"name": "Winter2012_renamed.jpg", "path": "/documents/clients/", "id": "32565632156", "size": 775412, "mimetype": "application/pdf", "status": "RENAMED", "version": 2, "parent": "12386548974", "user": "eyeos", "client_modified": "2013-03-08 10:36:41.997", "server_modified": "2013-03-08 10:36:41.997"}';
+        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $metadataOut, true, 32565632156, "Winter2012_renamed.jpg", 12386548974, $this->cloud,$this->resourceUrl);
+    }
+
 
     /**
      * method: updateMetadata
@@ -192,10 +202,22 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_updateMetadata_called_cloudAndTokenAndFileAndIdAndParent_returnMetadataMove()
     {
-        $cloud = "Stacksync";
-        $metadataIn = '{"config":{"cloud":"' . $cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":"32565632156","filename":null,"parent_id":"123456"}}';
+        $metadataIn = '{"config":{"cloud":"' . $this->cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":"32565632156","filename":null,"parent_id":"123456"}}';
         $metadataOut = '{"name": "Winter2012_renamed.jpg", "path": "/documents/clients/", "id": "32565632156", "size": 775412, "mimetype": "application/pdf", "status": "CHANGED", "version": 2, "parent": "123456", "user": "eyeos", "client_modified": "2013-03-08 10:36:41.997", "server_modified": "2013-03-08 10:36:41.997"}';
-        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $metadataOut, true, 32565632156, null, 123456, $cloud);
+        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $metadataOut, true, 32565632156, null, 123456, $this->cloud);
+    }
+
+    /**
+     * method: updateMetadata
+     * when: called
+     * with: cloudAndTokenAndFileAndIdAndParentAndResourceUrl
+     * should: returnMetadataMove
+     */
+    public function test_updateMetadata_called_cloudAndTokenAndFileAndIdAndParentAndResourceUrl_returnMetadataMove()
+    {
+        $metadataIn = '{"config":{"cloud":"' . $this->cloud . '","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":"32565632156","filename":null,"parent_id":"123456"}}';
+        $metadataOut = '{"name": "Winter2012_renamed.jpg", "path": "/documents/clients/", "id": "32565632156", "size": 775412, "mimetype": "application/pdf", "status": "CHANGED", "version": 2, "parent": "123456", "user": "eyeos", "client_modified": "2013-03-08 10:36:41.997", "server_modified": "2013-03-08 10:36:41.997"}';
+        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $metadataOut, true, 32565632156, null, 123456, $this->cloud,$this->resourceUrl);
     }
 
     /**
@@ -206,10 +228,22 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_updateMetadata_called_cloudAndTokenAndFileAndId_returnMetadataMove()
     {
-        $cloud = "Stacksync";
-        $metadataIn = '{"config":{"cloud":"' . $cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":"32565632156","filename":null,"parent_id":"null"}}';
+        $metadataIn = '{"config":{"cloud":"' . $this->cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":"32565632156","filename":null,"parent_id":"null"}}';
         $metadataOut = '{"name": "Winter2012_renamed.jpg", "path": "/documents/clients/", "id": "32565632156", "size": 775412, "mimetype": "application/pdf", "status": "CHANGED", "version": 2, "parent_id": "null", "user": "eyeos", "client_modified": "2013-03-08 10:36:41.997", "server_modified": "2013-03-08 10:36:41.997"}';
-        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $metadataOut, true, 32565632156, null, null, $cloud);
+        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $metadataOut, true, 32565632156, null, null, $this->cloud);
+    }
+
+    /**
+     * method: updateMetadata
+     * when: called
+     * with: cloudAndTokenAndFileAndIdAndResourceUrl
+     * should: returnMetadataMove
+     */
+    public function test_updateMetadata_called_cloudAndTokenAndFileAndIdAndResourceUrl_returnMetadataMove()
+    {
+        $metadataIn = '{"config":{"cloud":"' . $this->cloud . '","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":true,"id":"32565632156","filename":null,"parent_id":"null"}}';
+        $metadataOut = '{"name": "Winter2012_renamed.jpg", "path": "/documents/clients/", "id": "32565632156", "size": 775412, "mimetype": "application/pdf", "status": "CHANGED", "version": 2, "parent_id": "null", "user": "eyeos", "client_modified": "2013-03-08 10:36:41.997", "server_modified": "2013-03-08 10:36:41.997"}';
+        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $metadataOut, true, 32565632156, null, null, $this->cloud,$this->resourceUrl);
     }
 
     /**
@@ -220,10 +254,23 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_updateMeta_called_cloudAndTokenAndFolderAndIdAndNameAndParent_returnMetadataRename()
     {
-        $cloud = "Stacksync";
-        $metadataIn = '{"config":{"cloud":"' . $cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":"Winter2012_renamed","parent_id":"12386548974"}}';
+        $metadataIn = '{"config":{"cloud":"' . $this->cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":"Winter2012_renamed","parent_id":"12386548974"}}';
         $metadataOut = '{"name": "Winter2012_renamed", "path": "/documents/clients/", "id": "32565632156", "status": "CHANGED", "version": 2, "parent": "12386548974", "user": "eyeos", "client_modified": "2013-03-08 10:36:41.997", "server_modified": "2013-03-08 10:36:41.997", "is_root": false}';
-        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $metadataOut, false, 32565632156, "Winter2012_renamed", 12386548974, $cloud);
+        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $metadataOut, false, 32565632156, "Winter2012_renamed", 12386548974, $this->cloud);
+    }
+
+    /**
+     * method: updateMetadata
+     * when: called
+     * with: cloudAndTokenAndFolderAndIdAndNameAndParentAndResourceUrl
+     * should: returnMetadataRename
+     */
+    public function test_updateMeta_called_cloudAndTokenAndFolderAndIdAndNameAndParentAndResourceUrl_returnMetadataRename()
+    {
+        $metadataIn = '{"config":{"cloud":"' . $this->cloud . '","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":"Winter2012_renamed","parent_id":"12386548974"}}';
+        $metadataOut = '{"name": "Winter2012_renamed", "path": "/documents/clients/", "id": "32565632156", "status": "CHANGED", "version": 2, "parent": "12386548974", "user": "eyeos", "client_modified": "2013-03-08 10:36:41.997", "server_modified": "2013-03-08 10:36:41.997", "is_root": false}';
+        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $metadataOut, false, 32565632156, "Winter2012_renamed", 12386548974, $this->cloud,$this->resourceUrl);
+
     }
 
     /**
@@ -234,10 +281,22 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_updateMetadata_called_cloudAndTokenAndFolderAndIdAndParent_returnMetadataMove()
     {
-        $cloud = "Stacksync";
-        $metadataIn = '{"config":{"cloud":"' . $cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"123456"}}';
+        $metadataIn = '{"config":{"cloud":"' . $this->cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"123456"}}';
         $metadataOut = '{"name": "Winter2012_renamed", "path": "/documents/clients/", "id": "32565632156", "status": "CHANGED", "version": 2, "parent": "123456", "user": "eyeos", "client_modified": "2013-03-08 10:36:41.997", "server_modified": "2013-03-08 10:36:41.997", "is_root": false}';
-        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $metadataOut, false, 32565632156, null, 123456, $cloud);
+        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $metadataOut, false, 32565632156, null, 123456, $this->cloud);
+    }
+
+    /**
+     * method: updateMetadata
+     * when: called
+     * with: cloudAndTokenAndFolderAndIdAndParentAndResourceUrl
+     * should: returnMetadataMove
+     */
+    public function test_updateMetadata_called_cloudAndTokenAndFolderAndIdAndParentAndResourceUrl_returnMetadataMove()
+    {
+        $metadataIn = '{"config":{"cloud":"' . $this->cloud . '","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"123456"}}';
+        $metadataOut = '{"name": "Winter2012_renamed", "path": "/documents/clients/", "id": "32565632156", "status": "CHANGED", "version": 2, "parent": "123456", "user": "eyeos", "client_modified": "2013-03-08 10:36:41.997", "server_modified": "2013-03-08 10:36:41.997", "is_root": false}';
+        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $metadataOut, false, 32565632156, null, 123456, $this->cloud,$this->resourceUrl);
     }
 
     /**
@@ -248,10 +307,23 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_updateMetadata_called_cloudAndTokenAndFolderAndId_returnMetadataMove()
     {
-        $cloud = "Stacksync";
-        $metadataIn = '{"config":{"cloud":"' . $cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"null"}}';
+        $metadataIn = '{"config":{"cloud":"' . $this->cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"null"}}';
         $metadataOut = '{"name": "Winter2012_renamed", "path": "/documents/clients/", "id": "32565632156", "status": "CHANGED", "version": 2, "parent_id": "null", "user": "eyeos", "client_modified": "2013-03-08 10:36:41.997", "server_modified": "2013-03-08 10:36:41.997", "is_root": false}';
-        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $metadataOut, false, 32565632156, null, null, $cloud);
+        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $metadataOut, false, 32565632156, null, null, $this->cloud);
+    }
+
+    /**
+     * method: updateMetadata
+     * when: called
+     * with: cloudAndTokenAndFolderAndIdAndResourceUrl
+     * should: returnMetadataMove
+     */
+    public function test_updateMetadata_called_cloudAndTokenAndFolderAndIdAndResourceUrl_returnMetadataMove()
+    {
+        $metadataIn = '{"config":{"cloud":"' . $this->cloud . '","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"null"}}';
+        $metadataOut = '{"name": "Winter2012_renamed", "path": "/documents/clients/", "id": "32565632156", "status": "CHANGED", "version": 2, "parent_id": "null", "user": "eyeos", "client_modified": "2013-03-08 10:36:41.997", "server_modified": "2013-03-08 10:36:41.997", "is_root": false}';
+        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $metadataOut, false, 32565632156, null, null, $this->cloud,$this->resourceUrl);
+
     }
 
     /**
@@ -262,10 +334,22 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_updateMetadata_called_cloudAndTokenAndFolderAndId_returnException()
     {
-        $cloud = "Stacksync";
-        $metadataIn = '{"config":{"cloud":"' . $cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"null"}}';
+        $metadataIn = '{"config":{"cloud":"' . $this->cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"null"}}';
         $metadataOut = 'false';
-        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $this->exception, false, 32565632156, null, null, $cloud);
+        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $this->exception, false, 32565632156, null, null, $this->cloud);
+    }
+
+    /**
+     * method: updateMetadata
+     * when: called
+     * with: cloudAndTokenAndFolderAndIdAndResourceUrl
+     * should: returnException
+     */
+    public function test_updateMetadata_called_cloudAndTokenAndFolderAndIdAndResourceUrl_returnException()
+    {
+        $metadataIn = '{"config":{"cloud":"' . $this->cloud . '","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"null"}}';
+        $metadataOut = 'false';
+        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $this->exception, false, 32565632156, null, null, $this->cloud,$this->resourceUrl);
     }
 
     /**
@@ -276,10 +360,22 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      */
     public function test_updateMetadata_called_cloudAndTokenAndFolderAndId_returnPermissionDenied()
     {
-        $cloud = "Stacksync";
-        $metadataIn = '{"config":{"cloud":"' . $cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"null"}}';
+        $metadataIn = '{"config":{"cloud":"' . $this->cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"null"}}';
         $metadataOut = '403';
-        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $this->permission, false, 32565632156, null, null, $cloud);
+        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $this->permission, false, 32565632156, null, null, $this->cloud);
+    }
+
+    /**
+     * method: updateMetadata
+     * when: called
+     * with: cloudAndTokenAndFolderAndIdAndResourceUrl
+     * should: returnPermissionDenied()
+     */
+    public function test_updateMetadata_called_cloudAndTokenAndFolderAndIdAndResourceUrl_returnPermissionDenied()
+    {
+        $metadataIn = '{"config":{"cloud":"' . $this->cloud . '","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"update","file":false,"id":"32565632156","filename":null,"parent_id":"null"}}';
+        $metadataOut = '403';
+        $this->exerciseUpdateMetadata($metadataIn, $metadataOut, $this->permission, false, 32565632156, null, null, $this->cloud,$this->resourceUrl);
     }
 
     /**
@@ -299,6 +395,20 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     /**
      * method: createMetadata
      * when: called
+     * with: tokenAndFileAndNameAndParentAndPathAbsoluteAndResourceUrl
+     * should: returnCorrectData
+     */
+    public function test_createMetadata_called_tokenAndFileAndNameAndParentAndPathAbsoluteAndResourceUrl_returnCorrectData()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":true,"filename":"Client1.pdf","parent_id":"-348534824681","path":"\/home\/eyeos\/Client1.pdf"}}';
+        $metadataOut = '{"filename":"Client1.pdf","id":"32565632156","parent_id":"-348534824681","user":"eyeos"}';
+        $pathAbsolute = '/home/eyeos/Client1.pdf';
+        $this->exerciseCreateMetadata($metadataIn,$metadataOut,$metadataOut,true,'Client1.pdf',-348534824681,$pathAbsolute,$this->resourceUrl);
+    }
+
+    /**
+     * method: createMetadata
+     * when: called
      * with: tokenAndFileAndNameAndPathAbsolute
      * should: returnCorrectData
      */
@@ -308,6 +418,21 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $metadataOut = '{"filename":"Client1.pdf","id":"32565632156","parent_id":"null","user":"eyeos"}';
         $pathAbsolute = '/home/eyeos/Client1.pdf';
         $this->exerciseCreateMetadata($metadataIn,$metadataOut,$metadataOut,true,'Client1.pdf',null,$pathAbsolute);
+    }
+
+    /**
+     * method: createMetadata
+     * when: called
+     * with: tokenAndFileAndNameAndPathAbsoluteAndResourceUrl
+     * should: returnCorrectData
+     */
+    public function test_createMetadata_called_tokenAndFileAndNameAndPathAbsoluteAndResourceUrl_returnCorrectData()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":true,"filename":"Client1.pdf","parent_id":"null","path":"\/home\/eyeos\/Client1.pdf"}}';
+        $metadataOut = '{"filename":"Client1.pdf","id":"32565632156","parent_id":"null","user":"eyeos"}';
+        $pathAbsolute = '/home/eyeos/Client1.pdf';
+        $this->exerciseCreateMetadata($metadataIn,$metadataOut,$metadataOut,true,'Client1.pdf',null,$pathAbsolute,$this->resourceUrl);
+
     }
 
     /**
@@ -326,6 +451,20 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     /**
      * method: createMetadata
      * when: called
+     * with: tokenAndFolderAndNameAndParentAndPathAbsoluteAndResourceUrl
+     * should: returnCorrectData
+     */
+    public function test_createMetadata_called_tokenAndFolderAndNameAndParentAndPathAbsoluteAndResourceUrl_returnCorrectData()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"filename":"clients","parent_id":"-348534824681","path":null}}';
+        $metadataOut = '{"filename":"clients","id":"9873615","parent_id":"-348534824681","user":"eyeos","is_root":false}';
+        $this->exerciseCreateMetadata($metadataIn,$metadataOut,$metadataOut,false,"clients",-348534824681,null,$this->resourceUrl);
+
+    }
+
+    /**
+     * method: createMetadata
+     * when: called
      * with: tokenAndFolderAndName
      * should: returnCorrectData
      */
@@ -334,6 +473,19 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"filename":"clients","parent_id":"null","path":null}}';
         $metadataOut = '{"filename":"clients","id":"9873615","parent_id":"null","user":"eyeos","is_root":false}';
         $this->exerciseCreateMetadata($metadataIn,$metadataOut,$metadataOut,false,"clients");
+    }
+
+    /**
+     * method: createMetadata
+     * when: called
+     * with: tokenAndFolderAndNameAndResourceUrl
+     * should: returnCorrectData
+     */
+    public function test_createMetadata_called_tokenAndFolderAndNameAndResourceUrl_returnCorrectData()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"filename":"clients","parent_id":"null","path":null}}';
+        $metadataOut = '{"filename":"clients","id":"9873615","parent_id":"null","user":"eyeos","is_root":false}';
+        $this->exerciseCreateMetadata($metadataIn,$metadataOut,$metadataOut,false,"clients",null,null,$this->resourceUrl);
     }
 
     /**
@@ -352,6 +504,19 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     /**
      * method: createMetadata
      * when: called
+     * with: tokenAndFolderAndNameAndResourceUrl
+     * should: returnException
+     */
+    public function test_createMetadata_called_tokenAndFolderAndNameAndResourceUrl_returnException()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"filename":"clients","parent_id":"null","path":null}}';
+        $metadataOut = 'false';
+        $this->exerciseCreateMetadata($metadataIn,$metadataOut,$this->exception,false,"clients",null,null,$this->resourceUrl);
+    }
+
+    /**
+     * method: createMetadata
+     * when: called
      * with: tokenAndFolderAndName
      * should: returnPermissionDenied
      */
@@ -360,6 +525,19 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"filename":"clients","parent_id":"null","path":null}}';
         $metadataOut = '403';
         $this->exerciseCreateMetadata($metadataIn,$metadataOut,$this->permission,false,"clients");
+    }
+
+    /**
+     * method: createMetadata
+     * when: called
+     * with: tokenAndFolderAndNameAndResourceUrl
+     * should: returnPermissionDenied
+     */
+    public function test_createMetadata_called_tokenAndFolderAndNameAndResourceUrl_returnPermissionDenied()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"create","file":false,"filename":"clients","parent_id":"null","path":null}}';
+        $metadataOut = '403';
+        $this->exerciseCreateMetadata($metadataIn,$metadataOut,$this->permission,false,"clients",null,null,$this->resourceUrl);
     }
 
     /**
@@ -378,6 +556,19 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     /**
      * method: uploadMetadata
      * when: called
+     * with: tokenAndIdAndPathAndResourceUrl
+     * should: returnCorrect
+     */
+    public function test_uploadMetadata_called_tokenAndIdAndPathAndResourceUrl_returnCorrect()
+    {
+        $metadataIn = '{"config":{"cloud":"' . $this->cloud . '","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"upload","id":"1234561","path":"\/var\/www\/eyeos\/client.pdf"}}';
+        $metadataOut = '{"status":true}';
+        $this->exerciseUploadMetadata($metadataIn, $metadataOut, $metadataOut, 1234561, "/var/www/eyeos/client.pdf",$this->resourceUrl);
+    }
+
+    /**
+     * method: uploadMetadata
+     * when: called
      * with: tokenAndIdAndPath
      * should: returnException
      */
@@ -386,6 +577,19 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $metadataIn = '{"config":{"cloud":"' . $this->cloud . '"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"upload","id":"1234561","path":"\/var\/www\/eyeos\/client.pdf"}}';
         $metadataOut = 'false';
         $this->exerciseUploadMetadata($metadataIn, $metadataOut, $this->exception, 1234561, "/var/www/eyeos/client.pdf");
+    }
+
+    /**
+     * method: uploadMetadata
+     * when: called
+     * with: tokenAndIdAndPathAndResourceUrl
+     * should: returnException
+     */
+    public function test_uploadMetadata_called_tokenAndIdAndPathAndResourceUrl_returnException()
+    {
+        $metadataIn = '{"config":{"cloud":"' . $this->cloud . '","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"upload","id":"1234561","path":"\/var\/www\/eyeos\/client.pdf"}}';
+        $metadataOut = 'false';
+        $this->exerciseUploadMetadata($metadataIn, $metadataOut, $this->exception, 1234561, "/var/www/eyeos/client.pdf",$this->resourceUrl);
     }
 
     /**
@@ -402,6 +606,19 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * method: uploadMetadata
+     * when: called
+     * with: tokenAndIdAndPathAndResourceUrl
+     * should: returnPermissionDenied
+     */
+    public function test_uploadMetadata_called_tokenAndIdAndPathAndResourceUrl_returnPermissionDenied()
+    {
+        $metadataIn = '{"config":{"cloud":"' . $this->cloud . '","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"upload","id":"1234561","path":"\/var\/www\/eyeos\/client.pdf"}}';
+        $metadataOut = '403';
+        $this->exerciseUploadMetadata($metadataIn, $metadataOut, $this->permission, 1234561, "/var/www/eyeos/client.pdf",$this->resourceUrl);
+    }
+
+    /**
      * method: downloadMetadata
      * when: called
      * with: tokenAndIdAndPath
@@ -410,9 +627,24 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     public function test_downloadMetadata_called_tokenAndIdAndPath_returnCorrectDownloadFile()
     {
         $path = "/home/eyeos/prueba1.pdf";
+        $metadataIn = '{"config": {"cloud": "' . $this->cloud . '"}, "token": {"key": "ABCD", "secret": "EFGH"}, "metadata": {"type": "download", "id": "1234561", "path": "' . $path . '"}}';
         $metadataOut = 'true';
         $cloud = "Stacksync";
-        $this->exerciseDownloadMetadata($metadataOut, $metadataOut, 1234561, $path, $cloud);
+        $this->exerciseDownloadMetadata($metadataOut, $metadataIn, $metadataOut, 1234561, $path, $cloud);
+    }
+
+    /**
+     * method: downloadMetadata
+     * when: called
+     * with: tokenAndIdAndPathAndResourceUrl
+     * should: returnCorrectDonwloadFile
+     */
+    public function test_downloadMetadata_called_tokenAndIdAndPathAndResourceUrl_returnCorrectDownloadFile()
+    {
+        $path = "/home/eyeos/prueba1.pdf";
+        $metadataIn = '{"config": {"cloud": "' . $this->cloud . '","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"}, "token": {"key": "ABCD", "secret": "EFGH"}, "metadata": {"type": "download", "id": "1234561", "path": "' . $path . '"}}';
+        $metadataOut = 'true';
+        $this->exerciseDownloadMetadata($metadataOut, $metadataIn, $metadataOut, 1234561, $path, $this->cloud, $this->resourceUrl);
     }
 
     /**
@@ -424,9 +656,25 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     public function test_downloadMetadata_called_tokenAndIdAndPath_returnException()
     {
         $path = "/home/eyeos/prueba2.pdf";
+        $metadataIn = '{"config": {"cloud": "' . $this->cloud . '"}, "token": {"key": "ABCD", "secret": "EFGH"}, "metadata": {"type": "download", "id": "1234561", "path": "' . $path . '"}}';
         $metadataOut = 'false';
         $cloud = "Stacksync";
-        $this->exerciseDownloadMetadata($metadataOut, json_decode($this->exception), 1234561, $path, $cloud);
+        $this->exerciseDownloadMetadata($metadataOut, $metadataIn, json_decode($this->exception), 1234561, $path, $cloud);
+    }
+
+    /**
+     * method: downloadMetadata
+     * when: called
+     * with: tokenAndIdAndPath
+     * should: returnException
+     */
+    public function test_downloadMetadata_called_tokenAndIdAndPathAndResourceUrl_returnException()
+    {
+        $path = "/home/eyeos/prueba2.pdf";
+        $metadataIn = '{"config": {"cloud": "' . $this->cloud . '","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"}, "token": {"key": "ABCD", "secret": "EFGH"}, "metadata": {"type": "download", "id": "1234561", "path": "' . $path . '"}}';
+        $metadataOut = 'false';
+        $cloud = "Stacksync";
+        $this->exerciseDownloadMetadata($metadataOut, $metadataIn, json_decode($this->exception), 1234561, $path, $cloud, $this->resourceUrl);
     }
 
     /**
@@ -438,9 +686,25 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     public function test_downloadMetadata_called_tokenAndIdAndPath_returnPermisssionDenied()
     {
         $path = "/home/eyeos/prueba3.pdf";
+        $metadataIn = '{"config": {"cloud": "' . $this->cloud . '"}, "token": {"key": "ABCD", "secret": "EFGH"}, "metadata": {"type": "download", "id": "1234561", "path": "' . $path . '"}}';
         $metadataOut = '403';
         $cloud = "Stacksync";
-        $this->exerciseDownloadMetadata($metadataOut, json_decode($this->permission), 1234561, $path, $cloud);
+        $this->exerciseDownloadMetadata($metadataOut, $metadataIn, json_decode($this->permission), 1234561, $path, $cloud);
+    }
+
+    /**
+     * method: downloadMetadata
+     * when: called
+     * with: tokenAndIdAndPathAndResourceUrl
+     * should: returnPermissionDenied
+     */
+    public function test_downloadMetadata_called_tokenAndIdAndPathAndResourceUrl_returnPermisssionDenied()
+    {
+        $path = "/home/eyeos/prueba3.pdf";
+        $metadataIn = '{"config": {"cloud": "' . $this->cloud . '","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"}, "token": {"key": "ABCD", "secret": "EFGH"}, "metadata": {"type": "download", "id": "1234561", "path": "' . $path . '"}}';
+        $metadataOut = '403';
+        $cloud = "Stacksync";
+        $this->exerciseDownloadMetadata($metadataOut, $metadataIn, json_decode($this->permission), 1234561, $path, $cloud, $this->resourceUrl);
     }
 
     /**
@@ -459,6 +723,19 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     /**
      * method: deleteMetadata
      * when: called
+     * with: tokenAndFileAndIdAndResourceUrl
+     * should: returnCorrectData
+     */
+    public function test_deleteMetadata_called_tokenAndFileAndIdAndResourceUrl_returnCorrectData()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"delete","file":true,"id":"32565632156"}}';
+        $metadataOut = '{"name":"Client1.pdf","path":"/documents/clients/Client1.pdf","id":"32565632156","size":775412,"mimetype":"application/pdf","status":"DELETED","version":3,"parent_id":"-348534824681","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997"}';
+        $this->exerciseDeleteMetadata($metadataIn,$metadataOut,$metadataOut,true,32565632156,$this->resourceUrl);
+    }
+
+    /**
+     * method: deleteMetadata
+     * when: called
      * with: tokenAndFolderAndId
      * should: returnCorrectData
      */
@@ -467,6 +744,19 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"delete","file":false,"id":"9873615"}}';
         $metadataOut = '{"name":"clients","path":"/documents/clients","id":"9873615","status":"DELETED","version":3,"parent_id":"-348534824681","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false}';
         $this->exerciseDeleteMetadata($metadataIn,$metadataOut,$metadataOut,false,9873615);
+    }
+
+    /**
+     * method: deleteMetadata
+     * when: called
+     * with: tokenAndFolderAndIdAndResourceUrl
+     * should: returnCorrectData
+     */
+    public function test_deleteMetadata_called_tokenAndFolderAndIdAndResourceUrl_returnCorrectData()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"delete","file":false,"id":"9873615"}}';
+        $metadataOut = '{"name":"clients","path":"/documents/clients","id":"9873615","status":"DELETED","version":3,"parent_id":"-348534824681","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false}';
+        $this->exerciseDeleteMetadata($metadataIn,$metadataOut,$metadataOut,false,9873615,$this->resourceUrl);
     }
 
     /**
@@ -485,6 +775,20 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     /**
      * method: deleteMetadata
      * when: called
+     * with: tokenAndFolderAndIdAndResourceUrl
+     * should: returnException
+     */
+    public function test_deleteMetadata_called_tokenAndFolderAndIdAndResourceUrl_returnException()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"delete","file":false,"id":"9873615"}}';
+        $metadataOut = 'false';
+        $this->exerciseDeleteMetadata($metadataIn,$metadataOut,$this->exception,false,9873615,$this->resourceUrl);
+    }
+
+
+    /**
+     * method: deleteMetadata
+     * when: called
      * with: tokenAndFolderAndId
      * should: returnPermissionDenied
      */
@@ -493,6 +797,19 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"delete","file":false,"id":"9873615"}}';
         $metadataOut = '403';
         $this->exerciseDeleteMetadata($metadataIn,$metadataOut,$this->permission,false,9873615);
+    }
+
+    /**
+     * method: deleteMetadata
+     * when: called
+     * with: tokenAndFolderAndIdAndResourceUrl
+     * should: returnPermissionDenied
+     */
+    public function test_deleteMetadata_called_tokenAndFolderAndIdAndResourceUrl_returnPermissionDenied()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"delete","file":false,"id":"9873615"}}';
+        $metadataOut = '403';
+        $this->exerciseDeleteMetadata($metadataIn,$metadataOut,$this->permission,false,9873615,$this->resourceUrl);
     }
 
     /**
@@ -513,6 +830,20 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     /**
      * method: listVersions
      * when: called
+     * with: tokenAndIdAndResourceUrl
+     * should: returnCorrectData
+     */
+    public function test_listVersions_called_tokenAndIdAndResourceUrl_returnCorrectData()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listVersions","id":"153"}}';
+        $metadataOut = '{"status": "CHANGED", "mimetype": "text/plain", "versions": [{"status": "CHANGED", "mimetype": "text/plain", "checksum": 2499810342, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 4, "is_folder": false, "chunks": [], "id": 155, "size": 61}, {"status": "RENAMED", "mimetype": "text/plain", "checksum": 1825838054, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 3, "is_folder": false, "chunks": [], "id": 155, "size": 59}, {"status": "RENAMED", "mimetype": "text/plain", "checksum": 1825838054, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 2, "is_folder": false, "chunks": [], "id": 155, "size": 59}, {"status": "NEW", "mimetype": "text/plain", "checksum": 1825838054, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 1, "is_folder": false, "chunks": [], "id": 155, "size": 59}], "checksum": 2499810342, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": "null", "version": 4, "is_folder": false, "chunks": [], "id": 155, "size": 61}';
+        $check = '[{"status": "CHANGED", "mimetype": "text/plain", "checksum": 2499810342, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 4, "is_folder": false, "chunks": [], "id": 155, "size": 61}, {"status": "RENAMED", "mimetype": "text/plain", "checksum": 1825838054, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 3, "is_folder": false, "chunks": [], "id": 155, "size": 59}, {"status": "RENAMED", "mimetype": "text/plain", "checksum": 1825838054, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 2, "is_folder": false, "chunks": [], "id": 155, "size": 59}, {"status": "NEW", "mimetype": "text/plain", "checksum": 1825838054, "modified_at": "2014-06-20 10:11:11.031", "filename": "welcome.txt", "parent_id": null, "version": 1, "is_folder": false, "chunks": [], "id": 155, "size": 59}]';
+        $this->exerciseListVersion($metadataIn,$metadataOut,$check,153,$this->resourceUrl);
+    }
+
+    /**
+     * method: listVersions
+     * when: called
      * with: tokenAndId
      * should: returnPermissionDenied
      */
@@ -521,6 +852,19 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listVersions","id":"9873615"}}';
         $metadataOut = '403';
         $this->exerciseListVersion($metadataIn,$metadataOut,$this->permission,9873615);
+    }
+
+    /**
+     * method: listVersions
+     * when: called
+     * with: tokenAndIdAndResourceUrl
+     * should: returnPermissionDenied
+     */
+    public function test_listVersions_called_tokenAndIdAndResourceurl_returnPermissionDenied()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listVersions","id":"9873615"}}';
+        $metadataOut = '403';
+        $this->exerciseListVersion($metadataIn,$metadataOut,$this->permission,9873615,$this->resourceUrl);
     }
 
     /**
@@ -537,6 +881,19 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * method: listVersions
+     * when: called
+     * with: tokenAndIdAndResourceUrl
+     * should: returnException
+     */
+    public function test_listVersions_called_tokenAndIdAndResourceUrl_returnException()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listVersions","id":"9873615"}}';
+        $metadataOut = 'false';
+        $this->exerciseListVersion($metadataIn,$metadataOut,$this->exception,9873615,$this->resourceUrl);
+    }
+
+    /**
      * method: getFileVersionData
      * when: called
      * with: tokenAndIdAndVersionAndPath
@@ -545,8 +902,19 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     public function test_getFileVersionData_called_tokenAndIdAndVersionAndPath_returnCorrectDownloadVersion()
     {
         $metadataOut = "true";
-        $cloud = "Stacksync";
-        $this->exerciseGetFileVersionData($metadataOut, '{"status":true}', $cloud);
+        $this->exerciseGetFileVersionData($metadataOut, '{"status":true}', $this->cloud);
+    }
+
+    /**
+     * method: getFileVersionData
+     * when: called
+     * with: tokenAndIdAndVersionAndPathAndResourceUrl
+     * should: returnCorrectDownloadVersion
+     */
+    public function test_getFileVersionData_called_tokenAndIdAndVersionAndPathAndResourceUrl_returnCorrectDownloadVersion()
+    {
+        $metadataOut = "true";
+        $this->exerciseGetFileVersionData($metadataOut, '{"status":true}', $this->cloud,$this->resourceUrl);
     }
 
     /**
@@ -558,8 +926,19 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     public function test_getFileVersionData_called_tokenAndIdAndVersionAndPath_returnPermissionDenied()
     {
         $metadataOut = "403";
-        $cloud = "Stacksync";
-        $this->exerciseGetFileVersionData($metadataOut, $this->permission, $cloud);
+        $this->exerciseGetFileVersionData($metadataOut, $this->permission, $this->cloud);
+    }
+
+    /**
+     * method: getFileVersionData
+     * when: called:
+     * with: tokenAndIdAndVersionAndPathAndResourceUrl
+     * should: returnPermissionDenied
+     */
+    public function test_getFileVersionData_called_tokenAndIdAndVersionAndPathAndResourceUrl_returnPermissionDenied()
+    {
+        $metadataOut = "403";
+        $this->exerciseGetFileVersionData($metadataOut, $this->permission, $this->cloud, $this->resourceUrl);
     }
 
     /**
@@ -571,8 +950,19 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     public function test_getFileVersionData_called_tokenAndIdAndVersionAndPath_returnException()
     {
         $metadataOut = "false";
-        $cloud = "Stacksync";
-        $this->exerciseGetFileVersionData($metadataOut, $this->exception, $cloud);
+        $this->exerciseGetFileVersionData($metadataOut, $this->exception, $this->cloud);
+    }
+
+    /**
+     * method: getFileVersionData
+     * when: called:
+     * with: tokenAndIdAndVersionAndPathAndResourceUrl
+     * should: returnException
+     */
+    public function test_getFileVersionData_called_tokenAndIdAndVersionAndPathAndResourceUrl_returnException()
+    {
+        $metadataOut = "false";
+        $this->exerciseGetFileVersionData($metadataOut, $this->exception, $this->cloud, $this->resourceUrl);
     }
 
     /**
@@ -592,6 +982,20 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     /**
      * method: getListUsersShare
      * when: called
+     * with: tokenAndIdAndResourceUrl
+     * should: returnCorrectData
+     */
+    public function test_getListUsersShare_called_tokenAndIdAndResourceUrl_returnCorrectData()
+    {
+        $id = 153;
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listUsersShare","id":"153"}}';
+        $metadataOut = '[{"joined_at": "2014-05-27", "is_owner": true, "name": "tester1", "email": "tester1@test.com"}]';
+        $this->exerciseListUsersShare($metadataIn,$metadataOut,$metadataOut,$id,$this->resourceUrl);
+    }
+
+    /**
+     * method: getListUsersShare
+     * when: called
      * with: tokenAndId
      * should: returnPermissionDenied
      */
@@ -606,6 +1010,20 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     /**
      * method: getListUsersShare
      * when: called
+     * with: tokenAndIdAndResourceUrl
+     * should: returnPermissionDenied
+     */
+    public function test_getListUsersShare_called_tokenAndIdAndResourceUrl_returnPermissionDenied()
+    {
+        $id = 153;
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listUsersShare","id":"153"}}';
+        $metadataOut = '403';
+        $this->exerciseListUsersShare($metadataIn,$metadataOut,$this->permission,$id,$this->resourceUrl);
+    }
+
+    /**
+     * method: getListUsersShare
+     * when: called
      * with: tokenAndId
      * should: returnException
      */
@@ -615,6 +1033,20 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listUsersShare","id":"153"}}';
         $metadataOut = 'false';
         $this->exerciseListUsersShare($metadataIn,$metadataOut,$this->exception,$id);
+    }
+
+    /**
+     * method: getListUsersShare
+     * when: called
+     * with: tokenAndIdAndResourceUrl
+     * should: returnException
+     */
+    public function test_getListUsersShare_called_tokenAndIdAndResourceUrl_returnException()
+    {
+        $id = 153;
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"listUsersShare","id":"153"}}';
+        $metadataOut = 'false';
+        $this->exerciseListUsersShare($metadataIn,$metadataOut,$this->exception,$id,$this->resourceUrl);
     }
 
     /**
@@ -636,6 +1068,22 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     /**
      * method: shareFolder
      * when: called
+     * with: tokenAndIdAndListAndResourceUrl
+     * should: returnCorrect
+     */
+    public function test_shareFolder_called_tokenAndIdAndListAndResourceUrl_returnCorrect()
+    {
+        $id = 153;
+        $list = array("a@a.com","b@b.com");
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"],"shared":false}}';
+        $metadataOut = 'true';
+        $shared = false;
+        $this->exerciseShareFolder($metadataIn, $metadataOut, '{"status":true}', $id, $list, $shared, $this->resourceUrl);
+    }
+
+    /**
+     * method: shareFolder
+     * when: called
      * with: tokenAndIdAndList
      * should: returnPermissionDenied
      */
@@ -652,6 +1100,22 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     /**
      * method: shareFolder
      * when: called
+     * with: tokenAndIdAndListAndResourceUrl
+     * should: returnPermissionDenied
+     */
+    public function test_shareFolder_called_tokenAndIdAndListAndResourceUrl_returnPermissionDenied()
+    {
+        $id = 153;
+        $list = array("a@a.com","b@b.com");
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"],"shared":false}}';
+        $metadataOut = '403';
+        $shared = false;
+        $this->exerciseShareFolder($metadataIn, $metadataOut, $this->permission, $id, $list, $shared, $this->resourceUrl);
+    }
+
+    /**
+     * method: shareFolder
+     * when: called
      * with: tokenAndIdAndList
      * should: returnException
      */
@@ -663,6 +1127,22 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $metadataOut = 'false';
         $shared = false;
         $this->exerciseShareFolder($metadataIn, $metadataOut, $this->exception, $id, $list, $shared);
+    }
+
+    /**
+     * method: shareFolder
+     * when: called
+     * with: tokenAndIdAndListAndResourceUrl
+     * should: returnException
+     */
+    public function test_shareFolder_called_tokenAndIdAndListAndResourceUrl_returnException()
+    {
+        $id = 153;
+        $list = array("a@a.com","b@b.com");
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"],"shared":false}}';
+        $metadataOut = 'false';
+        $shared = false;
+        $this->exerciseShareFolder($metadataIn, $metadataOut, $this->exception, $id, $list, $shared, $this->resourceUrl);
     }
 
     /**
@@ -717,41 +1197,40 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(json_decode($check),$result);
     }
 
-    private function exerciseUpdateMetadata($metadataIn, $metadataOut, $check, $file, $id, $name = null, $parent = null, $cloud = null)
+    private function exerciseUpdateMetadata($metadataIn, $metadataOut, $check, $file, $id, $name = null, $parent = null, $cloud = null,$resourceUrl = null)
     {
         $this->exerciseMockMetadata($metadataIn, $metadataOut);
-        $result = $this->sut->updateMetadata($cloud, $this->token, $file, $id, $name, $parent);
+        $result = $this->sut->updateMetadata($cloud, $this->token, $file, $id, $name, $parent,$resourceUrl);
         $this->assertEquals(json_decode($check), $result);
     }
 
-    private function exerciseCreateMetadata($metadataIn,$metadataOut,$check,$file,$name,$parent = null,$pathAbsolute = null)
+    private function exerciseCreateMetadata($metadataIn,$metadataOut,$check,$file,$name,$parent = null,$pathAbsolute = null,$resourceUrl = null)
     {
         $this->exerciseMockMetadata($metadataIn,$metadataOut);
-        $result = $this->sut->createMetadata($this->cloud,$this->token,$file,$name,$parent,$pathAbsolute);
+        $result = $this->sut->createMetadata($this->cloud,$this->token,$file,$name,$parent,$pathAbsolute,$resourceUrl);
         $this->assertEquals(json_decode($check),$result);
     }
 
-    private function exerciseUploadMetadata($metadataIn, $metadataOut, $check, $id, $path)
+    private function exerciseUploadMetadata($metadataIn, $metadataOut, $check, $id, $path,$resourceUrl = null)
     {
         $this->exerciseMockMetadata($metadataIn, $metadataOut);
-        $result = $this->sut->uploadMetadata($this->cloud, $this->token, $id, $path);
+        $result = $this->sut->uploadMetadata($this->cloud, $this->token, $id, $path,$resourceUrl);
         $this->assertEquals(json_decode($check), $result);
     }
 
-    private function exerciseDownloadMetadata($metadataOut, $check, $id, $path, $cloud)
+    private function exerciseDownloadMetadata($metadataOut, $metadataIn,$check, $id, $path, $cloud, $resourceUrl = null)
     {
-        $metadataIn = '{"config": {"cloud": "' . $cloud . '"}, "token": {"key": "ABCD", "secret": "EFGH"}, "metadata": {"type": "download", "id": "1234561", "path": "' . $path . '"}}';
         $metadataIn = json_decode($metadataIn);
         $metadataIn = json_encode($metadataIn);
         $this->exerciseMockMetadata($metadataIn,$metadataOut);
-        $result = $this->sut->downloadMetadata($cloud, $this->token, $id, $path);
+        $result = $this->sut->downloadMetadata($cloud, $this->token, $id, $path, $resourceUrl);
         $this->assertEquals($check, $result);
     }
 
-    private function exerciseDeleteMetadata($metadataIn,$metadataOut,$check,$file,$id)
+    private function exerciseDeleteMetadata($metadataIn,$metadataOut,$check,$file,$id, $resourceUrl = null)
     {
         $this->exerciseMockMetadata($metadataIn,$metadataOut);
-        $result = $this->sut->deleteMetadata($this->cloud,$this->token,$file,$id);
+        $result = $this->sut->deleteMetadata($this->cloud,$this->token,$file,$id,$resourceUrl);
         $this->assertEquals(json_decode($check),$result);
     }
 
@@ -763,34 +1242,39 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
             ->will($this->returnValue($metadataOut));
     }
 
-    private function exerciseListVersion($metadataIn,$metadataOut,$check,$id)
+    private function exerciseListVersion($metadataIn,$metadataOut,$check,$id,$resourceUrl=null)
     {
         $this->exerciseMockMetadata($metadataIn,$metadataOut);
-        $result = $this->sut->listVersions($this->cloud,$this->token,$id);
+        $result = $this->sut->listVersions($this->cloud,$this->token,$id,$resourceUrl);
         $this->assertEquals(json_decode($check),$result);
     }
 
-    private function exerciseListUsersShare($metadataIn, $metadataOut, $check, $id)
+    private function exerciseListUsersShare($metadataIn, $metadataOut, $check, $id, $resourceUrl = null)
     {
         $this->exerciseMockMetadata($metadataIn, $metadataOut);
-        $result = $this->sut->getListUsersShare($this->cloud, $this->token, $id);
+        $result = $this->sut->getListUsersShare($this->cloud, $this->token, $id, $resourceUrl);
         $this->assertEquals(json_decode($check), $result);
     }
 
-    private function exerciseShareFolder($metadataIn, $metadataOut, $check, $id, $list, $shared)
+    private function exerciseShareFolder($metadataIn, $metadataOut, $check, $id, $list, $shared, $resourceUrl = null)
     {
         $this->exerciseMockMetadata($metadataIn, $metadataOut);
-        $result = $this->sut->shareFolder($this->cloud, $this->token, $id, $list, $shared);
+        $result = $this->sut->shareFolder($this->cloud, $this->token, $id, $list, $shared, $resourceUrl);
         $this->assertEquals(json_decode($check), $result);
     }
 
-    private function exerciseGetFileVersionData($metadataOut, $check, $cloud=NULL)
+    private function exerciseGetFileVersionData($metadataOut, $check, $cloud=NULL,$resourceUrl = NULL)
     {
         $metadataIn = new stdClass();
         $metadataIn->config = new stdClass();
         if ($cloud) {
             $metadataIn->config->cloud = $cloud;
         }
+
+        if($resourceUrl) {
+            $metadataIn->config->resource_url = $resourceUrl;
+        }
+
         $metadataIn->token = new stdClass();
         $metadataIn->token->key = "ABCD";
         $metadataIn->token->secret = "EFGH";
@@ -800,7 +1284,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $metadataIn->metadata->version = "2";
         $metadataIn->metadata->path = "/home/eyeos/prueba3.pdf";
         $this->exerciseMockMetadata(json_encode($metadataIn), $metadataOut);
-        $result = $this->sut->getFileVersionData($cloud, $this->token, "9873615", 2, "/home/eyeos/prueba3.pdf");
+        $result = $this->sut->getFileVersionData($cloud, $this->token, "9873615", 2, "/home/eyeos/prueba3.pdf",$resourceUrl);
         $this->assertEquals(json_decode($check),$result);
     }
 }

@@ -16,18 +16,18 @@ class ApiProvider
         $this->accessorProvider = $accessorProvider;
     }
 
-    public function getMetadata($cloud, $token, $file, $id, $contents = null,$resourceUrl = null)
+    public function getMetadata($cloud, $token, $file, $id, $contents = null, $resourceUrl = null)
     {
-        $request = $this->getRequest('get', $token, $cloud,$resourceUrl);
+        $request = $this->getRequest('get', $token, $cloud, $resourceUrl);
         $request->metadata->file = $file;
         $request->metadata->id = "" . $id;
         $request->metadata->contents = $contents;
         return $this->exerciseMetadata($request);
     }
 
-    public function updateMetadata($cloud, $token, $file, $id, $name = null, $parent = null)
+    public function updateMetadata($cloud, $token, $file, $id, $name = null, $parent = null, $resourceUrl = null)
     {
-        $request = $this->getRequest('update', $token, $cloud);
+        $request = $this->getRequest('update', $token, $cloud, $resourceUrl);
         $request->metadata->file = $file;
         $request->metadata->id = "" . $id;
         $request->metadata->filename = $name;
@@ -35,9 +35,9 @@ class ApiProvider
         return $this->exerciseMetadata($request);
     }
 
-    public function createMetadata($cloud, $token, $file, $name, $parent = null, $path = null)
+    public function createMetadata($cloud, $token, $file, $name, $parent = null, $path = null, $resourceUrl = null)
     {
-        $request = $this->getRequest('create', $token, $cloud);
+        $request = $this->getRequest('create', $token, $cloud, $resourceUrl);
         $request->metadata->file = $file;
         $request->metadata->filename = $name;
         $request->metadata->parent_id = $parent === null?'null':"" . $parent;
@@ -45,18 +45,18 @@ class ApiProvider
         return $this->exerciseMetadata($request);
     }
 
-    public function uploadMetadata($cloud, $token, $id, $path)
+    public function uploadMetadata($cloud, $token, $id, $path, $resourceUrl = null)
     {
-        $request = $this->getRequest('upload', $token, $cloud);
+        $request = $this->getRequest('upload', $token, $cloud, $resourceUrl);
         $request->metadata->id = "" . $id;
         $request->metadata->path = $path;
         return $this->exerciseMetadata($request);
     }
 
-    public function downloadMetadata($cloud, $token, $id, $path)
+    public function downloadMetadata($cloud, $token, $id, $path, $resourceUrl = null)
     {
         $resp = json_decode('{"error":-1}');
-        $request = $this->getRequest('download', $token, $cloud);
+        $request = $this->getRequest('download', $token, $cloud, $resourceUrl);
         $request->metadata->id = "" . $id;
         $request->metadata->path = $path;
         $result = $this->accessorProvider->getProcessOauthCredentials(json_encode($request));
@@ -72,40 +72,40 @@ class ApiProvider
         return $resp;
     }
 
-    public function deleteMetadata($cloud,$token, $file, $id)
+    public function deleteMetadata($cloud,$token, $file, $id, $resourceUrl = null)
     {
-        $request = $this->getRequest('delete', $token,$cloud);
+        $request = $this->getRequest('delete', $token,$cloud,$resourceUrl);
         $request->metadata->file = $file;
         $request->metadata->id = "" . $id;
         return $this->exerciseMetadata($request);
     }
 
-    public function listVersions($cloud, $token, $id)
+    public function listVersions($cloud, $token, $id, $resourceUrl = null)
     {
-        $request = $this->getRequest('listVersions', $token, $cloud);
+        $request = $this->getRequest('listVersions', $token, $cloud, $resourceUrl);
         $request->metadata->id = "" . $id;
         return $this->exerciseMetadata($request, true);
     }
 
-    public function getFileVersionData($cloud, $token, $id, $version, $path)
+    public function getFileVersionData($cloud, $token, $id, $version, $path, $resourceUrl = null)
     {
-        $request = $this->getRequest("getFileVersion", $token, $cloud);
+        $request = $this->getRequest("getFileVersion", $token, $cloud, $resourceUrl);
         $request->metadata->id = "" . $id;
         $request->metadata->version = "" . $version;
         $request->metadata->path = $path;
         return $this->exerciseMetadata($request);
     }
 
-    public function getListUsersShare($cloud, $token, $id)
+    public function getListUsersShare($cloud, $token, $id, $resourceUrl = null)
     {
-        $request = $this->getRequest('listUsersShare', $token, $cloud);
+        $request = $this->getRequest('listUsersShare', $token, $cloud, $resourceUrl);
         $request->metadata->id = "" . $id;
         return $this->exerciseMetadata($request);
     }
 
-    public function shareFolder($cloud, $token, $id, $list, $shared=false)
+    public function shareFolder($cloud, $token, $id, $list, $shared=false, $resourceUrl = null)
     {
-        $request = $this->getRequest('shareFolder', $token, $cloud);
+        $request = $this->getRequest('shareFolder', $token, $cloud, $resourceUrl);
         $request->metadata->id = "" . $id;
         $request->metadata->list = $list;
         $request->metadata->shared = $shared;
