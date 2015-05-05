@@ -857,11 +857,11 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 
         __getVersion: function(e) {
             var params = e.getCurrentTarget().getUserData('params');
-            var id = params.controller.__getFileId(params.file.getPath(), params.file.getName(), false, params.cloud);
-            if(id !== -1) {
+            var metadata = params.controller.__getFileId(params.file.getPath(), params.file.getName(), true, params.cloud);
+            if(metadata !== null) {
                 params.activity.getChildren()[1].getChildren()[0].setEnabled(false);
                 this.closeTimerVersion();
-                params.controller.getVersion(id, params.version, params.activity, params.file, params.cloud);
+                params.controller.getVersion(metadata.id, params.version, params.activity, params.file, params.cloud,metadata.resource_url,metadata.access_token_key,metadata.access_token_secret);
             }
         },
 

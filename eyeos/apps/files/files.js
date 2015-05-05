@@ -1133,10 +1133,18 @@ qx.Class.define('eyeos.files.Controller', {
                 var cloud = this.isCloud(currentPath);
 
                 if(cloud.isCloud === true) {
-                    var fileId = this.__getFileIdFolder(currentPath, cloud.cloud);
-                    if(fileId !== null) {
+                    var metadata = this.__getFileIdFolder(currentPath, cloud.cloud);
+                    if(metadata !== null) {
+                        var isObject = metadata === Object(metadata);
+                        var fileId = isObject?metadata.id:metadata;
                         params.splice(params.length,0,fileId);
                         params.splice(params.length,0,cloud.cloud);
+
+                        if(isObject) {
+                            params.splice(params.length,0,metadata.resource_url);
+                            params.splice(params.length,0,metadata.access_token_key);
+                            params.splice(params.length,0,metadata.access_token_secret);
+                        }
                     }
                 }
 
@@ -1175,10 +1183,15 @@ qx.Class.define('eyeos.files.Controller', {
                         var params = new Object();
                         params.file = filesToDelete[i].getFile().getAbsolutePath();
                         if(cloud.isCloud === true) {
-                            var id = this.__getFileId(currentPath, filesToDelete[i].getFile().getName(), null, cloud.cloud);
-                            if (id !== null) {
-                                params.id =  id;
+                            var metadata = this.__getFileId(currentPath, filesToDelete[i].getFile().getName(), true, cloud.cloud);
+                            if (metadata !== null) {
+                                params.id =  metadata.id;
                                 params.cloud = cloud.cloud;
+                                if(metadata.resource_url) {
+                                    params.resource_url = metadata.resource_url;
+                                    params.access_token_key = metadata.access_token_key;
+                                    params.access_token_secret = metadata.access_token_secret;
+                                }
                             }
                         }
 
@@ -1281,14 +1294,26 @@ qx.Class.define('eyeos.files.Controller', {
                             }
 
                             if(idParent !== null) {
+                                var isObject = idParent === Object(idParent);
+                                if(isObject) {
+                                    idParent = idParent.id;
+                                    params.access_token_key = idParent.access_token_key;
+                                    params.access_token_secret = idParent.access_token_secret;
+                                    params.resource_url = idParent.resource_url;
+                                }
                                 params.idParent = idParent;
                                 for(var i in filesToPaste) {
-                                    var idFile = this.__getFileId(source, filesToPaste[i].getName(), null, params.cloud.origin);
-                                    if(idFile !== null) {
+                                    var metadata = this.__getFileId(source, filesToPaste[i].getName(), true, params.cloud.origin);
+                                    if(metadata !== null) {
                                         var file = new Object();
-                                        file.id = idFile;
+                                        file.id = metadata.id;
                                         file.path = filesToPaste[i].getAbsolutePath();
                                         file.is_file = filesToPaste[i].getType() == "file" ? true : false;
+                                        if(metadata.resource_url) {
+                                            file.access_token_key = metadata.access_token_key;
+                                            file.access_token_secret = metadata.access_token_secret;
+                                            file.resource_url = metadata.resource_url;
+                                        }
                                         filesAux.splice(filesAux.length, 0, file);
                                     } else {
                                         filesAux.splice(filesAux.length, 0, filesToPaste[i].getAbsolutePath());
@@ -1351,13 +1376,23 @@ qx.Class.define('eyeos.files.Controller', {
                 var cloud = this.isCloud(currentPath);
 
                 if(cloud.isCloud) {
-                    var idFile = this.__getFileId(currentPath, selected.getFile().getName(), null, cloud.cloud);
-                    idFile = idFile !== null?idFile:-1;
-                    var idParent = this.__getFileIdFolder(currentPath, cloud.cloud);
-                    if(idParent !== null) {
+                    var metadataFile = this.__getFileId(currentPath, selected.getFile().getName(), true, cloud.cloud);
+                    var metadataParent = this.__getFileIdFolder(currentPath, cloud.cloud);
+                    if(metadataParent !== null) {
+                        var idFile = metadataFile.id !== null?metadataFile.id:-1;
+
+                        var isObjectParent = metadataParent === Object(metadataParent);
+                        var idParent = isObjectParent?metadataParent.id:metadataParent;
+
                         params.splice(params.length, 0, idFile);
                         params.splice(params.length, 0, idParent);
                         params.splice(params.length, 0, cloud.cloud);
+
+                        if(metadataFile.resource_url) {
+                            params.splice(params.length, 0, metadataFile.resource_url);
+                            params.splice(params.length, 0, metadataFile.access_token_key);
+                            params.splice(params.length, 0, metadataFile.access_token_secret);
+                        }
                     }
                 }
 
@@ -1393,10 +1428,16 @@ qx.Class.define('eyeos.files.Controller', {
                 var pathFather = selected[0].getFile().getPath();
                 var filename = selected[0].getFile().getName();
                 var params = new Object();
-                params.id = this.__getFileId(pathFather,filename,false,cloud.cloud);
+                var metadata = this.__getFileId(pathFather,filename,true,cloud.cloud);
                 params.path = path;
                 params.cloud = cloud.cloud;
-                if (params.id) {
+                if (metadata) {
+                    params.id = metadata.id;
+                    if(metadata.resource_url) {
+                        params.resource_url = metadata.resource_url;
+                        params.access_token_key = metadata.access_token_key;
+                        params.access_token_secret = metadata.access_token_secret;
+                    }
                     download = true;
                     this.openCursorLoad();
                     eyeos.callMessage(this.getApplication().getChecknum(),'downloadFileCloud',params,function(result){
@@ -1662,9 +1703,15 @@ qx.Class.define('eyeos.files.Controller', {
 
         __getObjectDownloadCloud: function(parent,path,name,cloud) {
             var file = new Object();
-            file.id = this.__getFileId(parent, name,false,cloud);
+            var metadata = this.__getFileId(parent, name,true,cloud);
+            file.id = metadata.id;
             file.path = path;
             file.cloud = cloud;
+            if(metadata.resource_url) {
+                file.resource_url = metadata.resource_url;
+                file.access_token_key = metadata.access_token_key;
+                file.access_token_secret = metadata.access_token_secret;
+            }
             return file;
         },
 
@@ -1774,10 +1821,10 @@ qx.Class.define('eyeos.files.Controller', {
                 eyeos.callMessage(this.getApplication().getChecknum(), 'startProgress', params, function(result) {
                     if(result && result.metadatas && result.metadatas.length > 0) {
                        if (action == 'copy') {
-                           this.__copyFile(params.cloud, result, result.metadatas.length - 1, params.folder, pathOrig);
+                           this.__copyFile(params.cloud, result, result.metadatas.length - 1, params.folder, pathOrig,params.resource_url,params.access_token_key,params.access_token_secret);
                        } else {
                            var listDelete = this.__getFilesDelete(result.metadatas);
-                           this.__moveFile(result.metadatas, result.metadatas.length - 1, pathOrig, params.folder, params.idParent, params.cloudOrig, params.cloudDest, listDelete, params.cloud);
+                           this.__moveFile(result.metadatas, result.metadatas.length - 1, pathOrig, params.folder, params.idParent, params.cloudOrig, params.cloudDest, listDelete, params.cloud,params.resource_url,params.access_token_key,params.access_token_secret);
                        }
                     } else {
                         this.closeProgress();
@@ -1794,7 +1841,7 @@ qx.Class.define('eyeos.files.Controller', {
             }
         },
 
-        __moveFile: function(files, pos, pathOrig, pathDest, idParent, cloudOrig, cloudDest, listDelete, cloud)
+        __moveFile: function(files, pos, pathOrig, pathDest, idParent, cloudOrig, cloudDest, listDelete, cloud,resource_url,access_token_key,access_token_secret)
         {
             var length = files.length;
             var deleteFiles = false;
@@ -1824,6 +1871,11 @@ qx.Class.define('eyeos.files.Controller', {
                     params.cloud = cloud;
                 }
 
+                params.resource_url = resource_url;
+                params.access_token_key = access_token_key;
+                params.access_token_secret = access_token_secret;
+
+
                 eyeos.callMessage(this.getApplication().getChecknum(), action, params, function(result) {
                     if(result && !result.error){
                         if(result.hasOwnProperty('filenameChange') && result.hasOwnProperty('pathChange') && result.filenameChange) {
@@ -1832,7 +1884,7 @@ qx.Class.define('eyeos.files.Controller', {
                         this.__size += 1;
                         this.__updateProgress(length);
                         pos --;
-                        this.__moveFile(files, pos, pathOrig, pathDest, idParent, cloudOrig, cloudDest, listDelete, cloud);
+                        this.__moveFile(files, pos, pathOrig, pathDest, idParent, cloudOrig, cloudDest, listDelete, cloud, resource_url,access_token_key,access_token_secret);
                     } else {
                         this.closeProgress();
                         if(result.error == 403) {
@@ -1853,7 +1905,7 @@ qx.Class.define('eyeos.files.Controller', {
             }
         },
 
-        __copyFile: function(cloud, data, pos, dest, pathOrig)
+        __copyFile: function(cloud, data, pos, dest, pathOrig,resource_url,access_token_key,access_token_secret)
         {
             if(pos > -1) {
                 var params = new Object();
@@ -1861,6 +1913,9 @@ qx.Class.define('eyeos.files.Controller', {
                 params.file = data.metadatas[pos];
                 params.dest = dest;
                 params.orig = pathOrig;
+                params.resource_url = resource_url;
+                params.access_token_key = access_token_key;
+                params.access_token_secret = access_token_secret;
 
                 eyeos.callMessage(this.getApplication().getChecknum(), 'copyFile', params, function(result) {
                     if(!result.error) {
@@ -1870,7 +1925,7 @@ qx.Class.define('eyeos.files.Controller', {
                         this.__size += 1;
                         this.__updateProgress(data.metadatas.length);
                         pos--;
-                        this.__copyFile(cloud, data, pos, dest, pathOrig);
+                        this.__copyFile(cloud, data, pos, dest, pathOrig,resource_url,access_token_key,access_token_secret);
                     } else {
                         this.closeProgress();
                         if(result.error == 403) {
@@ -2170,11 +2225,11 @@ qx.Class.define('eyeos.files.Controller', {
             this.getSocialBarUpdater().showCursorLoad(listContainer);
 
             if(type) {
-               this.__loadActivityCloud(metadata.id, versionsBox, file, type, cloud, listContainer);
+               this.__loadActivityCloud(metadata.id, versionsBox, file, type, cloud, listContainer,metadata.resource_url,metadata.access_token_key,metadata.access_token_secret);
             } else {
                 eyeos.callMessage(this.getApplication().getChecknum(), 'getControlVersionCloud', cloud, function (result) {
                     if(result.controlVersion === 'true') {
-                        this.__loadActivityCloud(metadata.id, versionsBox, file, type, cloud, listContainer);
+                        this.__loadActivityCloud(metadata.id, versionsBox, file, type, cloud, listContainer,metadata.resource_url,metadata.access_token_key,metadata.access_token_secret);
                     } else {
                         this.getSocialBarUpdater().closeCursorLoad(listContainer);
                         var versions = [];
@@ -2185,10 +2240,15 @@ qx.Class.define('eyeos.files.Controller', {
             }
         },
 
-        __loadActivityCloud: function(id, versionsBox, file, type, cloud, listContainer) {
+        __loadActivityCloud: function(id, versionsBox, file, type, cloud, listContainer,resource_url,access_token_key,access_token_secret) {
             var params = new Object();
             params.id = id;
             params.cloud = cloud;
+            if(resource_url) {
+                params.resource_url = resource_url;
+                params.access_token_key = access_token_key;
+                params.access_token_secret = access_token_secret;
+            }
             var callFunction = type ? 'listUsersShare' : 'listVersions';
 
             eyeos.callMessage(this.getApplication().getChecknum(), callFunction, params, function (results) {
@@ -2208,12 +2268,18 @@ qx.Class.define('eyeos.files.Controller', {
             },this);
         },
 
-        getVersion: function(id, version, versionBox, file, cloud) {
+        getVersion: function(id, version, versionBox, file, cloud, resource_url, access_token_key,access_token_secret) {
             var params = new Object();
             params.id = id;
             params.version = version;
             params.path = file.getAbsolutePath();
             params.cloud = cloud;
+
+            if(resource_url) {
+                params.resource_url = resource_url;
+                params.access_token_key = access_token_key;
+                params.access_token_secret = access_token_secret;
+            }
 
             eyeos.callMessage(this.getApplication().getChecknum(), 'getFileVersionData', params, function (result) {
                 var listContainer = versionBox.getChildren()[1].getChildren()[0];
@@ -2443,12 +2509,18 @@ qx.Class.define('eyeos.files.Controller', {
             var containerMail = e.getCurrentTarget().getUserData('containerMail');
             var cloud = this.isCloud(file.getFile().getAbsolutePath());
             if (cloud.isCloud) {
-                var id = this.__getFileIdFolder(file.getFile().getAbsolutePath(), cloud.cloud);
-                if(id !== null) {
+                var metadata = this.__getFileIdFolder(file.getFile().getAbsolutePath(), cloud.cloud);
+                if(metadata !== null) {
                     var params = new Object();
-                    params.id = id;
+                    var isObject = metadata === Object(metadata);
+                    params.id = isObject === true?metadata.id:metadata;
                     params.list = this.__getListMails(containerMail);
                     params.cloud = cloud.cloud;
+                    if(isObject) {
+                        params.resource_url = metadata.resource_url;
+                        params.access_token_key = metadata.access_token_key;
+                        params.access_token_secret = metadata.access_token_secret;
+                    }
                     this._share.close();
                     this.closeTimer();
                     this.openCursorLoad();

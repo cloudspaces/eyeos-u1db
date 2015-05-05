@@ -393,11 +393,19 @@ qx.Class.define('eyeos.files.IconView', {
                     cloud = self.getViewManager().getController().isCloud(file.getPath());
                     if(cloud.isCloud === true) {
                         var params = new Object();
-                        params.id = self.getViewManager().getController().__getFileId(file.getPath(),file.getName(),false,cloud.cloud);
-                        params.path = absolutePath;
-                        params.cloud = cloud.cloud;
+                        var metadata = self.getViewManager().getController().__getFileId(file.getPath(),file.getName(),true,cloud.cloud);
 
-                        if(params.id) {
+                        if(metadata !== null) {
+                            params.id = metadata.id;
+                            params.path = absolutePath;
+                            params.cloud = cloud.cloud;
+
+                            if(metadata.resource_url) {
+                                params.resource_url = metadata.resource_url;
+                                params.access_token_key = metadata.access_token_key;
+                                params.access_token_secret = metadata.access_token_secret;
+                            }
+
                             this.getManager().getViewManager().getController().openCursorLoad();
                             eyeos.callMessage(checknum,"downloadFileCloud",params,function(e) {
                                 this.getManager().getViewManager().getController().closeCursorLoad();
