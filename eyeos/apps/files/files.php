@@ -1559,6 +1559,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $cloud = $params[ 'cloud' ];
             $id = $params[ 'id' ];
             $list = $params[ 'list' ];
+            $shared = $params['shared'];
             $apiManager = new ApiManager();
             $token = $_SESSION[ 'access_token_' . $cloud . '_v2' ];
             $resourceUrl = null;
@@ -1569,7 +1570,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 $token->secret = $params['access_token_secret'];
             }
 
-            $result = $apiManager->shareFolder($cloud,$token , $id, $list, $resourceUrl);
+            $result = $apiManager->shareFolder($cloud,$token , $id, $list, $shared, $resourceUrl);
             if($result) {
                 if(isset($result[ 'error' ]) && $result[ 'error' ] == 403) {
                     $denied = self::permissionDeniedCloud($cloud);

@@ -2553,13 +2553,28 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $list = array("a@a.com","b@b.com");
         $metadata = '{"status":true}';
         $metadataOut = array("status" => "OK");
-        $this->exerciseShareFolder($metadata, $id, $list, $metadataOut);
+        $this->exerciseShareFolder($metadata, $id, $list, $metadataOut,false);
     }
 
     /**
      * method: shareFolder
      * when: called
-     * with: tokenAndIdAndList
+     * with: tokenAndIdAndListAndShared
+     * should: returnCorrect
+     */
+    public function test_shareFolder_called_tokenAndIdAndListAndShared_returnCorrect()
+    {
+        $id = 123;
+        $list = array("a@a.com","b@b.com");
+        $metadata = '{"status":true}';
+        $metadataOut = array("status" => "OK");
+        $this->exerciseShareFolder($metadata, $id, $list, $metadataOut,true);
+    }
+
+    /**
+     * method: shareFolder
+     * when: called
+     * with: tokenAndIdAndListAndResourceUrl
      * should: returnCorrect
      */
     public function test_shareFolder_called_tokenAndIdAndListAndResourceUrl_returnCorrect()
@@ -2568,7 +2583,22 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $list = array("a@a.com","b@b.com");
         $metadata = '{"status":true}';
         $metadataOut = array("status" => "OK");
-        $this->exerciseShareFolder($metadata, $id, $list, $metadataOut, $this->resourceUrl);
+        $this->exerciseShareFolder($metadata, $id, $list, $metadataOut, false,$this->resourceUrl);
+    }
+
+    /**
+     * method: shareFolder
+     * when: called
+     * with: tokenAndIdAndListAndSharedAndResourceUrl
+     * should: returnCorrect
+     */
+    public function test_shareFolder_called_tokenAndIdAndListAndSharedAndResourceUrl_returnCorrect()
+    {
+        $id = 123;
+        $list = array("a@a.com","b@b.com");
+        $metadata = '{"status":true}';
+        $metadataOut = array("status" => "OK");
+        $this->exerciseShareFolder($metadata, $id, $list, $metadataOut, true,$this->resourceUrl);
     }
 
     /**
@@ -2583,8 +2613,24 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $list = array("a@a.com", "b@b.com");
         $metadata = '{"error":403}';
         $metadataOut = array("status" => "KO", "error" => 403);
-        $this->exerciseShareFolder($metadata, $id, $list, $metadataOut);
+        $this->exerciseShareFolder($metadata, $id, $list, $metadataOut, false);
     }
+
+    /**
+     * method: shareFolder
+     * when: called
+     * with: tokenAndIdAndListAndShared
+     * should: returnPermissionDenied
+     */
+    public function test_shareFolder_called_tokenAndIdAndListAndShared_returnPermissionDenied()
+    {
+        $id = 123;
+        $list = array("a@a.com", "b@b.com");
+        $metadata = '{"error":403}';
+        $metadataOut = array("status" => "KO", "error" => 403);
+        $this->exerciseShareFolder($metadata, $id, $list, $metadataOut, true);
+    }
+
 
     /**
      * method: shareFolder
@@ -2598,7 +2644,22 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $list = array("a@a.com", "b@b.com");
         $metadata = '{"error":403}';
         $metadataOut = array("status" => "KO", "error" => 403);
-        $this->exerciseShareFolder($metadata, $id, $list, $metadataOut, $this->resourceUrl);
+        $this->exerciseShareFolder($metadata, $id, $list, $metadataOut, false,$this->resourceUrl);
+    }
+
+    /**
+     * method: shareFolder
+     * when: called
+     * with: tokenAndIdAndListAndSharedAndResourceUrl
+     * should: returnPermissionDenied
+     */
+    public function test_shareFolder_called_tokenAndIdAndListAndSharedAndResourceUrl_returnPermissionDenied()
+    {
+        $id = 123;
+        $list = array("a@a.com", "b@b.com");
+        $metadata = '{"error":403}';
+        $metadataOut = array("status" => "KO", "error" => 403);
+        $this->exerciseShareFolder($metadata, $id, $list, $metadataOut, true,$this->resourceUrl);
     }
 
     /**
@@ -2613,7 +2674,22 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $list = array("a@a.com", "b@b.com");
         $metadata = '{"error":-1}';
         $metadataOut = array("status" => "KO", "error" => -1);
-        $this->exerciseShareFolder($metadata, $id, $list, $metadataOut);
+        $this->exerciseShareFolder($metadata, $id, $list, $metadataOut,false);
+    }
+
+    /**
+     * method: shareFolder
+     * when: called
+     * with: tokenAndIdAndListAndShared
+     * should: returnException
+     */
+    public function test_shareFolder_called_tokenAndIdAndListAndShared_returnException()
+    {
+        $id = 123;
+        $list = array("a@a.com", "b@b.com");
+        $metadata = '{"error":-1}';
+        $metadataOut = array("status" => "KO", "error" => -1);
+        $this->exerciseShareFolder($metadata, $id, $list, $metadataOut,true);
     }
 
     /**
@@ -2628,7 +2704,22 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $list = array("a@a.com", "b@b.com");
         $metadata = '{"error":-1}';
         $metadataOut = array("status" => "KO", "error" => -1);
-        $this->exerciseShareFolder($metadata, $id, $list, $metadataOut,$this->resourceUrl);
+        $this->exerciseShareFolder($metadata, $id, $list, $metadataOut,false, $this->resourceUrl);
+    }
+
+    /**
+     * method: shareFolder
+     * when: called
+     * with: tokenAndIdAndListAndSharedAndResourceUrl
+     * should: returnException
+     */
+    public function test_shareFolder_called_tokenAndIdAndListAndSharedAndResourceUrl_returnException()
+    {
+        $id = 123;
+        $list = array("a@a.com", "b@b.com");
+        $metadata = '{"error":-1}';
+        $metadataOut = array("status" => "KO", "error" => -1);
+        $this->exerciseShareFolder($metadata, $id, $list, $metadataOut,true, $this->resourceUrl);
     }
 
     /**
@@ -2991,14 +3082,14 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $result);
     }
 
-    private function exerciseShareFolder($metadata, $id, $list, $expected, $resourceUrl = null)
+    private function exerciseShareFolder($metadata, $id, $list, $expected, $shared ,$resourceUrl = null)
     {
         $this->apiProviderMock->expects($this->once())
             ->method('shareFolder')
-            ->with($this->cloud, $this->token, $id, $list,false,$resourceUrl)
+            ->with($this->cloud, $this->token, $id, $list,$shared,$resourceUrl)
             ->will($this->returnValue(json_decode($metadata)));
 
-        $result = $this->sut->shareFolder($this->cloud, $this->token, $id, $list,$resourceUrl);
+        $result = $this->sut->shareFolder($this->cloud, $this->token, $id, $list,$shared,$resourceUrl);
         $this->assertEquals($expected, $result);
     }
 

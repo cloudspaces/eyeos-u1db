@@ -2516,6 +2516,7 @@ qx.Class.define('eyeos.files.Controller', {
                     params.id = isObject === true?metadata.id:metadata;
                     params.list = this.__getListMails(containerMail);
                     params.cloud = cloud.cloud;
+                    params.shared = false;
                     if(isObject) {
                         params.resource_url = metadata.resource_url;
                         params.access_token_key = metadata.access_token_key;
