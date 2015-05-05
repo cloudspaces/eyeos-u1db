@@ -1068,6 +1068,22 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     /**
      * method: shareFolder
      * when: called
+     * with: tokenAndIdAndListAndShared
+     * should: returnCorrect
+     */
+    public function test_shareFolder_called_tokenAndIdAndListAndShared_returnCorrect()
+    {
+        $id = 153;
+        $list = array("a@a.com","b@b.com");
+        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"],"shared":true}}';
+        $metadataOut = 'true';
+        $shared = true;
+        $this->exerciseShareFolder($metadataIn, $metadataOut, '{"status":true}', $id, $list, $shared);
+    }
+
+    /**
+     * method: shareFolder
+     * when: called
      * with: tokenAndIdAndListAndResourceUrl
      * should: returnCorrect
      */
@@ -1078,6 +1094,22 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"],"shared":false}}';
         $metadataOut = 'true';
         $shared = false;
+        $this->exerciseShareFolder($metadataIn, $metadataOut, '{"status":true}', $id, $list, $shared, $this->resourceUrl);
+    }
+
+    /**
+     * method: shareFolder
+     * when: called
+     * with: tokenAndIdAndListAndSharedAndResourceUrl
+     * should: returnCorrect
+     */
+    public function test_shareFolder_called_tokenAndIdAndListAndSharedAndResourceUrl_returnCorrect()
+    {
+        $id = 153;
+        $list = array("a@a.com","b@b.com");
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"],"shared":true}}';
+        $metadataOut = 'true';
+        $shared = true;
         $this->exerciseShareFolder($metadataIn, $metadataOut, '{"status":true}', $id, $list, $shared, $this->resourceUrl);
     }
 
@@ -1100,6 +1132,22 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     /**
      * method: shareFolder
      * when: called
+     * with: tokenAndIdAndListAndShared
+     * should: returnPermissionDenied
+     */
+    public function test_shareFolder_called_tokenAndIdAndListAndShared_returnPermissionDenied()
+    {
+        $id = 153;
+        $list = array("a@a.com","b@b.com");
+        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"],"shared":true}}';
+        $metadataOut = '403';
+        $shared = true;
+        $this->exerciseShareFolder($metadataIn, $metadataOut, $this->permission, $id, $list, $shared);
+    }
+
+    /**
+     * method: shareFolder
+     * when: called
      * with: tokenAndIdAndListAndResourceUrl
      * should: returnPermissionDenied
      */
@@ -1110,6 +1158,22 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"],"shared":false}}';
         $metadataOut = '403';
         $shared = false;
+        $this->exerciseShareFolder($metadataIn, $metadataOut, $this->permission, $id, $list, $shared, $this->resourceUrl);
+    }
+
+    /**
+     * method: shareFolder
+     * when: called
+     * with: tokenAndIdAndListAndSharedAndResourceUrl
+     * should: returnPermissionDenied
+     */
+    public function test_shareFolder_called_tokenAndIdAndListAndSharedAndResourceUrl_returnPermissionDenied()
+    {
+        $id = 153;
+        $list = array("a@a.com","b@b.com");
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"],"shared":true}}';
+        $metadataOut = '403';
+        $shared = true;
         $this->exerciseShareFolder($metadataIn, $metadataOut, $this->permission, $id, $list, $shared, $this->resourceUrl);
     }
 
@@ -1132,6 +1196,22 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     /**
      * method: shareFolder
      * when: called
+     * with: tokenAndIdAndListAndShared
+     * should: returnException
+     */
+    public function test_shareFolder_called_tokenAndIdAndListAndShared_returnException()
+    {
+        $id = 153;
+        $list = array("a@a.com","b@b.com");
+        $metadataIn = '{"config":{"cloud":"Stacksync"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"],"shared":true}}';
+        $metadataOut = 'false';
+        $shared = true;
+        $this->exerciseShareFolder($metadataIn, $metadataOut, $this->exception, $id, $list, $shared);
+    }
+
+    /**
+     * method: shareFolder
+     * when: called
      * with: tokenAndIdAndListAndResourceUrl
      * should: returnException
      */
@@ -1142,6 +1222,22 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"],"shared":false}}';
         $metadataOut = 'false';
         $shared = false;
+        $this->exerciseShareFolder($metadataIn, $metadataOut, $this->exception, $id, $list, $shared, $this->resourceUrl);
+    }
+
+    /**
+     * method: shareFolder
+     * when: called
+     * with: tokenAndIdAndListAndSharedAndResourceUrl
+     * should: returnException
+     */
+    public function test_shareFolder_called_tokenAndIdAndListAndAndSharedAndResourceUrl_returnException()
+    {
+        $id = 153;
+        $list = array("a@a.com","b@b.com");
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/ast3-deim.urv.cat\/v1"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"shareFolder","id":"153","list":["a@a.com","b@b.com"],"shared":true}}';
+        $metadataOut = 'false';
+        $shared = true;
         $this->exerciseShareFolder($metadataIn, $metadataOut, $this->exception, $id, $list, $shared, $this->resourceUrl);
     }
 
