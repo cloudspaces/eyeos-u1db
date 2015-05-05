@@ -74,6 +74,7 @@ class StoreListener extends AbstractFileAdapter implements ISharingListener {
         $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
         $userName = $user->getName();
         $cloud = $this->isCloud($path, $userName);
+        $resourceUrl = null;
         if($cloud->isCloud) {
             $pathU1db = substr($path, strlen($cloud->path));
             $lenfinal = strrpos($pathU1db, $e->getSource()->getName());
@@ -97,6 +98,16 @@ class StoreListener extends AbstractFileAdapter implements ISharingListener {
                 $u1db = json_decode($apiManager->callProcessU1db('parent', $lista));
                 if($u1db !== NULL && count($u1db) > 0) {
                     $parentId = $u1db[0]->id;
+                    if(isset($u1db[0]->resource_url)) {
+                        $resourceUrl = new stdClass();
+                        $resourceUrl->resource_url = $u1db[0]->resource_url;
+                        $resourceUrl->token = new stdClass();
+                        $resourceUrl->token->key = $u1db[0]->access_token_key;
+                        $resourceUrl->token->secret = $u1db[0]->access_token_secret;
+                        if($parentId === 'null') {
+                            $parentId = 0;
+                        }
+                    }
                 }
             } else {
                 $parentId = '0';
@@ -105,7 +116,12 @@ class StoreListener extends AbstractFileAdapter implements ISharingListener {
 
             if($parentId !== false) {
                 $pathAbsolute = AdvancedPathLib::getPhpLocalHackPath($e->getSource()->getRealFile()->getAbsolutePath());
-                $result = $apiManager->createMetadata($cloud->name, $_SESSION['access_token_' . $cloud->name . '_v2'], $user->getId(), true, $e->getSource()->getName(), $parentId, $path, $pathAbsolute);
+                $token = $_SESSION['access_token_' . $cloud->name . '_v2'];
+                if($resourceUrl) {
+                    $token = $resourceUrl->token;
+                    $resourceUrl = $resourceUrl->resource_url;
+                }
+                $result = $apiManager->createMetadata($cloud->name, $token, $user->getId(), true, $e->getSource()->getName(), $parentId, $path, $pathAbsolute,$resourceUrl);
                 if($result['status'] == 'OK') {
                     $params = array($e->getSource()->getParentPath());
                     $message = new ClientBusMessage('file', 'refreshStackSync', $params);
