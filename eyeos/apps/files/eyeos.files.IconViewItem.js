@@ -191,10 +191,10 @@ qx.Class.define('eyeos.files.IconViewItem', {
                     }*/
 
                     if(cloud.isCloud === true && this.getFile().getType() === 'folder') {
+                        menu[menu.length -1].label = tr('Share');
                         var metadata = this.getManager().getViewManager().getController().__getFileIdFolder(this.getFile().getAbsolutePath(), cloud.cloud);
                         var isObject = metadata === Object(metadata);
                         if(!(isObject && metadata.id.indexOf('_' + cloud.cloud) !== -1)) {
-                            menu[menu.length -1].label = tr('Share');
                             menu[menu.length -1].id = 'shareFolder()';
                         }
                     }
@@ -542,7 +542,31 @@ qx.Class.define('eyeos.files.IconViewItem', {
 			this.setSelected(false);
 
 			this.fireEvent('unselected');
-		}
+		},
+        unShareFolder: function() {
+            if(this._menu.getChildren().length == 10) {
+                var item = new qx.ui.menu.Button(tr('unShare'), 'index.php?extern=images/cancel.png');
+                item.setUserData('id', 'unShareFolder()');
+                item._manager = this.getManager().getViewManager().getController();
+                item.addListener('appear', function (e) {
+                    this.setBackgroundColor(null);
+                    this.setDecorator(null);
+                    this.setTextColor('#4A4A4A');
+                });
+                item.addListener('mouseover', function (e) {
+                    this.setBackgroundColor('#D3D3D3');
+                    this.setTextColor('#404040');
+                });
+                item.addListener('mouseout', function (e) {
+                    this.setDecorator(null);
+                    this.setBackgroundColor(null);
+                });
+                item.addListener('execute', function (e) {
+                    eval('this._manager.' + this.getUserData('id'));
+                });
+                this._menu.add(item);
+            }
+        }
 	}
 });
 

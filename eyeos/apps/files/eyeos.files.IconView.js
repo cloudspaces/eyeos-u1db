@@ -332,6 +332,8 @@ qx.Class.define('eyeos.files.IconView', {
                 self.getViewManager().getController().fireDataEvent('selectedFile', self.returnSelected());
                 var folder = e.getCurrentTarget().getFile().getAbsolutePath();
                 var parentPath = e.getCurrentTarget().getFile().getPath();
+                var type =  e.getCurrentTarget().getFile().getType();
+                var filename =  e.getCurrentTarget().getFile().getName();
                 /*var cloudsPath = 'home://~' + eyeos.getCurrentUserName() + '/Cloudspaces';
                 var enabled = true;
                 if (folder == cloudsPath || parentPath == cloudsPath) {
@@ -344,10 +346,16 @@ qx.Class.define('eyeos.files.IconView', {
                 } else {
                     var cloud = self.getViewManager().getController().isCloud(folder);
                     if(cloud.isCloud === true) {
-                        var metadata = self.getViewManager().getController().__getFileIdFolder(folder, cloud.cloud);
-                        var isObject = metadata === Object(metadata);
-                        if(isObject && metadata.id.indexOf("_" + cloud.cloud) !== - 1) {
-                            enabled = false;
+                        if(type === 'folder') {
+                            var metadata = self.getViewManager().getController().__getFileIdFolder(folder, cloud.cloud);
+                            var isObject = metadata === Object(metadata);
+                            if (isObject && metadata.id.indexOf("_" + cloud.cloud) !== -1) {
+                                enabled = false;
+                            }
+                            metadata = self.getViewManager().getController().__getFileId(parentPath,filename,true,cloud.cloud);
+                            if(metadata !== null && metadata.is_shared === true) {
+                                item.unShareFolder();
+                            }
                         }
                     }
                 }

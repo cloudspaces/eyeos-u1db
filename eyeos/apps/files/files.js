@@ -2307,6 +2307,10 @@ qx.Class.define('eyeos.files.Controller', {
             }
         },
 
+        unShareFolder: function() {
+            var selected = this.getView().returnSelected();
+        },
+
         __createDialogShare: function(file) {
             this.getView().enabledFiles(false);
 
