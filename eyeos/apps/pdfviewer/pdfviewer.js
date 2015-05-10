@@ -46,11 +46,20 @@ qx.Class.define('eyeos.application.PdfViewer', {
     members: {
         __path: null,
         drawGUI: function() {
-            var mainWindow = new eyeos.ui.Window(this, 'PDF Viewer');
-            mainWindow.setWidth(900);
-            mainWindow.setHeight(660);
+            console.log('ha llegado');
+            var mainWindow = new eyeos.ui.Window(this, 'PDF Viewers').set({
+                layout:  new qx.ui.layout.Grow(),
+                width: 900,
+                height: 600
+            });
 
-            var winLayout = new qx.ui.layout.HBox();
+            var iframe = new qx.ui.embed.Iframe("index.php?message=getPDF&checknum="+this.getChecknum()+'&params[path]='+ this.__path + '&params[checknum]=' + this.getChecknum());
+            iframe.set({decorator:null});
+            mainWindow.add(iframe);
+
+            mainWindow.open();
+
+            /*var winLayout = new qx.ui.layout.HBox();
             mainWindow.setLayout(winLayout);
 
             var leftPane = new qx.ui.container.Composite().set({
@@ -238,7 +247,7 @@ qx.Class.define('eyeos.application.PdfViewer', {
 				
             }, this, {
                 timeout: 50000000000
-            });
+            });*/
         }
     }
 });

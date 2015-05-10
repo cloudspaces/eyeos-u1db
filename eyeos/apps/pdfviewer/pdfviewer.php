@@ -109,6 +109,50 @@ abstract class PdfViewerApplication extends EyeosApplicationExecutable {
         }
         exit;
     }
+
+    public static function getPDF($params)
+    {
+        $path = $params['path'];
+        $myFile = FSI::getFile($path);
+        $myRealFile = $myFile->getRealFile();
+        $fileNameDestination = AdvancedPathLib::getPhpLocalHackPath($myRealFile->getPath());
+        $checknum = $params['checknum'];
+        //echo  htmlentities("http://192.168.56.101/index.php?message=getContentFile&checknum=$checknum&params[0]=$fileNameDestination");
+        ?>
+        <html>
+            <body>
+                <iframe src="<?php echo htmlentities("index.php?message=getContentFile&checknum=$checknum&params[0]=$fileNameDestination")?>" style="width:850px; height:550px;" frameborder="0"></iframe>
+            </body>
+        </html>
+        <?php
+        exit;
+    }
+    public static function getContentFile($params)
+    {
+        $fullPath = $params[0];
+        if ($fd = fopen ($fullPath, "r")) {
+            $fsize = filesize($fullPath);
+            $path_parts = pathinfo($fullPath);
+            $ext = strtolower($path_parts["extension"]);
+            switch ($ext) {
+                case "pdf":
+                    header("Content-type: application/pdf"); // add here more headers for diff. extensions
+                    header("Content-Disposition: inline; filename=\"".$path_parts["basename"]."\""); // use 'attachment' to force a download
+                    break;
+                default;
+                    header("Content-type: application/octet-stream");
+                    header("Content-Disposition: filename=\"".$path_parts["basename"]."\"");
+            }
+            header("Content-length: $fsize");
+            header("Cache-control: private"); //use this to open files directly
+            while(!feof($fd)) {
+                $buffer = fread($fd, 2048);
+                echo $buffer;
+            }
+        }
+        fclose ($fd);
+        exit;
+    }
 }
 
 ?>
