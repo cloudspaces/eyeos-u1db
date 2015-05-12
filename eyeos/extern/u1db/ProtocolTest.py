@@ -467,7 +467,7 @@ class ProtocolTest (unittest.TestCase):
     """
 
     def test_protocol_called_typeBlockFileAndList_returnCorrectBlock(self):
-        params = '{"type":"blockFile","lista":[{"id":"124568","cloud":"Stacksync","username":"eyeos","IpServer":"192.168.56.101","datetime":"2015-05-12 10:50:00","status":"open"}]}'
+        params = '{"type":"blockFile","lista":[{"id":"124568","cloud":"Stacksync","username":"eyeos","IpServer":"192.168.56.101","datetime":"2015-05-12 10:50:00","status":"open","timeLimit":10}]}'
         aux = json.loads(params)
         self.protocol.blockFile = Mock()
         self.protocol.blockFile.return_value = True

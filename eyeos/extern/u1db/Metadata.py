@@ -4,6 +4,7 @@ import json
 import u1db
 import os
 from settings import settings
+import datetime
 
 class Metadata:
     db1 = None
@@ -396,6 +397,8 @@ class Metadata:
         self.sync()
         self.db.create_index("by-id-cloud", "id", "cloud")
         files = self.db.get_from_index("by-id-cloud", data['id'], data['cloud'])
+        timeLimit = data['timeLimit']
+        del data['timeLimit']
         result = True
         if len(files) == 0:
             self.db.create_doc_from_json(json.dumps(data))
@@ -409,7 +412,14 @@ class Metadata:
                      file.set_json(json.dumps(data))
                      self.db.put_doc(file)
                  else:
-                     result = False
+                     dt=datetime.datetime.strptime(file.content['datetime'],'%Y-%m-%d %H:%M:%S')
+                     dt_plus_timeLimit = dt + datetime.timedelta(minutes = timeLimit)
+                     dt_now = datetime.datetime.strptime(data['datetime'],'%Y-%m-%d %H:%M:%S')
+                     if dt_now > dt_plus_timeLimit:
+                         file.set_json(json.dumps(data))
+                         self.db.put_doc(file)
+                     else:
+                         result = False
         return result
 
     def updateDateTime(self,data):

@@ -773,7 +773,7 @@ class MetadataTest (unittest.TestCase):
     should: emptyData
     """
     def test_blockFile_called_metadata_emptyData(self):
-        data = {u'id':u'124568',u'cloud':u'Stacksync',u'username':u'eyeos',u'IpServer':u'192.168.56.101',u'datetime':u'2015-05-12 10:50:00',u'status':u'close'}
+        data = {u'id':u'124568',u'cloud':u'Stacksync',u'username':u'eyeos',u'IpServer':u'192.168.56.101',u'datetime':u'2015-05-12 10:50:00',u'status':u'close',u'timeLimit':10}
         self.sut.blockFile(data)
         files =self.sut.getMetadataFile('124568','Stacksync')
         self.assertEquals(data,files[0])
@@ -788,6 +788,7 @@ class MetadataTest (unittest.TestCase):
         data = {u'id':u'124568',u'cloud':u'Stacksync',u'username':u'eyeos',u'IpServer':u'192.168.56.101',u'datetime':u'2015-05-12 10:50:00',u'status':u'close'}
         self.sut.db.create_doc_from_json(json.dumps(data))
         data['status'] = u'open'
+        data['timeLimit'] = 10
         self.sut.blockFile(data)
         files = self.sut.getMetadataFile('124568','Stacksync')
         self.assertEquals(data,files[0])
@@ -803,6 +804,25 @@ class MetadataTest (unittest.TestCase):
         data = {u'id':u'124568',u'cloud':u'Stacksync',u'username':u'eyeos',u'IpServer':u'192.168.56.101',u'datetime':u'2015-05-12 10:50:00',u'status':u'open'}
         self.sut.db.create_doc_from_json(json.dumps(data))
         data['datetime'] = u'2015-05-12 10:55:00'
+        data['timeLimit'] = 10
+        self.sut.blockFile(data)
+        files = self.sut.getMetadataFile('124568','Stacksync')
+        self.assertEquals(data,files[0])
+
+
+    """
+    method: blockFile
+    when: called
+    with: metadata
+    should: updateDataTimeExpired
+    """
+
+    def test_blockFile_called_metadata_updateDataTimeExpired(self):
+        data = {u'id':u'124568',u'cloud':u'Stacksync',u'username':u'tester',u'IpServer':u'192.168.56.101',u'datetime':u'2015-05-12 10:50:00',u'status':u'open'}
+        self.sut.db.create_doc_from_json(json.dumps(data))
+        data['username'] = u'eyeos'
+        data['datetime'] = u'2015-05-12 11:05:00'
+        data['timeLimit'] = 10
         self.sut.blockFile(data)
         files = self.sut.getMetadataFile('124568','Stacksync')
         self.assertEquals(data,files[0])
@@ -817,6 +837,8 @@ class MetadataTest (unittest.TestCase):
         data = {u'id':u'124568',u'cloud':u'Stacksync',u'username':u'eyeos',u'IpServer':u'192.168.56.101',u'datetime':u'2015-05-12 10:50:00',u'status':u'open'}
         self.sut.db.create_doc_from_json(json.dumps(data))
         data['username'] = u'tester'
+        data['timeLimit'] = 10
+        data['datetime'] = u'2015-05-12 10:55:00'
         result = self.sut.blockFile(data)
         self.assertEquals(False,result)
 
@@ -831,6 +853,8 @@ class MetadataTest (unittest.TestCase):
         data = {u'id':u'124568',u'cloud':u'Stacksync',u'username':u'eyeos',u'IpServer':u'192.168.56.101',u'datetime':u'2015-05-12 10:50:00',u'status':u'open'}
         self.sut.db.create_doc_from_json(json.dumps(data))
         data['IpServer'] = u'192.168.56.102'
+        data['timeLimit'] = 10
+        data['datetime'] = u'2015-05-12 10:55:00'
         result = self.sut.blockFile(data)
         self.assertEquals(False,result)
 
