@@ -490,3 +490,18 @@ class ProtocolTest (unittest.TestCase):
         result = self.protocol.protocol(params)
         self.protocol.updateDateTime.assert_called_once_with(aux['lista'][0])
         self.assertEquals('true',result)
+
+    """
+    method: protocol
+    when: called
+    with: typeUnBlockFileAndList
+    should: returnCorrectUnBlock
+    """
+    def test_protocol_called_typeUnBlockFileAndList_returnCorrectUnBlock(self):
+        params = '{"type":"unBlockFile","lista":[{"id":"124568","cloud":"Stacksync","username":"eyeos","IpServer":"192.168.56.101","datetime":"2015-05-12 10:50:00","status":"close"}]}'
+        aux = json.loads(params)
+        self.protocol.unBlockFile = Mock()
+        self.protocol.unBlockFile.return_value = True
+        result = self.protocol.protocol(params)
+        self.protocol.unBlockFile.assert_called_once_with(aux['lista'][0])
+        self.assertEquals('true',result)

@@ -424,3 +424,12 @@ class Metadata:
         else:
             result = False
         return result
+
+    def unBlockFile(self,data):
+         self.sync()
+         self.db.create_index("by-id-cloud-username-IpServer", "id", "cloud","username","IpServer")
+         files = self.db.get_from_index("by-id-cloud-username-IpServer", data['id'],data['cloud'],data['username'],data['IpServer'])
+         if len(files) > 0:
+            file = files[0]
+            file.set_json(json.dumps(data))
+            self.db.put_doc(file)

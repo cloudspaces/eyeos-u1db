@@ -860,3 +860,17 @@ class MetadataTest (unittest.TestCase):
         data['username'] = u'tester'
         result = self.sut.updateDateTime(data)
         self.assertEquals(False,result)
+
+    """
+    method: unBlockFile
+    when: called
+    with: metadata
+    should: returnIncorrectDistinctUsername
+    """
+    def test_unBlockFile_called_metadata_returnCorrect(self):
+        data = {u'id':u'124568',u'cloud':u'Stacksync',u'username':u'eyeos',u'IpServer':u'192.168.56.101',u'datetime':u'2015-05-12 10:50:00',u'status':u'open'}
+        self.sut.db.create_doc_from_json(json.dumps(data))
+        data['status'] = u'close'
+        self.sut.unBlockFile(data)
+        files = self.sut.getMetadataFile('124568','Stacksync')
+        self.assertEquals(data,files[0])
