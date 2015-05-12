@@ -746,3 +746,117 @@ class MetadataTest (unittest.TestCase):
                 {u'type':u'event',u'user_eyeos': u'eyeos',u'calendar': u'personal', u'status':u'' + status +'',u'isallday': u'1', u'timestart': u'201420160000', u'timeend':u'201420170000', u'repetition': u'None', u'finaltype': u'1', u'finalvalue': u'0', u'subject': u'Excursión', u'location': u'Girona', u'description': u'Mochila'}]
         array.sort()
         return array
+
+    """
+    ##################################################################################################################################################
+                                                                    TEST BLOCK FILE
+    ##################################################################################################################################################
+    """
+
+    """
+    method: getMetadataFile
+    when: called
+    with: idAndCloud
+    should: returnArray
+    """
+
+    def test_getMetadataFile_called_user_returnArray(self):
+        self.sut.db.create_doc_from_json(json.dumps({u'id':u'124568',u'cloud':u'Stacksync',u'username':u'eyeos',u'IpServer':u'192.168.56.101',u'datetime':u'2015-05-12 10:50:00',u'status':u'close'}))
+        data = self.sut.getMetadataFile('124568','Stacksync')
+        data.sort()
+        self.assertEquals(1,len(data))
+
+    """
+    method: blockFile
+    when: called
+    with: metadata
+    should: emptyData
+    """
+    def test_blockFile_called_metadata_emptyData(self):
+        data = {u'id':u'124568',u'cloud':u'Stacksync',u'username':u'eyeos',u'IpServer':u'192.168.56.101',u'datetime':u'2015-05-12 10:50:00',u'status':u'close'}
+        self.sut.blockFile(data)
+        files =self.sut.getMetadataFile('124568','Stacksync')
+        self.assertEquals(data,files[0])
+
+    """
+    method: blockFile
+    when: called
+    with: metadata
+    should: updateData
+    """
+    def test_blockFile_called_metadata_updateData(self):
+        data = {u'id':u'124568',u'cloud':u'Stacksync',u'username':u'eyeos',u'IpServer':u'192.168.56.101',u'datetime':u'2015-05-12 10:50:00',u'status':u'close'}
+        self.sut.db.create_doc_from_json(json.dumps(data))
+        data['status'] = u'open'
+        self.sut.blockFile(data)
+        files = self.sut.getMetadataFile('124568','Stacksync')
+        self.assertEquals(data,files[0])
+
+    """
+    method: blockFile
+    when: called
+    with: metadata
+    should: updateDataSameUser
+    """
+
+    def test_blockFile_called_metadata_updateDataSameUserAndServer(self):
+        data = {u'id':u'124568',u'cloud':u'Stacksync',u'username':u'eyeos',u'IpServer':u'192.168.56.101',u'datetime':u'2015-05-12 10:50:00',u'status':u'open'}
+        self.sut.db.create_doc_from_json(json.dumps(data))
+        data['datetime'] = u'2015-05-12 10:55:00'
+        self.sut.blockFile(data)
+        files = self.sut.getMetadataFile('124568','Stacksync')
+        self.assertEquals(data,files[0])
+
+    """
+    method: blockFile
+    when: called
+    with: metadata
+    should: returnIncorrectDistinctUser
+    """
+    def test_blockFile_called_metadata_returnIncorrectDistinctUser(self):
+        data = {u'id':u'124568',u'cloud':u'Stacksync',u'username':u'eyeos',u'IpServer':u'192.168.56.101',u'datetime':u'2015-05-12 10:50:00',u'status':u'open'}
+        self.sut.db.create_doc_from_json(json.dumps(data))
+        data['username'] = u'tester'
+        result = self.sut.blockFile(data)
+        self.assertEquals(False,result)
+
+    """
+    method: blockFile
+    when: called
+    with: metadata
+    should: returnIncorrectDistinctServer
+    """
+
+    def test_blockFile_called_metadata_returnIncorrectDistinctServer(self):
+        data = {u'id':u'124568',u'cloud':u'Stacksync',u'username':u'eyeos',u'IpServer':u'192.168.56.101',u'datetime':u'2015-05-12 10:50:00',u'status':u'open'}
+        self.sut.db.create_doc_from_json(json.dumps(data))
+        data['IpServer'] = u'192.168.56.102'
+        result = self.sut.blockFile(data)
+        self.assertEquals(False,result)
+
+
+    """
+    method: updateDateTime
+    when: called
+    with: metadata
+    should: returnUpdateCorrect
+    """
+    def test_updateDateTime_called_metadata_returnUpdateCorrect(self):
+        data = {u'id':u'124568',u'cloud':u'Stacksync',u'username':u'eyeos',u'IpServer':u'192.168.56.101',u'datetime':u'2015-05-12 10:50:00',u'status':u'open'}
+        self.sut.db.create_doc_from_json(json.dumps(data))
+        data['datetime'] = u'2015-05-12 11:50:00'
+        self.sut.updateDateTime(data)
+        files = self.sut.getMetadataFile('124568','Stacksync')
+        self.assertEquals(data,files[0])
+
+    """
+    method: updateDateTime
+    when: called
+    with: metadata
+    should: returnIncorrectDistinctUsername
+    """
+    def test_updateDateTime_called_metadata_returnIncorrectDistinctUsername(self):
+        data = {u'id':u'124568',u'cloud':u'Stacksync',u'username':u'eyeos',u'IpServer':u'192.168.56.101',u'datetime':u'2015-05-12 10:50:00',u'status':u'open'}
+        data['username'] = u'tester'
+        result = self.sut.updateDateTime(data)
+        self.assertEquals(False,result)

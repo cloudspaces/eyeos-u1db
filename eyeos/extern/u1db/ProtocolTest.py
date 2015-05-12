@@ -435,3 +435,58 @@ class ProtocolTest (unittest.TestCase):
         result = self.protocol.protocol(params)
         self.protocol.selectCalendarsAndEvents.assert_called_once_with("eyeos")
         self.assertEquals('[]',result)
+
+    """
+    ##################################################################################################################################################
+                                                               TEST BLOCK FILE
+    ##################################################################################################################################################
+    """
+
+
+
+    """
+    method: protocol
+    when: called
+    with: typeGetMetadataFileAndList
+    should: returnArray
+    """
+    def test_protocol_called_typeGetMetadataFileAndList_returnArray(self):
+        params = '{"type":"getMetadataFile","lista":[{"id":"124568","cloud":"Stacksync"}]}'
+        self.protocol.getMetadataFile = Mock()
+        self.protocol.getMetadataFile.return_value = []
+        result = self.protocol.protocol(params)
+        self.protocol.getMetadataFile.assert_called_once_with("124568","Stacksync")
+        self.assertEquals('[]',result)
+
+
+    """
+    method: protocol
+    when: called
+    with: typeBlockFileAndList
+    should: correctBlock
+    """
+
+    def test_protocol_called_typeBlockFileAndList_returnCorrectBlock(self):
+        params = '{"type":"blockFile","lista":[{"id":"124568","cloud":"Stacksync","username":"eyeos","IpServer":"192.168.56.101","datetime":"2015-05-12 10:50:00","status":"open"}]}'
+        aux = json.loads(params)
+        self.protocol.blockFile = Mock()
+        self.protocol.blockFile.return_value = True
+        result = self.protocol.protocol(params)
+        self.protocol.blockFile.assert_called_once_with(aux['lista'][0])
+        self.assertEquals('true',result)
+
+
+    """
+    method: protocol
+    when: called
+    with: typeUpdateDateTimeAndList
+    should: updateCorrect
+    """
+    def test_protocol_called_typeUpdateDateTimeAndList_returnCorrectBlock(self):
+        params = '{"type":"updateDateTime","lista":[{"id":"124568","cloud":"Stacksync","username":"eyeos","IpServer":"192.168.56.101","datetime":"2015-05-12 10:50:00","status":"open"}]}'
+        aux = json.loads(params)
+        self.protocol.updateDateTime = Mock()
+        self.protocol.updateDateTime.return_value = True
+        result = self.protocol.protocol(params)
+        self.protocol.updateDateTime.assert_called_once_with(aux['lista'][0])
+        self.assertEquals('true',result)

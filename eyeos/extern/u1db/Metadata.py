@@ -375,3 +375,52 @@ class Metadata:
             for file in files:
                 result.append(file.content)
         return result
+
+    """
+    ##################################################################################################################################################
+                                                                    BLOCK FILE
+    ##################################################################################################################################################
+    """
+
+    def getMetadataFile(self,id,cloud):
+        self.sync()
+        result = []
+        self.db.create_index("by-id-cloud", "id", "cloud")
+        files = self.db.get_from_index("by-id-cloud", id, cloud)
+        if len(files) > 0:
+            for file in files:
+                result.append(file.content)
+        return result
+
+    def blockFile(self,data):
+        self.sync()
+        self.db.create_index("by-id-cloud", "id", "cloud")
+        files = self.db.get_from_index("by-id-cloud", data['id'], data['cloud'])
+        result = True
+        if len(files) == 0:
+            self.db.create_doc_from_json(json.dumps(data))
+        else:
+             file = files[0]
+             if file.content['status'] == 'close':
+                 file.set_json(json.dumps(data))
+                 self.db.put_doc(file)
+             else:
+                 if file.content['username'] == data['username'] and file.content['IpServer'] == data['IpServer']:
+                     file.set_json(json.dumps(data))
+                     self.db.put_doc(file)
+                 else:
+                     result = False
+        return result
+
+    def updateDateTime(self,data):
+        self.sync()
+        self.db.create_index("by-id-cloud-username-IpServer", "id", "cloud","username","IpServer")
+        result = True
+        files = self.db.get_from_index("by-id-cloud-username-IpServer", data['id'],data['cloud'],data['username'],data['IpServer'])
+        if len(files) > 0:
+            file = files[0]
+            file.set_json(json.dumps(data))
+            self.db.put_doc(file)
+        else:
+            result = False
+        return result
