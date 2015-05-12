@@ -78,6 +78,8 @@ class Protocol:
             result = self.blockFile(lista[0])
         elif type == "updateDateTime":
             result = self.updateDateTime(lista[0])
+        elif type == "unBlockFile":
+            result = self.unBlockFile(lista[0])
 
         return json.dumps(result)
 
@@ -179,6 +181,10 @@ class Protocol:
     def updateDateTime(self,data):
         return self.metadata.updateDateTime(data)
 
+    def unBlockFile(self,data):
+        self.metadata.unBlockFile(data)
+        return True
+
     def configDb(self,type,creds = None):
         if self.test == True:
             name = "test.u1db"
@@ -192,7 +198,7 @@ class Protocol:
                 name = "downloadfile.u1db"
             elif type == "recursiveDeleteVersion" or "deleteMetadataUser":
                 name2 = "downloadfile.u1db"
-            elif type == "getMetadataFile" or "blockFile" or "updateDateTime":
+            elif type == "getMetadataFile" or "blockFile" or "updateDateTime" or "unBlockFile":
                 name = "blockfile.u1db"
 
         self.metadata = Metadata(name,creds,name2)
