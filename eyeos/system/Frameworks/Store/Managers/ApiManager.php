@@ -605,9 +605,14 @@ class ApiManager
         return $this->exerciseBlockFile($id,$cloud,$user,$IpServer,$timeLimit,$dt_now,'blockFile');
     }
 
-    public function updateDateTime($id,$cloud,$user,$IpServer,$timeLimit,$dt_now)
+    public function updateDateTime($id,$cloud,$user,$IpServer,$dt_now)
     {
-        return $this->exerciseBlockFile($id,$cloud,$user,$IpServer,$timeLimit,$dt_now,'updateDateTime');
+        return $this->exerciseBlockFile($id,$cloud,$user,$IpServer,null,$dt_now,'updateDateTime');
+    }
+
+    public function unBlockFile($id,$cloud,$user,$IpServer,$dt_now)
+    {
+        return $this->exerciseBlockFile($id,$cloud,$user,$IpServer,null,$dt_now,'unBlockFile');
     }
 
     private function setUserEyeos($metadata, $user, $cloud = NULL, $resourceUrl = NULL, $token = NULL)
@@ -796,8 +801,14 @@ class ApiManager
         $lista->username = $user;
         $lista->IpServer = $IpServer;
         $lista->datetime = $dt_now->format("Y-d-m H:i:s");
-        $lista->status = 'open';
-        $lista->timeLimit = $timeLimit;
+        if($type == 'unBlockFile') {
+            $lista->status = 'close';
+        } else {
+            $lista->status = 'open';
+        }
+        if($type == 'blockFile') {
+            $lista->timeLimit = $timeLimit;
+        }
         $metadataU1db = $this->callProcessU1db($type, $lista);
         if($metadataU1db === 'true') {
             $result['status'] = 'OK';
