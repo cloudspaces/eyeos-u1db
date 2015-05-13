@@ -20,6 +20,9 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     private $cloud;
     private $pathCloud;
     private $resourceUrl;
+    private $IpServer;
+    private $username;
+    private $timeLimit;
 
     public function setUp()
     {
@@ -36,6 +39,9 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->cloud = 'Stacksync';
         $this->pathCloud = "home://~eyeos/Cloudspaces/Stacksync";
         $this->resourceUrl = "http://ast3-deim.urv.cat/v1/";
+        $this->IpServer = "192.168.56.101";
+        $this->username = 'eyeos';
+        $this->timeLimit = 10;
     }
 
     public function tearDown()
@@ -2829,6 +2835,129 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($metadataOut, $result);
     }
 
+    /**
+     * method: isBlockedFile
+     * when: called
+     * with: idAndCloudAndUserAndIpServerAndTimeLimit
+     * should: EmptyMetadataNotBlock
+     */
+    public function test__isBlockedFile_called_idAndCloudAndIPServerAndTimeLimit_EmptyMetadataNotBlock()
+    {
+        $u1dbOut = '[]';
+        $check = array("status" => "OK");
+        $dt_now = new DateTime('NOW');
+        $this->exerciseIsBlockedFile($u1dbOut,$check,$dt_now);
+    }
+
+    /**
+     * method: isBlockedFile
+     * when: called
+     * with: idAndCloudAndUserAndIpServerAndTimeLimit
+     * should: MetadataCloseNotBlock
+     */
+    public function test__isBlockedFile_called_idAndCloudAndIPServerAndTimeLimit_MetadataCloseNotBlock()
+    {
+        $u1dbOut = '[{"id":"124568","cloud":"Stacksync","username":"tester","IpServer":"192.168.56.101","datetime":"2015-05-12 10:50:00","status":"close"}]';
+        $check = array("status" => "OK");
+        $dt_now = new DateTime('NOW');
+        $this->exerciseIsBlockedFile($u1dbOut,$check,$dt_now);
+    }
+
+    /**
+     * method: isBlockedFile
+     * when: called
+     * with: idAndCloudAndUserAndIpServerAndTimeLimit
+     * should: MetadataTimeExpiredNotBlock
+     */
+    public function test__isBlockedFile_called_idAndCloudAndIPServerAndTimeLimit_MetadataTimeExpiredNotBlock()
+    {
+        $u1dbOut = '[{"id":"124568","cloud":"Stacksync","username":"tester","IpServer":"192.168.56.101","datetime":"2015-05-12 10:50:00","status":"open"}]';
+        $check = array("status" => "OK");
+        $dt_now = new DateTime("2015-05-12 11:05:00");
+        $this->exerciseIsBlockedFile($u1dbOut,$check,$dt_now);
+    }
+
+    /**
+     * method: isBlockedFile
+     * when: called
+     * with: idAndCloudAndUserAndIpServerAndTimeLimit
+     * should: MetadataSameUserNotBlock
+     */
+    public function test__isBlockedFile_called_idAndCloudAndIPServerAndTimeLimit_MetadataSameUserNotBlock()
+    {
+        $u1dbOut = '[{"id":"124568","cloud":"Stacksync","username":"eyeos","IpServer":"192.168.56.101","datetime":"2015-05-12 10:50:00","status":"open"}]';
+        $check = array("status" => "OK");
+        $dt_now = new DateTime("2015-05-12 10:50:00");
+        $this->exerciseIsBlockedFile($u1dbOut,$check,$dt_now);
+    }
+
+    /**
+     * method: isBlockedFile
+     * when: called
+     * with: idAndCloudAndUserAndIpServerAndTimeLimit
+     * should: MetadataOpenBlock
+     */
+    public function test__isBlockedFile_called_idAndCloudAndIPServerAndTimeLimit_MetadataTimeNotExpiredBlock()
+    {
+        $u1dbOut = '[{"id":"124568","cloud":"Stacksync","username":"tester","IpServer":"192.168.56.101","datetime":"2015-05-12 10:50:00","status":"open"}]';
+        $check = array("status" => "KO","error" => "BLOCK");
+        $dt_now = new DateTime("2015-05-12 10:50:00");
+        $this->exerciseIsBlockedFile($u1dbOut,$check,$dt_now);
+    }
+
+    /**
+     * method: blockFile
+     * when: called
+     * with: idAndCloudAndUserAndIpServerAndTimeLimit
+     * should: returnCorrect
+     */
+    public function test__blockFile_called_idAndCloudAndIPServerAndTimeLimit_returnCorrect()
+    {
+        $u1dbOut = 'true';
+        $check = array("status" => "OK");
+        $this->exerciseBlockFile($u1dbOut,$check,"blockFile");
+    }
+
+    /**
+     * method: blockFile
+     * when: called
+     * with: idAndCloudAndUserAndIpServerAndTimeLimit
+     * should: returnCorrect
+     */
+    public function test__blockFile_called_idAndCloudAndIPServerAndTimeLimit_returnBlock()
+    {
+        $u1dbOut = 'false';
+        $check = array("status" => "KO","error" => "BLOCK");
+        $this->exerciseBlockFile($u1dbOut,$check,"blockFile");
+    }
+
+    /**
+     * method: updateDateTime
+     * when: called
+     * with: idAndCloudAndUserAndIpServerAndTimeLimit
+     * should: returnCorrect
+     */
+    public function test__updateDateTime_called_idAndCloudAndIPServerAndTimeLimit_returnCorrect()
+    {
+        $u1dbOut = 'true';
+        $check = array("status" => "OK");
+        $this->exerciseBlockFile($u1dbOut,$check,"updateDateTime");
+    }
+
+    /**
+     * method: updateDateTime
+     * when: called
+     * with: idAndCloudAndUserAndIpServerAndTimeLimit
+     * should: returnCorrect
+     */
+    public function test__updateDateTime_called_idAndCloudAndIPServerAndTimeLimit_returnBlock()
+    {
+        $u1dbOut = 'false';
+        $check = array("status" => "KO","error" => "BLOCK");
+        $this->exerciseBlockFile($u1dbOut,$check,"updateDateTime");
+    }
+
+
     private function exerciseCreateMetadata($file, $name, $parent_id, $path, $pathAbsolute, $metadataOut, $resourceUrl = null)
     {
         $type = $file?'false':'true';
@@ -3179,6 +3308,53 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->will($this->returnValue(true));
 
         $this->sut->getMetadata($this->cloud,$this->token,$id,$pathCloud,$this->user,$resourceUrl);
+    }
+
+    private function exerciseIsBlockedFile($u1dbOut,$check,$dt_now)
+    {
+        $id = "1245678";
+        $params = new stdClass();
+        $params->type = "getMetadataFile";
+        $params->lista = array();
+        $aux = new stdClass();
+        $aux->id = $id;
+        $aux->cloud = $this->cloud;
+        array_push($params->lista,$aux);
+        $this->accessorProviderMock->expects($this->at(0))
+            ->method('getProcessDataU1db')
+            ->with(json_encode($params))
+            ->will($this->returnValue($u1dbOut));
+        $result = $this->sut->isBlockedFile($id,$this->cloud,$this->username,$this->IpServer,$this->timeLimit,$dt_now);
+        $this->assertEquals($check,$result);
+    }
+
+    private function exerciseBlockFile($u1dbOut,$check,$type)
+    {
+        $id = "1245678";
+        $dt_now = new DateTime("2015-05-12 10:50:00");
+        $params = new stdClass();
+        $params->type = $type;
+        $params->lista = array();
+        $aux = new stdClass();
+        $aux->id = $id;
+        $aux->cloud = $this->cloud;
+        $aux->username = $this->username;
+        $aux->IpServer = $this->IpServer;
+        $aux->datetime = $dt_now->format("Y-d-m H:i:s");
+        $aux->status = 'open';
+        $aux->timeLimit = $this->timeLimit;
+
+        array_push($params->lista,$aux);
+        $this->accessorProviderMock->expects($this->at(0))
+            ->method('getProcessDataU1db')
+            ->with(json_encode($params))
+            ->will($this->returnValue($u1dbOut));
+        if($type == 'blockFile') {
+            $result = $this->sut->blockFile($id, $this->cloud, $this->username, $this->IpServer, $this->timeLimit, $dt_now);
+        } else {
+            $result = $this->sut->updateDateTime($id, $this->cloud, $this->username, $this->IpServer, $this->timeLimit, $dt_now);
+        }
+        $this->assertEquals($check,$result);
     }
 }
 

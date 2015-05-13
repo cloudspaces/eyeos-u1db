@@ -457,7 +457,10 @@ if(!defined('DNS_HOST'))
 if(!defined('U1DB'))
     define('U1DB','u1db');
 if(!defined('BACK_TO_REAL_EYE_ROOT'))
-    define('BACK_TO_REAL_EYE_ROOT','../../../../eyeos/')
+    define('BACK_TO_REAL_EYE_ROOT','../../../../eyeos/');
 
+//Time Limit BLOCK EYEDOCS in Minutes
+if(!defined('TIME_LIMIT_BLOCK'))
+    define('TIME_LIMIT_BLOCK',10);
 
 ?>

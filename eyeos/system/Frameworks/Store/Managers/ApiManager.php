@@ -556,6 +556,60 @@ class ApiManager
         return $result;
     }
 
+    public function isBlockedFile($id,$cloud,$user,$IpServer,$timeLimit,$dt_now)
+    {
+        $result[ 'status' ] = 'KO';
+        $result[ 'error' ] = -1;
+        $lista = new stdClass();
+        $lista->id = "" . $id;
+        $lista->cloud = $cloud;
+        $free = false;
+        $metadataU1db = $this->callProcessU1db('getMetadataFile', $lista);
+        if($metadataU1db == "[]") {
+            $free = true;
+
+        } else {
+            $metadata = json_decode($metadataU1db);
+            if($metadata && count($metadata) > 0) {
+                $file = $metadata[0];
+                if($file->status == 'close') {
+                    $free = true;
+                } else {
+                    if($file->username == $user && $file->IpServer == $IpServer) {
+                        $free = true;
+                    } else {
+                        $dt_plus_timeLimit = new DateTime($file->datetime);
+                        $dt_plus_timeLimit->add(new DateInterval('PT' . $timeLimit . 'M'));
+                        $dt_now = strtotime($dt_now->format('Y-d-m H:i:s'));
+                        $dt_plus_timeLimit = strtotime($dt_plus_timeLimit->format('Y-d-m H:i:s'));
+                        if ($dt_now > $dt_plus_timeLimit) {
+                            $free = true;
+                        } else {
+                            $result['error'] = 'BLOCK';
+                        }
+                    }
+                }
+            }
+        }
+
+        if($free) {
+            $result['status'] = 'OK';
+            unset($result['error']);
+        }
+
+        return $result;
+    }
+
+    public function blockFile($id,$cloud,$user,$IpServer,$timeLimit,$dt_now)
+    {
+        return $this->exerciseBlockFile($id,$cloud,$user,$IpServer,$timeLimit,$dt_now,'blockFile');
+    }
+
+    public function updateDateTime($id,$cloud,$user,$IpServer,$timeLimit,$dt_now)
+    {
+        return $this->exerciseBlockFile($id,$cloud,$user,$IpServer,$timeLimit,$dt_now,'updateDateTime');
+    }
+
     private function setUserEyeos($metadata, $user, $cloud = NULL, $resourceUrl = NULL, $token = NULL)
     {
         $aux = new stdClass();
@@ -728,6 +782,28 @@ class ApiManager
             if (!isset($data->error) && is_array($data) && count($data) > 1) {
                 $result = true;
             }
+        }
+        return $result;
+    }
+
+    private function exerciseBlockFile($id,$cloud,$user,$IpServer,$timeLimit,$dt_now,$type)
+    {
+        $result[ 'status' ] = 'KO';
+        $result[ 'error' ] = -1;
+        $lista = new stdClass();
+        $lista->id = "" . $id;
+        $lista->cloud = $cloud;
+        $lista->username = $user;
+        $lista->IpServer = $IpServer;
+        $lista->datetime = $dt_now->format("Y-d-m H:i:s");
+        $lista->status = 'open';
+        $lista->timeLimit = $timeLimit;
+        $metadataU1db = $this->callProcessU1db($type, $lista);
+        if($metadataU1db === 'true') {
+            $result['status'] = 'OK';
+            unset($result['error']);
+        } else {
+            $result['error'] = "BLOCK";
         }
         return $result;
     }
