@@ -556,7 +556,7 @@ class ApiManager
         return $result;
     }
 
-    public function isBlockedFile($id,$cloud,$user,$IpServer,$timeLimit,$dt_now)
+    public function unLockedFile($id,$cloud,$user,$IpServer,$timeLimit,$dt_now)
     {
         $result[ 'status' ] = 'KO';
         $result[ 'error' ] = -1;

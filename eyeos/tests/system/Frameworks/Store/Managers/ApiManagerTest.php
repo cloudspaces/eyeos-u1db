@@ -2836,12 +2836,12 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * method: isBlockedFile
+     * method: unLockedFile
      * when: called
      * with: idAndCloudAndUserAndIpServerAndTimeLimitAndDateNow
      * should: EmptyMetadataNotBlock
      */
-    public function test__isBlockedFile_called_idAndCloudAndIPServerAndTimeLimitAndDateNow_EmptyMetadataNotBlock()
+    public function test__unLockedFile_called_idAndCloudAndIPServerAndTimeLimitAndDateNow_EmptyMetadataNotBlock()
     {
         $u1dbOut = '[]';
         $check = array("status" => "OK");
@@ -2850,12 +2850,12 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * method: isBlockedFile
+     * method: unLockedFile
      * when: called
      * with: idAndCloudAndUserAndIpServerAndTimeLimitAndDateNow
      * should: MetadataCloseNotBlock
      */
-    public function test__isBlockedFile_called_idAndCloudAndIPServerAndTimeLimitAndDateNow_MetadataCloseNotBlock()
+    public function test__unLockedFile_called_idAndCloudAndIPServerAndTimeLimitAndDateNow_MetadataCloseNotBlock()
     {
         $u1dbOut = '[{"id":"124568","cloud":"Stacksync","username":"tester","IpServer":"192.168.56.101","datetime":"2015-05-12 10:50:00","status":"close"}]';
         $check = array("status" => "OK");
@@ -2864,12 +2864,12 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * method: isBlockedFile
+     * method: unLockedFile
      * when: called
      * with: idAndCloudAndUserAndIpServerAndTimeLimitAndDateNow
      * should: MetadataTimeExpiredNotBlock
      */
-    public function test__isBlockedFile_called_idAndCloudAndIPServerAndTimeLimitAndDateNow_MetadataTimeExpiredNotBlock()
+    public function test__unLockedFile_called_idAndCloudAndIPServerAndTimeLimitAndDateNow_MetadataTimeExpiredNotBlock()
     {
         $u1dbOut = '[{"id":"124568","cloud":"Stacksync","username":"tester","IpServer":"192.168.56.101","datetime":"2015-05-12 10:50:00","status":"open"}]';
         $check = array("status" => "OK");
@@ -2878,12 +2878,12 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * method: isBlockedFile
+     * method: unLockedFile
      * when: called
      * with: idAndCloudAndUserAndIpServerAndTimeLimitAndDateNow
      * should: MetadataSameUserNotBlock
      */
-    public function test__isBlockedFile_called_idAndCloudAndIPServerAndTimeLimitAndDateNow_MetadataSameUserNotBlock()
+    public function test__unLockedFile_called_idAndCloudAndIPServerAndTimeLimitAndDateNow_MetadataSameUserNotBlock()
     {
         $u1dbOut = '[{"id":"124568","cloud":"Stacksync","username":"eyeos","IpServer":"192.168.56.101","datetime":"2015-05-12 10:50:00","status":"open"}]';
         $check = array("status" => "OK");
@@ -2892,12 +2892,12 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * method: isBlockedFile
+     * method: unLockedFile
      * when: called
      * with: idAndCloudAndUserAndIpServerAndTimeLimitAndDateNow
      * should: MetadataOpenBlock
      */
-    public function test__isBlockedFile_called_idAndCloudAndIPServerAndTimeLimitAndDateNow_MetadataTimeNotExpiredBlock()
+    public function test__unLockedFile_called_idAndCloudAndIPServerAndTimeLimitAndDateNow_MetadataTimeNotExpiredBlock()
     {
         $u1dbOut = '[{"id":"124568","cloud":"Stacksync","username":"tester","IpServer":"192.168.56.101","datetime":"2015-05-12 10:50:00","status":"open"}]';
         $check = array("status" => "KO","error" => "BLOCK");
@@ -3349,7 +3349,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->method('getProcessDataU1db')
             ->with(json_encode($params))
             ->will($this->returnValue($u1dbOut));
-        $result = $this->sut->isBlockedFile($id,$this->cloud,$this->username,$this->IpServer,$this->timeLimit,$dt_now);
+        $result = $this->sut->unLockedFile($id,$this->cloud,$this->username,$this->IpServer,$this->timeLimit,$dt_now);
         $this->assertEquals($check,$result);
     }
 
