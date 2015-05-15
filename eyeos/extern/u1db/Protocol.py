@@ -196,9 +196,9 @@ class Protocol:
                 name = "calendar.u1db"
             elif type == "insertDownloadVersion" or type == "updateDownloadVersion" or type == "deleteDownloadVersion" or type == "getDownloadVersion":
                 name = "downloadfile.u1db"
-            elif type == "recursiveDeleteVersion" or "deleteMetadataUser":
+            elif type == "recursiveDeleteVersion" or type == "deleteMetadataUser":
                 name2 = "downloadfile.u1db"
-            elif type == "getMetadataFile" or "blockFile" or "updateDateTime" or "unBlockFile":
+            elif type == "getMetadataFile" or type == "blockFile" or type == "updateDateTime" or type == "unBlockFile":
                 name = "blockfile.u1db"
 
         self.metadata = Metadata(name,creds,name2)

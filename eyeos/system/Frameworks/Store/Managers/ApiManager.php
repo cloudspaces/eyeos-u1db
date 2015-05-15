@@ -615,6 +615,11 @@ class ApiManager
         return $this->exerciseBlockFile($id,$cloud,$user,$IpServer,null,$dt_now,'unBlockFile');
     }
 
+    public function getMetadataFolder($cloud, $token, $id, $resourceUrl=NULL)
+    {
+        return $this->apiProvider->getMetadata($cloud, $token, false, $id, true,$resourceUrl);
+    }
+
     private function setUserEyeos($metadata, $user, $cloud = NULL, $resourceUrl = NULL, $token = NULL)
     {
         $aux = new stdClass();
@@ -783,10 +788,12 @@ class ApiManager
         $result = false;
         if ($isFolder && $id !== 'null' && $status !== 'DELETED') {
             $data = $this->getListUsersShare($cloud, $token, $id, $resourceUrl);
-            $data = json_decode($data);
-            if (!isset($data->error) && is_array($data) && count($data) > 1) {
-                $result = true;
-            }
+            try {
+                $data = json_decode($data);
+                if (!isset($data->error) && is_array($data) && count($data) > 1) {
+                    $result = true;
+                }
+            } catch(Exception $e){}
         }
         return $result;
     }

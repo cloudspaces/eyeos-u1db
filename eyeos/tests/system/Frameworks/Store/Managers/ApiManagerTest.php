@@ -2983,6 +2983,96 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->exerciseBlockFile($u1dbOut,$check,"unBlockFile","close");
     }
 
+    /**
+     * method: getMetadataFolder
+     * when: called
+     * with: tokenAndIdAndPathAndUser
+     * should: returnMetadata
+     */
+
+    public function test_getMetadataFolder_called_tokenAndIdAndPathAndUser_returnMetadata()
+    {
+        $metadata = '{"filename":"root","id":"null","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":true,"is_folder":true,
+                      "contents":[
+                            {"filename":"Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"DELETED","version":3,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false},
+                            {"filename":"client2","id":44444755856,"size":775412,"mimetype":"application/pdf","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true},
+                            {"filename":"Client3.pdf","id":11165632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false},
+                            {"name":"cloudFolder","access_token_key":"tXn77oo5xmgq4C9koISxf0dSr46Naw","resource_url":"http://ast3-deim.urv.cat/v1/folder/1972","access_token_secret":"Ug40pvqYjNtXD6xBGZZ5rgHR3nLINr"}
+                            ]}';
+
+        $this->exerciseGetMetadataFolder($metadata,json_decode($metadata));
+    }
+
+    /**
+     * method: getMetadataFolder
+     * when: called
+     * with: tokenAndIdAndPathAndUserAndResourceUrl
+     * should: returnMetadata
+     */
+    public function test_getMetadataFolder_called_tokenAndIdAndPathAndUserAndResourceUrl_returnMetadata()
+    {
+        $metadata = '{"filename":"root","id":"null","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":true,"is_folder":true,
+                      "contents":[
+                            {"filename":"Client1.pdf","id":32565632156,"size":775412,"mimetype":"application/pdf","status":"DELETED","version":3,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false},
+                            {"filename":"client2","id":44444755856,"size":775412,"mimetype":"application/pdf","status":"NEW","version":1,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":true},
+                            {"filename":"Client3.pdf","id":11165632156,"size":775412,"mimetype":"application/pdf","status":"CHANGED","version":2,"parent_id":null,"user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_folder":false},
+                            {"name":"cloudFolder","access_token_key":"tXn77oo5xmgq4C9koISxf0dSr46Naw","resource_url":"http://ast3-deim.urv.cat/v1/folder/1972","access_token_secret":"Ug40pvqYjNtXD6xBGZZ5rgHR3nLINr"}
+                            ]}';
+
+        $this->exerciseGetMetadataFolder($metadata,json_decode($metadata),$this->resourceUrl);
+    }
+
+
+    /**
+     * method: getMetadataFolder
+     * when: called
+     * with: tokenAndIdAndPathAndUser
+     * should: returnException
+     */
+    public function test_getMetadataFolder_called_tokenAndIdAndPathAndUser_returnException()
+    {
+        $metadata = '{"error":404}';
+        $this->exerciseGetMetadataFolder($metadata,json_decode($metadata));
+    }
+
+    /**
+     * method: getMetadataFolder
+     * when: called
+     * with: tokenAndIdAndPathAndUserAndResourceUrl
+     * should: returnException
+     */
+    public function test_getMetadataFolder_called_tokenAndIdAndPathAndUserAndResourceUrl_returnException()
+    {
+        $metadata = '{"error":404}';
+        $this->exerciseGetMetadataFolder($metadata,json_decode($metadata),$this->resourceUrl);
+    }
+
+
+    /**
+     * method: getMetadataFolder
+     * when: called
+     * with: tokenAndIdAndPathAndUser
+     * should: returnPermissionDenied
+     */
+    public function test_getMetadataFolder_called_tokenAndIdAndPathAndUser_returnPermissionDenied()
+    {
+        $metadata = '{"error":403}';
+        $this->exerciseGetMetadataFolder($metadata,json_decode($metadata));
+    }
+
+    /**
+     * method: getMetadataFolder
+     * when: called
+     * with: tokenAndIdAndPathAndUserAndResourceUrl
+     * should: returnPermissionDenied
+     */
+    public function test_getMetadataFolder_called_tokenAndIdAndPathAndUserAndResourceUrl_returnPermissionDenied()
+    {
+        $metadata = '{"error":403}';
+        $this->exerciseGetMetadataFolder($metadata,json_decode($metadata),$this->resourceUrl);
+    }
+
+
     private function exerciseCreateMetadata($file, $name, $parent_id, $path, $pathAbsolute, $metadataOut, $resourceUrl = null)
     {
         $type = $file?'false':'true';
@@ -3384,6 +3474,18 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             $result = $this->sut->unBlockFile($id, $this->cloud, $this->username, $this->IpServer, $dt_now);
         }
         $this->assertEquals($check,$result);
+    }
+
+    private function exerciseGetMetadataFolder($metadata,$check,$resourceUrl = null)
+    {
+        $id = 'root';
+        $this->apiProviderMock->expects($this->at(0))
+            ->method('getMetadata')
+            ->with($this->cloud, $this->token, false, $id, true,$resourceUrl)
+            ->will($this->returnValue(json_decode($metadata)));
+
+        $result = $this->sut->getMetadataFolder($this->cloud,$this->token,$id,$resourceUrl);
+        $this->assertEquals($check, $result);
     }
 }
 

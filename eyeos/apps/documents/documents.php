@@ -1116,5 +1116,205 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
 		$newFile->putContents($content);
 		return $destinationFile;
 	}
+
+    public function blockFile($params)
+    {
+        $result['status'] = 'KO';
+        $result['error'] = -1;
+        $username = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
+        $IpServer = $_SERVER['SERVER_ADDR'];
+        $timeLimit = TIME_LIMIT_BLOCK;
+        $dt_now = new DateTime('NOW');
+
+        if(isset($params['id']) && isset($params['cloud'])) {
+            $apiManager = new ApiManager();
+            $id = $params['id'];
+            $cloud = $params['cloud'];
+            $result = $apiManager->unLockedFile($id,$cloud,$username,$IpServer,$timeLimit,$dt_now);
+            if(isset($params['block']) && $result['status'] == 'OK') {
+                $result = $apiManager->blockFile($id,$cloud,$username,$IpServer,$timeLimit,$dt_now);
+            }
+        }
+
+        return $result;
+    }
+
+    public function updateDateTime($params)
+    {
+        $result['status'] = 'KO';
+        $result['error'] = -1;
+        $username = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
+        $IpServer = $_SERVER['SERVER_ADDR'];
+        $dt_now = new DateTime('NOW');
+        if(isset($params['id']) && $params['cloud']) {
+            $id = $params['id'];
+            $cloud = $params['cloud'];
+            $apiManager = new ApiManager();
+            $result = $apiManager->updateDateTime($id,$cloud,$username,$IpServer,$dt_now);
+        }
+        return $result;
+    }
+
+    public function unBlockFile($params)
+    {
+        $result['status'] = 'KO';
+        $result['error'] = -1;
+        $username = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
+        $IpServer = $_SERVER['SERVER_ADDR'];
+        $dt_now = new DateTime('NOW');
+        if(isset($params['id']) && $params['cloud']) {
+            $id = $params['id'];
+            $cloud = $params['cloud'];
+            $apiManager = new ApiManager();
+            $result = $apiManager->unBlockFile($id,$cloud,$username,$IpServer,$dt_now);
+        }
+        return $result;
+    }
+
+    public function getCloud($params) {
+        $result['status'] = 'KO';
+        $result['error'] = -1;
+        if(isset($params['path'])) {
+            $apiManager = new ApiManager();
+            $file = FSI::getFile($params['path']);
+            $path = $file->getPath();
+            $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
+            $userName = $user->getName();
+            $cloud = self::isCloud($path, $userName);
+            $resourceUrl = null;
+            if($cloud->isCloud) {
+                $pathU1db = substr($path, strlen($cloud->path));
+                $lenfinal = strrpos($pathU1db, $file->getName());
+                $posfinal = $lenfinal > 1 ? $lenfinal - strlen($pathU1db) - 1 : $lenfinal - strlen($pathU1db);
+                $pathParent = substr($pathU1db, 0, $posfinal);
+                $folder = NULL;
+                if ($pathParent !== '/') {
+                    $pos = strrpos($pathParent, '/');
+                    $folder = substr($pathParent, $pos + 1);
+                    $pathParent = substr($pathParent, 0, $pos + 1);
+                }
+                $parentId = false;
+
+                if ($folder !== NULL) {
+                    $lista = new stdClass();
+                    $lista->cloud = $cloud->name;
+                    $lista->path = $pathParent;
+                    $lista->filename = $folder;
+                    $lista->user_eyeos = $user->getId();
+                    $u1db = json_decode($apiManager->callProcessU1db('parent', $lista));
+                    if ($u1db !== NULL && count($u1db) > 0) {
+                        $parentId = $u1db[0]->id;
+                        if (isset($u1db[0]->resource_url)) {
+                            $resourceUrl = new stdClass();
+                            $resourceUrl->resource_url = $u1db[0]->resource_url;
+                            $resourceUrl->token = new stdClass();
+                            $resourceUrl->token->key = $u1db[0]->access_token_key;
+                            $resourceUrl->token->secret = $u1db[0]->access_token_secret;
+                            if ($parentId === 'null') {
+                                $parentId = 0;
+                            }
+                        }
+                    }
+                } else {
+                    $parentId = '0';
+                }
+
+                if($parentId !== false) {
+                    /*$token = $_SESSION['access_token_' . $cloud->name . '_v2'];
+                    if($resourceUrl) {
+                        $token = $resourceUrl->token;
+                        $resourceUrl = $resourceUrl->resource_url;
+                    }
+                    $apiManager = new ApiManager();
+                    $result = $apiManager->getMetadata($cloud,$token,$id,$path,$user,$resource_url);*/
+                    $result['status'] = 'OK';
+                    $result['isCloud'] = true;
+                    $result['parent_id'] = $parentId;
+                    $result['cloud'] = $cloud->name;
+                    $result['path'] = $file->getParentPath();
+                    $result['filename'] = $file->getName();
+                    if($resourceUrl) {
+                        $result['access_token_key'] = $resourceUrl->token->key;
+                        $result['access_token_secret'] = $resourceUrl->token->secret;
+                        $result['resource_url'] = $resourceUrl->resource_url;
+                    }
+                    unset($result['error']);
+                }
+
+            } else {
+                $result['status'] = 'OK';
+                $result['isCloud'] = false;
+                unset($result['error']);
+            }
+
+        }
+        return $result;
+    }
+
+    public static function getMetadataFile($params)
+    {
+        $result['status'] = 'KO';
+        $result['error'] = -1;
+        $cloud = $params[ 'cloud' ];
+        if(isset($_SESSION[ 'access_token_' . $cloud . '_v2' ])) {
+            $id = $params[ 'id' ];
+            $resource_url = null;
+
+            $token = new stdClass();
+            if(isset($params['resource_url'])) {
+                $token->key = $params['access_token_key'];
+                $token->secret = $params['access_token_secret'];
+                $resource_url = $params['resource_url'];
+            } else {
+                $token = $_SESSION[ 'access_token_' . $cloud . '_v2' ];
+            }
+
+            $apiManager = new ApiManager();
+            $metadata = $apiManager->getMetadataFolder($cloud,$token,$id,$resource_url);
+            if(!isset($metadata->error) && isset($metadata->contents)) {
+                $result['metadata'] = $metadata->contents;
+                $metadataFile = self::search($metadata->contents,$params['search']['key'],$params['search']['value']);
+                if($metadataFile) {
+                    $result['status'] = 'OK';
+                    unset($result['error']);
+                    $result['metadata'] = $metadataFile;
+                }
+            }
+        } else {
+            $result[ 'error' ] = -1;
+            $result[ 'description' ] = "Access token not exists";
+        }
+        return $result;
+    }
+
+    private function isCloud($path, $user)
+    {
+        $cloud = new stdClass();
+        $cloud->isCloud = false;
+        $cloud->name = "";
+        $cloudspaces = 'home://~' . $user . '/Cloudspaces/';
+        if (strrpos($path, $cloudspaces) != -1 && $path !== $cloudspaces) {
+            $cloud->isCloud = true;
+            $auxCloud = substr($path, strlen($cloudspaces));
+            $posStartSlash = stripos($auxCloud, '/');
+            if ($posStartSlash != -1) {
+                $cloud->name = substr($auxCloud, 0, $posStartSlash);
+                $cloud->path = $cloudspaces . $cloud->name;
+            }
+        }
+        return $cloud;
+    }
+
+    private function search($array, $key, $value)
+    {
+        if (is_array($array)) {
+            foreach($array as $data) {
+                if(isset($data->$key) && $data->$key == $value){
+                    return $data;
+                }
+            }
+        }
+        return false;
+    }
 }
 ?>

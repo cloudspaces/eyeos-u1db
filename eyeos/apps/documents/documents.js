@@ -141,6 +141,10 @@ qx.Class.define('eyeos.application.Documents', {
         permissionDenied: {
             init: false,
             check: 'Boolean'
+        },
+        metadataFile: {
+            init: null,
+            check: 'Object'
         }
 	},
 
@@ -215,6 +219,10 @@ qx.Class.define('eyeos.application.Documents', {
         * @since         1.0
         */
 		initApplication: function(username, image) {
+            this.setMetadataFile(new Object());
+            this.getMetadataFile().isCloud = false;
+            this.getMetadataFile().path = this.getFilePath();
+            this.getMetadataFile().block = false;
 			originalContent = "";
             // set current user on this
 			this.setCurrentUser(username);
@@ -229,8 +237,64 @@ qx.Class.define('eyeos.application.Documents', {
 			this.getWindow().setUserData('container', container);
 			this.getWindow().add(container, {flex: 1});
 
+            /*eyeos.callMessage(this.getChecknum(), 'getCloud',{"path":this.getFilePath()}, function(result) {
+                if(result && result.status === 'OK' && result.isCloud === true) {
+                    this.getMetadataFile().isCloud = true;
+                    this.getMetadataFile().parent_id = result.parent_id;
+                    this.getMetadataFile().cloud = result.cloud;
+                    this.getMetadataFile().parent_path = result.path;
+                    this.getMetadataFile().filename = result.filename;
+                    if(result.resource_url) {
+                        this.getMetadataFile().resource_url = result.resource_url;
+                        this.getMetadataFile().access_token_key = result.access_token_key;
+                        this.getMetadataFile().access_token_secret = result.access_token_secret;
+                    }
+
+                    var params = new Object();
+                    params.cloud = this.getMetadataFile().cloud;
+                    params.id = this.getMetadataFile().parent_id;
+                    params.search = new Object();
+                    params.search.key = 'filename';
+                    params.search.value = this.getMetadataFile().filename;
+                    if(this.getMetadataFile().resource_url) {
+                        params.resource_url = this.getMetadataFile().resource_url;
+                        params.access_token_key = this.getMetadataFile().access_token_key;
+                        params.access_token_secret = this.getMetadataFile().access_token_secret;
+                    }
+
+                    eyeos.callMessage(this.getChecknum(), 'getMetadataFile',params, function(result) {
+                        if(result && result.status === 'OK') {
+                            this.getMetadataFile().id = result.metadata.id;
+                            this.getMetadataFile().metadata = result.metadata;
+                            var params = new Object();
+                            params.id = this.getMetadataFile().id;
+                            params.cloud = this.getMetadataFile().cloud;
+                            params.block = true;
+
+                            eyeos.callMessage(this.getChecknum(), 'blockFile',params, function(result) {
+                                console.log(result);
+                            },this);
+
+                            var params = new Object();
+                            params.id = this.getMetadataFile().id;
+                            params.cloud = this.getMetadataFile().cloud;
+                            eyeos.callMessage(this.getChecknum(), 'unBlockFile',params, function(result) {
+                                console.log('result');
+                            },this);
+                            var params = new Object();
+                            params.id = this.getMetadataFile().id;
+                            params.cloud = this.getMetadataFile().cloud;
+                            eyeos.callMessage(this.getChecknum(), 'updateDateTime',params, function(result) {
+                                console.log(result);
+                            },this);
+
+                        }
+                    },this);
+                }
+            },this);*/
+
 			// adding the main listeners to the Application's window...
-			this.getWindow().addListener('appear', function() {
+			/*this.getWindow().addListener('appear', function() {
 				this.getWindow().setCaption('Documents - '+ tr('Unnamed Document'));
 				this._checkMonitorBouds();
 
@@ -284,11 +348,11 @@ qx.Class.define('eyeos.application.Documents', {
                                 if (result == 0) {
                                     //unsubscribe here
                                     var object = this.getMenuBar().getActions();
-                                    /*var netSync = eyeos.netSync.NetSync.getInstance();
+                                    *//*var netSync = eyeos.netSync.NetSync.getInstance();
                                     clearInterval(tinyMCE.getInstanceById(tinymceId).interval);
                                     clearInterval(tinyMCE.getInstanceById(tinymceId).intervalPing);
                                     clearInterval(this.getMenuBar().getActions().interval);
-                                    clearInterval(this.getMenuBar().getActions().intervalGet);*/
+                                    clearInterval(this.getMenuBar().getActions().intervalGet);*//*
 
                                     this.getMenuBar().getActions().__currentDoc.checksum =
                                     eyeos.application.documents.Utils.crc32(tinyMCE.getInstanceById(tinymceId).getContent());
@@ -310,12 +374,12 @@ qx.Class.define('eyeos.application.Documents', {
                         else {
                             //unsubscribe here
                             var object = this.getMenuBar().getActions();
-                            /*var netSync = eyeos.netSync.NetSync.getInstance();
+                            *//*var netSync = eyeos.netSync.NetSync.getInstance();
                             netSync.unsubscribe('document_'+object.__currentDoc.duid);
                             clearInterval(tinyMCE.getInstanceById(tinymceId).interval);
                             clearInterval(tinyMCE.getInstanceById(tinymceId).intervalPing);
                             clearInterval(this.getMenuBar().getActions().interval);
-                            clearInterval(this.getMenuBar().getActions().intervalGet);*/
+                            clearInterval(this.getMenuBar().getActions().intervalGet);*//*
                             this.getMenuBar().getActions().dynamicsWriteOpenRecent();
                         }
                     }
@@ -332,8 +396,204 @@ qx.Class.define('eyeos.application.Documents', {
 			this.getWindow().maximize();
 			this.getWindow().setAllowClose(false);
 			this.getWindow().setEnabled(false);
-			this.getWindow().open();
+			this.getWindow().open();*/
+            if(this.getFilePath()) {
+                this.checkCloud(username, image, this.__openApplication);
+            }
+            else {
+                this.__openApplication(username,image,this);
+            }
 		},
+
+        checkCloud: function(username,image,callback) {
+            eyeos.callMessage(this.getChecknum(), 'getCloud',{"path":this.getFilePath()}, function(result) {
+                if(result && result.status === 'OK') {
+                    if(result.isCloud === true) {
+                        this.getMetadataFile().isCloud = true;
+                        this.getMetadataFile().parent_id = result.parent_id;
+                        this.getMetadataFile().cloud = result.cloud;
+                        this.getMetadataFile().parent_path = result.path;
+                        this.getMetadataFile().filename = result.filename;
+                        if(result.resource_url) {
+                            this.getMetadataFile().resource_url = result.resource_url;
+                            this.getMetadataFile().access_token_key = result.access_token_key;
+                            this.getMetadataFile().access_token_secret = result.access_token_secret;
+                        }
+                        this.__getMetadataFile(username,image,callback);
+
+                    } else {
+                        callback(username,image,this);
+                    }
+                } else {
+                    this.getMetadataFile().block = true;
+                    callback(username,image,this);
+                }
+            },this);
+        },
+
+        __getMetadataFile:function(username,image,callback) {
+            var params = new Object();
+            params.cloud = this.getMetadataFile().cloud;
+            params.id = this.getMetadataFile().parent_id;
+            params.search = new Object();
+            params.search.key = 'filename';
+            params.search.value = this.getMetadataFile().filename;
+            if(this.getMetadataFile().resource_url) {
+                params.resource_url = this.getMetadataFile().resource_url;
+                params.access_token_key = this.getMetadataFile().access_token_key;
+                params.access_token_secret = this.getMetadataFile().access_token_secret;
+            }
+
+            eyeos.callMessage(this.getChecknum(), 'getMetadataFile',params, function(result) {
+                if(result && result.status === 'OK') {
+                    this.getMetadataFile().id = result.metadata.id;
+                    this.getMetadataFile().metadata = result.metadata;
+                    this.__blockFile(username,image,callback);
+                } else {
+                    this.getMetadataFile().block = true;
+                    callback(username,image,this);
+                }
+            },this);
+        },
+
+        __blockFile: function(username,image,callback) {
+            var params = new Object();
+            params.id = this.getMetadataFile().id;
+            params.cloud = this.getMetadataFile().cloud;
+            params.block = true;
+
+            eyeos.callMessage(this.getChecknum(), 'blockFile',params, function(result) {
+                if(!(result && result.status == 'OK')) {
+                    this.getMetadataFile().block = true;
+                }
+                callback(username,image,this);
+            },this);
+        },
+
+        __openApplication: function(username,image,self) {
+            // adding the main listeners to the Application's window...
+            self.getWindow().addListener('appear', function() {
+                self.getWindow().setCaption('Documents - '+ tr('Unnamed Document'));
+                self._checkMonitorBouds();
+
+                // creating the actions class...
+                var actions = new genericbar.both.Actions(self);
+
+                // creating the menuBar....
+                self.createMenuBar(actions);
+
+                // creating the topToolBar...
+                self.createTopToolBar(actions);
+
+                // creating the bottomToolBars...
+                self.createBottomToolBar(actions);
+
+                // creating the tinyMCE editor...
+                self.createEditor(username, image);
+
+                // creating the socialBar...
+                if(self.getEnableSocialBar()) {
+                    self.createEmptySocialBar();
+                } else {
+                    self.getMenuBar().getActions().setSocialBarVisible(false);
+                }
+            }, self);
+
+            self.getWindow().addListener('beforeClose', function(e) {
+
+               if(!self.getPermissionDenied()) {
+
+                    var tinymceId = 'tinymce_editor' + self.getPid();
+
+                    if(!self.isExplorer()) {
+                        removeSelector(self.getCurrentUser());
+                    }
+
+                    var ed = tinyMCE.get('tinymce_editor' + self.getPid());
+                    eyeos.application.documents.Utils.sendChanges(self.isExplorer(), self.getPid(),self.getDuid());
+                    // if the file is not saved...
+                    if(!self.isDisposed()) {
+                        if (!self.getMenuBar().getActions().isFileSaved()) {
+                            e.preventDefault();
+                            // we ask the user if he want to save the file...
+                            var optionPane = new eyeos.dialogs.OptionPane(
+                                "<b>"+tr("Do you want to save the file before closing?")+"</b>",
+                                eyeos.dialogs.OptionPane.QUESTION_MESSAGE,
+                                eyeos.dialogs.OptionPane.YES_NO_CANCEL_OPTION);
+                            var dialog = optionPane.createDialog(self.getWindow(), "Documents", function(result) {
+                                // if the user does not want to save the file, we reset the needed intervals
+                                // for the collaborative plugin, we save the openRecent entries, and we close the application...
+                                if (result == 0) {
+                                    //unsubscribe here
+                                    var object = self.getMenuBar().getActions();
+                                    /*var netSync = eyeos.netSync.NetSync.getInstance();
+                                     clearInterval(tinyMCE.getInstanceById(tinymceId).interval);
+                                     clearInterval(tinyMCE.getInstanceById(tinymceId).intervalPing);
+                                     clearInterval(this.getMenuBar().getActions().interval);
+                                     clearInterval(this.getMenuBar().getActions().intervalGet);*/
+
+                                    self.getMenuBar().getActions().__currentDoc.checksum =
+                                        eyeos.application.documents.Utils.crc32(tinyMCE.getInstanceById(tinymceId).getContent());
+                                    self.getMenuBar().getActions().dynamicsWriteOpenRecent();
+                                    self.getWindow().close();
+                                    self.__checkCloudCloseApplication();
+
+                                }
+                                // if the user does want to save the file, we save it...
+                                else if (result == 1) {
+                                    self.getMenuBar().getActions().__closeFlag = true;
+                                    self.getMenuBar().getActions().fileSave();
+                                    self.__checkCloudCloseApplication();
+                                }
+                            }, self);
+
+                            dialog.open();
+                        }
+                        // if the file is saved, we reset the needed intervals
+                        // for the collaborative plugin, and we save the openRecent entries,
+                        // without saving the current file...
+                        else {
+                            //unsubscribe here
+                            var object = self.getMenuBar().getActions();
+                            /*var netSync = eyeos.netSync.NetSync.getInstance();
+                             netSync.unsubscribe('document_'+object.__currentDoc.duid);
+                             clearInterval(tinyMCE.getInstanceById(tinymceId).interval);
+                             clearInterval(tinyMCE.getInstanceById(tinymceId).intervalPing);
+                             clearInterval(this.getMenuBar().getActions().interval);
+                             clearInterval(this.getMenuBar().getActions().intervalGet);*/
+                             self.getMenuBar().getActions().dynamicsWriteOpenRecent();
+                             self.__checkCloudCloseApplication();
+
+                        }
+                    } else {
+                        self.__checkCloudCloseApplication();
+                    }
+                }
+            }, self);
+
+            var bus = eyeos.messageBus.getInstance();
+            bus.addListener('eyeos_file_permissionDenied',function(e){
+                self.setPermissionDenied(true);
+                self.getMenuBar().getActions().__closeFlag = true;
+                self.getWindow().close();
+            },self);
+
+            self.getWindow().maximize();
+            self.getWindow().setAllowClose(false);
+            self.getWindow().setEnabled(false);
+            self.getWindow().open();
+        },
+
+        __checkCloudCloseApplication: function() {
+            if(this.getMetadataFile().id && this.getMetadataFile().block === false) {
+                console.log('Desbloqueando fichero');
+                var params = new Object();
+                params.id = this.getMetadataFile().id;
+                params.cloud = this.getMetadataFile().cloud;
+                eyeos.callMessage(this.getChecknum(), 'unBlockFile',params, function(result) {
+                },this,false);
+            }
+        },
 
 		createMenuBar: function(actions) {
 			this.setMenuBar(new eyeos.ui.menubar.MenuBar().set({
