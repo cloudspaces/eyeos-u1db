@@ -46,15 +46,16 @@ qx.Class.define('eyeos.application.PdfViewer', {
     members: {
         __path: null,
         drawGUI: function() {
-            console.log('ha llegado');
             var mainWindow = new eyeos.ui.Window(this, 'PDF Viewers').set({
                 layout:  new qx.ui.layout.Grow(),
-                width: 900,
+                width: 894,
                 height: 600
             });
 
             var iframe = new qx.ui.embed.Iframe("index.php?message=getPDF&checknum="+this.getChecknum()+'&params[path]='+ this.__path + '&params[checknum]=' + this.getChecknum());
-            iframe.set({decorator:null});
+            iframe.set({
+                decorator:null
+            });
             mainWindow.add(iframe);
 
             mainWindow.open();

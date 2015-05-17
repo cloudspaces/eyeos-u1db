@@ -121,7 +121,7 @@ abstract class PdfViewerApplication extends EyeosApplicationExecutable {
         ?>
         <html>
             <body>
-                <iframe src="<?php echo htmlentities("index.php?message=getContentFile&checknum=$checknum&params[0]=$fileNameDestination")?>" style="width:850px; height:550px;" frameborder="0"></iframe>
+                <iframe src="<?php echo htmlentities("index.php?message=getContentFile&checknum=$checknum&params[0]=$fileNameDestination")?>" style="width:868px; height:550px;" frameborder="0"></iframe>
             </body>
         </html>
         <?php
