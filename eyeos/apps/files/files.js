@@ -2708,6 +2708,7 @@ qx.Class.define('eyeos.files.Controller', {
                                     if (container.getChildren().length > 1) {
                                         container.removeAt(pos);
                                     }
+                                    this.__checkLastUser(container);
                                 }
                             }, this);
                             containerMailUser.add(deleteImage);
@@ -2719,6 +2720,12 @@ qx.Class.define('eyeos.files.Controller', {
                     buttonSend.setEnabled(true);
                     buttonReload.setEnabled(true);
                 }
+            }
+        },
+
+        __checkLastUser: function(container) {
+            if(container.getChildren().length == 1 && container.getChildren()[0].getChildren().length == 2) {
+                container.getChildren()[0].removeAt(1);
             }
         }
 	}
