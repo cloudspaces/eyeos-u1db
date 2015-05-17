@@ -578,10 +578,10 @@ class ApiManager
                     if($file->username == $user && $file->IpServer == $IpServer) {
                         $free = true;
                     } else {
-                        $dt_plus_timeLimit = new DateTime($file->datetime);
+                        $dt_plus_timeLimit = DateTime::createFromFormat('Y-m-d H:i:s',$file->datetime);
                         $dt_plus_timeLimit->add(new DateInterval('PT' . $timeLimit . 'M'));
-                        $dt_now = strtotime($dt_now->format('Y-d-m H:i:s'));
-                        $dt_plus_timeLimit = strtotime($dt_plus_timeLimit->format('Y-d-m H:i:s'));
+                        $dt_now = strtotime($dt_now->format('Y-m-d H:i:s'));
+                        $dt_plus_timeLimit = strtotime($dt_plus_timeLimit->format('Y-m-d H:i:s'));
                         if ($dt_now > $dt_plus_timeLimit) {
                             $free = true;
                         } else {
@@ -807,7 +807,7 @@ class ApiManager
         $lista->cloud = $cloud;
         $lista->username = $user;
         $lista->IpServer = $IpServer;
-        $lista->datetime = $dt_now->format("Y-d-m H:i:s");
+        $lista->datetime = $dt_now->format("Y-m-d H:i:s");
         if($type == 'unBlockFile') {
             $lista->status = 'close';
         } else {

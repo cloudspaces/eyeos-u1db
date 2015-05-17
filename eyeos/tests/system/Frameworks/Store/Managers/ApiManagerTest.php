@@ -2873,7 +2873,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     {
         $u1dbOut = '[{"id":"124568","cloud":"Stacksync","username":"tester","IpServer":"192.168.56.101","datetime":"2015-05-12 10:50:00","status":"open"}]';
         $check = array("status" => "OK");
-        $dt_now = new DateTime("2015-05-12 11:05:00");
+        $dt_now = DateTime::createFromFormat('Y-m-d H:i:s',"2015-05-12 11:05:00");
         $this->exerciseIsBlockedFile($u1dbOut,$check,$dt_now);
     }
 
@@ -2887,7 +2887,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     {
         $u1dbOut = '[{"id":"124568","cloud":"Stacksync","username":"eyeos","IpServer":"192.168.56.101","datetime":"2015-05-12 10:50:00","status":"open"}]';
         $check = array("status" => "OK");
-        $dt_now = new DateTime("2015-05-12 10:50:00");
+        $dt_now = DateTime::createFromFormat('Y-m-d H:i:s',"2015-05-12 10:50:00");
         $this->exerciseIsBlockedFile($u1dbOut,$check,$dt_now);
     }
 
@@ -2901,7 +2901,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     {
         $u1dbOut = '[{"id":"124568","cloud":"Stacksync","username":"tester","IpServer":"192.168.56.101","datetime":"2015-05-12 10:50:00","status":"open"}]';
         $check = array("status" => "KO","error" => "BLOCK");
-        $dt_now = new DateTime("2015-05-12 10:50:00");
+        $dt_now = DateTime::createFromFormat('Y-m-d H:i:s',"2015-05-12 10:50:00");
         $this->exerciseIsBlockedFile($u1dbOut,$check,$dt_now);
     }
 
@@ -3446,7 +3446,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     private function exerciseBlockFile($u1dbOut,$check,$type,$status)
     {
         $id = "1245678";
-        $dt_now = new DateTime("2015-05-12 10:50:00");
+        $dt_now = DateTime::createFromFormat('Y-m-d H:i:s',"2015-05-12 10:50:00");
         $params = new stdClass();
         $params->type = $type;
         $params->lista = array();
@@ -3455,7 +3455,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $aux->cloud = $this->cloud;
         $aux->username = $this->username;
         $aux->IpServer = $this->IpServer;
-        $aux->datetime = $dt_now->format("Y-d-m H:i:s");
+        $aux->datetime = $dt_now->format("Y-m-d H:i:s");
         $aux->status = $status;
         if($type == 'blockFile') {
             $aux->timeLimit = $this->timeLimit;

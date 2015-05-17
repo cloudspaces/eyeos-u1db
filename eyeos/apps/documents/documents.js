@@ -586,12 +586,11 @@ qx.Class.define('eyeos.application.Documents', {
 
         __checkCloudCloseApplication: function() {
             if(this.getMetadataFile().id && this.getMetadataFile().block === false) {
-                console.log('Desbloqueando fichero');
                 var params = new Object();
                 params.id = this.getMetadataFile().id;
                 params.cloud = this.getMetadataFile().cloud;
                 eyeos.callMessage(this.getChecknum(), 'unBlockFile',params, function(result) {
-                },this,false);
+                },this,{"async":false});
             }
         },
 
