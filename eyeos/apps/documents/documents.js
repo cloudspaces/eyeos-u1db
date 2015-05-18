@@ -603,6 +603,9 @@ qx.Class.define('eyeos.application.Documents', {
 
 			this.getMenuBar().createMenuBar();
 			this.getWindow().getUserData('container').addAt(this.getMenuBar(), 0);
+            if(this.getMetadataFile().block === true) {
+                this.getMenuBar().setEnabled(false);
+            }
 		},
 
 		createTopToolBar: function(actions) {
@@ -616,6 +619,9 @@ qx.Class.define('eyeos.application.Documents', {
 
 			this.getTopToolBar().createToolBar();
 			this.getWindow().getUserData('container').addAt(this.getTopToolBar(), 1);
+            if(this.getMetadataFile().block === true) {
+                this.getTopToolBar().setEnabled(false);
+            }
 		},
 
 		destroyTopToolBar: function() {
@@ -638,6 +644,11 @@ qx.Class.define('eyeos.application.Documents', {
 					this.getWindow().getUserData('container').addAt(this.getBottomToolBarBasic(), 2);
 				}
 			}, this);
+
+            if(this.getMetadataFile().block === true) {
+                this.getBottomToolBarBasic().setEnabled(false);
+                this.getBottomToolBarAdvanced().setEnabled(false);
+            }
 		},
 
 		destroyBottomToolBar:function() {
@@ -794,7 +805,7 @@ qx.Class.define('eyeos.application.Documents', {
 							// if there's any initial File, then we set it, if not
 							// we just set the checksum to an empty string...
 							if (o.getFilePath()) {
-								o.getMenuBar().getActions().setInitialFile(o.getFilePath());
+								o.getMenuBar().getActions().setInitialFile(o.getFilePath(), o.getMetadataFile().block);
 							} else {
 								o.getMenuBar().getActions().__currentDoc.checksum = eyeos.application.documents.Utils.crc32('');
 							}
@@ -818,6 +829,11 @@ qx.Class.define('eyeos.application.Documents', {
 									iframe.style.height = size['height']+'px';
 								 }
 							}, o);
+
+                            if(o.getMetadataFile().block === true) {
+                                ed.getBody().setAttribute('contenteditable', false);
+                            }
+
 						});
 
 						ed.onKeyPress.add(function(ed) {

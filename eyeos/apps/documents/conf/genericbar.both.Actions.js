@@ -135,8 +135,8 @@ qx.Class.define("genericbar.both.Actions", {
 			return eyeos.application.documents.File.isFileSaved(this);
 		},
 
-		setInitialFile: function(path) {
-			eyeos.application.documents.File.setInitialFile(this, path);
+		setInitialFile: function(path,block) {
+			eyeos.application.documents.File.setInitialFile(this, path,block);
 		},
 
 		dynamicsWriteOpenRecent: function() {

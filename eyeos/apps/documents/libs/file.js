@@ -141,7 +141,7 @@ qx.Class.define('eyeos.application.documents.File', {
 			return false;
 		},
 
-		setInitialFile: function(object, path) {
+		setInitialFile: function(object, path,block) {
 			eyeos.callMessage(object.getApplication().getChecknum(), 'fileOpen', path, function(datas) {
 				var tinymceId = 'tinymce_editor' + object.getApplication().getPid();
 				tinyMCE.getInstanceById(tinymceId).setContent(datas[0], {no_events : 1});
@@ -152,7 +152,12 @@ qx.Class.define('eyeos.application.documents.File', {
 				object.__currentDoc.duid = datas[2];
 				tinyMCE.getInstanceById(tinymceId).duid = datas[2];
 				object.getApplication().setDuid(datas[2]);
-				object.getApplication().getWindow().setCaption('Document - ' + datas[1]);
+
+                var caption = 'Document - ' + datas[1];
+                if(block === true) {
+                    caption += ' (' + tr('read only') + ')';
+                }
+				object.getApplication().getWindow().setCaption(caption);
 
 				//subscribe to document channel
 				/*var netSync = eyeos.netSync.NetSync.getInstance();
