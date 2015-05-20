@@ -72,7 +72,7 @@ qx.Class.define('eyeos.application.documents.File', {
 			object.__dynamics.recentDocs.subMenu.addAt(e.getTarget(), 0);
 		},
 
-		fileSave: function(object) {
+		fileSave: function(object,documents) {
 		    if (object.__currentDoc.path) {
 			    var tinymceId = 'tinymce_editor' + object.getApplication().getPid();
 			    eyeos.callMessage(object.getApplication().getChecknum(), 'fileSave',
@@ -87,6 +87,7 @@ qx.Class.define('eyeos.application.documents.File', {
                             if(object.isSocialBarVisible()) {
                                 object.getApplication().updateSocialBar(object.__currentDoc.path);
                             }
+                            object.updateTime();
                         }
 
 				    }, object);
@@ -141,7 +142,7 @@ qx.Class.define('eyeos.application.documents.File', {
 			return false;
 		},
 
-		setInitialFile: function(object, path,block) {
+		setInitialFile: function(object, path,documents) {
 			eyeos.callMessage(object.getApplication().getChecknum(), 'fileOpen', path, function(datas) {
 				var tinymceId = 'tinymce_editor' + object.getApplication().getPid();
 				tinyMCE.getInstanceById(tinymceId).setContent(datas[0], {no_events : 1});
@@ -152,9 +153,10 @@ qx.Class.define('eyeos.application.documents.File', {
 				object.__currentDoc.duid = datas[2];
 				tinyMCE.getInstanceById(tinymceId).duid = datas[2];
 				object.getApplication().setDuid(datas[2]);
+                object.getApplication().getMetadataFile().checksum = object.__currentDoc.checksum;
 
                 var caption = 'Document - ' + datas[1];
-                if(block === true) {
+                if(object.getApplication().getMetadataFile().block === true) {
                     caption += ' (' + tr('read only') + ')';
                 }
 				object.getApplication().getWindow().setCaption(caption);
@@ -181,6 +183,8 @@ qx.Class.define('eyeos.application.documents.File', {
 				    this.fileSave(object);
 				}
 			}, object);
+
+            object.getApplication().initCheckStatusFile();
 		},
 
 		dynamicsWriteOpenRecent: function(object) {
@@ -291,6 +295,31 @@ qx.Class.define('eyeos.application.documents.File', {
 
 		filePrint:function(object, e) {
 			alert('filePrint: ' + e.getTarget().getId() + ' (to be implemented...)');
-		}
+		},
+        updateTime: function(object) {
+            if(object.getApplication().getMetadataFile().id && object.getApplication().getMetadataFile().block === false) {
+                var params = new Object();
+                params.id = object.getApplication().getMetadataFile().id;
+                params.cloud = object.getApplication().getMetadataFile().cloud;
+                eyeos.callMessage(object.getApplication().getChecknum(), 'updateDateTime',params, function(result) {
+                },this);
+            }
+        },
+        sameContent: function(object,data_new) {
+            var resp = true;
+            var tinymceId = 'tinymce_editor' + object.getApplication().getPid();
+            var crc_old = eyeos.application.documents.Utils.crc32(tinyMCE.getInstanceById(tinymceId).getContent());
+            var crc_new = eyeos.application.documents.Utils.crc32(data_new);
+            if(crc_old != crc_new) {
+                resp = false;
+            }
+            return resp;
+        },
+        updateContentEditor: function(object,data) {
+            var tinymceId = 'tinymce_editor' + object.getApplication().getPid();
+            tinyMCE.getInstanceById(tinymceId).setContent(data, {no_events : 1});
+            object.__currentDoc.checksum = eyeos.application.documents.Utils.crc32(tinyMCE.getInstanceById(tinymceId).getContent());
+            object.getApplication().getMetadataFile().checksum = object.__currentDoc.checksum;
+        }
 	}
 });

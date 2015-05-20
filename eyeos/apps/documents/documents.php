@@ -175,7 +175,8 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
                                 '/documents/libs/tools.js',
                                 '/documents/libs/help.js',
                                 '/documents/libs/updates.js',
-                                '/documents/libs/windows_dialogs.js');
+                                '/documents/libs/windows_dialogs.js',
+                                '/documents/libs/Cursor.js');
         // include all
         foreach ($filesToInclude as $file) {
             $buffer .= file_get_contents($itemsPath . $file);
@@ -1117,7 +1118,7 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
 		return $destinationFile;
 	}
 
-    public function blockFile($params)
+    public static function blockFile($params)
     {
         $result['status'] = 'KO';
         $result['error'] = -1;
@@ -1139,7 +1140,7 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
         return $result;
     }
 
-    public function updateDateTime($params)
+    public static function updateDateTime($params)
     {
         $result['status'] = 'KO';
         $result['error'] = -1;
@@ -1155,7 +1156,7 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
         return $result;
     }
 
-    public function unBlockFile($params)
+    public static function unBlockFile($params)
     {
         $result['status'] = 'KO';
         $result['error'] = -1;
@@ -1171,7 +1172,7 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
         return $result;
     }
 
-    public function getCloud($params) {
+    public static function getCloud($params) {
         $result['status'] = 'KO';
         $result['error'] = -1;
         if(isset($params['path'])) {
@@ -1284,6 +1285,28 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
             $result[ 'error' ] = -1;
             $result[ 'description' ] = "Access token not exists";
         }
+        return $result;
+    }
+
+    public static function refreshContent($params){
+        $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
+        $file = FSI::getFile($params['path']);
+        $path = AdvancedPathLib::getPhpLocalHackPath($file->getRealFile()->getAbsolutePath());
+        $id = $params['id'];
+        $cloud = $params['cloud'];
+        $apiManager = new ApiManager();
+        $token = $_SESSION[ 'access_token_' . $cloud . '_v2'];
+        $resourceUrl = null;
+        if(isset($params['resource_url'])) {
+            $token = new stdClass();
+            $token->key = $params['access_token_key'];
+            $token->secret = $params['access_token_secret'];
+            $resourceUrl = $params['resource_url'];
+        }
+
+        $result = $apiManager->downloadMetadata($token, $id, $path, $user, false, $cloud,$resourceUrl);
+        $content = self::fileOpen($params['path']);
+        $result['content'] = $content[0];
         return $result;
     }
 

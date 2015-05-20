@@ -145,8 +145,19 @@ qx.Class.define('eyeos.application.Documents', {
         metadataFile: {
             init: null,
             check: 'Object'
+        },
+        loading: {
+            init: null,
+            check: 'Object'
+        },
+        timer: {
+            init :null
+        },
+        close: {
+            init: false,
+            check: 'Boolean'
         }
-	},
+    },
 
 	members: {
         
@@ -542,7 +553,7 @@ qx.Class.define('eyeos.application.Documents', {
                                 // if the user does want to save the file, we save it...
                                 else if (result == 1) {
                                     self.getMenuBar().getActions().__closeFlag = true;
-                                    self.getMenuBar().getActions().fileSave();
+                                    self.getMenuBar().getActions().fileSave(self);
                                     self.__checkCloudCloseApplication();
                                 }
                             }, self);
@@ -585,6 +596,9 @@ qx.Class.define('eyeos.application.Documents', {
         },
 
         __checkCloudCloseApplication: function() {
+            this.closeLoading();
+            this.__closeTimerStatus();
+            this.setClose(true);
             if(this.getMetadataFile().id && this.getMetadataFile().block === false) {
                 var params = new Object();
                 params.id = this.getMetadataFile().id;
@@ -801,11 +815,11 @@ qx.Class.define('eyeos.application.Documents', {
 
 							// loading the table utils...
 							(new qx.io.ScriptLoader).load('index.php?extern=js/tinymce/jscripts/tiny_mce/plugins/table/js/table.js');
-							
+
 							// if there's any initial File, then we set it, if not
 							// we just set the checksum to an empty string...
 							if (o.getFilePath()) {
-								o.getMenuBar().getActions().setInitialFile(o.getFilePath(), o.getMetadataFile().block);
+								o.getMenuBar().getActions().setInitialFile(o.getFilePath());
 							} else {
 								o.getMenuBar().getActions().__currentDoc.checksum = eyeos.application.documents.Utils.crc32('');
 							}
@@ -1036,7 +1050,117 @@ qx.Class.define('eyeos.application.Documents', {
 				var sharedEditors = info.editors;
 				this.drawSocialBar(name, infoList, imagePath, ratingEnabled, ratingValue, sharedViewers, sharedEditors);
 			}, this);
-		}
+		},
+        showLoading: function() {
+            this.setLoading(new eyeos.application.documents.Cursor(this.getWindow()));
+            this.getLoading().open();
+        },
+
+        closeLoading: function() {
+            if(this.getLoading() !== null) {
+                this.getLoading().close();
+                this.setLoading(null);
+            }
+        },
+        __refreshContent: function(block) {
+            var params = new Object();
+            params.path = this.getMetadataFile().path;
+            params.cloud = this.getMetadataFile().cloud;
+            params.id = this.getMetadataFile().id;
+            var metadata = this.getMetadataFile().metadata;
+            if (metadata.resource_url) {
+                params.resource_url = metadata.resource_url;
+                params.access_token_key = metadata.access_token_key;
+                params.access_token_secret = metadata.access_token_secret;
+            }
+            var refreshEditor = false;
+            //this.getMenuBar().getActions().updateContentEditor("<p>Julian</p>");
+
+            eyeos.callMessage(this.getChecknum(), 'refreshContent',params, function(result) {
+                if(result.content) {
+                    refreshEditor = !this.getMenuBar().getActions().sameContent(result.content);
+                }
+                if(refreshEditor) {
+                    if(block === false) {
+                        this.showLoading();
+                        var that = this;
+                        var reffunction = function () {
+                            that.__refreshEditor(block,result.content);
+                        };
+                        this.setTimer(setTimeout(reffunction, 3000));
+
+                    } else {
+                        this.__refreshEditor(block,result.content);
+                    }
+                } else {
+                    if(block === true) {
+                        this.__enableEditor();
+                    } else {
+                        var that = this;
+                        var reffunction = function () {
+                            that.__checkStatusFile()
+                        };
+                        this.setTimer(setTimeout(reffunction, 10000));
+                    }
+                }
+            },this);
+        },
+        initCheckStatusFile: function() {
+            if(this.getMetadataFile().id && this.getMetadataFile().block === true) {
+                var that = this;
+                var reffunction = function () {
+                    that.__checkStatusFile()
+                };
+                this.setTimer(setTimeout(reffunction, 10000));
+            }
+        },
+        __checkStatusFile: function() {
+            if(!this.getClose()) {
+                var params = new Object();
+                params.id = this.getMetadataFile().id;
+                params.cloud = this.getMetadataFile().cloud;
+                params.block = true;
+                var block = false;
+
+                eyeos.callMessage(this.getChecknum(), 'blockFile',params, function(result) {
+                    if(result.status == 'OK') {
+                        block = true;
+                    }
+                    this.__refreshContent(block)
+                },this);
+            }
+        },
+        __closeTimerStatus: function() {
+            if(this.getTimer() !== null) {
+                clearTimeout(this.getTimer());
+                this.setTimer(null);
+            }
+        },
+
+        __enableEditor: function() {
+            this.getMetadataFile().block = false;
+            var ed = tinyMCE.get('tinymce_editor' + this.getPid());
+            this.getMenuBar().setEnabled(true);
+            this.getBottomToolBarBasic().setEnabled(true);
+            this.getBottomToolBarAdvanced().setEnabled(true);
+            this.getTopToolBar().setEnabled(true);
+            ed.getBody().setAttribute('contenteditable', true);
+            this.getWindow().setCaption('Documents - '+ this.getMetadataFile().metadata.filename);
+            this.setTimer(null);
+        },
+        __refreshEditor: function(block,data) {
+             this.closeLoading();
+             this.getMenuBar().getActions().updateContentEditor(data);
+             if(block === true) {
+                 this.__enableEditor();
+             } else {
+                 var that = this;
+                 var reffunction = function () {
+                     that.__checkStatusFile()
+                 };
+                 this.setTimer(setTimeout(reffunction, 10000));
+             }
+        }
 	}
 });
 

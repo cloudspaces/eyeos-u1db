@@ -124,7 +124,7 @@ qx.Class.define("genericbar.both.Actions", {
 		},
 
 		fileSave: function() {
-			eyeos.application.documents.File.fileSave(this);
+			eyeos.application.documents.File.fileSave(this,this.getApplication());
 		},
 
 		fileSaveAs: function() {
@@ -135,8 +135,8 @@ qx.Class.define("genericbar.both.Actions", {
 			return eyeos.application.documents.File.isFileSaved(this);
 		},
 
-		setInitialFile: function(path,block) {
-			eyeos.application.documents.File.setInitialFile(this, path,block);
+		setInitialFile: function(path) {
+			eyeos.application.documents.File.setInitialFile(this, path);
 		},
 
 		dynamicsWriteOpenRecent: function() {
@@ -645,7 +645,17 @@ qx.Class.define("genericbar.both.Actions", {
 
 		updateTopToolBar: function(e, needUpdates) {
 			eyeos.application.documents.Updates.updateTopToolBar(e, needUpdates);
-		}
+		},
+
+        updateTime: function() {
+            eyeos.application.documents.File.updateTime(this);
+        },
+        sameContent: function(data_new) {
+            return eyeos.application.documents.File.sameContent(this,data_new);
+        },
+        updateContentEditor: function(data) {
+            eyeos.application.documents.File.updateContentEditor(this,data);
+        }
 	}
 });
 
