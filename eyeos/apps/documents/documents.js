@@ -156,6 +156,10 @@ qx.Class.define('eyeos.application.Documents', {
         close: {
             init: false,
             check: 'Boolean'
+        },
+        unLockWindow: {
+            init: null,
+            check: 'Object'
         }
     },
 
@@ -599,6 +603,7 @@ qx.Class.define('eyeos.application.Documents', {
             this.closeLoading();
             this.__closeTimerStatus();
             this.setClose(true);
+            this.__closeUnLockWindow();
             if(this.getMetadataFile().id && this.getMetadataFile().block === false) {
                 var params = new Object();
                 params.id = this.getMetadataFile().id;
@@ -1094,7 +1099,10 @@ qx.Class.define('eyeos.application.Documents', {
                     }
                 } else {
                     if(block === true) {
-                        this.__enableEditor();
+                        this.setUnLockWindow(new eyeos.application.documents.UnLockDialog(this));
+                        this.getUnLockWindow().open();
+                        //this.enableDisableEditor(true);
+
                     } else {
                         var that = this;
                         var reffunction = function () {
@@ -1137,22 +1145,28 @@ qx.Class.define('eyeos.application.Documents', {
             }
         },
 
-        __enableEditor: function() {
-            this.getMetadataFile().block = false;
+        enableDisableEditor: function(enable) {
+            if(enable) {
+                this.getMetadataFile().block = false;
+                this.getWindow().setCaption('Documents - '+ this.getMetadataFile().metadata.filename);
+            }
+
             var ed = tinyMCE.get('tinymce_editor' + this.getPid());
-            this.getMenuBar().setEnabled(true);
-            this.getBottomToolBarBasic().setEnabled(true);
-            this.getBottomToolBarAdvanced().setEnabled(true);
-            this.getTopToolBar().setEnabled(true);
-            ed.getBody().setAttribute('contenteditable', true);
-            this.getWindow().setCaption('Documents - '+ this.getMetadataFile().metadata.filename);
+            this.getMenuBar().setEnabled(enable);
+            this.getBottomToolBarBasic().setEnabled(enable);
+            this.getBottomToolBarAdvanced().setEnabled(enable);
+            this.getTopToolBar().setEnabled(enable);
+            ed.getBody().setAttribute('contenteditable', enable);
             this.setTimer(null);
+            this.setUnLockWindow(null);
         },
         __refreshEditor: function(block,data) {
              this.closeLoading();
              this.getMenuBar().getActions().updateContentEditor(data);
              if(block === true) {
-                 this.__enableEditor();
+                 this.setUnLockWindow(new eyeos.application.documents.UnLockDialog(this));
+                 this.getUnLockWindow().open();
+                 //this.enableDisableEditor(true);
              } else {
                  var that = this;
                  var reffunction = function () {
@@ -1160,6 +1174,28 @@ qx.Class.define('eyeos.application.Documents', {
                  };
                  this.setTimer(setTimeout(reffunction, 10000));
              }
+        },
+        blockFileNew: function(path,close) {
+            eyeos.messageBus.getInstance().removeListener('eyeos_file_refreshStackSync', this.__listenerBlockFile, this);
+            if(close === false) {
+                this.getMetadataFile().path = path + ".edoc";
+                eyeos.messageBus.getInstance().addListener('eyeos_file_refreshStackSync', this.__listenerBlockFile, this);
+            }
+        },
+        __listenerBlockFile: function(e) {
+            if(e.getData().length > 0) {
+                var pathNew = e.getData()[1];
+                if(pathNew === this.getMetadataFile().path) {
+                    //Bloquear Fichero
+                }
+            }
+            eyeos.messageBus.getInstance().removeListener('eyeos_file_refreshStackSync', this.__listenerBlockFile, this);
+        },
+        __closeUnLockWindow: function() {
+            if(this.getUnLockWindow() !== null) {
+                this.getUnLockWindow().close();
+                this.setUnLockWindow(null);
+            }
         }
 	}
 });

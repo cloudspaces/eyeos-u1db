@@ -72,7 +72,7 @@ qx.Class.define('eyeos.application.documents.File', {
 			object.__dynamics.recentDocs.subMenu.addAt(e.getTarget(), 0);
 		},
 
-		fileSave: function(object,documents) {
+		fileSave: function(object) {
 		    if (object.__currentDoc.path) {
 			    var tinymceId = 'tinymce_editor' + object.getApplication().getPid();
 			    eyeos.callMessage(object.getApplication().getChecknum(), 'fileSave',
@@ -92,14 +92,17 @@ qx.Class.define('eyeos.application.documents.File', {
 
 				    }, object);
 		    } else {
-			    object.fileSaveAs();
+			    object.fileSaveAs(true);
 		    }
 		},
 
-		fileSaveAs: function(object) {
+		fileSaveAs: function(object,newFile) {
 			var fc = new eyeos.dialogs.FileChooser(object.getApplication().getChecknum());
 			fc.showSaveDialog(object.getApplication().getWindow(), function(choice, path) {
 				object.getApplication().getWindow().setCaption('Documents - ' + path);
+                if(newFile === true) {
+                    object.getApplication().blockFileNew(path, object.__closeFlag);
+                }
 				if (choice == eyeos.dialogs.FileChooser.APPROVE_OPTION) {
 					var tinymceId = 'tinymce_editor' + object.getApplication().getPid();
 					eyeos.callMessage(object.getApplication().getChecknum(), 'fileSaveAs',
@@ -112,7 +115,6 @@ qx.Class.define('eyeos.application.documents.File', {
 									eyeos.messageBus.getInstance().send('files', 'new', [currentPath, fileInfo]);
 								}, this);
 							}
-
 							object.__currentDoc.path = newPath;
 							object.__currentDoc.checksum = eyeos.application.documents.Utils.crc32(tinyMCE.getInstanceById(tinymceId).getContent());
 							if (object.__closeFlag) {
@@ -157,7 +159,7 @@ qx.Class.define('eyeos.application.documents.File', {
 
                 var caption = 'Document - ' + datas[1];
                 if(object.getApplication().getMetadataFile().block === true) {
-                    caption += ' (' + tr('read only') + ')';
+                    caption += ' (' + tr('Read Only') + ')';
                 }
 				object.getApplication().getWindow().setCaption(caption);
 

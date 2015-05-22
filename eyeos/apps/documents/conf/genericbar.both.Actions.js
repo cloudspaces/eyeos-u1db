@@ -124,11 +124,11 @@ qx.Class.define("genericbar.both.Actions", {
 		},
 
 		fileSave: function() {
-			eyeos.application.documents.File.fileSave(this,this.getApplication());
+			eyeos.application.documents.File.fileSave(this);
 		},
 
-		fileSaveAs: function() {
-			eyeos.application.documents.File.fileSaveAs(this);
+		fileSaveAs: function(newFile) {
+			eyeos.application.documents.File.fileSaveAs(this,newFile);
 		},
 
 		isFileSaved: function() {

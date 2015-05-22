@@ -176,7 +176,8 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
                                 '/documents/libs/help.js',
                                 '/documents/libs/updates.js',
                                 '/documents/libs/windows_dialogs.js',
-                                '/documents/libs/Cursor.js');
+                                '/documents/libs/Cursor.js',
+                                '/documents/libs/unLockDialog.js');
         // include all
         foreach ($filesToInclude as $file) {
             $buffer .= file_get_contents($itemsPath . $file);

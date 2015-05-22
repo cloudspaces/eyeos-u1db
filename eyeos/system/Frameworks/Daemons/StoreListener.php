@@ -123,7 +123,7 @@ class StoreListener extends AbstractFileAdapter implements ISharingListener {
                 }
                 $result = $apiManager->createMetadata($cloud->name, $token, $user->getId(), true, $e->getSource()->getName(), $parentId, $path, $pathAbsolute,$resourceUrl);
                 if($result['status'] == 'OK') {
-                    $params = array($e->getSource()->getParentPath());
+                    $params = array($e->getSource()->getParentPath(),$e->getSource()->getPath());
                     $message = new ClientBusMessage('file', 'refreshStackSync', $params);
                     ClientMessageBusController::getInstance()->queueMessage($message);
                 } else if($result['error'] == 403) {
