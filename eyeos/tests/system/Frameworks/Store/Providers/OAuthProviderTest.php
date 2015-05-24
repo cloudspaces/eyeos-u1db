@@ -152,10 +152,13 @@ class OAuthProviderTest extends PHPUnit_Framework_TestCase
     public function test_deleteToken_called_user_returnCorrect()
     {
         $userId = 'eyeID_EyeosUser_453';
+        $cloud = 'Stacksync';
+        $sql = 'DELETE FROM `token` WHERE `userID` = \''. $userId .'\' AND `cloudspaceName` = \''. $cloud .'\'';
         $token = $this->getToken($userId);
+        $token->setCloudspaceName($cloud);
         $this->daoMock->expects($this->once())
-            ->method('delete')
-            ->with($token);
+            ->method('send')
+            ->with($sql);
         $result = $this->sut->deleteToken($token);
         $this->assertEquals(true,$result);
     }

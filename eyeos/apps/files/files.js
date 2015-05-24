@@ -2083,7 +2083,7 @@ qx.Class.define('eyeos.files.Controller', {
                     this._initFiles();
                     this._deleteFolderCloud(result.path);
                 } else {
-                    this.getView().timeOutCloud(tr("Time out"), this.__cloud, true);
+                    this.getView().timeOutCloud(tr(result.error), this.__cloud, true);
                 }
             }, this);
         },

@@ -75,7 +75,9 @@ class OAuthProvider_
     public function deleteToken($token)
     {
         try {
-            $this->dao->delete($token);
+            //$this->dao->delete($token);
+            $sql = 'DELETE FROM `token` WHERE `userID` = \''. $token->getUserID() .'\' AND `cloudspaceName` = \''. $token->getCloudspaceName() .'\'';
+            $this->dao->send($sql);
             return true;
         } catch (Exception $e) {}
         return false;
