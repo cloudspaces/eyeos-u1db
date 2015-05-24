@@ -196,6 +196,7 @@ qx.Class.define('eyeos.files.IconViewItem', {
                         var isObject = metadata === Object(metadata);
                         if(!(isObject && metadata.id.indexOf('_' + cloud.cloud) !== -1)) {
                             menu[menu.length -1].id = 'shareFolder()';
+                            menu[menu.length -1].image = 'index.php?extern=images/16x16/categories/share-cloud.png';
                         }
                     }
 
@@ -545,7 +546,7 @@ qx.Class.define('eyeos.files.IconViewItem', {
 		},
         unShareFolder: function() {
             if(this._menu.getChildren().length == 10) {
-                var item = new qx.ui.menu.Button(tr('unShare'), 'index.php?extern=images/cancel.png');
+                var item = new qx.ui.menu.Button(tr('unShare'), 'index.php?extern=images/16x16/categories/unshare-cloud.png');
                 item.setUserData('id', 'unShareFolder()');
                 item._manager = this.getManager().getViewManager().getController();
                 item.addListener('appear', function (e) {
