@@ -174,13 +174,17 @@ qx.Class.define('eyeos.application.Documents', {
         * @param         qx.ui.basic.Image               image
         * @since         1.0
         */
+        __username: null,
+        __image: null,
         _getUserAndStart: function(image) {
+            this.__image = image;
             eyeos.callMessage(this.getChecknum(), 'getCurrentUsername', null, function(username) {
+                this.__username = username;
                 this.addListener('tinyCompleted', function() {
                     this.getWindow().setAllowClose(true);
                     this.getWindow().setEnabled(true);
                 }, this);
-                this.initApplication(username, image);
+                this.initApplication();
             }, this);
         },
         
@@ -233,14 +237,14 @@ qx.Class.define('eyeos.application.Documents', {
         * @param         qx.ui.basic.Image              image
         * @since         1.0
         */
-		initApplication: function(username, image) {
+		initApplication: function() {
             this.setMetadataFile(new Object());
             this.getMetadataFile().isCloud = false;
             this.getMetadataFile().path = this.getFilePath();
             this.getMetadataFile().block = false;
 			originalContent = "";
             // set current user on this
-			this.setCurrentUser(username);
+			this.setCurrentUser(this.__username);
 
             // construct main window
 			this.setWindow(new eyeos.ui.Window(this, 'Documents', 'index.php?extern=/images/16x16/apps/okteta.png', true).set({
@@ -413,14 +417,14 @@ qx.Class.define('eyeos.application.Documents', {
 			this.getWindow().setEnabled(false);
 			this.getWindow().open();*/
             if(this.getFilePath()) {
-                this.checkCloud(username, image, this.__openApplication);
+                this.checkCloud(this.__openApplication);
             }
             else {
-                this.__openApplication(username,image,this);
+                this.__openApplication(this);
             }
 		},
 
-        checkCloud: function(username,image,callback) {
+        checkCloud: function(callback) {
             eyeos.callMessage(this.getChecknum(), 'getCloud',{"path":this.getFilePath()}, function(result) {
                 if(result && result.status === 'OK') {
                     if(result.isCloud === true) {
@@ -434,19 +438,19 @@ qx.Class.define('eyeos.application.Documents', {
                             this.getMetadataFile().access_token_key = result.access_token_key;
                             this.getMetadataFile().access_token_secret = result.access_token_secret;
                         }
-                        this.__getMetadataFile(username,image,callback);
+                        this.__getMetadataFile(callback);
 
                     } else {
-                        callback(username,image,this);
+                        callback(this);
                     }
                 } else {
                     this.getMetadataFile().block = true;
-                    callback(username,image,this);
+                    callback(this);
                 }
             },this);
         },
 
-        __getMetadataFile:function(username,image,callback) {
+        __getMetadataFile:function(callback) {
             var params = new Object();
             params.cloud = this.getMetadataFile().cloud;
             params.id = this.getMetadataFile().parent_id;
@@ -463,15 +467,15 @@ qx.Class.define('eyeos.application.Documents', {
                 if(result && result.status === 'OK') {
                     this.getMetadataFile().id = result.metadata.id;
                     this.getMetadataFile().metadata = result.metadata;
-                    this.__blockFile(username,image,callback);
+                    this.__blockFile(callback);
                 } else {
                     this.getMetadataFile().block = true;
-                    callback(username,image,this);
+                    callback(this);
                 }
             },this);
         },
 
-        __blockFile: function(username,image,callback) {
+        __blockFile: function(callback) {
             var params = new Object();
             params.id = this.getMetadataFile().id;
             params.cloud = this.getMetadataFile().cloud;
@@ -481,11 +485,11 @@ qx.Class.define('eyeos.application.Documents', {
                 if(!(result && result.status == 'OK')) {
                     this.getMetadataFile().block = true;
                 }
-                callback(username,image,this);
+                callback(this);
             },this);
         },
 
-        __openApplication: function(username,image,self) {
+        __openApplication: function(self) {
             // adding the main listeners to the Application's window...
             self.getWindow().addListener('appear', function() {
                 self.getWindow().setCaption('Documents - '+ tr('Unnamed Document'));
@@ -504,7 +508,7 @@ qx.Class.define('eyeos.application.Documents', {
                 self.createBottomToolBar(actions);
 
                 // creating the tinyMCE editor...
-                self.createEditor(username, image);
+                self.createEditor(self.__username, self.__image);
 
                 // creating the socialBar...
                 if(self.getEnableSocialBar()) {
@@ -1148,7 +1152,11 @@ qx.Class.define('eyeos.application.Documents', {
         enableDisableEditor: function(enable) {
             if(enable) {
                 this.getMetadataFile().block = false;
-                this.getWindow().setCaption('Documents - '+ this.getMetadataFile().metadata.filename);
+                var filename = '';
+                if(this.getMetadataFile().metadata && this.getMetadataFile().metadata.filename) {
+                    filename = this.getMetadataFile().metadata.filename;
+                }
+                this.getWindow().setCaption('Documents - '+ filename);
             }
 
             var ed = tinyMCE.get('tinymce_editor' + this.getPid());
@@ -1186,10 +1194,18 @@ qx.Class.define('eyeos.application.Documents', {
             if(e.getData().length > 0) {
                 var pathNew = e.getData()[1];
                 if(pathNew === this.getMetadataFile().path) {
-                    //Bloquear Fichero
+                    this.enableDisableEditor(false);
+                    this.showLoading();
+                    this.setFilePath(pathNew);
+                    this.checkCloud(this.__closeBlockFileNew);
                 }
             }
             eyeos.messageBus.getInstance().removeListener('eyeos_file_refreshStackSync', this.__listenerBlockFile, this);
+        },
+        __closeBlockFileNew: function(self) {
+            self.enableDisableEditor(true);
+            self.closeLoading();
+            console.log(self.getMetadataFile());
         },
         __closeUnLockWindow: function() {
             if(this.getUnLockWindow() !== null) {
