@@ -467,7 +467,7 @@ qx.Class.define('eyeos.application.Documents', {
                 if(result && result.status === 'OK') {
                     this.getMetadataFile().id = result.metadata.id;
                     this.getMetadataFile().metadata = result.metadata;
-                    this.__blockFile(callback);
+                    this.__lockFile(callback);
                 } else {
                     this.getMetadataFile().block = true;
                     callback(this);
@@ -475,13 +475,13 @@ qx.Class.define('eyeos.application.Documents', {
             },this);
         },
 
-        __blockFile: function(callback) {
+        __lockFile: function(callback) {
             var params = new Object();
             params.id = this.getMetadataFile().id;
             params.cloud = this.getMetadataFile().cloud;
             params.block = true;
 
-            eyeos.callMessage(this.getChecknum(), 'blockFile',params, function(result) {
+            eyeos.callMessage(this.getChecknum(), 'lockFile',params, function(result) {
                 if(!(result && result.status == 'OK')) {
                     this.getMetadataFile().block = true;
                 }
@@ -612,7 +612,7 @@ qx.Class.define('eyeos.application.Documents', {
                 var params = new Object();
                 params.id = this.getMetadataFile().id;
                 params.cloud = this.getMetadataFile().cloud;
-                eyeos.callMessage(this.getChecknum(), 'unBlockFile',params, function(result) {
+                eyeos.callMessage(this.getChecknum(), 'unLockFile',params, function(result) {
                 },this,{"async":false});
             }
         },
@@ -1134,7 +1134,7 @@ qx.Class.define('eyeos.application.Documents', {
                 params.block = true;
                 var block = false;
 
-                eyeos.callMessage(this.getChecknum(), 'blockFile',params, function(result) {
+                eyeos.callMessage(this.getChecknum(), 'lockFile',params, function(result) {
                     if(result.status == 'OK') {
                         block = true;
                     }
@@ -1183,26 +1183,26 @@ qx.Class.define('eyeos.application.Documents', {
                  this.setTimer(setTimeout(reffunction, 10000));
              }
         },
-        blockFileNew: function(path,close) {
-            eyeos.messageBus.getInstance().removeListener('eyeos_file_refreshStackSync', this.__listenerBlockFile, this);
+        lockFileNew: function(path,close) {
+            eyeos.messageBus.getInstance().removeListener('eyeos_file_refreshStackSync', this.__listenerLockFile, this);
             if(close === false) {
                 this.getMetadataFile().path = path + ".edoc";
-                eyeos.messageBus.getInstance().addListener('eyeos_file_refreshStackSync', this.__listenerBlockFile, this);
+                eyeos.messageBus.getInstance().addListener('eyeos_file_refreshStackSync', this.__listenerLockFile, this);
             }
         },
-        __listenerBlockFile: function(e) {
+        __listenerLockFile: function(e) {
             if(e.getData().length > 0) {
                 var pathNew = e.getData()[1];
                 if(pathNew === this.getMetadataFile().path) {
                     this.enableDisableEditor(false);
                     this.showLoading();
                     this.setFilePath(pathNew);
-                    this.checkCloud(this.__closeBlockFileNew);
+                    this.checkCloud(this.__closeLockFileNew);
                 }
             }
-            eyeos.messageBus.getInstance().removeListener('eyeos_file_refreshStackSync', this.__listenerBlockFile, this);
+            eyeos.messageBus.getInstance().removeListener('eyeos_file_refreshStackSync', this.__listenerLockFile, this);
         },
-        __closeBlockFileNew: function(self) {
+        __closeLockFileNew: function(self) {
             self.enableDisableEditor(true);
             self.closeLoading();
             console.log(self.getMetadataFile());

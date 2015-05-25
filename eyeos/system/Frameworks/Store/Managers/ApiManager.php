@@ -567,7 +567,6 @@ class ApiManager
         $metadataU1db = $this->callProcessU1db('getMetadataFile', $lista);
         if($metadataU1db == "[]") {
             $free = true;
-
         } else {
             $metadata = json_decode($metadataU1db);
             if($metadata && count($metadata) > 0) {
@@ -600,19 +599,19 @@ class ApiManager
         return $result;
     }
 
-    public function blockFile($id,$cloud,$user,$IpServer,$timeLimit,$dt_now)
+    public function lockFile($id,$cloud,$user,$IpServer,$timeLimit,$dt_now)
     {
-        return $this->exerciseBlockFile($id,$cloud,$user,$IpServer,$timeLimit,$dt_now,'blockFile');
+        return $this->exerciseLockFile($id,$cloud,$user,$IpServer,$timeLimit,$dt_now,'lockFile');
     }
 
     public function updateDateTime($id,$cloud,$user,$IpServer,$dt_now)
     {
-        return $this->exerciseBlockFile($id,$cloud,$user,$IpServer,null,$dt_now,'updateDateTime');
+        return $this->exerciseLockFile($id,$cloud,$user,$IpServer,null,$dt_now,'updateDateTime');
     }
 
-    public function unBlockFile($id,$cloud,$user,$IpServer,$dt_now)
+    public function unLockFile($id,$cloud,$user,$IpServer,$dt_now)
     {
-        return $this->exerciseBlockFile($id,$cloud,$user,$IpServer,null,$dt_now,'unBlockFile');
+        return $this->exerciseLockFile($id,$cloud,$user,$IpServer,null,$dt_now,'unLockFile');
     }
 
     public function getMetadataFolder($cloud, $token, $id, $resourceUrl=NULL)
@@ -798,7 +797,7 @@ class ApiManager
         return $result;
     }
 
-    private function exerciseBlockFile($id,$cloud,$user,$IpServer,$timeLimit,$dt_now,$type)
+    private function exerciseLockFile($id,$cloud,$user,$IpServer,$timeLimit,$dt_now,$type)
     {
         $result[ 'status' ] = 'KO';
         $result[ 'error' ] = -1;
@@ -808,12 +807,12 @@ class ApiManager
         $lista->username = $user;
         $lista->IpServer = $IpServer;
         $lista->datetime = $dt_now->format("Y-m-d H:i:s");
-        if($type == 'unBlockFile') {
+        if($type == 'unLockFile') {
             $lista->status = 'close';
         } else {
             $lista->status = 'open';
         }
-        if($type == 'blockFile') {
+        if($type == 'lockFile') {
             $lista->timeLimit = $timeLimit;
         }
         $metadataU1db = $this->callProcessU1db($type, $lista);

@@ -74,12 +74,12 @@ class Protocol:
             result = self.selectCalendarsAndEvents(lista[0]['user_eyeos'])
         elif type == "getMetadataFile":
             result = self.getMetadataFile(lista[0]['id'],lista[0]['cloud'])
-        elif type == "blockFile":
-            result = self.blockFile(lista[0])
+        elif type == "lockFile":
+            result = self.lockFile(lista[0])
         elif type == "updateDateTime":
             result = self.updateDateTime(lista[0])
-        elif type == "unBlockFile":
-            result = self.unBlockFile(lista[0])
+        elif type == "unLockFile":
+            result = self.unLockFile(lista[0])
 
         return json.dumps(result)
 
@@ -175,14 +175,14 @@ class Protocol:
     def getMetadataFile(self,id,cloud):
         return self.metadata.getMetadataFile(id,cloud)
 
-    def blockFile(self,data):
-        return self.metadata.blockFile(data)
+    def lockFile(self,data):
+        return self.metadata.lockFile(data)
 
     def updateDateTime(self,data):
         return self.metadata.updateDateTime(data)
 
-    def unBlockFile(self,data):
-        self.metadata.unBlockFile(data)
+    def unLockFile(self,data):
+        self.metadata.unLockFile(data)
         return True
 
     def configDb(self,type,creds = None):
@@ -198,8 +198,8 @@ class Protocol:
                 name = "downloadfile.u1db"
             elif type == "recursiveDeleteVersion" or type == "deleteMetadataUser":
                 name2 = "downloadfile.u1db"
-            elif type == "getMetadataFile" or type == "blockFile" or type == "updateDateTime" or type == "unBlockFile":
-                name = "blockfile.u1db"
+            elif type == "getMetadataFile" or type == "lockFile" or type == "updateDateTime" or type == "unLockFile":
+                name = "lockfile.u1db"
 
         self.metadata = Metadata(name,creds,name2)
 

@@ -379,7 +379,7 @@ class Metadata:
 
     """
     ##################################################################################################################################################
-                                                                    BLOCK FILE
+                                                                    LOCK FILE
     ##################################################################################################################################################
     """
 
@@ -393,7 +393,7 @@ class Metadata:
                 result.append(file.content)
         return result
 
-    def blockFile(self,data):
+    def lockFile(self,data):
         self.sync()
         self.db.create_index("by-id-cloud", "id", "cloud")
         files = self.db.get_from_index("by-id-cloud", data['id'], data['cloud'])
@@ -435,7 +435,7 @@ class Metadata:
             result = False
         return result
 
-    def unBlockFile(self,data):
+    def unLockFile(self,data):
          self.sync()
          self.db.create_index("by-id-cloud-username-IpServer", "id", "cloud","username","IpServer")
          files = self.db.get_from_index("by-id-cloud-username-IpServer", data['id'],data['cloud'],data['username'],data['IpServer'])

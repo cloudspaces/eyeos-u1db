@@ -101,7 +101,7 @@ qx.Class.define('eyeos.application.documents.File', {
 			fc.showSaveDialog(object.getApplication().getWindow(), function(choice, path) {
 				object.getApplication().getWindow().setCaption('Documents - ' + path);
                 if(newFile === true) {
-                    object.getApplication().blockFileNew(path, object.__closeFlag);
+                    object.getApplication().lockFileNew(path, object.__closeFlag);
                 }
 				if (choice == eyeos.dialogs.FileChooser.APPROVE_OPTION) {
 					var tinymceId = 'tinymce_editor' + object.getApplication().getPid();

@@ -438,7 +438,7 @@ class ProtocolTest (unittest.TestCase):
 
     """
     ##################################################################################################################################################
-                                                               TEST BLOCK FILE
+                                                               TEST LOCK FILE
     ##################################################################################################################################################
     """
 
@@ -462,17 +462,17 @@ class ProtocolTest (unittest.TestCase):
     """
     method: protocol
     when: called
-    with: typeBlockFileAndList
+    with: typeLockFileAndList
     should: correctBlock
     """
 
-    def test_protocol_called_typeBlockFileAndList_returnCorrectBlock(self):
-        params = '{"type":"blockFile","lista":[{"id":"124568","cloud":"Stacksync","username":"eyeos","IpServer":"192.168.56.101","datetime":"2015-05-12 10:50:00","status":"open","timeLimit":10}]}'
+    def test_protocol_called_typeLockFileAndList_returnCorrectBlock(self):
+        params = '{"type":"lockFile","lista":[{"id":"124568","cloud":"Stacksync","username":"eyeos","IpServer":"192.168.56.101","datetime":"2015-05-12 10:50:00","status":"open","timeLimit":10}]}'
         aux = json.loads(params)
-        self.protocol.blockFile = Mock()
-        self.protocol.blockFile.return_value = True
+        self.protocol.lockFile = Mock()
+        self.protocol.lockFile.return_value = True
         result = self.protocol.protocol(params)
-        self.protocol.blockFile.assert_called_once_with(aux['lista'][0])
+        self.protocol.lockFile.assert_called_once_with(aux['lista'][0])
         self.assertEquals('true',result)
 
 
@@ -494,14 +494,14 @@ class ProtocolTest (unittest.TestCase):
     """
     method: protocol
     when: called
-    with: typeUnBlockFileAndList
+    with: typeUnLockFileAndList
     should: returnCorrectUnBlock
     """
-    def test_protocol_called_typeUnBlockFileAndList_returnCorrectUnBlock(self):
-        params = '{"type":"unBlockFile","lista":[{"id":"124568","cloud":"Stacksync","username":"eyeos","IpServer":"192.168.56.101","datetime":"2015-05-12 10:50:00","status":"close"}]}'
+    def test_protocol_called_typeUnLockFileAndList_returnCorrectUnBlock(self):
+        params = '{"type":"unLockFile","lista":[{"id":"124568","cloud":"Stacksync","username":"eyeos","IpServer":"192.168.56.101","datetime":"2015-05-12 10:50:00","status":"close"}]}'
         aux = json.loads(params)
-        self.protocol.unBlockFile = Mock()
-        self.protocol.unBlockFile.return_value = True
+        self.protocol.unLockFile = Mock()
+        self.protocol.unLockFile.return_value = True
         result = self.protocol.protocol(params)
-        self.protocol.unBlockFile.assert_called_once_with(aux['lista'][0])
+        self.protocol.unLockFile.assert_called_once_with(aux['lista'][0])
         self.assertEquals('true',result)

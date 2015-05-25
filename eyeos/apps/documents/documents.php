@@ -1119,7 +1119,7 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
 		return $destinationFile;
 	}
 
-    public static function blockFile($params)
+    public static function lockFile($params)
     {
         $result['status'] = 'KO';
         $result['error'] = -1;
@@ -1134,7 +1134,7 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
             $cloud = $params['cloud'];
             $result = $apiManager->unLockedFile($id,$cloud,$username,$IpServer,$timeLimit,$dt_now);
             if(isset($params['block']) && $result['status'] == 'OK') {
-                $result = $apiManager->blockFile($id,$cloud,$username,$IpServer,$timeLimit,$dt_now);
+                $result = $apiManager->lockFile($id,$cloud,$username,$IpServer,$timeLimit,$dt_now);
             }
         }
 
@@ -1157,7 +1157,7 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
         return $result;
     }
 
-    public static function unBlockFile($params)
+    public static function unLockFile($params)
     {
         $result['status'] = 'KO';
         $result['error'] = -1;
@@ -1168,7 +1168,7 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
             $id = $params['id'];
             $cloud = $params['cloud'];
             $apiManager = new ApiManager();
-            $result = $apiManager->unBlockFile($id,$cloud,$username,$IpServer,$dt_now);
+            $result = $apiManager->unLockFile($id,$cloud,$username,$IpServer,$dt_now);
         }
         return $result;
     }

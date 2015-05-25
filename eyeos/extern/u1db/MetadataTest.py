@@ -749,7 +749,7 @@ class MetadataTest (unittest.TestCase):
 
     """
     ##################################################################################################################################################
-                                                                    TEST BLOCK FILE
+                                                                    TEST LOCK FILE
     ##################################################################################################################################################
     """
 
@@ -767,95 +767,95 @@ class MetadataTest (unittest.TestCase):
         self.assertEquals(1,len(data))
 
     """
-    method: blockFile
+    method: lockFile
     when: called
     with: metadata
     should: emptyData
     """
-    def test_blockFile_called_metadata_emptyData(self):
+    def test_lockFile_called_metadata_emptyData(self):
         data = {u'id':u'124568',u'cloud':u'Stacksync',u'username':u'eyeos',u'IpServer':u'192.168.56.101',u'datetime':u'2015-05-12 10:50:00',u'status':u'close',u'timeLimit':10}
-        self.sut.blockFile(data)
+        self.sut.lockFile(data)
         files =self.sut.getMetadataFile('124568','Stacksync')
         self.assertEquals(data,files[0])
 
     """
-    method: blockFile
+    method: lockFile
     when: called
     with: metadata
     should: updateData
     """
-    def test_blockFile_called_metadata_updateData(self):
+    def test_lockFile_called_metadata_updateData(self):
         data = {u'id':u'124568',u'cloud':u'Stacksync',u'username':u'eyeos',u'IpServer':u'192.168.56.101',u'datetime':u'2015-05-12 10:50:00',u'status':u'close'}
         self.sut.db.create_doc_from_json(json.dumps(data))
         data['status'] = u'open'
         data['timeLimit'] = 10
-        self.sut.blockFile(data)
+        self.sut.lockFile(data)
         files = self.sut.getMetadataFile('124568','Stacksync')
         self.assertEquals(data,files[0])
 
     """
-    method: blockFile
+    method: lockFile
     when: called
     with: metadata
     should: updateDataSameUser
     """
 
-    def test_blockFile_called_metadata_updateDataSameUserAndServer(self):
+    def test_lockFile_called_metadata_updateDataSameUserAndServer(self):
         data = {u'id':u'124568',u'cloud':u'Stacksync',u'username':u'eyeos',u'IpServer':u'192.168.56.101',u'datetime':u'2015-05-12 10:50:00',u'status':u'open'}
         self.sut.db.create_doc_from_json(json.dumps(data))
         data['datetime'] = u'2015-05-12 10:55:00'
         data['timeLimit'] = 10
-        self.sut.blockFile(data)
+        self.sut.lockFile(data)
         files = self.sut.getMetadataFile('124568','Stacksync')
         self.assertEquals(data,files[0])
 
 
     """
-    method: blockFile
+    method: lockFile
     when: called
     with: metadata
     should: updateDataTimeExpired
     """
 
-    def test_blockFile_called_metadata_updateDataTimeExpired(self):
+    def test_lockFile_called_metadata_updateDataTimeExpired(self):
         data = {u'id':u'124568',u'cloud':u'Stacksync',u'username':u'tester',u'IpServer':u'192.168.56.101',u'datetime':u'2015-05-12 10:50:00',u'status':u'open'}
         self.sut.db.create_doc_from_json(json.dumps(data))
         data['username'] = u'eyeos'
         data['datetime'] = u'2015-05-12 11:05:00'
         data['timeLimit'] = 10
-        self.sut.blockFile(data)
+        self.sut.lockFile(data)
         files = self.sut.getMetadataFile('124568','Stacksync')
         self.assertEquals(data,files[0])
 
     """
-    method: blockFile
+    method: lockFile
     when: called
     with: metadata
     should: returnIncorrectDistinctUser
     """
-    def test_blockFile_called_metadata_returnIncorrectDistinctUser(self):
+    def test_lockFile_called_metadata_returnIncorrectDistinctUser(self):
         data = {u'id':u'124568',u'cloud':u'Stacksync',u'username':u'eyeos',u'IpServer':u'192.168.56.101',u'datetime':u'2015-05-12 10:50:00',u'status':u'open'}
         self.sut.db.create_doc_from_json(json.dumps(data))
         data['username'] = u'tester'
         data['timeLimit'] = 10
         data['datetime'] = u'2015-05-12 10:55:00'
-        result = self.sut.blockFile(data)
+        result = self.sut.lockFile(data)
         self.assertEquals(False,result)
 
     """
-    method: blockFile
+    method: lockFile
     when: called
     with: metadata
     should: returnIncorrectDistinctServer
     """
 
-    def test_blockFile_called_metadata_returnIncorrectDistinctServer(self):
+    def test_lockFile_called_metadata_returnIncorrectDistinctServer(self):
         data = {u'id':u'124568',u'cloud':u'Stacksync',u'username':u'eyeos',u'IpServer':u'192.168.56.101',u'datetime':u'2015-05-12 10:50:00',u'status':u'open'}
         self.sut.db.create_doc_from_json(json.dumps(data))
         data['IpServer'] = u'192.168.56.102'
         data['timeLimit'] = 10
         data['datetime'] = u'2015-05-12 10:55:00'
-        result = self.sut.blockFile(data)
+        result = self.sut.lockFile(data)
         self.assertEquals(False,result)
 
 
@@ -886,15 +886,15 @@ class MetadataTest (unittest.TestCase):
         self.assertEquals(False,result)
 
     """
-    method: unBlockFile
+    method: unLockFile
     when: called
     with: metadata
     should: returnIncorrectDistinctUsername
     """
-    def test_unBlockFile_called_metadata_returnCorrect(self):
+    def test_unLockFile_called_metadata_returnCorrect(self):
         data = {u'id':u'124568',u'cloud':u'Stacksync',u'username':u'eyeos',u'IpServer':u'192.168.56.101',u'datetime':u'2015-05-12 10:50:00',u'status':u'open'}
         self.sut.db.create_doc_from_json(json.dumps(data))
         data['status'] = u'close'
-        self.sut.unBlockFile(data)
+        self.sut.unLockFile(data)
         files = self.sut.getMetadataFile('124568','Stacksync')
         self.assertEquals(data,files[0])
