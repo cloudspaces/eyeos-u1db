@@ -507,6 +507,8 @@ qx.Class.define('eyeos.application.Documents', {
                 // creating the bottomToolBars...
                 self.createBottomToolBar(actions);
 
+                self.__disableMenuCloud();
+
                 // creating the tinyMCE editor...
                 self.createEditor(self.__username, self.__image);
 
@@ -1204,13 +1206,24 @@ qx.Class.define('eyeos.application.Documents', {
         },
         __closeLockFileNew: function(self) {
             self.enableDisableEditor(true);
+            self.__disableMenuCloud();
             self.closeLoading();
-            console.log(self.getMetadataFile());
         },
         __closeUnLockWindow: function() {
             if(this.getUnLockWindow() !== null) {
                 this.getUnLockWindow().close();
                 this.setUnLockWindow(null);
+            }
+        },
+        __disableMenuCloud: function() {
+            if( this.getMetadataFile().id) {
+                var menu = this.getMenuBar().getChildren()[0].getMenu();
+                menu.getChildren()[0].setEnabled(false);
+                menu.getChildren()[1].setEnabled(false);
+                menu.getChildren()[2].setEnabled(false);
+                menu.getChildren()[5].setEnabled(false);
+                this.getTopToolBar().getChildren()[1].getChildren()[1].setEnabled(false);
+                this.getTopToolBar().getChildren()[1].getChildren()[2].setEnabled(false);
             }
         }
 	}

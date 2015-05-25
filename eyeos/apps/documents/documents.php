@@ -1317,7 +1317,8 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
         $cloud->isCloud = false;
         $cloud->name = "";
         $cloudspaces = 'home://~' . $user . '/Cloudspaces/';
-        if (strrpos($path, $cloudspaces) != -1 && $path !== $cloudspaces) {
+        $pos = strrpos($path, $cloudspaces);
+        if ($pos !== false && $path !== $cloudspaces) {
             $cloud->isCloud = true;
             $auxCloud = substr($path, strlen($cloudspaces));
             $posStartSlash = stripos($auxCloud, '/');
