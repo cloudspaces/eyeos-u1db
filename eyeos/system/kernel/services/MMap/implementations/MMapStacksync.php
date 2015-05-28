@@ -15,7 +15,7 @@ class MMapStacksync extends Kernel implements IMMap {
     }
 
     public function checkRequest(MMapRequest $request) {
-        if ($request->issetGET('token')) {
+        if ($request->issetGET('oauth_token')) {
             return true;
         }
 
@@ -26,12 +26,12 @@ class MMapStacksync extends Kernel implements IMMap {
         $oauth_verifier = null;
         $oauth_token = null;
         
-        if($request->issetGET('verifier')) {
-            $oauth_verifier = $request->getGET('verifier');
+        if($request->issetGET('oauth_verifier')) {
+            $oauth_verifier = $request->getGET('oauth_verifier');
         }
 
-        if($request->issetGET('token')) {
-            $oauth_token = $request->getGET('token');
+        if($request->issetGET('oauth_token')) {
+            $oauth_token = $request->getGET('oauth_token');
         }
 
         if($oauth_verifier && $oauth_token) {
