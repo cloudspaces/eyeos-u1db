@@ -526,9 +526,9 @@ qx.Class.define('eyeos.application.Documents', {
 
                     var tinymceId = 'tinymce_editor' + self.getPid();
 
-                    if(!self.isExplorer()) {
+                    /*if(!self.isExplorer()) {
                         removeSelector(self.getCurrentUser());
-                    }
+                    }*/
 
                     var ed = tinyMCE.get('tinymce_editor' + self.getPid());
                     eyeos.application.documents.Utils.sendChanges(self.isExplorer(), self.getPid(),self.getDuid());
@@ -762,11 +762,11 @@ qx.Class.define('eyeos.application.Documents', {
 				o.activated = 0;
 				
 				var plugins = 'table, safari, spellchecker, searchreplace';
-				if(!this.isExplorer()) {
+				/*if(!this.isExplorer()) {
 					plugins = plugins + ', noneditable';
 				} else {
 					this.nonEditableAlert();
-				}
+				}*/
 
 				var ed = new tinymce.Editor(tinymceId, {
 					strict_loading_mode : true,
