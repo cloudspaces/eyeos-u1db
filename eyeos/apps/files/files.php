@@ -514,15 +514,23 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 if (isset($result['error']) && $result['error'] === 403) {
                     //$dirToCreate->delete();
                     //self::permissionDeniedStackSync($currentUser->getId());
-                    $denied = self::permissionDeniedCloud($cloud);
-                    $result['path'] = $denied['path'];
+                    if($idParent !== 0) {
+                        $denied = self::permissionDeniedCloud($cloud);
+                        $result['path'] = $denied['path'];
+                    } else {
+                        $result['error'] = -1;
+                        $dirToCreate->delete();
+                    }
                 }
                 return $result;
+            } else {
+                $dirToCreate->delete();
             }
 
         }
 		$return = self::getFileInfo($dirToCreate, $settings);
 		return $return;
+
 	}
 
 	/**
