@@ -63,6 +63,7 @@ class OauthCredentials:
         dataFile = None
         url = self.getUrl(file)
         self.createHeader(oauth)
+        self.createApplicationJson(oauth)
 
         data = {}
         data['name'] = name
@@ -157,8 +158,32 @@ class OauthCredentials:
         else:
             return self.createRequest(result)
 
+    def insertComment(self,oauth,id,user,text,cloud):
+        url = self.resourceurl + 'comment'
+        self.createApplicationJson(oauth)
+        data = {}
+        data['id'] = id;
+        data['user'] = user
+        data['text'] = text
+        data['cloud'] = cloud
+        result = oauth.post(url, data)
+        return self.createRequest(result)
+
+    def deleteComment(self,oauth,id,user,cloud,time_created):
+        url = self.resourceurl + 'comment/' + id + '/' + user + '/' + cloud + '/' + time_created
+        result = oauth.delete(url)
+        return self.createRequest(result)
+
+    def getComments(self,oauth,id,cloud):
+        url = self.resourceurl + 'comment/' + id + '/' + cloud
+        result = oauth.get(url)
+        return self.createRequest(result)
+
     def createHeader(self, oauth):
         oauth.headers['StackSync-API'] = self.version
+
+    def createApplicationJson(self, oauth):
+         oauth.headers['Content-Type'] = 'application/json'
 
     def getUrl(self, file, id=None, contents=None):
         url = self.resourceurl
@@ -280,6 +305,12 @@ if __name__ == "__main__":
                                 result = oauthCredentials.shareFolder(oauth, metadata[ 'id' ], metadata[ 'list' ], metadata[ 'shared' ])
                             elif type == "listUsersShare":
                                 result = oauthCredentials.getListUsersShare(oauth, metadata[ 'id' ])
+                            elif type == "insertComment":
+                                result = oauthCredentials.insertComment(oauth,metadata['id'],metadata['user'],metadata['text'],cloud)
+                            elif type == "deleteComment":
+                                result = oauthCredentials.deleteComment(oauth,metadata['id'],metadata['user'],cloud,metadata['time_created'])
+                            elif type == "getComments":
+                                result = oauthCredentials.getComments(oauth,metadata['id'],cloud)
                         elif not(params.has_key( 'metadata' ) or params.has_key( 'verifier' ) or params.has_key( 'token' )):
                             oauth = OAuthRequest(key, client_secret=secret, callback_uri=callbackUrl, signature_method=SIGNATURE_PLAINTEXT)
                             result = oauthCredentials.getRequestToken(oauth)

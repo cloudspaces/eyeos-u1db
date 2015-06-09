@@ -7,7 +7,7 @@ import json
 class OAuthRequest(OAuth1Session):
 
     def _fetch_token(self, url):
-        request = self.get(url);
+        request = self.get(url)
         if(not(isinstance(request,dict) and request.has_key('error'))):
             token = dict(urldecode(request))
             self._populate_attributes(token)
@@ -29,6 +29,10 @@ class OAuthRequest(OAuth1Session):
         return self.createRequest(self.request('DELETE', url, **kwargs))
 
     def createRequest(self,request):
+        #print request.status_code
+        #print request.content
+        #print request.request.headers
+        #print request.request.body
         if request.status_code == 200 or request.status_code == 201 or request.status_code == 202:
             return request.content
         else:

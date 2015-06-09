@@ -531,6 +531,128 @@ class OauthCredentialsTest (unittest.TestCase):
         metadataOut = 403
         self.exerciseShareFolder(id, list, shared, metadataOut, metadataIn)
 
+
+    """
+    method: insertComment
+    when: called
+    with: accessTokenAndIdAndUserAndTextAndCloud
+    should: returnJsonMetadata
+    """
+    def test_insertComment_called_accessTokenAndIdAndUserAndTextAndCloud_returnJsonMetadata(self):
+        id = "2150"
+        user = "eyeos"
+        text = "prueba"
+        cloud = "stacksync"
+        time_created = "201406201548"
+        metadataOut = '{"status": "NEW", "text": "' + text + '", "time_created": "' + time_created + '", "user": "' + user + '", "id": "' + id + '", "cloud": "' + cloud + '"}'
+        metadataIn = json.loads(metadataOut)
+        oauth = self.createOauthSession()
+        oauth.post = Mock()
+        oauth.post.return_value = metadataIn
+        result = self.oauthCredentials.insertComment(oauth,id,user,text,cloud)
+        data = {"id": id,"user": user,"text":text,"cloud": cloud}
+        oauth.post.assert_called_once_with(self.resourceurl + 'comment',data)
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: insertComment
+    when: called
+    with: accessTokenAndIdAndUserAndTextAndCloud
+    should: returnException
+    """
+    def test_insertComment_called_accessTokenAndIdAndUserAndTextAndCloud_returnException(self):
+        id = "2150"
+        user = "eyeos"
+        text = "prueba"
+        cloud = "stacksync"
+        metadataIn =  {"error":400, "description": "Recurso no encontrado"}
+        metadataOut = 'false'
+        oauth = self.createOauthSession()
+        oauth.post = Mock()
+        oauth.post.return_value = metadataIn
+        result = self.oauthCredentials.insertComment(oauth,id,user,text,cloud)
+        data = {"id": id,"user": user,"text":text,"cloud": cloud}
+        oauth.post.assert_called_once_with(self.resourceurl + 'comment',data)
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: deleteComment
+    when: called
+    with: accessTokenAndIdAndUserAndCloudAndTimeCreated
+    should: returnJsonMetadata
+    """
+    def test_deleteComment_called_accessTokenAndIdAndUserAndTextAndCloudAndTimeCreated_returnJsonMetadata(self):
+        id = "2150"
+        user = "eyeos"
+        text = "prueba"
+        cloud = "stacksync"
+        time_created = "201406201548"
+        metadataOut = '{"status": "NEW", "text": "' + text + '", "time_created": "' + time_created + '", "user": "' + user + '", "id": "' + id + '", "cloud": "' + cloud + '"}'
+        metadataIn = json.loads(metadataOut)
+        oauth = self.createOauthSession()
+        oauth.delete = Mock()
+        oauth.delete.return_value = metadataIn
+        result = self.oauthCredentials.deleteComment(oauth,id,user,cloud,time_created)
+        oauth.delete.assert_called_once_with(self.resourceurl + 'comment/' + id + '/' + user + '/' + cloud + '/' + time_created)
+        self.assertEquals(metadataOut,result)
+
+
+    """
+    method: deleteComment
+    when: called
+    with: accessTokenAndIdAndUserAndCloudAndTimeCreated
+    should: returnException
+    """
+    def test_deleteComment_called_accessTokenAndIdAndUserAndTextAndCloudAndTimeCreated_returnException(self):
+        id = "2150"
+        user = "eyeos"
+        cloud = "stacksync"
+        time_created = "201406201548"
+        metadataIn =  {"error":400, "description": "Recurso no encontrado"}
+        metadataOut = 'false'
+        oauth = self.createOauthSession()
+        oauth.delete = Mock()
+        oauth.delete.return_value = metadataIn
+        result = self.oauthCredentials.deleteComment(oauth,id,user,cloud,time_created)
+        oauth.delete.assert_called_once_with(self.resourceurl + 'comment/' + id + '/' + user + '/' + cloud + '/' + time_created)
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: getComments
+    when: called
+    with: accessTokenAndIdAndCloud
+    should: returnJsonMetadata
+    """
+    def test_getComments_called_accessTokenAndIdAndCloud_returnJsonMetadata(self):
+        id = "2150"
+        cloud = "stacksync"
+        metadataOut = '[{"status": "NEW", "text": "prueba", "time_created": "201406201548", "user": "eyeos", "id": "' + id + '", "cloud": "' + cloud + '"}]'
+        metadataIn = metadataOut
+        oauth = self.createOauthSession()
+        oauth.get = Mock()
+        oauth.get.return_value = metadataIn
+        result = self.oauthCredentials.getComments(oauth,id,cloud)
+        oauth.get.assert_called_once_with(self.resourceurl + 'comment/' + id + '/' + cloud)
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: getComments
+    when: called
+    with: accessTokenAndIdAndCloud
+    should: returnException
+    """
+    def test_getComments_called_accessTokenAndIdAndCloud_returnException(self):
+        id = "2150"
+        cloud = "stacksync"
+        metadataIn =  {"error":400, "description": "Recurso no encontrado"}
+        metadataOut = 'false'
+        oauth = self.createOauthSession()
+        oauth.get = Mock()
+        oauth.get.return_value = metadataIn
+        result = self.oauthCredentials.getComments(oauth,id,cloud)
+        oauth.get.assert_called_once_with(self.resourceurl + 'comment/' + id + '/' + cloud)
+        self.assertEquals(metadataOut,result)
+
     def createOauthSession(self):
         oauth = OAuth1Session(self.key, client_secret=self.secret,resource_owner_key="OPQR",resource_owner_secret="STVW")
         return oauth
