@@ -50,6 +50,7 @@ class OauthCredentials:
     def updateMetadata(self, oauth, file, id, name=None, parent=None):
         url = self.getUrl(file, id)
         self.createHeader(oauth)
+        self.createApplicationJson(oauth)
         data = {}
         if name:
             data['name'] = name
@@ -257,6 +258,8 @@ if __name__ == "__main__":
                             result = json.dumps(settingsCloud[ 'urls' ][ 'OAUTH_URL' ])
                         elif type == "controlVersion":
                             result = json.dumps({"controlVersion": "" + settingsCloud['controlVersion'] + ""})
+                        elif type == "comments":
+                            result = json.dumps({"comments": "" + settingsCloud['comments'] + ""})
 
                     else:
                         if params[ 'config' ].has_key( 'resource_url' ):

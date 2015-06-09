@@ -463,4 +463,8 @@ if(!defined('BACK_TO_REAL_EYE_ROOT'))
 if(!defined('TIME_LIMIT_BLOCK'))
     define('TIME_LIMIT_BLOCK',10);
 
+//IP Simulador APISync
+if(!defined('API_SYNC'))
+    define('API_SYNC','http://192.168.56.101');
+
 ?>

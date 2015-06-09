@@ -619,6 +619,52 @@ class ApiManager
         return $this->apiProvider->getMetadata($cloud, $token, false, $id, true,$resourceUrl);
     }
 
+    public function insertComment($cloud,$token,$id,$user,$text,$resourceUrl)
+    {
+        $result[ 'status' ] = 'KO';
+        $result[ 'error' ] = -1;
+        $metadata = $this->apiProvider->insertComment($cloud,$token,$id,$user,$text,$resourceUrl);
+        if (!isset($metadata->error)) {
+            $result[ 'status' ] = 'OK';
+            unset($result[ 'error' ]);
+        } else {
+            $result[ 'error' ] = $metadata->error;
+        }
+        return $result;
+    }
+
+    public function deleteComment($cloud,$token,$id,$user,$timeCreated,$resourceUrl)
+    {
+        $result[ 'status' ] = 'KO';
+        $result[ 'error' ] = -1;
+        $metadata = $this->apiProvider->deleteComment($cloud,$token,$id,$user,$timeCreated,$resourceUrl);
+        if (!isset($metadata->error)) {
+            $result[ 'status' ] = 'OK';
+            unset($result[ 'error' ]);
+        } else {
+            $result[ 'error' ] = $metadata->error;
+        }
+        return $result;
+    }
+
+    public function getComments($cloud,$token,$id,$resourceUrl)
+    {
+        return $this->apiProvider->getComments($cloud,$token,$id,$resourceUrl);
+    }
+
+    public function getControlCommentsCloud($cloud)
+    {
+        $result[ 'status' ] = 'KO';
+        $result[ 'error' ] = -1;
+        $metadata = $this->apiProvider->getControlCommentsCloud($cloud);
+        if (!isset($metadata->error)) {
+            $result = $metadata;
+        } else {
+            $result[ 'error' ] = $metadata->error;
+        }
+        return $result;
+    }
+
     private function setUserEyeos($metadata, $user, $cloud = NULL, $resourceUrl = NULL, $token = NULL)
     {
         $aux = new stdClass();

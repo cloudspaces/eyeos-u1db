@@ -3072,6 +3072,115 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->exerciseGetMetadataFolder($metadata,json_decode($metadata),$this->resourceUrl);
     }
 
+    /**
+     * method: insertComment
+     * when: called
+     * with: cloudAndTokenAndIdAndUserAndTextAndResourceUrl
+     * should: returnInsertCorrect
+     */
+    public function test_insertComment_called_cloudAndTokenAndIdAndUserAndTextAndResourceUrl_returnInsertCorrect()
+    {
+        $metadata = '{"id":"153","user":"eyeos","text":"prueba","cloud":"stacksync","status":"NEW","time_created":"201406201548"}';
+        $this->exerciseInsertComment($metadata,array("status" => "OK"));
+    }
+
+    /**
+     * method: insertComment
+     * when: called
+     * with: cloudAndTokenAndIdAndUserAndTextAndResourceUrl
+     * should: returnException
+     */
+    public function test_insertComment_called_cloudAndTokenAndIdAndUserAndTextAndResourceUrl_returnException()
+    {
+        $metadata = '{"error":-1}';
+        $this->exerciseInsertComment($metadata,array("status" => "KO","error" => -1));
+    }
+
+    /**
+     * method: deleteComment
+     * when: called
+     * with: cloudAndTokenAndIdAndUserAndTimeCreatedAndResourceUrl
+     * should: returnDeleteCorrect
+     */
+    public function test_deleteComment_called_cloudAndTokenAndIdAndUserAndTimeCreatedAndResourceUrl_returnDeleteCorrect()
+    {
+        $metadata = '{"id":"153","user":"eyeos","text":"prueba","cloud":"stacksync","status":"DELETED","time_created":"201406201548"}';
+        $this->exerciseDeleteComment($metadata,array("status" => "OK"));
+    }
+
+    /**
+     * method: deleteComment
+     * when: called
+     * with: cloudAndTokenAndIdAndUserAndTimeCreatedAndResourceUrl
+     * should: returnException
+     */
+    public function test_deleteComment_called_cloudAndTokenAndIdAndUserAndTimeCreatedAndResourceUrl_returnException()
+    {
+        $metadata = '{"error":-1}';
+        $this->exerciseDeleteComment($metadata,array("status" => "KO","error" => -1));
+    }
+
+    /**
+     * method: getComments
+     * when: called
+     * with: cloudAndTokenAndIdAndResourceUrl
+     * should: returnException
+     */
+    public function test_getComments_called_cloudAndTokenAndIdAndResourceUrl_returnListMetadata()
+    {
+        $metadata = '[{"id":"153","user":"eyeos","text":"prueba","cloud":"stacksync","status":"NEW","time_created":"201406201548"}]';
+        $this->exerciseGetComments($metadata);
+    }
+
+    /**
+     * method: getComments
+     * when: called
+     * with: cloudAndTokenAndIdAndResourceUrl
+     * should: returnException
+     */
+    public function test_getComments_called_cloudAndTokenAndIdAndResourceUrl_returnException()
+    {
+        $metadata = '{"error":-1}';
+        $this->exerciseGetComments($metadata);
+    }
+
+    /**
+     * method: getControlCommentsCloud
+     * when: called
+     * with: ValidCloud
+     * should: returnList
+     */
+    public function test_getControlCommentsCloud_called_validCloud_returnList()
+    {
+        $cloud = "Stacksync";
+        $metadata = json_decode('{"comments":"true"}');
+        $this->apiProviderMock->expects($this->once())
+            ->method('getControlCommentsCloud')
+            ->with($cloud)
+            ->will($this->returnValue($metadata));
+        $result = $this->sut->getControlCommentsCloud($cloud);
+        $this->assertEquals($metadata, $result);
+    }
+
+    /**
+     * method: getControlCommentsCloud
+     * when: called
+     * with: InvalidCloud
+     * should: returnException
+     */
+    public function test_getControlCommentsCloud_called_Invalid_Cloud_returnException()
+    {
+        $cloud = "No_valid_cloud";
+        $metadata =json_decode('{"error":-1}');
+        $metadataOut = array("status" => "KO", "error" => -1);
+        $this->apiProviderMock->expects($this->once())
+            ->method('getControlCommentsCloud')
+            ->with($cloud)
+            ->will($this->returnValue($metadata));
+        $result = $this->sut->getControlCommentsCloud($cloud);
+        $this->assertEquals($metadataOut, $result);
+    }
+
 
     private function exerciseCreateMetadata($file, $name, $parent_id, $path, $pathAbsolute, $metadataOut, $resourceUrl = null)
     {
@@ -3486,6 +3595,50 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $result = $this->sut->getMetadataFolder($this->cloud,$this->token,$id,$resourceUrl);
         $this->assertEquals($check, $result);
+    }
+
+    private function exerciseInsertComment($metadata,$check)
+    {
+        $id = "153";
+        $text = "prueba";
+        $resourceUrl = "http://192.168.56.101/";
+
+        $this->apiProviderMock->expects($this->at(0))
+            ->method('insertComment')
+            ->with($this->cloud, $this->token,$id,$this->username,$text,$resourceUrl)
+            ->will($this->returnValue(json_decode($metadata)));
+
+        $result = $this->sut->insertComment($this->cloud,$this->token,$id,$this->username,$text,$resourceUrl);
+        $this->assertEquals($check, $result);
+    }
+
+    private function exerciseDeleteComment($metadata,$check)
+    {
+        $id = "153";
+        $timeCreated = "201406201548";
+        $resourceUrl = "http://192.168.56.101/";
+
+        $this->apiProviderMock->expects($this->at(0))
+            ->method('deleteComment')
+            ->with($this->cloud, $this->token,$id,$this->username,$timeCreated,$resourceUrl)
+            ->will($this->returnValue(json_decode($metadata)));
+
+        $result = $this->sut->deleteComment($this->cloud,$this->token,$id,$this->username,$timeCreated,$resourceUrl);
+        $this->assertEquals($check, $result);
+    }
+
+    private function exerciseGetComments($metadata)
+    {
+        $id = "153";
+        $resourceUrl = "http://192.168.56.101/";
+
+        $this->apiProviderMock->expects($this->at(0))
+            ->method('getComments')
+            ->with($this->cloud, $this->token,$id,$resourceUrl)
+            ->will($this->returnValue(json_decode($metadata)));
+
+        $result = $this->sut->getComments($this->cloud,$this->token,$id,$resourceUrl);
+        $this->assertEquals(json_decode($metadata), $result);
     }
 }
 

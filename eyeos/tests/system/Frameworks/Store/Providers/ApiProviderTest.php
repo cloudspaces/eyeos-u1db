@@ -1286,6 +1286,101 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(json_decode($metadataOut),$actual);
     }
 
+    /**
+     * method: insertComment
+     * when: called
+     * with: cloudAndTokenAndIdAndUserAndTextAndResourceUrl
+     * should: returnMetadataInsert
+     */
+    public function test_insertComment_called_cloudAndTokenAndIdAndUserAndTextAndResourceUrl_returnMetadataInsert()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"insertComment","id":"153","user":"eyeos","text":"prueba"}}';
+        $metadataOut = '{"id":"153","user":"eyeos","text":"prueba","cloud":"stacksync","status":"NEW","time_created":"201406201548"}';
+        $this->exerciseInsertComment($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: insertComment
+     * when: called
+     * with: cloudAndTokenAndIdAndUserAndTextAndResourceUrl
+     * should: returnException
+     */
+    public function test_insertComment_called_cloudAndTokenAndIdAndUserAndTextAndResourceUrl_returnException()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"insertComment","id":"153","user":"eyeos","text":"prueba"}}';
+        $metadataOut = 400;
+        $this->exerciseInsertComment($metadataIn,$metadataOut);
+    }
+
+
+    /**
+     * method: deleteComment
+     * when: called
+     * with: cloudAndTokenAndIdAndUserAndTimeCreatedAndResourceUrl
+     * should: returnMetadataDelete
+     */
+    public function test_deleteComment_called_cloudAndTokenAndIdAndUserAndTimeCreatedAndResourceUrl_returnMetadataDelete()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"deleteComment","id":"153","user":"eyeos","time_created":"201406201548"}}';
+        $metadataOut = '{"id":"153","user":"eyeos","text":"prueba","cloud":"stacksync","status":"DELETED","time_created":"201406201548"}';
+        $this->exerciseDeleteComment($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: deleteComment
+     * when: called
+     * with: cloudAndTokenAndIdAndUserAndTimeCreatedAndResourceUrl
+     * should: returnException
+     */
+    public function test_deleteComment_called_cloudAndTokenAndIdAndUserAndTimeCreatedAndResourceUrl_returnException()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"deleteComment","id":"153","user":"eyeos","time_created":"201406201548"}}';
+        $metadataOut = 400;
+        $this->exerciseDeleteComment($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: getComments
+     * when: called
+     * with: cloudAndTokenAndIdAndResourceUrl
+     * should: returnListMetadata
+     */
+    public function test_getComments_called_cloudAndTokenAndIdAndResourceUrl_returnListMetadata()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"getComments","id":"153"}}';
+        $metadataOut = '[{"id":"153","user":"eyeos","text":"prueba","cloud":"stacksync","status":"NEW","time_created":"201406201548"}]';
+        $this->exerciseGetComments($metadataIn,$metadataOut);
+
+    }
+
+    /**
+     * method: getComments
+     * when: called
+     * with: cloudAndTokenAndIdAndResourceUrl
+     * should: returnException
+     */
+    public function test_getComments_called_cloudAndTokenAndIdAndResourceUrl_returnException()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"getComments","id":"153"}}';
+        $metadataOut = 400;
+        $this->exerciseGetComments($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: getControlCommentsCloud
+     * when: called
+     * with: ValidCloud
+     * should: returnMetadata
+     */
+    public function test_getControlCommentsCloud_called_Valid_Cloud_returnList()
+    {
+        $metadataIn = '{"config":{"type":"comments","cloud":"Stacksync"}}';
+        $metadataOut = '{"comments":"true"}';
+        $this->exerciseMockMetadata($metadataIn, $metadataOut);
+        $actual = $this->sut->getControlCommentsCloud("Stacksync");
+        $this->assertEquals(json_decode($metadataOut),$actual);
+    }
+
     private function exerciseGetMetadata($metadataIn,$metadataOut,$check,$file,$id,$contents = null,$url = null)
     {
         $this->exerciseMockMetadata($metadataIn,$metadataOut);
@@ -1382,6 +1477,27 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->exerciseMockMetadata(json_encode($metadataIn), $metadataOut);
         $result = $this->sut->getFileVersionData($cloud, $this->token, "9873615", 2, "/home/eyeos/prueba3.pdf",$resourceUrl);
         $this->assertEquals(json_decode($check),$result);
+    }
+
+    private function exerciseInsertComment($metadataIn,$metadataOut)
+    {
+        $this->exerciseMockMetadata($metadataIn, $metadataOut);
+        $actual = $this->sut->insertComment($this->cloud,$this->token,"153","eyeos","prueba","http://192.68.56.101/");
+        $this->assertEquals(json_decode($metadataOut),$actual);
+    }
+
+    private function exerciseDeleteComment($metadataIn,$metadataOut)
+    {
+        $this->exerciseMockMetadata($metadataIn, $metadataOut);
+        $actual = $this->sut->deleteComment($this->cloud,$this->token,"153","eyeos","201406201548","http://192.68.56.101/");
+        $this->assertEquals(json_decode($metadataOut),$actual);
+    }
+
+    private function exerciseGetComments($metadataIn,$metadataOut)
+    {
+        $this->exerciseMockMetadata($metadataIn, $metadataOut);
+        $actual = $this->sut->getComments($this->cloud,$this->token,"153","http://192.68.56.101/");
+        $this->assertEquals(json_decode($metadataOut),$actual);
     }
 }
 ?>

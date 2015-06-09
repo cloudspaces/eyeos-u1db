@@ -581,7 +581,7 @@ class OauthCredentialsTest (unittest.TestCase):
     with: accessTokenAndIdAndUserAndCloudAndTimeCreated
     should: returnJsonMetadata
     """
-    def test_deleteComment_called_accessTokenAndIdAndUserAndTextAndCloudAndTimeCreated_returnJsonMetadata(self):
+    def test_deleteComment_called_accessTokenAndIdAndUserAndCloudAndTimeCreated_returnJsonMetadata(self):
         id = "2150"
         user = "eyeos"
         text = "prueba"
@@ -603,7 +603,7 @@ class OauthCredentialsTest (unittest.TestCase):
     with: accessTokenAndIdAndUserAndCloudAndTimeCreated
     should: returnException
     """
-    def test_deleteComment_called_accessTokenAndIdAndUserAndTextAndCloudAndTimeCreated_returnException(self):
+    def test_deleteComment_called_accessTokenAndIdAndUserAndCloudAndTimeCreated_returnException(self):
         id = "2150"
         user = "eyeos"
         cloud = "stacksync"

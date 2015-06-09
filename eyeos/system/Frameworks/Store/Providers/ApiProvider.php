@@ -130,6 +130,37 @@ class ApiProvider
         return $this->exerciseMetadata($request);
     }
 
+    public function insertComment($cloud,$token,$id,$user,$text,$resourceUrl)
+    {
+        $request = $this->getRequest("insertComment", $token, $cloud, $resourceUrl);
+        $request->metadata->id = "" . $id;
+        $request->metadata->user = $user;
+        $request->metadata->text = $text;
+        return $this->exerciseMetadata($request);
+    }
+
+    public function deleteComment($cloud,$token,$id,$user,$timeCreated,$resourceUrl)
+    {
+        $request = $this->getRequest("deleteComment", $token, $cloud, $resourceUrl);
+        $request->metadata->id = "" . $id;
+        $request->metadata->user = $user;
+        $request->metadata->time_created = $timeCreated;
+        return $this->exerciseMetadata($request);
+    }
+
+    public function getComments($cloud,$token,$id,$resourceUrl)
+    {
+        $request = $this->getRequest("getComments", $token, $cloud, $resourceUrl);
+        $request->metadata->id = "" . $id;
+        return $this->exerciseMetadata($request);
+    }
+
+    public function getControlCommentsCloud($cloud)
+    {
+        $request = $this->getRequest('comments', null, $cloud);
+        return $this->exerciseMetadata($request);
+    }
+
     private function getRequest($type, $token = NULL, $cloud = NULL, $resourceUrl = NULL)
     {
         $request = new stdClass();
