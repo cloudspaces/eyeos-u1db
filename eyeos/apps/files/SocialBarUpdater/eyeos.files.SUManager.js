@@ -135,10 +135,10 @@ qx.Class.define('eyeos.files.SUManager', {
 			throw "No Handler for " + key + " with params" + params;
 		},
 
-        createComments: function(comments,commentsBox,controller,file) {
+        createComments: function(comments,commentsBox,controller,file,metadata,cloud,shared) {
             var handlerClass = eval('eyeos.suhandlers.LocalFile');
             var handler = new handlerClass(this.getSocialBar(), null);
-            handler.createComments(comments,commentsBox,controller,file);
+            handler.createComments(comments,commentsBox,controller,file,metadata,cloud,shared);
         },
 
         createListActivity: function(cloud, list, listBox, controller, file, type) {

@@ -120,6 +120,12 @@ qx.Class.define('eyeos.socialbar.SocialBar', {
             this.setSelection([this.getTab('Info')]);
         },
 
+        createCommentsTab: function()
+        {
+            this.removeTab('Share');
+            this.addTab('Comments', 'index.php?extern=images/notes.png', this.getBackgroundColor());
+        },
+
 		/**
 		 * Return the handler of a tab giving a Name
 		 *

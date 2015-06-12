@@ -465,6 +465,6 @@ if(!defined('TIME_LIMIT_BLOCK'))
 
 //IP Simulador APISync
 if(!defined('API_SYNC'))
-    define('API_SYNC','http://192.168.56.101');
+    define('API_SYNC','http://192.168.56.101:9000/');
 
 ?>

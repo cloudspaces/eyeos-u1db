@@ -1686,5 +1686,121 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         $controlVersion = $apiManager->getControlVersionCloud($cloud);
         return $controlVersion;
     }
+
+    public static function getStatusComments($params)
+    {
+        $result['status'] = 'KO';
+        $result['error'] = -1;
+
+        if(isset($params[ 'cloud' ]) && isset($_SESSION['access_token_' . $params[ 'cloud' ] . '_v2'])) {
+            $cloud = $params['cloud'];
+            $apiManager = new ApiManager();
+            $controlComments = $apiManager->getControlCommentsCloud($cloud);
+            if(isset($controlComments->comments)) {
+                $result['status'] = 'OK';
+                $result['comments'] = $controlComments->comments;
+                unset($result['error']);
+                $result['is_shared'] = false;
+                if(isset($params['id']) && $params['id'] !== 0) {
+                    $id = $params['id'];
+                    $token = $_SESSION['access_token_' . $params[ 'cloud' ] . '_v2'];
+                    $data = $apiManager->getListUsersShare($cloud, $token, $id);
+                    try {
+                        $data = json_decode($data);
+                        if (!isset($data->error) && is_array($data) && count($data) > 1) {
+                            $result['is_shared'] = true;
+                        }
+                    } catch(Exception $e){}
+                }
+            }
+        }
+        return $result;
+    }
+
+    public static function getCommentsCloud($params)
+    {
+        $result['status'] = 'KO';
+        $result['error'] = -1;
+
+        if(isset($params['id']) && isset($params['cloud']) && isset($_SESSION['access_token_' . $params[ 'cloud' ] . '_v2'])) {
+            $id = $params['id'];
+            $cloud = $params['cloud'];
+            $resourceUrl = API_SYNC;
+            $apiManager = new ApiManager();
+            $token = $_SESSION['access_token_' . $params[ 'cloud' ] . '_v2'];
+            $data = $apiManager->getComments($cloud,$token,$id,$resourceUrl);
+            if(!isset($data->error)) {
+                $result['status'] = 'OK';
+                $result['comments'] = self::decodeString($data);
+                unset($result['error']);
+            }
+        }
+        return $result;
+    }
+
+    public static function insertCommentCloud($params)
+    {
+        $result['status'] = 'KO';
+        $result['error'] = -1;
+
+        if(isset($params['id']) && isset($params['text']) && isset($params['cloud']) && isset($_SESSION['access_token_' . $params[ 'cloud' ] . '_v2'])) {
+            $id = $params['id'];
+            $text = self::base256ToBase10($params['text']);
+            $cloud = $params['cloud'];
+            $token = $_SESSION['access_token_' . $params[ 'cloud' ] . '_v2'];
+            $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
+            $resourceUrl = API_SYNC;
+            $apiManager = new ApiManager();
+            $result = $apiManager->insertComment($cloud,$token,$id,$user,$text,$resourceUrl);
+        }
+        return $result;
+    }
+
+    public static function deleteCommentCloud($params)
+    {
+        $result['status'] = 'KO';
+        $result['error'] = -1;
+
+        if(isset($params['id']) && isset($params['time_created']) && isset($params['cloud']) && isset($_SESSION['access_token_' . $params[ 'cloud' ] . '_v2'])) {
+            $id = $params['id'];
+            $time_created = $params['time_created'];
+            $cloud = $params['cloud'];
+            $token = $_SESSION['access_token_' . $params[ 'cloud' ] . '_v2'];
+            $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
+            $resourceUrl = API_SYNC;
+            $apiManager = new ApiManager();
+            $result = $apiManager->deleteComment($cloud,$token,$id,$user,$time_created,$resourceUrl);
+        }
+        return $result;
+
+    }
+
+    private static function base256ToBase10($string) {
+        $result = "0";
+        for ($i = strlen($string)-1; $i >= 0; $i--) {
+            $result = bcadd($result,
+                bcmul(ord($string[$i]), bcpow(256, $i)));
+        }
+        return $result;
+    }
+
+    private static function decodeString($comments) {
+        foreach($comments as $comment) {
+            $comment->text = self::base10ToBase256($comment->text);
+        }
+        return $comments;
+    }
+    private static function base10ToBase256($number) {
+        $result = "";
+        $n = $number;
+        do {
+            $remainder = bcmod($n, 256);
+            $n = bcdiv($n, 256);
+            $result .= chr($remainder);
+        } while ($n > 0);
+
+        return $result;
+    }
+
 }
 ?>

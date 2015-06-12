@@ -68,7 +68,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
             if(this._controller && this._controller.__isStacksync(path) && path !== 'home://~'+ eyeos.getCurrentUserName()+'/Stacksync') {
                 stacksync = true;
                 this.getSocialBar().createStackSyncTabs();
-                this._createContentsCommentsTab();
+                this.__createContentsCommentsTab();
             } else if(this._controller && this._controller.isRootCloudSpaces(path)) {
                 this.getSocialBar().createCloudSpacesTabs();
                 this._createContentCloudSpacesTab();
@@ -87,6 +87,11 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
             if(cloud.isCloud === true && path !== 'home://~'+ eyeos.getCurrentUserName()+'/Cloudspaces/' + cloud.cloud) {
                 if (fileType == 'file') {
                     this._createContenActivityTabCloudSpaces(false, cloud.cloud);
+                    //this._controller.enabledCommentsCloud(cloud.cloud);
+                    var idParent = this._controller.__getFileIdFolder(this.getParams()['selected'][0].getPath(),cloud.cloud);
+                    if(idParent !== null && idParent !== 0) {
+                        this.__createCommentsTabSocialBar(cloud.cloud,idParent);
+                    }
                 } else {
                     this._createContenActivityTabCloudSpaces(true, cloud.cloud);
                     //this._createListUsersActivityTabStacksync();
@@ -97,8 +102,10 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 			//Show only if the selected file is not a folder
 			
 			if (fileType != 'folder' && this.getParams()['selected'].length == 1) {
-				this.getSocialBar().addTab(tr('URL'), this._urlBoxImage , 'white');
-				this._createContentUrlTab();
+                if(cloud.isCloud === false) {
+                    this.getSocialBar().addTab(tr('URL'), this._urlBoxImage, 'white');
+                    this._createContentUrlTab();
+                }
 			}
 		},
 
@@ -370,7 +377,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 			this.getSocialBar().getTab('Info').addBox(this._sharedWithBox, 'sharedwith');
 		},
 
-        _createContentsCommentsTab:function() {
+        __createContentsCommentsTab:function(cloud,idParent) {
             var comments = this.getSocialBar().getTab('Comments');
             comments.removeAll();
             comments.set({
@@ -391,7 +398,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 
             var labelNew = new qx.ui.basic.Label(tr('New')).set({
                 paddingRight: 8,
-                textColor: '#3d9af2',
+                textColor: '#CEECF5',
                 font: new qx.bom.Font(11).set({
                     bold: true
                 }),
@@ -400,9 +407,6 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
             var image = new qx.ui.basic.Image('eyeos/extern/images/add4.png').set({
                 enabled: false
             });
-
-            labelNew.addListener('click',this.__createNewComment,this);
-            image.addListener('click',this.__createNewComment,this);
 
             this._headerComments.add(new qx.ui.core.Spacer(165));
             this._headerComments.add(labelNew);
@@ -423,36 +427,64 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
             comments.add(scroll, {flex: 1});
             this._controller._comments = [];
 
+            var load = false;
+
             if(this.getParams()['selected'].length == 1) {
                 this._commentsBox.addListener('appear',function() {
-                    var id = this._controller.__getFileId(this._file.getPath(),this._file.getName());
-                    if(id !== null) {
-                        this._controller.loadComments(id,comments,this._file);
+                    if(load === false) {
+                        this._controller.closeTimerComments();
+                        this.closeTimer();
+                        this.showCursorLoad(this._commentsBox);
+                        var metadata = this._controller.__getFileId(this._file.getPath(), this._file.getName(), true, cloud);
+                        if (metadata !== null) {
+                            load = true;
+                            this._controller.enabledCommentsCloud(metadata, comments, this._file, cloud,idParent);
+                        }
                     }
                 },this);
             }
 
         },
-        createComments: function(comments,commentsBox,controller,file) {
+        createComments: function(comments,commentsBox,controller,file,metadata,cloud,shared) {
             var headerComments = commentsBox.getChildren()[0];
             headerComments.setVisibility('visible');
-            headerComments.getChildren()[1].setEnabled(true);
-            headerComments.getChildren()[1].setCursor('pointer');
-            headerComments.getChildren()[2].setEnabled(true);
-            headerComments.getChildren()[2].setCursor('pointer');
+            if(shared === true) {
+                headerComments.getChildren()[1].setEnabled(true);
+                headerComments.getChildren()[1].setTextColor('#3d9af2');
+                headerComments.getChildren()[1].setCursor('pointer');
+                headerComments.getChildren()[2].setEnabled(true);
+                headerComments.getChildren()[2].setCursor('pointer');
+                var data = new Object();
+                data.commentsBox = commentsBox;
+                data.controller = controller;
+                data.file = file;
+                data.metadata = metadata;
+                data.cloud = cloud;
+                data.shared = shared;
+                data.headerComments = headerComments;
+                headerComments.getChildren()[1].setUserData('params',data);
+                headerComments.getChildren()[2].setUserData('params',data);
+                headerComments.getChildren()[1].addListener('click',this.__createNewComment,this);
+                headerComments.getChildren()[2].addListener('click',this.__createNewComment,this);
+            }
+            this.closeTimer();
 
             var commentsContainer = commentsBox.getChildren()[1].getChildren()[0];
             commentsContainer.removeAll();
 
             var that = this;
-            var a = function() {that.__createRow(comments,commentsContainer,controller,file,0,that);};
+            var a = function() {that.__createRow(comments,commentsContainer,controller,file,0,metadata,cloud,shared,that);};
             this._timer = setTimeout(a,0);
 
         },
-        __createNewComment: function() {
-            this._controller.closeTimerComments();
-            this._headerComments.setVisibility('excluded');
-            this._commentsBox.removeAll();
+        __createNewComment: function(e) {
+            var params = e.getCurrentTarget().getUserData('params');
+            params.controller.closeTimerComments();
+            this.closeTimer();
+            params.headerComments.setVisibility('excluded');
+
+            var commentsBox = params.commentsBox.getChildren()[1].getChildren()[0];
+            commentsBox.removeAll();
 
             var labelBack = new qx.ui.basic.Label(tr("< Back")).set({
                 marginTop: 10,
@@ -465,14 +497,18 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
             });
 
             labelBack.addListener('click',function() {
-                this._controller._comments = [];
+                /*this._controller._comments = [];
                 var id = this._controller.__getFileId(this._file.getPath(),this._file.getName());
                 if(id !== null) {
                     this._controller.loadComments(id,this.getSocialBar().getTab('Comments'));
-                }
+                }*/
+                params.controller.closeTimerComments();
+                this.showCursorLoad(commentsBox);
+                params.controller._comments = [];
+                params.controller.loadCommentsCloud(params.metadata,params.commentsBox,params.file,params.cloud,params.shared,true);
             },this);
 
-            this._commentsBox.add(labelBack);
+            commentsBox.add(labelBack);
 
             var textComments = new qx.ui.form.TextArea().set({
                 height: 160,
@@ -480,7 +516,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
             });
 
             textComments.getContentElement().setStyle("resize", "none");
-            this._commentsBox.add(textComments);
+            commentsBox.add(textComments);
 
             var containerBottoms = new qx.ui.container.Composite().set({
                layout: new qx.ui.layout.HBox()
@@ -507,21 +543,19 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
             });
 
             addButton.addListener('execute',function(){
-                //this._controller.createComment()
                 if(textComments.getValue() !== null && textComments.getValue().trim().length > 0) {
-                    var metadata = this._controller.__getFileId(this._file.getPath(),this._file.getName(),true);
-                    if(metadata !== null) {
-                        this._controller.createComment(metadata.id,eyeos.getCurrentUserName(),textComments.getValue().trim(),this.getSocialBar().getTab('Comments'),this._file);
-                    }
+                    this.showCursorLoad(commentsBox);
+                    params.controller._comments = [];
+                    params.controller.createComment(params.metadata,params.commentsBox,params.file,params.cloud,params.shared,textComments.getValue().trim());
                 }
             },this);
 
             containerBottoms.add(new qx.ui.core.Spacer(76));
             containerBottoms.add(addButton);
-            this._commentsBox.add(containerBottoms);
+            commentsBox.add(containerBottoms);
         },
 
-        __createRow: function(comments,commentsContainer,controller,file,contador,form) {
+        __createRow: function(comments,commentsContainer,controller,file,contador,metadata,cloud,shared,form) {
             if(comments[contador]) {
                 var containerRow = new qx.ui.container.Composite().set({
                     layout: new qx.ui.layout.VBox()
@@ -582,22 +616,36 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
                 });
 
                 lbDelete.addListener('click',function(e) {
+                    form.closeTimer();
                     var pos = e.getCurrentTarget().getLayoutParent().getLayoutParent().getLayoutParent().indexOf( e.getCurrentTarget().getLayoutParent().getLayoutParent());
                     if(pos != -1) {
-                        form.__deleteComment(comments[pos].time_created,controller,file);
+                        controller.closeTimerComments();
+                        form.showCursorLoad(commentsContainer);
+                        form.getSocialBar().getTab('Comments').getChildren()[0].setVisibility('excluded');
+                        //form.__deleteComment(comments[pos].time_created,controller,file);
+                        controller.deleteComment(metadata,form.getSocialBar().getTab('Comments'),file,cloud,shared,comments[pos].time_created);
                     }
                 },form);
 
                 imgDelete.addListener('click',function(e) {
+                    form.closeTimer();
                     var pos = e.getCurrentTarget().getLayoutParent().getLayoutParent().getLayoutParent().indexOf( e.getCurrentTarget().getLayoutParent().getLayoutParent());
                     if(pos != -1) {
-                        form.__deleteComment(comments[pos].time_created,controller,file);
+                        controller.closeTimerComments();
+                        form.showCursorLoad(commentsContainer);
+                        form.getSocialBar().getTab('Comments').getChildren()[0].setVisibility('excluded');
+                        //form.__deleteComment(comments[pos].time_created,controller,file);
+                        controller.deleteComment(metadata,form.getSocialBar().getTab('Comments'),file,cloud,shared,comments[pos].time_created);
                     }
                 },form);
 
-                if(eyeos.getCurrentUserName() != comments[contador].user) {
+                if(eyeos.getCurrentUserName() != comments[contador].user || shared === false) {
                     lbDelete.setEnabled(false);
+                    lbDelete.setTextColor('#CEECF5')
+                    lbDelete.setCursor('default');
                     imgDelete.setEnabled(false);
+                    imgDelete.setCursor('default');
+
                 }
 
                 action.add(new qx.ui.core.Spacer(140));
@@ -610,7 +658,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
                 if((contador + 1) < comments.length) {
                     contador ++;
                     var that = form;
-                    var a = function() {that.__createRow(comments,commentsContainer,controller,file,contador,that);};
+                    var a = function() {that.__createRow(comments,commentsContainer,controller,file,contador,metadata,cloud,shared,that);};
                     form._timer = setTimeout(a,0);
                 } else {
                     form.closeTimer();
@@ -881,6 +929,10 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
 
         closeCursorLoad: function(container) {
             container.removeAll();
+        },
+        __createCommentsTabSocialBar: function(cloud,idParent) {
+            this.getSocialBar().createCommentsTab();
+            this.__createContentsCommentsTab(cloud,idParent);
         }
     }
 });

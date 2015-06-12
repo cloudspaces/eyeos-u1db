@@ -624,11 +624,13 @@ class ApiManager
         $result[ 'status' ] = 'KO';
         $result[ 'error' ] = -1;
         $metadata = $this->apiProvider->insertComment($cloud,$token,$id,$user,$text,$resourceUrl);
-        if (!isset($metadata->error)) {
-            $result[ 'status' ] = 'OK';
-            unset($result[ 'error' ]);
-        } else {
-            $result[ 'error' ] = $metadata->error;
+        if($metadata) {
+            if (!isset($metadata->error)) {
+                $result['status'] = 'OK';
+                unset($result['error']);
+            } else {
+                $result['error'] = $metadata->error;
+            }
         }
         return $result;
     }
@@ -638,11 +640,13 @@ class ApiManager
         $result[ 'status' ] = 'KO';
         $result[ 'error' ] = -1;
         $metadata = $this->apiProvider->deleteComment($cloud,$token,$id,$user,$timeCreated,$resourceUrl);
-        if (!isset($metadata->error)) {
-            $result[ 'status' ] = 'OK';
-            unset($result[ 'error' ]);
-        } else {
-            $result[ 'error' ] = $metadata->error;
+        if($metadata) {
+            if (!isset($metadata->error)) {
+                $result['status'] = 'OK';
+                unset($result['error']);
+            } else {
+                $result['error'] = $metadata->error;
+            }
         }
         return $result;
     }
@@ -657,10 +661,12 @@ class ApiManager
         $result[ 'status' ] = 'KO';
         $result[ 'error' ] = -1;
         $metadata = $this->apiProvider->getControlCommentsCloud($cloud);
-        if (!isset($metadata->error)) {
-            $result = $metadata;
-        } else {
-            $result[ 'error' ] = $metadata->error;
+        if($metadata) {
+            if (!isset($metadata->error)) {
+                $result = $metadata;
+            } else {
+                $result['error'] = $metadata->error;
+            }
         }
         return $result;
     }

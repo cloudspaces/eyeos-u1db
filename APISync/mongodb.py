@@ -13,7 +13,7 @@ class mongoDb:
     def insertComment(self,id,user,text,cloud,time_created):
          document = {"id": id,"user": user,"text":text,"cloud": cloud,"time_created":time_created,"status":"NEW"}
          self.db.collection.insert(document)
-         result = self.db.collection.find({"id":id,"user":user,"cloud":cloud}).count()
+         result = self.db.collection.find({"id":id,"user":user,"cloud":cloud,"time_created":time_created}).count()
          if result == 1:
              del document['_id']
              return document
@@ -21,13 +21,13 @@ class mongoDb:
              return {"error":400,"descripcion":"Error al insertar comentario"}
 
     def deleteComment(self,id,user,cloud,time_created):
-        result = self.db.collection.find({"id":id,"user":user,"cloud":cloud})
+        result = self.db.collection.find({"id":id,"user":user,"cloud":cloud,"time_created":time_created})
         if result.count() == 1:
             document = result[0]
             del document['_id']
             document['status'] = 'DELETED'
             self.db.collection.remove({"id":id,"user":user,"cloud":cloud,"time_created":time_created})
-            result = self.db.collection.find({"id":id,"user":user,"cloud":cloud})
+            result = self.db.collection.find({"id":id,"user":user,"cloud":cloud,"time_created":time_created})
             if result.count() == 0:
                 return document;
             else:

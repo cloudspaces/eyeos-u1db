@@ -2175,25 +2175,29 @@ qx.Class.define('eyeos.files.Controller', {
                 },this);
             }
         },
-        createComment: function(id,user,comment,commentsBox,file) {
+        createComment: function(metadata,commentsBox,file,cloud,shared,text) {
             this.closeTimerComments();
             var params = new Object();
-            params.id = "" + id;
-            params.user = user;
-            params.text = comment;
+            params.id = "" + metadata.id;
+            params.cloud = cloud;
+            params.text = text;
 
-            eyeos.callMessage(this.getApplication().getChecknum(), 'createComment', params, function () {
-                this.loadComments(params.id,commentsBox,file);
+            eyeos.callMessage(this.getApplication().getChecknum(), 'insertCommentCloud', params, function () {
+                 this._comments = [];
+                 this.loadCommentsCloud(metadata,commentsBox,file,cloud,shared,true);
             },this);
+
         },
-        deleteComment: function(id,user,time_created,commentsBox,file) {
+        deleteComment: function(metadata,commentsBox,file,cloud,shared,time_created) {
             this.closeTimerComments();
             var params = new Object();
-            params.id = "" + id;
-            params.user = user;
+            params.id = "" + metadata.id;
+            params.cloud = cloud;
             params.time_created = time_created;
-            eyeos.callMessage(this.getApplication().getChecknum(), 'deleteComment', params, function () {
-                this.loadComments(params.id,commentsBox,file);
+
+            eyeos.callMessage(this.getApplication().getChecknum(), 'deleteCommentCloud', params, function () {
+                this._comments = [];
+                this.loadCommentsCloud(metadata,commentsBox,file,cloud,shared,true);
             },this);
 
         },
@@ -2727,6 +2731,54 @@ qx.Class.define('eyeos.files.Controller', {
             if(container.getChildren().length == 1 && container.getChildren()[0].getChildren().length == 2) {
                 container.getChildren()[0].removeAt(1);
             }
+        },
+
+        enabledCommentsCloud: function(metadata,commentsBox,file,cloud,idParent) {
+            var params = new Object();
+            params.cloud = cloud;
+            params.id = idParent;
+
+            eyeos.callMessage(this.getApplication().getChecknum(), 'getStatusComments', params, function (result) {
+                if(result.status === 'OK' && result.comments === 'true') {
+                    this.loadCommentsCloud(metadata,commentsBox,file,cloud,result.is_shared,true)
+                } else {
+                    commentsBox.getChildren()[1].getChildren()[0].removeAll();
+                }
+            },this);
+        },
+        loadCommentsCloud: function(metadata,commentsBox,file,cloud,shared,remove) {
+            if (!this.getCloseCompleted()) {
+                var params = new Object();
+                params.id = "" + metadata.id;
+                params.cloud = cloud;
+                this.closeTimerComments();
+
+                eyeos.callMessage(this.getApplication().getChecknum(), 'getCommentsCloud', params, function (result) {
+                    if(remove === true) {
+                        commentsBox.getChildren()[1].getChildren()[0].removeAll();
+                    }
+                    commentsBox.getChildren()[0].setVisibility('visible');
+                    if(result.status === 'OK') {
+                        if(this._commentsChanged(result.comments)) {
+                            this.getSocialBarUpdater().createComments(result.comments,commentsBox,this,file,metadata,cloud,shared);
+                        }
+                    } else {
+                        this._comments = [];
+                    }
+
+                    var that = this;
+                    var reffunction = function(){that.loadCommentsCloud(metadata,commentsBox,file,cloud,shared)};
+                    this._timerComments = setTimeout(reffunction,10000);
+
+                },this);
+            }
+        },
+        __encodeHex: function(str) {
+            var bytes = [];
+            for (var i = 0; i < this.length; ++i) {
+                bytes.push(this.charCodeAt(i));
+            }
+            return bytes;
         }
 	}
 });
