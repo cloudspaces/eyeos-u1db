@@ -153,7 +153,7 @@ class ApiManager
     {
         $result['status'] = 'KO';
         $result['error'] = -1;
-        $metadata = $this->apiProvider->getMetadata($cloud, $token, $file, $parent_id, true,$resourceUrl);
+        $metadata = $this->apiProvider->getMetadata($cloud, $token, false, $parent_id, true,$resourceUrl);
         if($metadata) {
             if(!isset($metadata->error)) {
                 if(isset($metadata->contents)) {

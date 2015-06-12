@@ -920,7 +920,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
-            ->with($this->cloud, $this->token, true, $parent_id, true)
+            ->with($this->cloud, $this->token, false, $parent_id, true)
             ->will($this->returnValue(json_decode($metadataOut)));
 
         $this->apiProviderMock->expects($this->never())
@@ -991,7 +991,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
-            ->with($this->cloud, $this->token, true, $parent_id, true,$this->resourceUrl)
+            ->with($this->cloud, $this->token, false, $parent_id, true,$this->resourceUrl)
             ->will($this->returnValue(json_decode($metadataOut)));
 
         $this->apiProviderMock->expects($this->never())
@@ -1296,7 +1296,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
-            ->with($this->cloud, $this->token, true, $parent_id, true)
+            ->with($this->cloud, $this->token, false, $parent_id, true)
             ->will($this->returnValue(json_decode($metadataOut)));
 
         $this->apiProviderMock->expects($this->at(1))
@@ -1332,7 +1332,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
-            ->with($this->cloud, $this->token, true, $parent_id, true,$this->resourceUrl)
+            ->with($this->cloud, $this->token, false, $parent_id, true,$this->resourceUrl)
             ->will($this->returnValue(json_decode($metadataOut)));
 
         $this->apiProviderMock->expects($this->at(1))
@@ -3195,7 +3195,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
         $this->apiProviderMock->expects($this->at(0))
             ->method('getMetadata')
-            ->with($this->cloud, $this->token, $file, $parent_id, true,$resourceUrl)
+            ->with($this->cloud, $this->token, false, $parent_id, true,$resourceUrl)
             ->will($this->returnValue(json_decode($metadataOut)));
 
         $this->apiProviderMock->expects($this->at(1))
