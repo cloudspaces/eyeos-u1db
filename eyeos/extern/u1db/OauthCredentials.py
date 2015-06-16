@@ -89,6 +89,7 @@ class OauthCredentials:
         self.file = open(path, "r")
         if self.file:
             self.createHeader(oauth)
+            self.createApplicationJson(oauth)
             result = oauth.put(self.resourceurl + "file/" + str(id) + "/data", self.file.read())
             if (not (isinstance(result, dict) and result.has_key('error'))):
                 metadata = 'true'

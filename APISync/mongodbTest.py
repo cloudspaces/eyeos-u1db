@@ -11,6 +11,17 @@ class mongodbTest(unittest.TestCase):
         self.text = "prueba"
         self.cloud = "stacksync"
         self.time_created = "201406201548"
+        self.calendar = "personal"
+        self.isallday = 0
+        self.timestart = "201419160000"
+        self.timeend = "201419170000"
+        self.repetition = "None"
+        self.finaltype = "1"
+        self.finalvalue = "0"
+        self.subject = "Visita Medico"
+        self.location = "Barcelona"
+        self.description= "Llevar justificante"
+        self.timezone = 0
 
     def tearDown(self):
         self.sut.client.drop_database('test')
@@ -47,7 +58,7 @@ class mongodbTest(unittest.TestCase):
     with: idAndCloud
     should: returnComments
     """
-    def test_getComments_called_idAndCloud_returnComment(self):
+    def test_getComments_called_idAndCloud_returnComments(self):
         data = []
         data.append({"id": self.idFile,"user": self.user,"text":self.text,"cloud": self.cloud,"time_created":self.time_created,"status":"NEW"})
         self.sut.insertComment(self.idFile,self.user,self.text,self.cloud,self.time_created)
@@ -58,3 +69,176 @@ class mongodbTest(unittest.TestCase):
         result = self.sut.getComments(self.idFile,self.cloud)
         data.sort()
         self.assertEquals(data,result)
+
+    """
+    method: insertEvent
+    when: called
+    with:userAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValue
+         AndSubjectAndLocationAndDescription
+    should: returnEvent
+    """
+    def test_insertEvent_called_userAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescription_returnEvent(self):
+        document = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"status":"NEW"}
+        result = self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description)
+        self.assertEquals(document,result)
+
+
+    """
+    method: insertEvent
+    when: called
+    with:userAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValue
+         AndSubjectAndLocationAndDescription
+    should: returnUpdateEvent
+    """
+    def test_insertEvent_called_userAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescription_returnUpdateEvent(self):
+        document = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"status":"NEW"}
+        self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description)
+        result = self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description)
+        document['status'] = 'CHANGED'
+        self.assertEquals(document,result)
+
+    """
+    method: deleteEvent
+    when: called
+    with:userAndCalendarAndCloudAndTimeStartAndTimeEndAndIsAllDay
+    should: returnEvent
+    """
+    def test_deleteEvent_called_userAndCalendarAndCloudAndTimeStartAndTimeEndAndIsAllDay_returnEvent(self):
+        document = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"status":"NEW"}
+        self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description)
+        result = self.sut.deleteEvent(self.user,self.calendar,self.cloud,self.timestart,self.timeend,self.isallday)
+        document['status'] = 'DELETED'
+        self.assertEqual(document,result)
+
+    """
+    method: updateEvent
+    when: called
+    with:userAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValue
+         AndSubjectAndLocationAndDescription
+    should: returnEvent
+    """
+    def test_updateEvent_called_userAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescription_returnEvent(self):
+        document = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"status":"NEW"}
+        self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description)
+        document['status'] = 'CHANGED'
+        result = self.sut.updateEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description)
+        self.assertEquals(document,result)
+
+    """
+    method: getEvents
+    when: called
+    with:userAndCalendarAndCloud
+    should: returnEvents
+    """
+    def test_getEvents_called_userAndCalendarAndCloud_returnEvents(self):
+        data = []
+        document = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"status":"NEW"}
+        data.append(document)
+        self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description)
+        document = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":"201506161200","timeend":"201506161300","repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":"Clase matematicas","location":"Madrid","description":"Estudio","status":"NEW"}
+        data.append(document)
+        self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,"201506161200","201506161300",self.repetition,self.finaltype,self.finalvalue,"Clase matematicas","Madrid","Estudio")
+        self.sut.insertEvent(self.user,"laboral",self.cloud,self.isallday,"201506140900","201506141300",self.repetition,self.finaltype,self.finalvalue,"Vacaciones","Zaragoza","Visita turistica")
+        result = self.sut.getEvents(self.user,self.calendar,self.cloud)
+        data.sort()
+        self.assertEquals(data,result)
+
+
+    """
+    method: insertCalendar
+    when: called
+    with:userAndNameAndCloudAndDescriptionAndTimeZone
+    should: returnCalendar
+    """
+    def test_insertCalendar_called_userAndNameAndCloudAndDescriptionAndTimeZone_returnCalendar(self):
+        document = {"type":"calendar","user":self.user,"name":self.calendar,"cloud":self.cloud,"description":self.description,"timezone":self.timezone,"status":"NEW"}
+        result = self.sut.insertCalendar(self.user,self.calendar,self.cloud,self.description,self.timezone)
+        self.assertEquals(document,result)
+
+    """
+    method: insertCalendar
+    when: called
+    with:userAndNameAndCloudAndDescriptionAndTimeZone
+    should: returnUpdateCalendar
+    """
+    def test_insertCalendar_called_userAndNameAndCloudAndDescriptionAndTimeZone_returnCalendar(self):
+        document = {"type":"calendar","user":self.user,"name":self.calendar,"cloud":self.cloud,"description":self.description,"timezone":self.timezone,"status":"NEW"}
+        self.sut.insertCalendar(self.user,self.calendar,self.cloud,self.description,self.timezone)
+        result = self.sut.insertCalendar(self.user,self.calendar,self.cloud,self.description,self.timezone)
+        document['status'] = 'CHANGED'
+        self.assertEquals(document,result)
+
+    """
+    method: deleteCalendar
+    when: called
+    with:userAndNameAndCloud
+    should: returnCalendar
+    """
+    def test_deleteCalendar_called_userAndNameAndCloud_returnCalendar(self):
+        document = {"type":"calendar","user":self.user,"name":self.calendar,"cloud":self.cloud,"description":self.description,"timezone":self.timezone,"status":"NEW"}
+        self.sut.insertCalendar(self.user,self.calendar,self.cloud,self.description,self.timezone)
+        document['status'] = 'DELETED'
+        result = self.sut.deleteCalendar(self.user,self.calendar,self.cloud)
+        self.assertEquals(document,result)
+
+    """
+    method: updateCalendar
+    when: called
+    with:userAndNameAndCloudAndDescriptionAndTimeZone
+    should: returnCalendar
+    """
+    def test_updateCalendar_called_userAndNameAndCloudAndDescriptionAndTimeZone(self):
+        document = {"type":"calendar","user":self.user,"name":self.calendar,"cloud":self.cloud,"description":self.description,"timezone":self.timezone,"status":"NEW"}
+        self.sut.insertCalendar(self.user,self.calendar,self.cloud,self.description,self.timezone)
+        document['status'] = 'CHANGED'
+        result = self.sut.updateCalendar(self.user,self.calendar,self.cloud,self.description,self.timezone)
+        self.assertEquals(document,result)
+
+    """
+    method: getCalendars
+    when: called
+    with:userAndCloud
+    should: returnCalendars
+    """
+    def test_getCalendars_called_userAndCloud_returnCalendars(self):
+        data = []
+        document = {"type":"calendar","user":self.user,"name":self.calendar,"cloud":self.cloud,"description":self.description,"timezone":self.timezone,"status":"NEW"}
+        data.append(document)
+        self.sut.insertCalendar(self.user,self.calendar,self.cloud,self.description,self.timezone)
+        document = {"type":"calendar","user":self.user,"name":"laboral","cloud":self.cloud,"description":self.description,"timezone":self.timezone,"status":"NEW"}
+        data.append(document)
+        self.sut.insertCalendar(self.user,"laboral",self.cloud,self.description,self.timezone)
+        self.sut.insertCalendar("tester1",self.calendar,self.cloud,self.description,self.timezone)
+        result = self.sut.getCalendars(self.user,self.cloud)
+        data.sort()
+        self.assertEquals(data,result)
+
+    """
+    method: getCalendarsAndEvents
+    when: called
+    with:userAndCloud
+    should: returnCalendarsAndEvents
+    """
+    def test_getCalendarsAndEvents_called_userAndCloud_returnCalendars(self):
+        data = []
+        document = {"type":"calendar","user":self.user,"name":self.calendar,"cloud":self.cloud,"description":self.description,"timezone":self.timezone,"status":"NEW"}
+        data.append(document)
+        self.sut.insertCalendar(self.user,self.calendar,self.cloud,self.description,self.timezone)
+        document = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"status":"NEW"}
+        data.append(document)
+        self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description)
+        result = self.sut.getCalendarsAndEvents(self.user,self.cloud)
+        data.sort()
+        self.assertEquals(data,result)
+
+    """
+    method: deleteCalendarsUser
+    when: called
+    with:userAndCloud
+    should: returnDeleteCorrect
+    """
+    def test_deleteCalendarsUser_called_userAndCloud_returnDeleteCorrect(self):
+        self.sut.insertCalendar(self.user,self.calendar,self.cloud,self.description,self.timezone)
+        self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description)
+        result = self.sut.deleteCalendarsUser(self.user,self.cloud)
+        self.assertEquals(True,result)
