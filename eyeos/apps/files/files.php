@@ -1730,6 +1730,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $token = $_SESSION['access_token_' . $params[ 'cloud' ] . '_v2'];
             $data = $apiManager->getComments($cloud,$token,$id,$resourceUrl);
             if(!isset($data->error)) {
+                $data = self::sortDate($data);
                 $result['status'] = 'OK';
                 $result['comments'] = self::decodeString($data);
                 unset($result['error']);
@@ -1802,5 +1803,15 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         return $result;
     }
 
+    private static function sortDate($comments)
+    {
+        function sortFunction( $a, $b ) {
+            if(strtotime($a->time_created) == strtotime($b->time_created)) return 0;
+            return strtotime($a->time_created) < strtotime($b->time_created)?1:-1;
+        }
+
+        usort($comments, "sortFunction");
+        return $comments;
+    }
 }
 ?>
