@@ -237,59 +237,69 @@ class ApiManager
     {
         $result[ 'status' ] = 'KO';
         $result[ 'error' ] = -1;
-        $metadata = $this->apiProvider->getMetadata($cloud, $token, true, $id, null, $resourceUrl);
-        $insert = false;
-        $type = '';
 
-        if(!isset($metadata->error) && count($metadata) > 0) {
-            $lista = new stdClass();
-            $lista->id = "" . $id;
-            $lista->user_eyeos = $user;
-            $lista->cloud = $cloud;
-            $metadataU1db = $this->callProcessU1db('getDownloadVersion', $lista);
-            if($metadataU1db !== "null") {
-                $metadataU1db = json_decode($metadataU1db);
-                if($metadataU1db) {
-                    if($metadata->version != $metadataU1db->version && $metadataU1db->recover === false) {
-                        $insert = true;
-                        $type = 'updateDownloadVersion';
-                    } else {
-                        $result[ 'status' ] = 'OK';
-                        $result[ 'local' ] = true;
-                        unset($result[ 'error' ]);
-                    }
-                }
-            } else {
-                $insert = true;
-                $type = 'insertDownloadVersion';
-            }
+        $controlVersion = $this->apiProvider->getControlVersionCloud($cloud);
+        if($controlVersion->controlVersion === 'true') {
+            $metadata = $this->apiProvider->getMetadata($cloud, $token, true, $id, null, $resourceUrl);
+            $insert = false;
+            $type = '';
 
-            if($insert) {
-                $content = $this->apiProvider->downloadMetadata($cloud, $token, $id, $path, $resourceUrl);
-                if(!isset($content->error)) {
-                    if ($isTmp == false) {
-                        $lista = new stdClass();
-                        $lista->id = "" . $id;
-                        $lista->cloud = $cloud;
-                        $lista->user_eyeos = $user;
-                        $lista->version = $metadata->version;
-                        $lista->recover = false;
-                        $resultU1db = $this->callProcessU1db($type, $lista);
-                        if($resultU1db === 'true') {
-                            $result[ 'status' ] = 'OK';
-                            unset($result[ 'error' ]);
+            if (!isset($metadata->error) && count($metadata) > 0) {
+                $lista = new stdClass();
+                $lista->id = "" . $id;
+                $lista->user_eyeos = $user;
+                $lista->cloud = $cloud;
+                $metadataU1db = $this->callProcessU1db('getDownloadVersion', $lista);
+                if ($metadataU1db !== "null") {
+                    $metadataU1db = json_decode($metadataU1db);
+                    if ($metadataU1db) {
+                        if ($metadata->version != $metadataU1db->version && $metadataU1db->recover === false) {
+                            $insert = true;
+                            $type = 'updateDownloadVersion';
+                        } else {
+                            $result['status'] = 'OK';
+                            $result['local'] = true;
+                            unset($result['error']);
                         }
-                    } else {
-                        $result[ 'status' ] = 'OK';
-                        unset($result[ 'error' ]);
                     }
                 } else {
-                    $result[ 'error' ] = $content->error;
+                    $insert = true;
+                    $type = 'insertDownloadVersion';
                 }
-            }
 
-        } else{
-            $result[ 'error' ] = $metadata->error;
+                if ($insert) {
+                    $content = $this->apiProvider->downloadMetadata($cloud, $token, $id, $path, $resourceUrl);
+                    if (!isset($content->error)) {
+                        if ($isTmp == false) {
+                            $lista = new stdClass();
+                            $lista->id = "" . $id;
+                            $lista->cloud = $cloud;
+                            $lista->user_eyeos = $user;
+                            $lista->version = $metadata->version;
+                            $lista->recover = false;
+                            $resultU1db = $this->callProcessU1db($type, $lista);
+                            if ($resultU1db === 'true') {
+                                $result['status'] = 'OK';
+                                unset($result['error']);
+                            }
+                        } else {
+                            $result['status'] = 'OK';
+                            unset($result['error']);
+                        }
+                    } else {
+                        $result['error'] = $content->error;
+                    }
+                }
+
+            } else {
+                $result['error'] = $metadata->error;
+            }
+        } else {
+            $content = $this->apiProvider->downloadMetadata($cloud, $token, $id, $path, $resourceUrl);
+            if (!isset($content->error)){
+                $result['status'] = 'OK';
+                unset($result['error']);
+            }
         }
 
         return $result;

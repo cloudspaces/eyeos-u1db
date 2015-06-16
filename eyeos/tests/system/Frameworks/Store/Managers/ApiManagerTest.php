@@ -1357,8 +1357,9 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $path = "/home/eyeos/prueba.txt";
         $id = "8888888";
         $metadata = '{"filename":"prueba.pdf","id":"8888888","status":"NEW","version":1,"parent_id":"32565632156","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":false}';
-        $this->getDownloadMetadata($metadata, "null", $id, $this->cloud);
-        $this->apiProviderMock->expects($this->at(1))
+        $metadataVersion = json_decode('{"controlVersion":"true"}');
+        $this->getDownloadMetadata($metadata, $metadataVersion,"null", $id, $this->cloud);
+        $this->apiProviderMock->expects($this->at(2))
             ->method('downloadMetadata')
             ->with($this->cloud, $this->token, $id, $path)
             ->will($this->returnValue('true'));
@@ -1385,6 +1386,31 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     /**
      * method: donwloadMetadata
      * when: called
+     * with: tokenAndIdAndPathAndUser
+     * should: returnDownloadCorrect
+     */
+    public function test_downloadMetadata_called_tokenAndIdAndPathAndUser_returnDownloadCorrect()
+    {
+        $path = "/home/eyeos/prueba.txt";
+        $id = "8888888";
+        $metadataVersion = json_decode('{"controlVersion":"false"}');
+
+        $this->apiProviderMock->expects($this->at(0))
+            ->method('getControlVersionCloud')
+            ->with($this->cloud)
+            ->will($this->returnValue($metadataVersion));
+
+        $this->apiProviderMock->expects($this->at(1))
+            ->method('downloadMetadata')
+            ->with($this->cloud, $this->token, $id, $path)
+            ->will($this->returnValue('true'));
+
+        $result = $this->sut->downloadMetadata($this->token, $id, $path, $this->user, false, $this->cloud);
+    }
+
+    /**
+     * method: donwloadMetadata
+     * when: called
      * with: tokenAndIdAndPathAndUserAndResourceUrl
      * should: returnFirstDownload
      */
@@ -1393,8 +1419,9 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $path = "/home/eyeos/prueba.txt";
         $id = "8888888";
         $metadata = '{"filename":"prueba.pdf","id":"8888888","status":"NEW","version":1,"parent_id":"32565632156","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":false}';
-        $this->getDownloadMetadata($metadata, "null", $id, $this->cloud, $this->resourceUrl);
-        $this->apiProviderMock->expects($this->at(1))
+        $metadataVersion = json_decode('{"controlVersion":"true"}');
+        $this->getDownloadMetadata($metadata, $metadataVersion,"null", $id, $this->cloud, $this->resourceUrl);
+        $this->apiProviderMock->expects($this->at(2))
             ->method('downloadMetadata')
             ->with($this->cloud, $this->token, $id, $path,$this->resourceUrl)
             ->will($this->returnValue('true'));
@@ -1429,7 +1456,8 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $path = "/home/eyeos/prueba.txt";
         $id = "8888888";
         $metadata = '{"filename":"prueba.pdf","id":"8888888","status":"NEW","version":1,"parent_id":"32565632156","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":false}';
-        $this->getDownloadMetadata($metadata, '{"id":"8888888","version":1,"recover":false}', $id, $this->cloud);
+        $metadataVersion = json_decode('{"controlVersion":"true"}');
+        $this->getDownloadMetadata($metadata, $metadataVersion,'{"id":"8888888","version":1,"recover":false}', $id, $this->cloud);
         $this->apiProviderMock->expects($this->never())
             ->method('downloadMetadata');
         $this->sut->downloadMetadata($this->token, $id, $path, $this->user, false, $this->cloud);
@@ -1446,7 +1474,8 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $path = "/home/eyeos/prueba.txt";
         $id = "8888888";
         $metadata = '{"filename":"prueba.pdf","id":"8888888","status":"NEW","version":1,"parent_id":"32565632156","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":false}';
-        $this->getDownloadMetadata($metadata, '{"id":"8888888","version":1,"recover":false}', $id, $this->cloud,$this->resourceUrl);
+        $metadataVersion = json_decode('{"controlVersion":"true"}');
+        $this->getDownloadMetadata($metadata, $metadataVersion,'{"id":"8888888","version":1,"recover":false}', $id, $this->cloud,$this->resourceUrl);
         $this->apiProviderMock->expects($this->never())
             ->method('downloadMetadata');
         $this->sut->downloadMetadata($this->token, $id, $path, $this->user, false, $this->cloud,$this->resourceUrl);
@@ -1463,9 +1492,10 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $path = "/home/eyeos/prueba.txt";
         $id = "8888888";
         $metadata = '{"filename":"prueba.pdf","id":"8888888","status":"NEW","version":2,"parent_id":"32565632156","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":false}';
-        $this->getDownloadMetadata($metadata, '{"id":"8888888","user_eyeos":"eyeID_EyeosUser_2","version":1,"recover":false}', $id, $this->cloud);
+        $metadataVersion = json_decode('{"controlVersion":"true"}');
+        $this->getDownloadMetadata($metadata, $metadataVersion,'{"id":"8888888","user_eyeos":"eyeID_EyeosUser_2","version":1,"recover":false}', $id, $this->cloud);
 
-        $this->apiProviderMock->expects($this->at(1))
+        $this->apiProviderMock->expects($this->at(2))
             ->method('downloadMetadata')
             ->with($this->cloud, $this->token, $id, $path)
             ->will($this->returnValue('true'));
@@ -1501,9 +1531,10 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $path = "/home/eyeos/prueba.txt";
         $id = "8888888";
         $metadata = '{"filename":"prueba.pdf","id":"8888888","status":"NEW","version":2,"parent_id":"32565632156","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":false}';
-        $this->getDownloadMetadata($metadata, '{"id":"8888888","user_eyeos":"eyeID_EyeosUser_2","version":1,"recover":false}', $id, $this->cloud, $this->resourceUrl);
+        $metadataVersion = json_decode('{"controlVersion":"true"}');
+        $this->getDownloadMetadata($metadata, $metadataVersion,'{"id":"8888888","user_eyeos":"eyeID_EyeosUser_2","version":1,"recover":false}', $id, $this->cloud, $this->resourceUrl);
 
-        $this->apiProviderMock->expects($this->at(1))
+        $this->apiProviderMock->expects($this->at(2))
             ->method('downloadMetadata')
             ->with($this->cloud, $this->token, $id, $path,$this->resourceUrl)
             ->will($this->returnValue('true'));
@@ -1538,7 +1569,8 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $path = "/home/eyeos/prueba.txt";
         $id = "8888888";
         $metadata = '{"filename":"prueba.pdf","id":"8888888","status":"NEW","version":2,"parent_id":"32565632156","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":false}';
-        $this->getDownloadMetadata($metadata, '{"id":"8888888","user_eyeos":"eyeID_EyeosUser_2","version":1,"recover":true}', $id, $this->cloud);
+        $metadataVersion = json_decode('{"controlVersion":"true"}');
+        $this->getDownloadMetadata($metadata, $metadataVersion,'{"id":"8888888","user_eyeos":"eyeID_EyeosUser_2","version":1,"recover":true}', $id, $this->cloud);
 
         $this->apiProviderMock->expects($this->never())
             ->method('downloadMetadata');
@@ -1557,7 +1589,8 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $path = "/home/eyeos/prueba.txt";
         $id = "8888888";
         $metadata = '{"filename":"prueba.pdf","id":"8888888","status":"NEW","version":2,"parent_id":"32565632156","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":false}';
-        $this->getDownloadMetadata($metadata, '{"id":"8888888","user_eyeos":"eyeID_EyeosUser_2","version":1,"recover":true}', $id, $this->cloud, $this->resourceUrl);
+        $metadataVersion = json_decode('{"controlVersion":"true"}');
+        $this->getDownloadMetadata($metadata, $metadataVersion,'{"id":"8888888","user_eyeos":"eyeID_EyeosUser_2","version":1,"recover":true}', $id, $this->cloud, $this->resourceUrl);
 
         $this->apiProviderMock->expects($this->never())
             ->method('downloadMetadata');
@@ -1576,7 +1609,13 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $path = "/home/eyeos/prueba.txt";
         $id = "8888888";
         $metadata = '{"filename":"prueba.pdf","id":"8888888","status":"NEW","version":2,"parent_id":"32565632156","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":false}';
+        $metadataVersion = json_decode('{"controlVersion":"true"}');
         $this->apiProviderMock->expects($this->at(0))
+            ->method('getControlVersionCloud')
+            ->with($this->cloud)
+            ->will($this->returnValue($metadataVersion));
+
+        $this->apiProviderMock->expects($this->at(1))
             ->method('getMetadata')
             ->with($this->cloud, $this->token, true, $id)
             ->will($this->returnValue(json_decode($metadata)));
@@ -1595,7 +1634,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->with(json_encode($params))
             ->will($this->returnValue('{"id": "8888888", "cloud": "Stacksync", "user_eyeos": "eyeos", "version": 1, "recover": false}'));
 
-        $this->apiProviderMock->expects($this->at(1))
+        $this->apiProviderMock->expects($this->at(2))
             ->method('downloadMetadata')
             ->with($this->cloud, $this->token, $id, $path)
             ->will($this->returnValue('true'));
@@ -1614,7 +1653,12 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $path = "/home/eyeos/prueba.txt";
         $id = "8888888";
         $metadata = '{"filename":"prueba.pdf","id":"8888888","status":"NEW","version":2,"parent_id":"32565632156","user":"eyeos","client_modified":"2013-03-08 10:36:41.997","server_modified":"2013-03-08 10:36:41.997","is_root":false,"is_folder":false}';
+        $metadataVersion = json_decode('{"controlVersion":"true"}');
         $this->apiProviderMock->expects($this->at(0))
+            ->method('getControlVersionCloud')
+            ->with($this->cloud)
+            ->will($this->returnValue($metadataVersion));
+        $this->apiProviderMock->expects($this->at(1))
             ->method('getMetadata')
             ->with($this->cloud, $this->token, true, $id, null, $this->resourceUrl)
             ->will($this->returnValue(json_decode($metadata)));
@@ -1633,7 +1677,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
             ->with(json_encode($params))
             ->will($this->returnValue('{"id": "8888888", "cloud": "Stacksync", "user_eyeos": "eyeos", "version": 1, "recover": false}'));
 
-        $this->apiProviderMock->expects($this->at(1))
+        $this->apiProviderMock->expects($this->at(2))
             ->method('downloadMetadata')
             ->with($this->cloud, $this->token, $id, $path,$this->resourceUrl)
             ->will($this->returnValue('true'));
@@ -1652,7 +1696,13 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $path = "/home/eyeos/prueba.txt";
         $id = 8888888;
         $metadata = '{"error":403}';
+        $metadataVersion = json_decode('{"controlVersion":"true"}');
         $this->apiProviderMock->expects($this->at(0))
+            ->method('getControlVersionCloud')
+            ->with($this->cloud)
+            ->will($this->returnValue($metadataVersion));
+
+        $this->apiProviderMock->expects($this->at(1))
             ->method('getMetadata')
             ->with($this->cloud, $this->token, true, $id)
             ->will($this->returnValue(json_decode($metadata)));
@@ -1673,7 +1723,13 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $path = "/home/eyeos/prueba.txt";
         $id = 8888888;
         $metadata = '{"error":403}';
+        $metadataVersion = json_decode('{"controlVersion":"true"}');
         $this->apiProviderMock->expects($this->at(0))
+            ->method('getControlVersionCloud')
+            ->with($this->cloud)
+            ->will($this->returnValue($metadataVersion));
+
+        $this->apiProviderMock->expects($this->at(1))
             ->method('getMetadata')
             ->with($this->cloud, $this->token, true, $id,null, $this->resourceUrl)
             ->will($this->returnValue(json_decode($metadata)));
@@ -3352,9 +3408,14 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
 
     }
 
-    private function getDownloadMetadata($metadata, $expected, $id, $cloud, $resourceUrl = null)
+    private function getDownloadMetadata($metadata, $metadataVersion,$expected, $id, $cloud, $resourceUrl = null)
     {
         $this->apiProviderMock->expects($this->at(0))
+            ->method('getControlVersionCloud')
+            ->with($cloud)
+            ->will($this->returnValue($metadataVersion));
+
+        $this->apiProviderMock->expects($this->at(1))
             ->method('getMetadata')
             ->with($cloud, $this->token, true, $id,null, $resourceUrl)
             ->will($this->returnValue(json_decode($metadata)));
