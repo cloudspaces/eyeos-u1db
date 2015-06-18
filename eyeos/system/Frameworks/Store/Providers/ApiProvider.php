@@ -161,6 +161,108 @@ class ApiProvider
         return $this->exerciseMetadata($request);
     }
 
+    public function insertEvent($cloud,$token,$user,$calendar,$isallday,$timestart,$timeend,$repetition,$finaltype,$finalvalue,$subject,$location,$description,$resourceUrl)
+    {
+        $request = $this->getRequest("insertEvent", $token, $cloud, $resourceUrl);
+        $request->metadata->user = $user;
+        $request->metadata->calendar = $calendar;
+        $request->metadata->isallday = $isallday;
+        $request->metadata->timestart = $timestart;
+        $request->metadata->timeend = $timeend;
+        $request->metadata->repetition = $repetition;
+        $request->metadata->finaltype = $finaltype;
+        $request->metadata->finalvalue = $finalvalue;
+        $request->metadata->subject = $subject;
+        $request->metadata->location = $location;
+        $request->metadata->description = $description;
+        return $this->exerciseMetadata($request);
+    }
+
+    public function deleteEvent($cloud,$token,$user,$calendar,$timestart,$timeend,$isallday,$resourceUrl)
+    {
+        $request = $this->getRequest("deleteEvent", $token, $cloud, $resourceUrl);
+        $request->metadata->user = $user;
+        $request->metadata->calendar = $calendar;
+        $request->metadata->timestart = $timestart;
+        $request->metadata->timeend = $timeend;
+        $request->metadata->isallday = $isallday;
+        return $this->exerciseMetadata($request);
+    }
+
+    public function updateEvent($cloud,$token,$user,$calendar,$isallday,$timestart,$timeend,$repetition,$finaltype,$finalvalue,$subject,$location,$description,$resourceUrl)
+    {
+        $request = $this->getRequest("updateEvent", $token, $cloud, $resourceUrl);
+        $request->metadata->user = $user;
+        $request->metadata->calendar = $calendar;
+        $request->metadata->isallday = $isallday;
+        $request->metadata->timestart = $timestart;
+        $request->metadata->timeend = $timeend;
+        $request->metadata->repetition = $repetition;
+        $request->metadata->finaltype = $finaltype;
+        $request->metadata->finalvalue = $finalvalue;
+        $request->metadata->subject = $subject;
+        $request->metadata->location = $location;
+        $request->metadata->description = $description;
+        return $this->exerciseMetadata($request);
+    }
+
+    public function getEvents($cloud,$token,$user,$calendar,$resourceUrl)
+    {
+        $request = $this->getRequest("getEvents", $token, $cloud, $resourceUrl);
+        $request->metadata->user = $user;
+        $request->metadata->calendar = $calendar;
+        return $this->exerciseMetadata($request);
+    }
+
+    public function insertCalendar($cloud,$token,$user,$name,$description,$timezone,$resourceUrl)
+    {
+        $request = $this->getRequest("insertCalendar", $token, $cloud, $resourceUrl);
+        $request->metadata->user = $user;
+        $request->metadata->name = $name;
+        $request->metadata->description = $description;
+        $request->metadata->timezone = $timezone;
+        return $this->exerciseMetadata($request);
+    }
+
+    public function deleteCalendar($cloud,$token,$user,$name,$resourceUrl)
+    {
+        $request = $this->getRequest("deleteCalendar", $token, $cloud, $resourceUrl);
+        $request->metadata->user = $user;
+        $request->metadata->name = $name;
+        return $this->exerciseMetadata($request);
+    }
+
+    public function updateCalendar($cloud,$token,$user,$name,$description,$timezone,$resourceUrl)
+    {
+        $request = $this->getRequest("updateCalendar", $token, $cloud, $resourceUrl);
+        $request->metadata->user = $user;
+        $request->metadata->name = $name;
+        $request->metadata->description = $description;
+        $request->metadata->timezone = $timezone;
+        return $this->exerciseMetadata($request);
+    }
+
+    public function getCalendars($cloud,$token,$user,$resourceUrl)
+    {
+        $request = $this->getRequest("getCalendars", $token, $cloud, $resourceUrl);
+        $request->metadata->user = $user;
+        return $this->exerciseMetadata($request);
+    }
+
+    public function getCalendarsAndEvents($cloud,$token,$user,$resourceUrl)
+    {
+        $request = $this->getRequest("getCalendarsAndEvents", $token, $cloud, $resourceUrl);
+        $request->metadata->user = $user;
+        return $this->exerciseMetadata($request);
+    }
+
+    public function deleteCalendarsUser($cloud,$token,$user,$resourceUrl)
+    {
+        $request = $this->getRequest("deleteCalendarsUser", $token, $cloud, $resourceUrl);
+        $request->metadata->user = $user;
+        return $this->exerciseMetadata($request);
+    }
+
     private function getRequest($type, $token = NULL, $cloud = NULL, $resourceUrl = NULL)
     {
         $request = new stdClass();

@@ -1381,6 +1381,270 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(json_decode($metadataOut),$actual);
     }
 
+    /**
+     * method: insertEvent
+     * when: called
+     * with: cloudAndTokenAndUserAndCalendarAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValue
+             AndSubjectAndLocationAndDescriptionAndResourceUrl
+     * should: returnEvent
+     */
+    public function test_insertEvent_called_cloudAndTokenAndUserAndCalendarAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescriptionAndResourceUrl_returnEvent()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"insertEvent","user":"eyeos","calendar":"personal","isallday":0,"timestart":"201419160000","timeend":"201419170000","repetition":"None","finaltype":"1","finalvalue":"0","subject":"Visita","location":"Barcelona","description":"Dentista"}}';
+        $metadataOut = '{"status": "NEW", "description": "Llevar justificante", "finalvalue": "0", "timestart": "201419160000", "user": "eyeos", "calendar": "personal", "repetition": "None", "cloud": "Stacksync", "subject": "VisitaMedico", "timeend": "201419170000", "location": "Barcelona", "finaltype": "1", "type": "event", "isallday": 0}';
+        $this->exerciseInsertEvent($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: insertEvent
+     * when: called
+     * with: cloudAndTokenAndUserAndCalendarAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValue
+    AndSubjectAndLocationAndDescriptionAndResourceUrl
+     * should: returnException
+     */
+    public function test_insertEvent_called_cloudAndTokenAndUserAndCalendarAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescriptionAndResourceUrl_returnException()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"insertEvent","user":"eyeos","calendar":"personal","isallday":0,"timestart":"201419160000","timeend":"201419170000","repetition":"None","finaltype":"1","finalvalue":"0","subject":"Visita","location":"Barcelona","description":"Dentista"}}';
+        $metadataOut = 400;
+        $this->exerciseInsertEvent($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: deleteEvent
+     * when: called
+     * with: cloudAndTokenAndUserAndCalendarAndTimeStartAndTimeEndAndIsAllDayAndResourceUrl
+     * should: returnEvent
+     */
+    public function test_deleteEvent_called_cloudAndTokenAndUserAndCalendarAndTimeStartAndTimeEndAndIsAllDayAndResourceUrl_returnEvent()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"deleteEvent","user":"eyeos","calendar":"personal","timestart":"201419160000","timeend":"201419170000","isallday":0}}';
+        $metadataOut = '{"status": "DELETED", "description": "Llevar justificante", "finalvalue": "0", "timestart": "201419160000", "user": "eyeos", "calendar": "personal", "repetition": "None", "cloud": "Stacksync", "subject": "VisitaMedico", "timeend": "201419170000", "location": "Barcelona", "finaltype": "1", "type": "event", "isallday": 0}';
+        $this->exerciseDeleteEvent($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: deleteEvent
+     * when: called
+     * with: cloudAndTokenAndUserAndCalendarAndTimeStartAndTimeEndAndIsAllDayAndResourceUrl
+     * should: returnException
+     */
+    public function test_deleteEvent_called_cloudAndTokenAndUserAndCalendarAndTimeStartAndTimeEndAndIsAllDayAndResourceUrl_returnException()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"deleteEvent","user":"eyeos","calendar":"personal","timestart":"201419160000","timeend":"201419170000","isallday":0}}';
+        $metadataOut = 400;
+        $this->exerciseDeleteEvent($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: updateEvent
+     * when: called
+     * with: cloudAndTokenAndUserAndCalendarAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValue
+    AndSubjectAndLocationAndDescriptionAndResourceUrl
+     * should: returnEvent
+     */
+    public function test_updateEvent_called_cloudAndTokenAndUserAndCalendarAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescriptionAndResourceUrl_returnEvent()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"updateEvent","user":"eyeos","calendar":"personal","isallday":0,"timestart":"201419160000","timeend":"201419170000","repetition":"None","finaltype":"1","finalvalue":"0","subject":"Visita","location":"Barcelona","description":"Dentista"}}';
+        $metadataOut = '{"status": "CHANGED", "description": "Llevar justificante", "finalvalue": "0", "timestart": "201419160000", "user": "eyeos", "calendar": "personal", "repetition": "None", "cloud": "Stacksync", "subject": "VisitaMedico", "timeend": "201419170000", "location": "Barcelona", "finaltype": "1", "type": "event", "isallday": 0}';
+        $this->exerciseUpdateEvent($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: updateEvent
+     * when: called
+     * with: cloudAndTokenAndUserAndCalendarAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValue
+    AndSubjectAndLocationAndDescriptionAndResourceUrl
+     * should: returnException
+     */
+    public function test_updateEvent_called_cloudAndTokenAndUserAndCalendarAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescriptionAndResourceUrl_returnException()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"updateEvent","user":"eyeos","calendar":"personal","isallday":0,"timestart":"201419160000","timeend":"201419170000","repetition":"None","finaltype":"1","finalvalue":"0","subject":"Visita","location":"Barcelona","description":"Dentista"}}';
+        $metadataOut = 400;
+        $this->exerciseUpdateEvent($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: getEvents
+     * when: called
+     * with: cloudAndTokenAndUserAndCalendarAndResourceUrl
+     * should: returnEvents
+     */
+    public function test_getEvents_called_cloudAndTokenAndUserAndCalendarAndResourceUrl_returnEvents()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"getEvents","user":"eyeos","calendar":"personal"}}';
+        $metadataOut = '[{"status": "CHANGED", "description": "Llevar justificante", "location": "Barcelona", "finalvalue": "0", "timeend": "201419170000", "timestart": "201419160000", "isallday": 0, "user": "eyeos", "finaltype": "1", "calendar": "personal", "repetition": "None", "type": "event", "cloud": "Stacksync", "subject": "VisitaMedico"}]';
+        $this->exerciseGetEvents($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: getEvents
+     * when: called
+     * with: cloudAndTokenAndUserAndCalendarAndResourceUrl
+     * should: returnException
+     */
+    public function test_getEvents_called_cloudAndTokenAndUserAndCalendarAndResourceUrl_returnException()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"getEvents","user":"eyeos","calendar":"personal"}}';
+        $metadataOut = 400;
+        $this->exerciseGetEvents($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: insertCalendar
+     * when: called
+     * with: cloudAndTokenAndUserAndNameAndDescriptionAndTimeZoneAndResourceUrl
+     * should: returnCalendar
+     */
+    public function test_insertCalendar_called_cloudAndTokenAndUserAndNameAndDescriptionAndTimeZoneAndResourceUrl_returnCalendar()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"insertCalendar","user":"eyeos","name":"personal","description":"CalendarioPersonal","timezone":"0"}}';
+        $metadataOut = '{"status": "NEW", "description": "CalendarioPersonal", "user": "eyeos", "timezone": 0, "type": "calendar", "cloud": "Stacksync", "name": "personal"}';
+        $this->exerciseInsertCalendar($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: insertCalendar
+     * when: called
+     * with: cloudAndTokenAndUserAndNameAndDescriptionAndTimeZoneAndResourceUrl
+     * should: returnException
+     */
+    public function test_insertCalendar_called_cloudAndTokenAndUserAndNameAndDescriptionAndTimeZoneAndResourceUrl_returnException()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"insertCalendar","user":"eyeos","name":"personal","description":"CalendarioPersonal","timezone":"0"}}';
+        $metadataOut = 400;
+        $this->exerciseInsertCalendar($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: deleteCalendar
+     * when: called
+     * with: cloudAndTokenAndUserAndNameAndResourceUrl
+     * should: returnCalendar
+     */
+    public function test_deleteCalendar_called_cloudAndTokenAndUserAndNameAndResourceUrl_returnCalendar()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"deleteCalendar","user":"eyeos","name":"personal"}}';
+        $metadataOut = '{"status": "DELETED", "description": "Llevar justificante", "user": "eyeos", "timezone": 0, "type": "calendar", "cloud": "Stacksync", "name": "personal"}';
+        $this->exerciseDeleteCalendar($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: deleteCalendar
+     * when: called
+     * with: cloudAndTokenAndUserAndNameAndResourceUrl
+     * should: returnException
+     */
+    public function test_deleteCalendar_called_cloudAndTokenAndUserAndNameAndResourceUrl_returnException()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"deleteCalendar","user":"eyeos","name":"personal"}}';
+        $metadataOut = 400;
+        $this->exerciseDeleteCalendar($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: updateCalendar
+     * when: called
+     * with: cloudAndTokenAndUserAndNameAndDescriptionAndTimeZoneAndResourceUrl
+     * should: returnCalendar
+     */
+    public function test_updateCalendar_called_cloudAndTokenAndUserAndNameAndDescriptionAndTimeZoneAndResourceUrl_returnCalendar()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"updateCalendar","user":"eyeos","name":"personal","description":"CalendarioLaboral","timezone":"0"}}';
+        $metadataOut = '{"status": "CHANGED", "description": "Llevar justificante", "user": "eyeos", "timezone": 0, "type": "calendar", "cloud": "Stacksync", "name": "personal"}';
+        $this->exerciseUpdateCalendar($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: updateCalendar
+     * when: called
+     * with: cloudAndTokenAndUserAndNameAndDescriptionAndTimeZoneAndResourceUrl
+     * should: returnException
+     */
+    public function test_updateCalendar_called_cloudAndTokenAndUserAndNameAndDescriptionAndTimeZoneAndResourceUrl_returnException()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"updateCalendar","user":"eyeos","name":"personal","description":"CalendarioLaboral","timezone":"0"}}';
+        $metadataOut = 400;
+        $this->exerciseUpdateCalendar($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: getCalendars
+     * when: called
+     * with: cloudAndTokenAndUserAndResourceUrl
+     * should: returnCalendars
+     */
+    public function test_getCalendars_called_cloudAndTokenAndUserAndResourceUrl_returnCalendars()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"getCalendars","user":"eyeos"}}';
+        $metadataOut = '[{"status": "NEW", "description": "Llevar justificante", "user": "eyeos", "timezone": 0, "type": "calendar", "cloud": "Stacksync", "name": "personal"}]';
+        $this->exerciseGetCalendars($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: getCalendars
+     * when: called
+     * with: cloudAndTokenAndUserAndResourceUrl
+     * should: returnException
+     */
+    public function test_getCalendars_called_cloudAndTokenAndUserAndResourceUrl_returnException()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"getCalendars","user":"eyeos"}}';
+        $metadataOut = 400;
+        $this->exerciseGetCalendars($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: getCalendarsAndEvents
+     * when: called
+     * with: cloudAndTokenAndUserAndResourceUrl
+     * should: returnCalendarsAndEvents
+     */
+    public function test_getCalendarsAndEvents_called_cloudAndTokenAndUserAndResourceUrl_returnCalendarsAndEvents()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"getCalendarsAndEvents","user":"eyeos"}}';
+        $metadataOut = '[{"status": "NEW", "description": "Llevar justificante", "user": "eyeos", "timezone": 0, "type": "calendar", "cloud": "Stacksync", "name": "personal"}, {"status": "NEW", "description": "Llevar justificante", "location": "Barcelona", "finalvalue": "0", "timeend": "201419170000", "timestart": "201419160000", "isallday": 0, "user": "eyeos", "finaltype": "1", "calendar": "personal", "repetition": "None", "type": "event", "cloud": "Stacksync", "subject": "VisitaMedico"}]';
+        $this->exerciseGetCalendarsAndEvents($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: getCalendarsAndEvents
+     * when: called
+     * with: cloudAndTokenAndUserAndResourceUrl
+     * should: returnException
+     */
+    public function test_getCalendarsAndEvents_called_cloudAndTokenAndUserAndResourceUrl_returnException()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"getCalendarsAndEvents","user":"eyeos"}}';
+        $metadataOut = 400;
+        $this->exerciseGetCalendarsAndEvents($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: deleteCalendarsUser
+     * when: called
+     * with: cloudAndTokenAndUserAndResourceUrl
+     * should: returnDeleteCorrect
+     */
+    public function test_deleteCalendarsUser_called_cloudAndTokenAndUserAndResourceUrl_returnDeleteCorrect()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"deleteCalendarsUser","user":"eyeos"}}';
+        $metadataOut = '{"delete": true}';
+        $this->exerciseDeleteCalendarsUser($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: deleteCalendarsUser
+     * when: called
+     * with: cloudAndTokenAndUserAndResourceUrl
+     * should: returnException
+     */
+    public function test_deleteCalendarsUser_called_cloudAndTokenAndUserAndResourceUrl_returnException()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"deleteCalendarsUser","user":"eyeos"}}';
+        $metadataOut = 400;
+        $this->exerciseDeleteCalendarsUser($metadataIn,$metadataOut);
+    }
+
     private function exerciseGetMetadata($metadataIn,$metadataOut,$check,$file,$id,$contents = null,$url = null)
     {
         $this->exerciseMockMetadata($metadataIn,$metadataOut);
@@ -1497,6 +1761,76 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     {
         $this->exerciseMockMetadata($metadataIn, $metadataOut);
         $actual = $this->sut->getComments($this->cloud,$this->token,"153","http://192.68.56.101/");
+        $this->assertEquals(json_decode($metadataOut),$actual);
+    }
+
+    private function exerciseInsertEvent($metadataIn,$metadataOut)
+    {
+        $this->exerciseMockMetadata($metadataIn, $metadataOut);
+        $actual = $this->sut->insertEvent($this->cloud,$this->token,"eyeos","personal",0,"201419160000","201419170000","None","1","0","Visita","Barcelona","Dentista","http://192.68.56.101/");
+        $this->assertEquals(json_decode($metadataOut),$actual);
+    }
+
+    private function exerciseDeleteEvent($metadataIn,$metadataOut)
+    {
+        $this->exerciseMockMetadata($metadataIn, $metadataOut);
+        $actual = $this->sut->deleteEvent($this->cloud,$this->token,"eyeos","personal","201419160000","201419170000",0,"http://192.68.56.101/");
+        $this->assertEquals(json_decode($metadataOut),$actual);
+    }
+
+    private function exerciseUpdateEvent($metadataIn,$metadataOut)
+    {
+        $this->exerciseMockMetadata($metadataIn, $metadataOut);
+        $actual = $this->sut->updateEvent($this->cloud,$this->token,"eyeos","personal",0,"201419160000","201419170000","None","1","0","Visita","Barcelona","Dentista","http://192.68.56.101/");
+        $this->assertEquals(json_decode($metadataOut),$actual);
+    }
+
+    private function exerciseGetEvents($metadataIn,$metadataOut)
+    {
+        $this->exerciseMockMetadata($metadataIn, $metadataOut);
+        $actual = $this->sut->getEvents($this->cloud,$this->token,"eyeos","personal","http://192.68.56.101/");
+        $this->assertEquals(json_decode($metadataOut),$actual);
+    }
+
+    private function exerciseInsertCalendar($metadataIn,$metadataOut)
+    {
+        $this->exerciseMockMetadata($metadataIn, $metadataOut);
+        $actual = $this->sut->insertCalendar($this->cloud,$this->token,"eyeos","personal","CalendarioPersonal","0","http://192.68.56.101/");
+        $this->assertEquals(json_decode($metadataOut),$actual);
+    }
+
+    private function exerciseDeleteCalendar($metadataIn,$metadataOut)
+    {
+        $this->exerciseMockMetadata($metadataIn, $metadataOut);
+        $actual = $this->sut->deleteCalendar($this->cloud,$this->token,"eyeos","personal","http://192.68.56.101/");
+        $this->assertEquals(json_decode($metadataOut),$actual);
+    }
+
+    private function exerciseUpdateCalendar($metadataIn,$metadataOut)
+    {
+        $this->exerciseMockMetadata($metadataIn, $metadataOut);
+        $actual = $this->sut->updateCalendar($this->cloud,$this->token,"eyeos","personal","CalendarioLaboral","0","http://192.68.56.101/");
+        $this->assertEquals(json_decode($metadataOut),$actual);
+    }
+
+    private function exerciseGetCalendars($metadataIn,$metadataOut)
+    {
+        $this->exerciseMockMetadata($metadataIn, $metadataOut);
+        $actual = $this->sut->getCalendars($this->cloud,$this->token,"eyeos","http://192.68.56.101/");
+        $this->assertEquals(json_decode($metadataOut),$actual);
+    }
+
+    private function exerciseGetCalendarsAndEvents($metadataIn,$metadataOut)
+    {
+        $this->exerciseMockMetadata($metadataIn, $metadataOut);
+        $actual = $this->sut->getCalendarsAndEvents($this->cloud,$this->token,"eyeos","http://192.68.56.101/");
+        $this->assertEquals(json_decode($metadataOut),$actual);
+    }
+
+    private function exerciseDeleteCalendarsUser($metadataIn,$metadataOut)
+    {
+        $this->exerciseMockMetadata($metadataIn, $metadataOut);
+        $actual = $this->sut->deleteCalendarsUser($this->cloud,$this->token,"eyeos","http://192.68.56.101/");
         $this->assertEquals(json_decode($metadataOut),$actual);
     }
 }

@@ -181,6 +181,62 @@ class OauthCredentials:
         result = oauth.get(url)
         return self.createRequest(result)
 
+    def insertEvent(self,oauth,user,calendar,cloud,isallday,timestart,timeend,repetition,finaltype,
+                    finalvalue,subject,location,description):
+        url = self.resourceurl + 'event'
+        data = {"user":user,"calendar":calendar,"cloud":cloud,"isallday":isallday,"timestart":timestart,"timeend":timeend,"repetition":repetition,"finaltype":finaltype,"finalvalue":finalvalue,"subject":subject,"location":location,"description":description}
+        result = oauth.post(url,data)
+        return self.createRequest(result)
+
+    def deleteEvent(self,oauth,user,calendar,cloud,timestart,timeend,isallday):
+        url = self.resourceurl + 'event/' + user + '/' + calendar + '/' + cloud + '/' + timestart + '/' + timeend + '/' + str(isallday)
+        result = oauth.delete(url)
+        return self.createRequest(result)
+
+    def updateEvent(self,oauth,user,calendar,cloud,isallday,timestart,timeend,repetition,finaltype,
+                    finalvalue,subject,location,description):
+        url = self.resourceurl + 'event'
+        data = {"user":user,"calendar":calendar,"cloud":cloud,"isallday":isallday,"timestart":timestart,"timeend":timeend,"repetition":repetition,"finaltype":finaltype,"finalvalue":finalvalue,"subject":subject,"location":location,"description":description}
+        result = oauth.put(url,data)
+        return self.createRequest(result)
+
+    def getEvents(self,oauth,user,calendar,cloud):
+        url = self.resourceurl + 'event/' + user + '/' + calendar + '/' + cloud
+        result = oauth.get(url)
+        return self.createRequest(result)
+
+    def insertCalendar(self,oauth,user,name,cloud,description,timezone):
+        url = self.resourceurl + 'calendar'
+        data = {"user":user,"name":name,"cloud":cloud,"description":description,"timezone":timezone}
+        result = oauth.post(url,data)
+        return self.createRequest(result)
+
+    def deleteCalendar(self,oauth,user,name,cloud):
+        url = self.resourceurl + 'calendar/' + user + '/' + name + '/' + cloud
+        result = oauth.delete(url)
+        return self.createRequest(result)
+
+    def updateCalendar(self,oauth,user,name,cloud,description,timezone):
+        url = self.resourceurl + 'calendar'
+        data = {"user":user,"name":name,"cloud":cloud,"description":description,"timezone":timezone}
+        result = oauth.put(url,data)
+        return self.createRequest(result)
+
+    def getCalendars(self,oauth,user,cloud):
+        url = self.resourceurl + 'calendar/' + user + '/' + cloud
+        result = oauth.get(url)
+        return self.createRequest(result)
+
+    def getCalendarsAndEvents(self,oauth,user,cloud):
+        url = self.resourceurl + 'calEvents/' + user + '/' + cloud
+        result = oauth.get(url)
+        return self.createRequest(result)
+
+    def deleteCalendarsUser(self,oauth,user,cloud):
+        url = self.resourceurl + 'calUser/' + user + '/' + cloud
+        result = oauth.delete(url)
+        return self.createRequest(result)
+
     def createHeader(self, oauth):
         oauth.headers['StackSync-API'] = self.version
 
@@ -315,6 +371,31 @@ if __name__ == "__main__":
                                 result = oauthCredentials.deleteComment(oauth,metadata['id'],metadata['user'],cloud,metadata['time_created'])
                             elif type == "getComments":
                                 result = oauthCredentials.getComments(oauth,metadata['id'],cloud)
+                            elif type == "insertEvent":
+                                result = oauthCredentials.insertEvent(oauth,metadata['user'],metadata['calendar'],cloud,metadata['isallday'],
+                                                                      metadata['timestart'],metadata['timeend'],metadata['repetition'],metadata['finaltype'],
+                                                                      metadata['finalvalue'],metadata['subject'],metadata['location'],metadata['description'])
+                            elif type == "deleteEvent":
+                                result = oauthCredentials.deleteEvent(oauth,metadata['user'],metadata['calendar'],cloud,metadata['timestart'],metadata['timeend'],metadata['isallday'])
+                            elif type == "updateEvent":
+                                result = oauthCredentials.updateEvent(oauth,metadata['user'],metadata['calendar'],cloud,metadata['isallday'],
+                                                                      metadata['timestart'],metadata['timeend'],metadata['repetition'],metadata['finaltype'],
+                                                                      metadata['finalvalue'],metadata['subject'],metadata['location'],metadata['description'])
+                            elif type == "getEvents":
+                                result = oauthCredentials.getEvents(oauth,metadata['user'],metadata['calendar'],cloud)
+                            elif type == "insertCalendar":
+                                result = oauthCredentials.insertCalendar(oauth,metadata['user'],metadata['name'],cloud,metadata['description'],metadata['timezone'])
+                            elif type == "deleteCalendar":
+                                result = oauthCredentials.deleteCalendar(oauth,metadata['user'],metadata['name'],cloud)
+                            elif type == "updateCalendar":
+                                result = oauthCredentials.updateCalendar(oauth,metadata['user'],metadata['name'],cloud,metadata['description'],metadata['timezone'])
+                            elif type == "getCalendars":
+                                result = oauthCredentials.getCalendars(oauth,metadata['user'],cloud)
+                            elif type == "getCalendarsAndEvents":
+                                result = oauthCredentials.getCalendarsAndEvents(oauth,metadata['user'],cloud)
+                            elif type == "deleteCalendarsUser":
+                                result = oauthCredentials.deleteCalendarsUser(oauth,metadata['user'],cloud)
+
                         elif not(params.has_key( 'metadata' ) or params.has_key( 'verifier' ) or params.has_key( 'token' )):
                             oauth = OAuthRequest(key, client_secret=secret, callback_uri=callbackUrl, signature_method=SIGNATURE_PLAINTEXT)
                             result = oauthCredentials.getRequestToken(oauth)

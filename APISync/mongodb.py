@@ -168,6 +168,6 @@ class mongoDb:
         self.db.collection.remove({"user":user,"cloud":cloud})
         documents = self.db.collection.find({"user":user,"cloud":cloud})
         if documents.count() == 0:
-            return True
+            return {"delete":True}
         else:
-            return False
+            return {"error":400,"descripcion":"Error al borrar calendario de Usuarios"}

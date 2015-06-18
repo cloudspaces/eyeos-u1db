@@ -20,6 +20,19 @@ class OauthCredentialsTest (unittest.TestCase):
         self.version = 'v2'
         self.oauthCredentials = OauthCredentials(self.requesttokenurl,self.accesstokenurl,self.resourceurl,self.version)
         self.file = open('prueba.txt', 'w+')
+        self.user = "eyeos"
+        self.calendar = "personal"
+        self.isallday = 0
+        self.timestart = "201419160000"
+        self.timeend = "201419170000"
+        self.repetition = "None"
+        self.finaltype = "1"
+        self.finalvalue = "0"
+        self.subject = "VisitaMedico"
+        self.location = "Barcelona"
+        self.description= "Llevar justificante"
+        self.timezone = 0
+        self.cloud = 'Stacksync'
 
     def tearDown(self):
         self.oauthCredentials = None
@@ -652,6 +665,343 @@ class OauthCredentialsTest (unittest.TestCase):
         result = self.oauthCredentials.getComments(oauth,id,cloud)
         oauth.get.assert_called_once_with(self.resourceurl + 'comment/' + id + '/' + cloud)
         self.assertEquals(metadataOut,result)
+
+    """
+    method: insertEvent
+    when: called
+    with: accessTokenAndUserAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValue
+          AndSubjectAndLocationAndDescription
+    should: returnEvent
+    """
+    def test_insertEvent_called_accessTokenAnduserAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescription_returnEvent(self):
+        metadataIn = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"status":"NEW"}
+        metadataOut = json.dumps(metadataIn)
+        oauth = self.createOauthSession()
+        oauth.post = Mock()
+        oauth.post.return_value = metadataIn
+        result = self.oauthCredentials.insertEvent(oauth,self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description)
+        data = {"user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description}
+        oauth.post.assert_called_once_with(self.resourceurl + 'event',data)
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: insertEvent
+    when: called
+    with: accessTokenAndUserAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValue
+          AndSubjectAndLocationAndDescription
+    should: returnException
+    """
+    def test_insertEvent_called_accessTokenAnduserAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescription_returnException(self):
+        metadataIn =  {"error":400, "description": "Recurso no encontrado"}
+        metadataOut = 'false'
+        oauth = self.createOauthSession()
+        oauth.post = Mock()
+        oauth.post.return_value = metadataIn
+        result = self.oauthCredentials.insertEvent(oauth,self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description)
+        data = {"user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description}
+        oauth.post.assert_called_once_with(self.resourceurl + 'event',data)
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: deleteEvent
+    when: called
+    with: accessTokenAndUserAndCalendarAndCloudAndTimeStartAndTimeEndAndIsAllDay
+    should: returnEvent
+    """
+    def test_deleteEvent_called_accessTokenAndUserAndCalendarAndCloudAndTimeStartAndTimeEndAndIsAllDay_returnEvent(self):
+        metadataIn = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"status":"DELETED"}
+        metadataOut = json.dumps(metadataIn)
+        oauth = self.createOauthSession()
+        oauth.delete = Mock()
+        oauth.delete.return_value = metadataIn
+        result = self.oauthCredentials.deleteEvent(oauth,self.user,self.calendar,self.cloud,self.timestart,self.timeend,self.isallday)
+        oauth.delete.assert_called_once_with(self.resourceurl + 'event/' + self.user + '/' + self.calendar + '/' + self.cloud + '/' + self.timestart + '/' + self.timeend + '/' + str(self.isallday))
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: deleteEvent
+    when: called
+    with: accessTokenAndUserAndCalendarAndCloudAndTimeStartAndTimeEndAndIsAllDay
+    should: returnException
+    """
+    def test_deleteEvent_called_accessTokenAndUserAndCalendarAndCloudAndTimeStartAndTimeEndAndIsAllDay_returnException(self):
+        metadataIn =  {"error":400, "description": "Recurso no encontrado"}
+        metadataOut = 'false'
+        oauth = self.createOauthSession()
+        oauth.delete = Mock()
+        oauth.delete.return_value = metadataIn
+        result = self.oauthCredentials.deleteEvent(oauth,self.user,self.calendar,self.cloud,self.timestart,self.timeend,self.isallday)
+        oauth.delete.assert_called_once_with(self.resourceurl + 'event/' + self.user + '/' + self.calendar + '/' + self.cloud + '/' + self.timestart + '/' + self.timeend + '/' + str(self.isallday))
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: updateEvent
+    when: called
+    with: accessTokenAndUserAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValue
+         AndSubjectAndLocationAndDescription
+    should: returnEvent
+    """
+    def test_updateEvent_called_accessTokenAnduserAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescription_returnEvent(self):
+        metadataIn = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"status":"CHANGED"}
+        metadataOut = json.dumps(metadataIn)
+        oauth = self.createOauthSession()
+        oauth.put = Mock()
+        oauth.put.return_value = metadataIn
+        result = self.oauthCredentials.updateEvent(oauth,self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description)
+        data = {"user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description}
+        oauth.put.assert_called_once_with(self.resourceurl + 'event',data)
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: updateEvent
+    when: called
+    with: accessTokenAndUserAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValue
+         AndSubjectAndLocationAndDescription
+    should: returnException
+    """
+    def test_updateEvent_called_accessTokenAnduserAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescription_returnException(self):
+        metadataIn =  {"error":400, "description": "Recurso no encontrado"}
+        metadataOut = 'false'
+        oauth = self.createOauthSession()
+        oauth.put = Mock()
+        oauth.put.return_value = metadataIn
+        result = self.oauthCredentials.updateEvent(oauth,self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description)
+        data = {"user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description}
+        oauth.put.assert_called_once_with(self.resourceurl + 'event',data)
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: getEvents
+    when: called
+    with: accessTokenAndUserAndCalendarAndCloud
+    should: returnEvents
+    """
+    def test_getEvents_called_accessTokenAndUserAndCalendarAndCloud_returnEvents(self):
+        metadataIn = json.dumps([{"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"status":"CHANGED"}])
+        metadataOut = '[{"status": "CHANGED", "description": "Llevar justificante", "location": "Barcelona", "finalvalue": "0", "timeend": "201419170000", "timestart": "201419160000", "isallday": 0, "user": "eyeos", "finaltype": "1", "calendar": "personal", "repetition": "None", "type": "event", "cloud": "Stacksync", "subject": "VisitaMedico"}]'
+        oauth = self.createOauthSession()
+        oauth.get = Mock()
+        oauth.get.return_value = metadataIn
+        result = self.oauthCredentials.getEvents(oauth,self.user,self.calendar,self.cloud)
+        oauth.get.assert_called_once_with(self.resourceurl + 'event/' + self.user + '/' + self.calendar + '/' + self.cloud)
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: getEvents
+    when: called
+    with: accessTokenAndUserAndCalendarAndCloud
+    should: returnException
+    """
+    def test_getEvents_called_accessTokenAndUserAndCalendarAndCloud_returnException(self):
+        metadataIn =  {"error":400, "description": "Recurso no encontrado"}
+        metadataOut = 'false'
+        oauth = self.createOauthSession()
+        oauth.get = Mock()
+        oauth.get.return_value = metadataIn
+        result = self.oauthCredentials.getEvents(oauth,self.user,self.calendar,self.cloud)
+        oauth.get.assert_called_once_with(self.resourceurl + 'event/' + self.user + '/' + self.calendar + '/' + self.cloud)
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: insertCalendar
+    when: called
+    with: accessTokenAndUserAndNameAndCloudAndDescriptionAndTimeZone
+    should: returnCalendar
+    """
+    def test_insertCalendar_called_accessTokenAndUserAndNameAndCloudAndDescriptionAndTimeZone_returnCalendar(self):
+        metadataIn = {"type":"calendar","user":self.user,"name":self.calendar,"cloud":self.cloud,"description":self.description,"timezone":self.timezone,"status":"NEW"}
+        metadataOut = json.dumps(metadataIn)
+        oauth = self.createOauthSession()
+        oauth.post = Mock()
+        oauth.post.return_value = metadataIn
+        result = self.oauthCredentials.insertCalendar(oauth,self.user,self.calendar,self.cloud,self.description,self.timezone)
+        data = {"user":self.user,"name":self.calendar,"cloud":self.cloud,"description":self.description,"timezone":self.timezone}
+        oauth.post.assert_called_once_with(self.resourceurl + 'calendar',data)
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: insertCalendar
+    when: called
+    with: accessTokenAndUserAndNameAndCloudAndDescriptionAndTimeZone
+    should: returnException
+    """
+    def test_insertCalendar_called_accessTokenAndUserAndNameAndCloudAndDescriptionAndTimeZone_returnException(self):
+        metadataIn =  {"error":400, "description": "Recurso no encontrado"}
+        metadataOut = 'false'
+        oauth = self.createOauthSession()
+        oauth.post = Mock()
+        oauth.post.return_value = metadataIn
+        result = self.oauthCredentials.insertCalendar(oauth,self.user,self.calendar,self.cloud,self.description,self.timezone)
+        data = {"user":self.user,"name":self.calendar,"cloud":self.cloud,"description":self.description,"timezone":self.timezone}
+        oauth.post.assert_called_once_with(self.resourceurl + 'calendar',data)
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: deleteCalendar
+    when: called
+    with: accessTokenAndUserAndNameAndCloud
+    should: returnCalendar
+    """
+    def test_deleteCalendar_called_accessTokenAndUserAndNameAndCloud_returnCalendar(self):
+        metadataIn = {"type":"calendar","user":self.user,"name":self.calendar,"cloud":self.cloud,"description":self.description,"timezone":self.timezone,"status":"DELETED"}
+        metadataOut = json.dumps(metadataIn)
+        oauth = self.createOauthSession()
+        oauth.delete = Mock()
+        oauth.delete.return_value = metadataIn
+        result = self.oauthCredentials.deleteCalendar(oauth,self.user,self.calendar,self.cloud)
+        oauth.delete.assert_called_once_with(self.resourceurl + 'calendar/' + self.user + '/' + self.calendar + '/' + self.cloud)
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: deleteCalendar
+    when: called
+    with: accessTokenAndUserAndNameAndCloud
+    should: returnException
+    """
+    def test_deleteCalendar_called_accessTokenAndUserAndNameAndCloud_returnException(self):
+        metadataIn =  {"error":400, "description": "Recurso no encontrado"}
+        metadataOut = 'false'
+        oauth = self.createOauthSession()
+        oauth.delete = Mock()
+        oauth.delete.return_value = metadataIn
+        result = self.oauthCredentials.deleteCalendar(oauth,self.user,self.calendar,self.cloud)
+        oauth.delete.assert_called_once_with(self.resourceurl + 'calendar/' + self.user + '/' + self.calendar + '/' + self.cloud)
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: updateCalendar
+    when: called
+    with: accessTokenAndUserAndNameAndCloudAndDescriptionAndTimeZone
+    should: returnCalendar
+    """
+    def test_updateCalendar_called_accessTokenAndUserAndNameAndCloudAndDescriptionAndTimeZone_returnCalendar(self):
+        metadataIn = {"type":"calendar","user":self.user,"name":self.calendar,"cloud":self.cloud,"description":self.description,"timezone":self.timezone,"status":"CHANGED"}
+        metadataOut = json.dumps(metadataIn)
+        oauth = self.createOauthSession()
+        oauth.put = Mock()
+        oauth.put.return_value = metadataIn
+        result = self.oauthCredentials.updateCalendar(oauth,self.user,self.calendar,self.cloud,self.description,self.timezone)
+        data = {"user":self.user,"name":self.calendar,"cloud":self.cloud,"description":self.description,"timezone":self.timezone}
+        oauth.put.assert_called_once_with(self.resourceurl + 'calendar',data)
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: updateCalendar
+    when: called
+    with: accessTokenAndUserAndNameAndCloudAndDescriptionAndTimeZone
+    should: returnException
+    """
+    def test_updateCalendar_called_accessTokenAndUserAndNameAndCloudAndDescriptionAndTimeZone_returnException(self):
+        metadataIn =  {"error":400, "description": "Recurso no encontrado"}
+        metadataOut = 'false'
+        oauth = self.createOauthSession()
+        oauth.put = Mock()
+        oauth.put.return_value = metadataIn
+        result = self.oauthCredentials.updateCalendar(oauth,self.user,self.calendar,self.cloud,self.description,self.timezone)
+        data = {"user":self.user,"name":self.calendar,"cloud":self.cloud,"description":self.description,"timezone":self.timezone}
+        oauth.put.assert_called_once_with(self.resourceurl + 'calendar',data)
+        self.assertEquals(metadataOut,result)
+
+
+    """
+    method: getCalendars
+    when: called
+    with: accessTokenAndUserAndCloud
+    should: returnCalendars
+    """
+    def test_getCalendars_called_accessTokenAndUserAndCloud_returnCalendars(self):
+        metadataIn = json.dumps([{"type":"calendar","user":self.user,"name":self.calendar,"cloud":self.cloud,"description":self.description,"timezone":self.timezone,"status":"NEW"}])
+        metadataOut = '[{"status": "NEW", "description": "Llevar justificante", "user": "eyeos", "timezone": 0, "type": "calendar", "cloud": "Stacksync", "name": "personal"}]'
+        oauth = self.createOauthSession()
+        oauth.get = Mock()
+        oauth.get.return_value = metadataIn
+        result = self.oauthCredentials.getCalendars(oauth,self.user,self.cloud)
+        oauth.get.assert_called_once_with(self.resourceurl + 'calendar/' + self.user + '/' + self.cloud)
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: getCalendars
+    when: called
+    with: accessTokenAndUserAndCloud
+    should: returnException
+    """
+    def test_getCalendars_called_accessTokenAndUserAndCloud_returnException(self):
+        metadataIn =  {"error":400, "description": "Recurso no encontrado"}
+        metadataOut = 'false'
+        oauth = self.createOauthSession()
+        oauth.get = Mock()
+        oauth.get.return_value = metadataIn
+        result = self.oauthCredentials.getCalendars(oauth,self.user,self.cloud)
+        oauth.get.assert_called_once_with(self.resourceurl + 'calendar/' + self.user + '/' + self.cloud)
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: getCalendarsAndEvents
+    when: called
+    with: accessTokenAndUserAndCloud
+    should: returnCalendarsAndEvents
+    """
+    def test_getCalendarsAndEvents_called_accessTokenAndUserAndCloud_returnCalendarsAndEvents(self):
+        metadataIn = []
+        metadataIn.append({"type":"calendar","user":self.user,"name":self.calendar,"cloud":self.cloud,"description":self.description,"timezone":self.timezone,"status":"NEW"})
+        metadataIn.append({"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"status":"NEW"})
+        metadataIn = json.dumps(metadataIn)
+        metadataOut = '[{"status": "NEW", "description": "Llevar justificante", "user": "eyeos", "timezone": 0, "type": "calendar", "cloud": "Stacksync", "name": "personal"}, {"status": "NEW", "description": "Llevar justificante", "location": "Barcelona", "finalvalue": "0", "timeend": "201419170000", "timestart": "201419160000", "isallday": 0, "user": "eyeos", "finaltype": "1", "calendar": "personal", "repetition": "None", "type": "event", "cloud": "Stacksync", "subject": "VisitaMedico"}]'
+        oauth = self.createOauthSession()
+        oauth.get = Mock()
+        oauth.get.return_value = metadataIn
+        result = self.oauthCredentials.getCalendarsAndEvents(oauth,self.user,self.cloud)
+        oauth.get.assert_called_once_with(self.resourceurl + 'calEvents/' + self.user + '/' + self.cloud)
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: getCalendarsAndEvents
+    when: called
+    with: accessTokenAndUserAndCloud
+    should: returnException
+    """
+    def test_getCalendarsAndEvents_called_accessTokenAndUserAndCloud_returnException(self):
+        metadataIn =  {"error":400, "description": "Recurso no encontrado"}
+        metadataOut = 'false'
+        oauth = self.createOauthSession()
+        oauth.get = Mock()
+        oauth.get.return_value = metadataIn
+        result = self.oauthCredentials.getCalendarsAndEvents(oauth,self.user,self.cloud)
+        oauth.get.assert_called_once_with(self.resourceurl + 'calEvents/' + self.user + '/' + self.cloud)
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: deleteCalendarsUser
+    when: called
+    with: accessTokenAndUserAndCloud
+    should: deleteCorrect
+    """
+    def test_deleteCalendarsUser_called_accessTokenAndUserAndCloud_deleteCorrect(self):
+        metadataIn =  {"delete":True}
+        metadataOut = json.dumps(metadataIn)
+        oauth = self.createOauthSession()
+        oauth.delete = Mock()
+        oauth.delete.return_value = metadataIn
+        result = self.oauthCredentials.deleteCalendarsUser(oauth,self.user,self.cloud)
+        oauth.delete.assert_called_once_with(self.resourceurl + 'calUser/' + self.user + '/' + self.cloud)
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: deleteCalendarsUser
+    when: called
+    with: accessTokenAndUserAndCloud
+    should: returnException
+    """
+    def test_deleteCalendarsUser_called_accessTokenAndUserAndCloud_returnException(self):
+        metadataIn =  {"error":400, "description": "Recurso no encontrado"}
+        metadataOut = 'false'
+        oauth = self.createOauthSession()
+        oauth.delete = Mock()
+        oauth.delete.return_value = metadataIn
+        result = self.oauthCredentials.deleteCalendarsUser(oauth,self.user,self.cloud)
+        oauth.delete.assert_called_once_with(self.resourceurl + 'calUser/' + self.user + '/' + self.cloud)
+        self.assertEquals(metadataOut,result)
+
 
     def createOauthSession(self):
         oauth = OAuth1Session(self.key, client_secret=self.secret,resource_owner_key="OPQR",resource_owner_secret="STVW")

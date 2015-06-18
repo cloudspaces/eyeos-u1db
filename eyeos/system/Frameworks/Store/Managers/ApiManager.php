@@ -631,34 +631,14 @@ class ApiManager
 
     public function insertComment($cloud,$token,$id,$user,$text,$resourceUrl)
     {
-        $result[ 'status' ] = 'KO';
-        $result[ 'error' ] = -1;
         $metadata = $this->apiProvider->insertComment($cloud,$token,$id,$user,$text,$resourceUrl);
-        if($metadata) {
-            if (!isset($metadata->error)) {
-                $result['status'] = 'OK';
-                unset($result['error']);
-            } else {
-                $result['error'] = $metadata->error;
-            }
-        }
-        return $result;
+        return $this->createResponse($metadata);
     }
 
     public function deleteComment($cloud,$token,$id,$user,$timeCreated,$resourceUrl)
     {
-        $result[ 'status' ] = 'KO';
-        $result[ 'error' ] = -1;
         $metadata = $this->apiProvider->deleteComment($cloud,$token,$id,$user,$timeCreated,$resourceUrl);
-        if($metadata) {
-            if (!isset($metadata->error)) {
-                $result['status'] = 'OK';
-                unset($result['error']);
-            } else {
-                $result['error'] = $metadata->error;
-            }
-        }
-        return $result;
+        return $this->createResponse($metadata);
     }
 
     public function getComments($cloud,$token,$id,$resourceUrl)
@@ -679,6 +659,68 @@ class ApiManager
             }
         }
         return $result;
+    }
+
+    public function insertEvent($cloud,$token,$user,$calendar,$isallday,$timestart,$timeend,$repetition,$finaltype,$finalvalue,$subject,$location,$description,$resourceUrl)
+    {
+        $metadata = $this->apiProvider->insertEvent($cloud,$token,$user,$calendar,$isallday,$timestart,$timeend,$repetition,$finaltype,
+                    $finalvalue,$subject,$location,$description,$resourceUrl);
+
+        return $this->createResponse($metadata);
+
+    }
+
+    public function deleteEvent($cloud,$token,$user,$calendar,$timestart,$timeend,$isallday,$resourceUrl)
+    {
+        $metadata = $this->apiProvider->deleteEvent($cloud,$token,$user,$calendar,$timestart,$timeend,$isallday,$resourceUrl);
+        return $this->createResponse($metadata);
+    }
+
+    public function updateEvent($cloud,$token,$user,$calendar,$isallday,$timestart,$timeend,$repetition,$finaltype,$finalvalue,$subject,$location,$description,$resourceUrl)
+    {
+        $metadata = $this->apiProvider->updateEvent($cloud,$token,$user,$calendar,$isallday,$timestart,$timeend,$repetition,$finaltype,$finalvalue,$subject,$location,$description,$resourceUrl);
+        return $this->createResponse($metadata);
+
+    }
+
+    public function getEvents($cloud,$token,$user,$calendar,$resourceUrl)
+    {
+        return $this->apiProvider->getEvents($cloud,$token,$user,$calendar,$resourceUrl);
+    }
+
+
+    public function insertCalendar($cloud,$token,$user,$name,$description,$timezone,$resourceUrl)
+    {
+        $metadata = $this->apiProvider->insertCalendar($cloud,$token,$user,$name,$description,$timezone,$resourceUrl);
+        return $this->createResponse($metadata);
+    }
+
+    public function deleteCalendar($cloud,$token,$user,$name,$resourceUrl)
+    {
+        $metadata = $this->apiProvider->deleteCalendar($cloud,$token,$user,$name,$resourceUrl);
+        return $this->createResponse($metadata);
+    }
+
+    public function updateCalendar($cloud,$token,$user,$name,$description,$timezone,$resourceUrl)
+    {
+        $metadata = $this->apiProvider->updateCalendar($cloud,$token,$user,$name,$description,$timezone,$resourceUrl);
+        return $this->createResponse($metadata);
+    }
+
+    public function getCalendars($cloud,$token,$user,$resourceUrl)
+    {
+        return $this->apiProvider->getCalendars($cloud,$token,$user,$resourceUrl);
+    }
+
+    public function getCalendarsAndEvents($cloud,$token,$user,$resourceUrl)
+    {
+        return $this->apiProvider->getCalendarsAndEvents($cloud,$token,$user,$resourceUrl);
+    }
+
+    public function deleteCalendarsUser($cloud,$token,$user,$resourceUrl)
+    {
+        $metadata = $this->apiProvider->deleteCalendarsUser($cloud,$token,$user,$resourceUrl);
+        return $this->createResponse($metadata);
     }
 
     private function setUserEyeos($metadata, $user, $cloud = NULL, $resourceUrl = NULL, $token = NULL)
@@ -883,6 +925,22 @@ class ApiManager
             unset($result['error']);
         } else {
             $result['error'] = "BLOCK";
+        }
+        return $result;
+    }
+
+    private function createResponse($metadata)
+    {
+        $result[ 'status' ] = 'KO';
+        $result[ 'error' ] = -1;
+
+        if($metadata) {
+            if (!isset($metadata->error)) {
+                $result['status'] = 'OK';
+                unset($result['error']);
+            } else {
+                $result['error'] = $metadata->error;
+            }
         }
         return $result;
     }

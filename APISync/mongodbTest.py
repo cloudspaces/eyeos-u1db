@@ -241,4 +241,4 @@ class mongodbTest(unittest.TestCase):
         self.sut.insertCalendar(self.user,self.calendar,self.cloud,self.description,self.timezone)
         self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description)
         result = self.sut.deleteCalendarsUser(self.user,self.cloud)
-        self.assertEquals(True,result)
+        self.assertEquals({"delete":True},result)
