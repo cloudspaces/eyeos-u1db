@@ -3241,12 +3241,12 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
      * method: insertEvent
      * when: called
      * with: cloudAndTokenAndUserAndCalendarAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValue
-        AndSubjectAndLocationAndDescriptionAndResourceUrl
+        AndSubjectAndLocationAndDescriptionAndRepeattypeAndResourceUrl
      * should: returnInsertCorrect
      */
-    public function test_insertEvent_called_cloudAndTokenAndUserAndCalendarAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescriptionAndResourceUrl_returnInsertCorrect()
+    public function test_insertEvent_called_cloudAndTokenAndUserAndCalendarAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescriptionAndAndRepeattypeAndResourceUrl_returnInsertCorrect()
     {
-        $metadata = '{"status": "NEW", "description": "Llevar justificante", "finalvalue": "0", "timestart": "201419160000", "user": "eyeos", "calendar": "personal", "repetition": "None", "cloud": "Stacksync", "subject": "VisitaMedico", "timeend": "201419170000", "location": "Barcelona", "finaltype": "1", "type": "event", "isallday": 0}';
+        $metadata = '{"status": "NEW", "repeattype":"n","description": "Llevar justificante", "finalvalue": "0", "timestart": "201419160000", "user": "eyeos", "calendar": "personal", "repetition": "None", "cloud": "Stacksync", "subject": "VisitaMedico", "timeend": "201419170000", "location": "Barcelona", "finaltype": "1", "type": "event", "isallday": 0}';
         $this->exerciseInsertEvent($metadata,array("status" => "OK"));
     }
 
@@ -3254,10 +3254,10 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
      * method: insertEvent
      * when: called
      * with: cloudAndTokenAndUserAndCalendarAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValue
-    AndSubjectAndLocationAndDescriptionAndResourceUrl
+    AndSubjectAndLocationAndDescriptionAndRepeattypeAndResourceUrl
      * should: returnException
      */
-    public function test_insertEvent_called_cloudAndTokenAndUserAndCalendarAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescriptionAndResourceUrl_returnException()
+    public function test_insertEvent_called_cloudAndTokenAndUserAndCalendarAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescriptionAndRepeattypeAndResourceUrl_returnException()
     {
         $metadata = '{"error":-1}';
         $this->exerciseInsertEvent($metadata,array("status" => "KO","error" => -1));
@@ -3271,7 +3271,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
      */
     public function test_deleteEvent_called_cloudAndTokenAndUserAndCalendarAndTimeStartAndTimeEndAndIsAllDayAndResourceUrl_returnDeleteCorrect()
     {
-        $metadata = '{"status": "DELETED", "description": "Llevar justificante", "finalvalue": "0", "timestart": "201419160000", "user": "eyeos", "calendar": "personal", "repetition": "None", "cloud": "Stacksync", "subject": "VisitaMedico", "timeend": "201419170000", "location": "Barcelona", "finaltype": "1", "type": "event", "isallday": 0}';
+        $metadata = '{"status": "DELETED", "repeattype":"n","description": "Llevar justificante", "finalvalue": "0", "timestart": "201419160000", "user": "eyeos", "calendar": "personal", "repetition": "None", "cloud": "Stacksync", "subject": "VisitaMedico", "timeend": "201419170000", "location": "Barcelona", "finaltype": "1", "type": "event", "isallday": 0}';
         $this->exerciseDeleteEvent($metadata,array("status" => "OK"));
     }
 
@@ -3290,19 +3290,19 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     /**
      * method: updateEvent
      * when: called
-     * with: cloudAndTokenAndUserAndCalendarAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescriptionAndResourceUrl
+     * with: cloudAndTokenAndUserAndCalendarAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescriptionAndRepeattypeAndResourceUrl
      * should: returnUpdateCorrect
      */
-    public function test_updateEvent_called_cloudAndTokenAndUserAndCalendarAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescriptionAndResourceUrl_returnUpdateCorrect()
+    public function test_updateEvent_called_cloudAndTokenAndUserAndCalendarAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescriptionAndRepeattypeAndResourceUrl_returnUpdateCorrect()
     {
-        $metadata = '{"status": "CHANGED", "description": "Llevar justificante", "finalvalue": "0", "timestart": "201419160000", "user": "eyeos", "calendar": "personal", "repetition": "None", "cloud": "Stacksync", "subject": "VisitaMedico", "timeend": "201419170000", "location": "Barcelona", "finaltype": "1", "type": "event", "isallday": 0}';
+        $metadata = '{"status": "CHANGED", "repeattype":"n","description": "Llevar justificante", "finalvalue": "0", "timestart": "201419160000", "user": "eyeos", "calendar": "personal", "repetition": "None", "cloud": "Stacksync", "subject": "VisitaMedico", "timeend": "201419170000", "location": "Barcelona", "finaltype": "1", "type": "event", "isallday": 0}';
         $this->exerciseUpdateEvent($metadata,array("status" => "OK"));
     }
 
     /**
      * method: updateEvent
      * when: called
-     * with: cloudAndTokenAndUserAndCalendarAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescriptionAndResourceUrl
+     * with: cloudAndTokenAndUserAndCalendarAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescriptionAndRepeattypeAndResourceUrl
      * should: returnException
      */
     public function test_updateEvent_called_cloudAndTokenAndUserAndCalendarAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescriptionAndResourceUrl_returnException()
@@ -3319,7 +3319,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
      */
     public function test_getEvents_called_cloudAndTokenAndUserAndCalendarAndResourceUrl_returnEvents()
     {
-        $metadata = '[{"status": "CHANGED", "description": "Llevar justificante", "location": "Barcelona", "finalvalue": "0", "timeend": "201419170000", "timestart": "201419160000", "isallday": 0, "user": "eyeos", "finaltype": "1", "calendar": "personal", "repetition": "None", "type": "event", "cloud": "Stacksync", "subject": "VisitaMedico"}]';
+        $metadata = '[{"status": "CHANGED", "repeattype":"n","description": "Llevar justificante", "location": "Barcelona", "finalvalue": "0", "timeend": "201419170000", "timestart": "201419160000", "isallday": 0, "user": "eyeos", "finaltype": "1", "calendar": "personal", "repetition": "None", "type": "event", "cloud": "Stacksync", "subject": "VisitaMedico"}]';
         $this->exerciseGetEvents($metadata);
     }
 
@@ -3439,7 +3439,7 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
      */
     public function test_getCalendarsAndEvents_called_cloudAndTokenAndUserAndResourceUrl_returnCalendarsAndEvents()
     {
-        $metadata = '[{"status": "NEW", "description": "Llevar justificante", "user": "eyeos", "timezone": 0, "type": "calendar", "cloud": "Stacksync", "name": "personal"}, {"status": "NEW", "description": "Llevar justificante", "location": "Barcelona", "finalvalue": "0", "timeend": "201419170000", "timestart": "201419160000", "isallday": 0, "user": "eyeos", "finaltype": "1", "calendar": "personal", "repetition": "None", "type": "event", "cloud": "Stacksync", "subject": "VisitaMedico"}]';
+        $metadata = '[{"status": "NEW", "description": "Llevar justificante", "user": "eyeos", "timezone": 0, "type": "calendar", "cloud": "Stacksync", "name": "personal"}, {"status": "NEW", "repeattype":"n","description": "Llevar justificante", "location": "Barcelona", "finalvalue": "0", "timeend": "201419170000", "timestart": "201419160000", "isallday": 0, "user": "eyeos", "finaltype": "1", "calendar": "personal", "repetition": "None", "type": "event", "cloud": "Stacksync", "subject": "VisitaMedico"}]';
         $this->exerciseGetCalendarsAndEvents($metadata);
     }
 
@@ -3984,10 +3984,10 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     {
         $this->apiProviderMock->expects($this->at(0))
             ->method('insertEvent')
-            ->with($this->cloud, $this->token,"eyeos","personal",0,"201419160000","201419170000","None","1","0","Visita","Barcelona","Dentista","http://192.68.56.101/")
+            ->with($this->cloud, $this->token,"eyeos","personal",0,"201419160000","201419170000","None","1","0","Visita","Barcelona","Dentista","n","http://192.68.56.101/")
             ->will($this->returnValue(json_decode($metadata)));
 
-        $result = $this->sut->insertEvent($this->cloud,$this->token,"eyeos","personal",0,"201419160000","201419170000","None","1","0","Visita","Barcelona","Dentista","http://192.68.56.101/");
+        $result = $this->sut->insertEvent($this->cloud,$this->token,"eyeos","personal",0,"201419160000","201419170000","None","1","0","Visita","Barcelona","Dentista","n","http://192.68.56.101/");
         $this->assertEquals($check, $result);
     }
 
@@ -4006,10 +4006,10 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     {
         $this->apiProviderMock->expects($this->at(0))
             ->method('updateEvent')
-            ->with($this->cloud,$this->token,"eyeos","personal",0,"201419160000","201419170000","None","1","0","Visita","Barcelona","Dentista","http://192.68.56.101/")
+            ->with($this->cloud,$this->token,"eyeos","personal",0,"201419160000","201419170000","None","1","0","Visita","Barcelona","Dentista","n","http://192.68.56.101/")
             ->will($this->returnValue(json_decode($metadata)));
 
-        $result = $this->sut->updateEvent($this->cloud,$this->token,"eyeos","personal",0,"201419160000","201419170000","None","1","0","Visita","Barcelona","Dentista","http://192.68.56.101/");
+        $result = $this->sut->updateEvent($this->cloud,$this->token,"eyeos","personal",0,"201419160000","201419170000","None","1","0","Visita","Barcelona","Dentista","n","http://192.68.56.101/");
         $this->assertEquals($check,$result);
     }
 

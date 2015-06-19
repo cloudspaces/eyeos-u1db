@@ -33,6 +33,7 @@ class OauthCredentialsTest (unittest.TestCase):
         self.description= "Llevar justificante"
         self.timezone = 0
         self.cloud = 'Stacksync'
+        self.repeattype = "n"
 
     def tearDown(self):
         self.oauthCredentials = None
@@ -670,17 +671,17 @@ class OauthCredentialsTest (unittest.TestCase):
     method: insertEvent
     when: called
     with: accessTokenAndUserAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValue
-          AndSubjectAndLocationAndDescription
+          AndSubjectAndLocationAndDescriptionAndRepeattype
     should: returnEvent
     """
-    def test_insertEvent_called_accessTokenAnduserAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescription_returnEvent(self):
-        metadataIn = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"status":"NEW"}
+    def test_insertEvent_called_accessTokenAnduserAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescriptionAndRepeattype_returnEvent(self):
+        metadataIn = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"repeattype":self.repeattype,"status":"NEW"}
         metadataOut = json.dumps(metadataIn)
         oauth = self.createOauthSession()
         oauth.post = Mock()
         oauth.post.return_value = metadataIn
-        result = self.oauthCredentials.insertEvent(oauth,self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description)
-        data = {"user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description}
+        result = self.oauthCredentials.insertEvent(oauth,self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description,self.repeattype)
+        data = {"user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"repeattype":self.repeattype}
         oauth.post.assert_called_once_with(self.resourceurl + 'event',data)
         self.assertEquals(metadataOut,result)
 
@@ -688,17 +689,17 @@ class OauthCredentialsTest (unittest.TestCase):
     method: insertEvent
     when: called
     with: accessTokenAndUserAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValue
-          AndSubjectAndLocationAndDescription
+          AndSubjectAndLocationAndDescriptionAndRepeattype
     should: returnException
     """
-    def test_insertEvent_called_accessTokenAnduserAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescription_returnException(self):
+    def test_insertEvent_called_accessTokenAnduserAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescriptionAndRepeattype_returnException(self):
         metadataIn =  {"error":400, "description": "Recurso no encontrado"}
         metadataOut = 'false'
         oauth = self.createOauthSession()
         oauth.post = Mock()
         oauth.post.return_value = metadataIn
-        result = self.oauthCredentials.insertEvent(oauth,self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description)
-        data = {"user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description}
+        result = self.oauthCredentials.insertEvent(oauth,self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description,self.repeattype)
+        data = {"user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"repeattype":self.repeattype}
         oauth.post.assert_called_once_with(self.resourceurl + 'event',data)
         self.assertEquals(metadataOut,result)
 
@@ -709,7 +710,7 @@ class OauthCredentialsTest (unittest.TestCase):
     should: returnEvent
     """
     def test_deleteEvent_called_accessTokenAndUserAndCalendarAndCloudAndTimeStartAndTimeEndAndIsAllDay_returnEvent(self):
-        metadataIn = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"status":"DELETED"}
+        metadataIn = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"repeattype":self.repeattype,"status":"DELETED"}
         metadataOut = json.dumps(metadataIn)
         oauth = self.createOauthSession()
         oauth.delete = Mock()
@@ -738,17 +739,17 @@ class OauthCredentialsTest (unittest.TestCase):
     method: updateEvent
     when: called
     with: accessTokenAndUserAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValue
-         AndSubjectAndLocationAndDescription
+         AndSubjectAndLocationAndDescriptionAndRepeattype
     should: returnEvent
     """
-    def test_updateEvent_called_accessTokenAnduserAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescription_returnEvent(self):
-        metadataIn = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"status":"CHANGED"}
+    def test_updateEvent_called_accessTokenAnduserAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescriptionAndRepeattype_returnEvent(self):
+        metadataIn = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"repeattype":self.repeattype,"status":"CHANGED"}
         metadataOut = json.dumps(metadataIn)
         oauth = self.createOauthSession()
         oauth.put = Mock()
         oauth.put.return_value = metadataIn
-        result = self.oauthCredentials.updateEvent(oauth,self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description)
-        data = {"user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description}
+        result = self.oauthCredentials.updateEvent(oauth,self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description,self.repeattype)
+        data = {"user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"repeattype":self.repeattype}
         oauth.put.assert_called_once_with(self.resourceurl + 'event',data)
         self.assertEquals(metadataOut,result)
 
@@ -756,17 +757,17 @@ class OauthCredentialsTest (unittest.TestCase):
     method: updateEvent
     when: called
     with: accessTokenAndUserAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValue
-         AndSubjectAndLocationAndDescription
+         AndSubjectAndLocationAndDescriptionAndRepeattype
     should: returnException
     """
-    def test_updateEvent_called_accessTokenAnduserAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescription_returnException(self):
+    def test_updateEvent_called_accessTokenAnduserAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescriptionAndRepeattype_returnException(self):
         metadataIn =  {"error":400, "description": "Recurso no encontrado"}
         metadataOut = 'false'
         oauth = self.createOauthSession()
         oauth.put = Mock()
         oauth.put.return_value = metadataIn
-        result = self.oauthCredentials.updateEvent(oauth,self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description)
-        data = {"user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description}
+        result = self.oauthCredentials.updateEvent(oauth,self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description,self.repeattype)
+        data = {"user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"repeattype":self.repeattype}
         oauth.put.assert_called_once_with(self.resourceurl + 'event',data)
         self.assertEquals(metadataOut,result)
 
@@ -777,8 +778,8 @@ class OauthCredentialsTest (unittest.TestCase):
     should: returnEvents
     """
     def test_getEvents_called_accessTokenAndUserAndCalendarAndCloud_returnEvents(self):
-        metadataIn = json.dumps([{"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"status":"CHANGED"}])
-        metadataOut = '[{"status": "CHANGED", "description": "Llevar justificante", "location": "Barcelona", "finalvalue": "0", "timeend": "201419170000", "timestart": "201419160000", "isallday": 0, "user": "eyeos", "finaltype": "1", "calendar": "personal", "repetition": "None", "type": "event", "cloud": "Stacksync", "subject": "VisitaMedico"}]'
+        metadataIn = json.dumps([{"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"repeattype":self.repeattype,"status":"CHANGED"}])
+        metadataOut = '[{"status": "CHANGED", "description": "Llevar justificante", "location": "Barcelona", "finalvalue": "0", "timeend": "201419170000", "finaltype": "1", "timestart": "201419160000", "isallday": 0, "user": "eyeos", "repeattype": "n", "calendar": "personal", "repetition": "None", "type": "event", "cloud": "Stacksync", "subject": "VisitaMedico"}]'
         oauth = self.createOauthSession()
         oauth.get = Mock()
         oauth.get.return_value = metadataIn
@@ -944,9 +945,9 @@ class OauthCredentialsTest (unittest.TestCase):
     def test_getCalendarsAndEvents_called_accessTokenAndUserAndCloud_returnCalendarsAndEvents(self):
         metadataIn = []
         metadataIn.append({"type":"calendar","user":self.user,"name":self.calendar,"cloud":self.cloud,"description":self.description,"timezone":self.timezone,"status":"NEW"})
-        metadataIn.append({"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"status":"NEW"})
+        metadataIn.append({"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"repeattype":"n","status":"NEW"})
         metadataIn = json.dumps(metadataIn)
-        metadataOut = '[{"status": "NEW", "description": "Llevar justificante", "user": "eyeos", "timezone": 0, "type": "calendar", "cloud": "Stacksync", "name": "personal"}, {"status": "NEW", "description": "Llevar justificante", "location": "Barcelona", "finalvalue": "0", "timeend": "201419170000", "timestart": "201419160000", "isallday": 0, "user": "eyeos", "finaltype": "1", "calendar": "personal", "repetition": "None", "type": "event", "cloud": "Stacksync", "subject": "VisitaMedico"}]'
+        metadataOut = '[{"status": "NEW", "description": "Llevar justificante", "user": "eyeos", "timezone": 0, "type": "calendar", "cloud": "Stacksync", "name": "personal"}, {"status": "NEW", "description": "Llevar justificante", "location": "Barcelona", "finalvalue": "0", "timeend": "201419170000", "finaltype": "1", "timestart": "201419160000", "isallday": 0, "user": "eyeos", "repeattype": "n", "calendar": "personal", "repetition": "None", "type": "event", "cloud": "Stacksync", "subject": "VisitaMedico"}]'
         oauth = self.createOauthSession()
         oauth.get = Mock()
         oauth.get.return_value = metadataIn

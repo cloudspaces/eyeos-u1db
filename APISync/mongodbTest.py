@@ -22,6 +22,7 @@ class mongodbTest(unittest.TestCase):
         self.location = "Barcelona"
         self.description= "Llevar justificante"
         self.timezone = 0
+        self.repeattype = "n"
 
     def tearDown(self):
         self.sut.client.drop_database('test')
@@ -74,12 +75,12 @@ class mongodbTest(unittest.TestCase):
     method: insertEvent
     when: called
     with:userAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValue
-         AndSubjectAndLocationAndDescription
+         AndSubjectAndLocationAndDescriptionAndRepeattype
     should: returnEvent
     """
-    def test_insertEvent_called_userAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescription_returnEvent(self):
-        document = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"status":"NEW"}
-        result = self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description)
+    def test_insertEvent_called_userAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescriptionAndRepeattype_returnEvent(self):
+        document = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"repeattype":self.repeattype,"status":"NEW"}
+        result = self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description,self.repeattype)
         self.assertEquals(document,result)
 
 
@@ -87,13 +88,13 @@ class mongodbTest(unittest.TestCase):
     method: insertEvent
     when: called
     with:userAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValue
-         AndSubjectAndLocationAndDescription
+         AndSubjectAndLocationAndDescriptionAndRepeattype
     should: returnUpdateEvent
     """
-    def test_insertEvent_called_userAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescription_returnUpdateEvent(self):
-        document = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"status":"NEW"}
-        self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description)
-        result = self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description)
+    def test_insertEvent_called_userAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescriptionAndRepeattype_returnUpdateEvent(self):
+        document = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"repeattype":self.repeattype,"status":"NEW"}
+        self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description,self.repeattype)
+        result = self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description,self.repeattype)
         document['status'] = 'CHANGED'
         self.assertEquals(document,result)
 
@@ -104,8 +105,8 @@ class mongodbTest(unittest.TestCase):
     should: returnEvent
     """
     def test_deleteEvent_called_userAndCalendarAndCloudAndTimeStartAndTimeEndAndIsAllDay_returnEvent(self):
-        document = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"status":"NEW"}
-        self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description)
+        document = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"repeattype":self.repeattype,"status":"NEW"}
+        self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description,self.repeattype)
         result = self.sut.deleteEvent(self.user,self.calendar,self.cloud,self.timestart,self.timeend,self.isallday)
         document['status'] = 'DELETED'
         self.assertEqual(document,result)
@@ -114,14 +115,14 @@ class mongodbTest(unittest.TestCase):
     method: updateEvent
     when: called
     with:userAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValue
-         AndSubjectAndLocationAndDescription
+         AndSubjectAndLocationAndDescriptionAndRepeattype
     should: returnEvent
     """
-    def test_updateEvent_called_userAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescription_returnEvent(self):
-        document = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"status":"NEW"}
-        self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description)
+    def test_updateEvent_called_userAndCalendarAndCloudAndIsAllDayAndTimeStartAndAndTimeEndAndRepetitionAndFinalTypeAndAndFinalValueAndSubjectAndLocationAndDescriptionAndRepeattype_returnEvent(self):
+        document = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"repeattype":self.repeattype,"status":"NEW"}
+        self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description,self.repeattype)
         document['status'] = 'CHANGED'
-        result = self.sut.updateEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description)
+        result = self.sut.updateEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description,self.repeattype)
         self.assertEquals(document,result)
 
     """
@@ -132,13 +133,13 @@ class mongodbTest(unittest.TestCase):
     """
     def test_getEvents_called_userAndCalendarAndCloud_returnEvents(self):
         data = []
-        document = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"status":"NEW"}
+        document = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"repeattype":self.repeattype,"status":"NEW"}
         data.append(document)
-        self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description)
-        document = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":"201506161200","timeend":"201506161300","repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":"Clase matematicas","location":"Madrid","description":"Estudio","status":"NEW"}
+        self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description,self.repeattype)
+        document = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":"201506161200","timeend":"201506161300","repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":"Clase matematicas","location":"Madrid","description":"Estudio","repeattype":self.repeattype,"status":"NEW"}
         data.append(document)
-        self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,"201506161200","201506161300",self.repetition,self.finaltype,self.finalvalue,"Clase matematicas","Madrid","Estudio")
-        self.sut.insertEvent(self.user,"laboral",self.cloud,self.isallday,"201506140900","201506141300",self.repetition,self.finaltype,self.finalvalue,"Vacaciones","Zaragoza","Visita turistica")
+        self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,"201506161200","201506161300",self.repetition,self.finaltype,self.finalvalue,"Clase matematicas","Madrid","Estudio",self.repeattype)
+        self.sut.insertEvent(self.user,"laboral",self.cloud,self.isallday,"201506140900","201506141300",self.repetition,self.finaltype,self.finalvalue,"Vacaciones","Zaragoza","Visita turistica",self.repeattype)
         result = self.sut.getEvents(self.user,self.calendar,self.cloud)
         data.sort()
         self.assertEquals(data,result)
@@ -224,9 +225,9 @@ class mongodbTest(unittest.TestCase):
         document = {"type":"calendar","user":self.user,"name":self.calendar,"cloud":self.cloud,"description":self.description,"timezone":self.timezone,"status":"NEW"}
         data.append(document)
         self.sut.insertCalendar(self.user,self.calendar,self.cloud,self.description,self.timezone)
-        document = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"status":"NEW"}
+        document = {"type":"event","user":self.user,"calendar":self.calendar,"cloud":self.cloud,"isallday":self.isallday,"timestart":self.timestart,"timeend":self.timeend,"repetition":self.repetition,"finaltype":self.finaltype,"finalvalue":self.finalvalue,"subject":self.subject,"location":self.location,"description":self.description,"repeattype":self.repeattype,"status":"NEW"}
         data.append(document)
-        self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description)
+        self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description,self.repeattype)
         result = self.sut.getCalendarsAndEvents(self.user,self.cloud)
         data.sort()
         self.assertEquals(data,result)
@@ -239,6 +240,6 @@ class mongodbTest(unittest.TestCase):
     """
     def test_deleteCalendarsUser_called_userAndCloud_returnDeleteCorrect(self):
         self.sut.insertCalendar(self.user,self.calendar,self.cloud,self.description,self.timezone)
-        self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description)
+        self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description,self.repeattype)
         result = self.sut.deleteCalendarsUser(self.user,self.cloud)
         self.assertEquals({"delete":True},result)

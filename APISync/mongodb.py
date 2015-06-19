@@ -45,10 +45,10 @@ class mongoDb:
         data.sort()
         return data
 
-    def insertEvent(self,user,calendar,cloud,isallday,timestart,timeend,repetition,finaltype,finalvalue,subject,location,description):
+    def insertEvent(self,user,calendar,cloud,isallday,timestart,timeend,repetition,finaltype,finalvalue,subject,location,description,repeattype):
         result = self.db.collection.find({"type":"event","user":user,"calendar":calendar,"cloud":cloud,"timestart":timestart,"timeend":timeend,"isallday":isallday}).count()
         if result == 0:
-            document = {"type":"event","user":user,"calendar":calendar,"cloud":cloud,"isallday":isallday,"timestart":timestart,"timeend":timeend,"repetition":repetition,"finaltype":finaltype,"finalvalue":finalvalue,"subject":subject,"location":location,"description":description,"status":"NEW"}
+            document = {"type":"event","user":user,"calendar":calendar,"cloud":cloud,"isallday":isallday,"timestart":timestart,"timeend":timeend,"repetition":repetition,"finaltype":finaltype,"finalvalue":finalvalue,"subject":subject,"location":location,"description":description,"repeattype":repeattype,"status":"NEW"}
             self.db.collection.insert(document)
             result = self.db.collection.find({"type":"event","user":user,"calendar":calendar,"cloud":cloud,"timestart":timestart,"timeend":timeend,"isallday":isallday}).count()
             if result == 1:
@@ -57,7 +57,7 @@ class mongoDb:
             else:
                 return {"error":400,"descripcion":"Error al insertar Evento"}
         elif result == 1:
-            return self.updateEvent(user,calendar,cloud,isallday,timestart,timeend,repetition,finaltype,finalvalue,subject,location,description)
+            return self.updateEvent(user,calendar,cloud,isallday,timestart,timeend,repetition,finaltype,finalvalue,subject,location,description,repeattype)
         else:
             return {"error":400,"descripcion":"Error al insertar Evento"}
 
@@ -77,8 +77,8 @@ class mongoDb:
         else:
             return {"error":400,"descripcion":"Evento no encontrado"}
 
-    def updateEvent(self,user,calendar,cloud,isallday,timestart,timeend,repetition,finaltype,finalvalue,subject,location,description):
-        document = {"type":"event","user":user,"calendar":calendar,"cloud":cloud,"isallday":isallday,"timestart":timestart,"timeend":timeend,"repetition":repetition,"finaltype":finaltype,"finalvalue":finalvalue,"subject":subject,"location":location,"description":description,"status":"CHANGED"}
+    def updateEvent(self,user,calendar,cloud,isallday,timestart,timeend,repetition,finaltype,finalvalue,subject,location,description,repeattype):
+        document = {"type":"event","user":user,"calendar":calendar,"cloud":cloud,"isallday":isallday,"timestart":timestart,"timeend":timeend,"repetition":repetition,"finaltype":finaltype,"finalvalue":finalvalue,"subject":subject,"location":location,"description":description,"repeattype":repeattype,"status":"CHANGED"}
         result = self.db.collection.find({"type":"event","user":user,"calendar":calendar,"cloud":cloud,"timestart":timestart,"timeend":timeend,"isallday":isallday})
         if result.count() == 1:
             self.db.collection.update({"type":"event","user":user,"calendar":calendar,"cloud":cloud,"timestart":timestart,"timeend":timeend,"isallday":isallday},document)

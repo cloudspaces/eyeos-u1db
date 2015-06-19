@@ -161,7 +161,7 @@ class ApiProvider
         return $this->exerciseMetadata($request);
     }
 
-    public function insertEvent($cloud,$token,$user,$calendar,$isallday,$timestart,$timeend,$repetition,$finaltype,$finalvalue,$subject,$location,$description,$resourceUrl)
+    public function insertEvent($cloud,$token,$user,$calendar,$isallday,$timestart,$timeend,$repetition,$finaltype,$finalvalue,$subject,$location,$description,$repeattype,$resourceUrl)
     {
         $request = $this->getRequest("insertEvent", $token, $cloud, $resourceUrl);
         $request->metadata->user = $user;
@@ -175,6 +175,7 @@ class ApiProvider
         $request->metadata->subject = $subject;
         $request->metadata->location = $location;
         $request->metadata->description = $description;
+        $request->metadata->repeattype = $repeattype;
         return $this->exerciseMetadata($request);
     }
 
@@ -189,7 +190,7 @@ class ApiProvider
         return $this->exerciseMetadata($request);
     }
 
-    public function updateEvent($cloud,$token,$user,$calendar,$isallday,$timestart,$timeend,$repetition,$finaltype,$finalvalue,$subject,$location,$description,$resourceUrl)
+    public function updateEvent($cloud,$token,$user,$calendar,$isallday,$timestart,$timeend,$repetition,$finaltype,$finalvalue,$subject,$location,$description,$repeattype,$resourceUrl)
     {
         $request = $this->getRequest("updateEvent", $token, $cloud, $resourceUrl);
         $request->metadata->user = $user;
@@ -203,6 +204,7 @@ class ApiProvider
         $request->metadata->subject = $subject;
         $request->metadata->location = $location;
         $request->metadata->description = $description;
+        $request->metadata->repeattype = $repeattype;
         return $this->exerciseMetadata($request);
     }
 

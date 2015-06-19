@@ -26,11 +26,12 @@ class RequestHandler(BaseHTTPRequestHandler):
             if postdata.has_key('user') and postdata.has_key('calendar') and postdata.has_key('cloud') and \
                postdata.has_key('isallday') and postdata.has_key('timestart') and postdata.has_key('timeend') and \
                postdata.has_key('repetition') and postdata.has_key('finaltype') and postdata.has_key('finalvalue') and \
-               postdata.has_key('subject') and postdata.has_key('location') and postdata.has_key('description'):
+               postdata.has_key('subject') and postdata.has_key('location') and postdata.has_key('description') and \
+               postdata.has_key('repeattype'):
                 response = self.calendars.insertEvent(postdata['user'],postdata['calendar'],postdata['cloud'],postdata['isallday'],
                                                  postdata['timestart'],postdata['timeend'],postdata['repetition'],
                                                  postdata['finaltype'],postdata['finalvalue'],postdata['subject'],postdata['location'],
-                                                 postdata['description'])
+                                                 postdata['description'],postdata['repeattype'])
             else:
                  response = {"error":400,"descripcion":"Parametros incorrectos"}
         elif self.path.startswith('/calendar'):
@@ -139,10 +140,12 @@ class RequestHandler(BaseHTTPRequestHandler):
             if postdata.has_key('user') and postdata.has_key('calendar') and postdata.has_key('cloud') and \
                postdata.has_key('isallday') and postdata.has_key('timestart') and postdata.has_key('timeend') and \
                postdata.has_key('repetition') and postdata.has_key('finaltype') and postdata.has_key('finalvalue') and \
-               postdata.has_key('subject') and postdata.has_key('location') and postdata.has_key('description'):
+               postdata.has_key('subject') and postdata.has_key('location') and postdata.has_key('description') and \
+               postdata.has_key('repeattype'):
                 response = self.calendars.updateEvent(postdata['user'],postdata['calendar'],postdata['cloud'],postdata['isallday'],
                                                  postdata['timestart'],postdata['timeend'],postdata['repetition'],
-                                                 postdata['finaltype'],postdata['finalvalue'],postdata['subject'],postdata['location'],postdata['description'])
+                                                 postdata['finaltype'],postdata['finalvalue'],postdata['subject'],postdata['location'],
+                                                 postdata['description'],postdata['repeattype'])
             else:
                response = {"error":400,"descripcion":"Parametros incorrectos"}
         elif self.path.startswith('/calendar'):

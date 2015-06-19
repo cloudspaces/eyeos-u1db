@@ -661,10 +661,10 @@ class ApiManager
         return $result;
     }
 
-    public function insertEvent($cloud,$token,$user,$calendar,$isallday,$timestart,$timeend,$repetition,$finaltype,$finalvalue,$subject,$location,$description,$resourceUrl)
+    public function insertEvent($cloud,$token,$user,$calendar,$isallday,$timestart,$timeend,$repetition,$finaltype,$finalvalue,$subject,$location,$description,$repeattype,$resourceUrl)
     {
         $metadata = $this->apiProvider->insertEvent($cloud,$token,$user,$calendar,$isallday,$timestart,$timeend,$repetition,$finaltype,
-                    $finalvalue,$subject,$location,$description,$resourceUrl);
+                    $finalvalue,$subject,$location,$description,$repeattype,$resourceUrl);
 
         return $this->createResponse($metadata);
 
@@ -676,9 +676,9 @@ class ApiManager
         return $this->createResponse($metadata);
     }
 
-    public function updateEvent($cloud,$token,$user,$calendar,$isallday,$timestart,$timeend,$repetition,$finaltype,$finalvalue,$subject,$location,$description,$resourceUrl)
+    public function updateEvent($cloud,$token,$user,$calendar,$isallday,$timestart,$timeend,$repetition,$finaltype,$finalvalue,$subject,$location,$description,$repeattype,$resourceUrl)
     {
-        $metadata = $this->apiProvider->updateEvent($cloud,$token,$user,$calendar,$isallday,$timestart,$timeend,$repetition,$finaltype,$finalvalue,$subject,$location,$description,$resourceUrl);
+        $metadata = $this->apiProvider->updateEvent($cloud,$token,$user,$calendar,$isallday,$timestart,$timeend,$repetition,$finaltype,$finalvalue,$subject,$location,$description,$repeattype,$resourceUrl);
         return $this->createResponse($metadata);
 
     }

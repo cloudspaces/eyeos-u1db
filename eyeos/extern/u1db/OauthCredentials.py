@@ -182,9 +182,9 @@ class OauthCredentials:
         return self.createRequest(result)
 
     def insertEvent(self,oauth,user,calendar,cloud,isallday,timestart,timeend,repetition,finaltype,
-                    finalvalue,subject,location,description):
+                    finalvalue,subject,location,description,repeattype):
         url = self.resourceurl + 'event'
-        data = {"user":user,"calendar":calendar,"cloud":cloud,"isallday":isallday,"timestart":timestart,"timeend":timeend,"repetition":repetition,"finaltype":finaltype,"finalvalue":finalvalue,"subject":subject,"location":location,"description":description}
+        data = {"user":user,"calendar":calendar,"cloud":cloud,"isallday":isallday,"timestart":timestart,"timeend":timeend,"repetition":repetition,"finaltype":finaltype,"finalvalue":finalvalue,"subject":subject,"location":location,"description":description,"repeattype":repeattype}
         result = oauth.post(url,data)
         return self.createRequest(result)
 
@@ -194,9 +194,9 @@ class OauthCredentials:
         return self.createRequest(result)
 
     def updateEvent(self,oauth,user,calendar,cloud,isallday,timestart,timeend,repetition,finaltype,
-                    finalvalue,subject,location,description):
+                    finalvalue,subject,location,description,repeattype):
         url = self.resourceurl + 'event'
-        data = {"user":user,"calendar":calendar,"cloud":cloud,"isallday":isallday,"timestart":timestart,"timeend":timeend,"repetition":repetition,"finaltype":finaltype,"finalvalue":finalvalue,"subject":subject,"location":location,"description":description}
+        data = {"user":user,"calendar":calendar,"cloud":cloud,"isallday":isallday,"timestart":timestart,"timeend":timeend,"repetition":repetition,"finaltype":finaltype,"finalvalue":finalvalue,"subject":subject,"location":location,"description":description,"repeattype":repeattype}
         result = oauth.put(url,data)
         return self.createRequest(result)
 
@@ -376,13 +376,13 @@ if __name__ == "__main__":
                             elif type == "insertEvent":
                                 result = oauthCredentials.insertEvent(oauth,metadata['user'],metadata['calendar'],cloud,metadata['isallday'],
                                                                       metadata['timestart'],metadata['timeend'],metadata['repetition'],metadata['finaltype'],
-                                                                      metadata['finalvalue'],metadata['subject'],metadata['location'],metadata['description'])
+                                                                      metadata['finalvalue'],metadata['subject'],metadata['location'],metadata['description'],metadata['repeattype'])
                             elif type == "deleteEvent":
                                 result = oauthCredentials.deleteEvent(oauth,metadata['user'],metadata['calendar'],cloud,metadata['timestart'],metadata['timeend'],metadata['isallday'])
                             elif type == "updateEvent":
                                 result = oauthCredentials.updateEvent(oauth,metadata['user'],metadata['calendar'],cloud,metadata['isallday'],
                                                                       metadata['timestart'],metadata['timeend'],metadata['repetition'],metadata['finaltype'],
-                                                                      metadata['finalvalue'],metadata['subject'],metadata['location'],metadata['description'])
+                                                                      metadata['finalvalue'],metadata['subject'],metadata['location'],metadata['description'],metadata['repeattype'])
                             elif type == "getEvents":
                                 result = oauthCredentials.getEvents(oauth,metadata['user'],metadata['calendar'],cloud)
                             elif type == "insertCalendar":
