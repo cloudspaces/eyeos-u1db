@@ -3204,9 +3204,9 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
      * method: getControlCommentsCloud
      * when: called
      * with: ValidCloud
-     * should: returnList
+     * should: returnMetadata
      */
-    public function test_getControlCommentsCloud_called_validCloud_returnList()
+    public function test_getControlCommentsCloud_called_validCloud_returnMetadata()
     {
         $cloud = "Stacksync";
         $metadata = json_decode('{"comments":"true"}');
@@ -3477,6 +3477,43 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     {
         $metadata = '{"error":-1}';
         $this->exerciseDeleteCalendarsUser($metadata,array("status" => "KO","error" => -1));
+    }
+
+    /**
+     * method: getControlCalendarCloud
+     * when: called
+     * with: ValidCloud
+     * should: returnMetadata
+     */
+    public function test_getControlCalendarCloud_called_validCloud_returnMetadata()
+    {
+        $cloud = "Stacksync";
+        $metadata = json_decode('{"calendar":"true"}');
+        $this->apiProviderMock->expects($this->once())
+            ->method('getControlCalendarCloud')
+            ->with($cloud)
+            ->will($this->returnValue($metadata));
+        $result = $this->sut->getControlCalendarCloud($cloud);
+        $this->assertEquals($metadata, $result);
+    }
+
+    /**
+     * method: getControlCalendarCloud
+     * when: called
+     * with: InvalidCloud
+     * should: returnException
+     */
+    public function test_getControlCalendarCloud_called_Invalid_Cloud_returnException()
+    {
+        $cloud = "No_valid_cloud";
+        $metadata =json_decode('{"error":-1}');
+        $metadataOut = array("status" => "KO", "error" => -1);
+        $this->apiProviderMock->expects($this->once())
+            ->method('getControlCalendarCloud')
+            ->with($cloud)
+            ->will($this->returnValue($metadata));
+        $result = $this->sut->getControlCalendarCloud($cloud);
+        $this->assertEquals($metadataOut, $result);
     }
 
     private function exerciseCreateMetadata($file, $name, $parent_id, $path, $pathAbsolute, $metadataOut, $resourceUrl = null)

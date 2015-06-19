@@ -32,7 +32,8 @@ settings = {
             },
             "version": "v2",
             "controlVersion": "true",
-            "comments": "true"
+            "comments": "true",
+            "calendar": "true"
         },
         "NEC": {
             "urls": {
@@ -48,7 +49,8 @@ settings = {
             },
             "version": "v2",
             "controlVersion": "false",
-            "comments": "true"
+            "comments": "true",
+            "calendar": "true"
         }
     },
     "NEW_CODE": "true"

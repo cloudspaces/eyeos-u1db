@@ -723,6 +723,21 @@ class ApiManager
         return $this->createResponse($metadata);
     }
 
+    public function getControlCalendarCloud($cloud)
+    {
+        $result[ 'status' ] = 'KO';
+        $result[ 'error' ] = -1;
+        $metadata = $this->apiProvider->getControlCalendarCloud($cloud);
+        if($metadata) {
+            if (!isset($metadata->error)) {
+                $result = $metadata;
+            } else {
+                $result['error'] = $metadata->error;
+            }
+        }
+        return $result;
+    }
+
     private function setUserEyeos($metadata, $user, $cloud = NULL, $resourceUrl = NULL, $token = NULL)
     {
         $aux = new stdClass();

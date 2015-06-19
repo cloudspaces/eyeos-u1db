@@ -317,6 +317,8 @@ if __name__ == "__main__":
                             result = json.dumps({"controlVersion": "" + settingsCloud['controlVersion'] + ""})
                         elif type == "comments":
                             result = json.dumps({"comments": "" + settingsCloud['comments'] + ""})
+                        elif type == "calendar":
+                            result = json.dumps({"calendar": "" + settingsCloud['calendar'] + ""})
 
                     else:
                         if params[ 'config' ].has_key( 'resource_url' ):

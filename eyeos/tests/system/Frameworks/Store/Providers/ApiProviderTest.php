@@ -1372,7 +1372,7 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
      * with: ValidCloud
      * should: returnMetadata
      */
-    public function test_getControlCommentsCloud_called_Valid_Cloud_returnList()
+    public function test_getControlCommentsCloud_called_Valid_Cloud_returnMetadata()
     {
         $metadataIn = '{"config":{"type":"comments","cloud":"Stacksync"}}';
         $metadataOut = '{"comments":"true"}';
@@ -1643,6 +1643,21 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"deleteCalendarsUser","user":"eyeos"}}';
         $metadataOut = 400;
         $this->exerciseDeleteCalendarsUser($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: getControlCalendarCloud
+     * when: called
+     * with: ValidCloud
+     * should: returnMetadata
+     */
+    public function test_getControlCalendarCloud_called_Valid_Cloud_returnMetadata()
+    {
+        $metadataIn = '{"config":{"type":"calendar","cloud":"Stacksync"}}';
+        $metadataOut = '{"calendar":"true"}';
+        $this->exerciseMockMetadata($metadataIn, $metadataOut);
+        $actual = $this->sut->getControlCalendarCloud("Stacksync");
+        $this->assertEquals(json_decode($metadataOut),$actual);
     }
 
     private function exerciseGetMetadata($metadataIn,$metadataOut,$check,$file,$id,$contents = null,$url = null)

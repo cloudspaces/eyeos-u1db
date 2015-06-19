@@ -263,6 +263,12 @@ class ApiProvider
         return $this->exerciseMetadata($request);
     }
 
+    public function getControlCalendarCloud($cloud)
+    {
+        $request = $this->getRequest('calendar', null, $cloud);
+        return $this->exerciseMetadata($request);
+    }
+
     private function getRequest($type, $token = NULL, $cloud = NULL, $resourceUrl = NULL)
     {
         $request = new stdClass();
