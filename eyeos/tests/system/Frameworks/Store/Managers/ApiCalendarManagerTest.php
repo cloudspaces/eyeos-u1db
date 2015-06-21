@@ -18,132 +18,146 @@ class EyeosUserCalendarTest  implements IPrincipal,EyeObject
 class ApiCalendarManagerTest extends PHPUnit_Framework_TestCase
 {
     private $calendarManagerMock;
-    private $accessorProviderMock;
-    private $u1dbCredsManagerMock;
+    private $apiManagerMock;
     private $sut;
-    private $credentials;
+    private $token;
+    private $cloud;
+    private $resourceUrl;
+    private $user;
 
     public function setUp()
     {
         $this->calendarManagerMock = $this->getMock('ICalendarManager');
-        $this->accessorProviderMock = $this->getMock('AccessorProvider');
-        $this->u1dbCredsManagerMock = $this->getMock('U1DBCredsManager');
-
-        $this->sut = new ApiCalendarManager($this->accessorProviderMock,$this->calendarManagerMock,$this->u1dbCredsManagerMock);
-        //$this->credentials = json_decode('{"credentials":{"token_key":"1234","token_secret":"ABCD","consumer_key":"keySebas","consumer_secret":"secretSebas"},"request_token":{"key":"HIJK","secret":"ABCD"},"verifier":"verifier"}');
-        $this->credentials = json_decode('{"oauth":{"token_key":"1234","token_secret":"ABCD","consumer_key":"keySebas","consumer_secret":"secretSebas"}}');
-
+        $this->apiManagerMock = $this->getMock('ApiManager');
+        $this->sut = new ApiCalendarManager($this->calendarManagerMock,$this->apiManagerMock);
+        $this->token = new stdClass();
+        $this->token->key = '1234';
+        $this->token->secret = 'ABCD';
+        $this->cloud = 'Stacksync';
+        $this->resourceUrl = "http://192.68.56.101/";
+        $this->user = 'eyeos';
     }
 
     public function tearDown()
     {
         $this->calendarManagerMock = null;
-        $this->accessorProviderMock = null;
-        $this->u1dbCredsManagerMock = null;
+        $this->apiManagerMock = null;
         $this->sut = null;
     }
 
     /**
      * method: createEvent
      * when: called
-     * with: event
-     * should: calledU1dbUpdate
+     * with: cloudAndTokenAndEventAndResourceUrl
+     * should: returnInsertCorrect
      */
-    public function test_createEvent_called_event_calledU1dbUpdate()
+    public function test_createEvent_called_cloudAndTokenAndEventAndResourceUrl_returnInsertCorrect()
     {
-        $event = json_decode('[{"type":"event","user_eyeos": "eyeos","calendar": "personal", "status":"NEW", "isallday":"0", "timestart": "201419160000", "timeend":"201419170000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Visita Médico", "location": "Barcelona", "description": "Llevar justificante"},{"type":"event","user_eyeos": "eyeos","calendarid": "eyeID_Calendar_2b", "isallday": "1", "timestart": "201420160000", "timeend":"201420170000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Excursión", "location": "Girona", "description": "Mochila"}]}');
+        $event = json_decode('{"user": "eyeos","calendar": "personal","isallday":0, "timestart": "201419160000", "timeend":"201419170000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Visita", "location": "Barcelona", "description": "Dentista","repeattype":"n"}');
+        $check = array("status" => "OK");
+        $this->exerciseCreateEvent($event,$check);
+    }
 
-        $this->u1dbCredsManagerMock->expects($this->once())
-            ->method('callProcessCredentials')
-            ->will($this->returnValue($this->credentials));
-
-        $this->accessorProviderMock->expects($this->once())
-            ->method('getProcessDataU1db')
-            ->will($this->returnValue('true'));
-
-        $this->sut->createEvent($event);
+    /**
+     * method: createEvent
+     * when: called
+     * with: cloudAndTokenAndEventAndResourceUrl
+     * should: returnException
+     */
+    public function test_createEvent_called_cloudAndTokenAndEventAndResourceUrl_returnException()
+    {
+        $event = json_decode('{"user": "eyeos","calendar": "personal","isallday":0, "timestart": "201419160000", "timeend":"201419170000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Visita", "location": "Barcelona", "description": "Dentista","repeattype":"n"}');
+        $check = array("status" => "KO","error" => -1);
+        $this->exerciseCreateEvent($event,$check);
     }
 
     /**
      * method: deleteEvent
      * when: called
-     * with: event
-     * should: calledU1dbDelete
+     * with: cloudAndTokenAndEventAndResourceUrl
+     * should: returnDeleteCorrect
      */
-    public function test_deleteEvent_called_event_calledU1dbDelete()
+    public function test_deleteEvent_called_cloudAndTokenAndEventAndResourceUrl_returnDeleteCorrect()
     {
-        $event = json_decode('[{"type":"event","user_eyeos": "eyeos","calendar": "personal", "status":"DELETED", "isallday": "0","timestart": "201419173000","timeend":"201419183000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Visita Museo", "location": "Esplugues de llobregat", "description": "Llevar Ticket"},
-                    {"type":"event","user_eyeos": "eyeos","calendar": "personal","status":"DELETED", "isallday": "0", "timestart": "201420160000", "timeend":"201420170000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Excursión", "location": "Girona", "description": "Mochila"}]');
+        $event = json_decode('{"user": "eyeos","calendar": "personal","isallday":0, "timestart": "201419160000", "timeend":"201419170000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Visita", "location": "Barcelona", "description": "Dentista","repeattype":"n"}');
+        $check = array("status" => "OK");
+        $this->exerciseDeleteEvent($event,$check);
+    }
 
-        $this->u1dbCredsManagerMock->expects($this->once())
-            ->method('callProcessCredentials')
-            ->will($this->returnValue($this->credentials));
-
-        $this->accessorProviderMock->expects($this->once())
-            ->method('getProcessDataU1db')
-            ->will($this->returnValue('true'));
-        $this->sut->deleteEvent($event);
+    /**
+     * method: deleteEvent
+     * when: called
+     * with: cloudAndTokenAndEventAndResourceUrl
+     * should: returnException
+     */
+    public function test_deleteEvent_called_cloudAndTokenAndEventAndResourceUrl_returnException()
+    {
+        $event = json_decode('{"user": "eyeos","calendar": "personal","isallday":0, "timestart": "201419160000", "timeend":"201419170000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Visita", "location": "Barcelona", "description": "Dentista","repeattype":"n"}');
+        $check = array("status" => "KO","error" => -1);
+        $this->exerciseDeleteEvent($event,$check);
     }
 
     /**
      * method: updateEvent
      * when: called
-     * with: event
-     * should: calledU1dbUpdate
+     * with: cloudAndTokenAndEventAndResourceUrl
+     * should: returnUpdateCorrect
      */
-    public function test_updateEvent_called_event_calledU1dbUpdate()
+    public function test_updateEvent_called_cloudAndTokenAndEventAndResourceUrl_returnUpdateCorrect()
     {
-        $event = json_decode('[{"type":"event","user_eyeos": "eyeos","calendar": "personal", "status":"CHANGED", "isallday": "0","timestart": "201419173000","timeend":"201419183000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Visita Museo", "location": "Esplugues de llobregat", "description": "Llevar Ticket"},
-                    {"type":"event","user_eyeos": "eyeos","calendar": "personal","status":"CHANGED", "isallday": "0", "timestart": "201420160000", "timeend":"201420170000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Excursión", "location": "Girona", "description": "Mochila"}]');
+        $event = json_decode('{"user": "eyeos","calendar": "personal","isallday":0, "timestart": "201419160000", "timeend":"201419170000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Visita", "location": "Barcelona", "description": "Dentista","repeattype":"n"}');
+        $check = array("status" => "OK");
+        $this->exerciseUpdateEvent($event,$check);
+    }
 
-        $this->u1dbCredsManagerMock->expects($this->once())
-            ->method('callProcessCredentials')
-            ->will($this->returnValue($this->credentials));
-
-        $this->accessorProviderMock->expects($this->once())
-            ->method('getProcessDataU1db')
-            ->will($this->returnValue('true'));
-        $this->sut->updateEvent($event);
+    /**
+     * method: updateEvent
+     * when: called
+     * with: cloudAndTokenAndEventAndResourceUrl
+     * should: returnException
+     */
+    public function test_updateEvent_called_cloudAndTokenAndEventAndResourceUrl_returnException()
+    {
+        $event = json_decode('{"user": "eyeos","calendar": "personal","isallday":0, "timestart": "201419160000", "timeend":"201419170000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Visita", "location": "Barcelona", "description": "Dentista","repeattype":"n"}');
+        $check = array("status" => "KO","error" => -1);
+        $this->exerciseUpdateEvent($event,$check);
     }
 
     /**
      * method: selectEvent
      * when: called
-     * with: event
-     * should: calledU1db
+     * with: cloudAndTokenAndEventAndResourceUrl
+     * should: returnEvents
      */
-    public function test_selectEvent_called_event_calledU1db()
+    public function test_selectEvent_called_cloudAndTokenAndEventAndResourceUrl_returnEvents()
     {
-        $u1db = '[{"type":"event","user_eyeos": "eyeos","calendar": "personal", "status":"NEW", "isallday": "0", "timestart": "201419173000","timeend":"201419183000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Visita Museo", "location": "Esplugues de llobregat", "description": "Llevar Ticket"},
-                    {"type":"event","user_eyeos": "eyeos","calendar": "personal", "status":"CHANGED" ,"isallday": "0", "timestart": "201420160000", "timeend":"201420170000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Excursión", "location": "Girona", "description": "Mochila"}]';
-        $event = json_decode('[{"type":"event","user_eyeos":"eyeos","calendar":"personal"}]');
-
-        $this->u1dbCredsManagerMock->expects($this->once())
-            ->method('callProcessCredentials')
-            ->will($this->returnValue($this->credentials));
-
-        $this->accessorProviderMock->expects($this->once())
-            ->method('getProcessDataU1db')
-            ->will($this->returnValue($u1db));
-        $this->sut->selectEvent($event);
+        $events = json_decode('[{"user": "eyeos","calendar": "personal","isallday":0, "timestart": "201419160000", "timeend":"201419170000", "repetition": "None", "finaltype": "1", "finalvalue": "0", "subject": "Visita", "location": "Barcelona", "description": "Dentista","repeattype":"n"}]');
+        $this->exerciseSelectEvent($events);
     }
+
+    /**
+     * method: selectEvent
+     * when: called
+     * with: cloudAndTokenAndEventAndResourceUrl
+     * should: returnException
+     */
+    public function test_selectEvent_called_cloudAndTokenAndEventAndResourceUrl_returnException()
+    {
+        $check = array("status" => "KO","error" => -1);
+        $this->exerciseSelectEvent($check);
+    }
+
 
     /**
      * method: synchronizeCalendar
      * when: called
-     * with: userAndCalendarIdAndAndUser
-     * should: calledU1dbEmpty
+     * with: cloudAndTokenAndUserAndCalendarIdAndResourceUrl
+     * should: calledCalendarEventsEmptyAndServerEmpty
      */
-    public function test_synchronizeCalendar_called_userAndCalendarIdAndAndUser_calledU1dbEmpty()
+    public function test_synchronizeCalendar_called_cloudAndTokenAndUserAndCalendarIdAndResourceUrl_calledCalendarEventsEmptyAndServerEmpty()
     {
         $calendarId = 'eyeID_Calendar_f';
-        $user = 'eyeos';
-        $event['type'] = 'selectEvent';
-        $event['lista'] = json_decode('[{"type":"event","user_eyeos":"eyeos","calendar":"personal"}]');
-        $event['credentials'] = json_decode('{"oauth":{"token_key":"1234","token_secret":"ABCD","consumer_key":"keySebas","consumer_secret":"secretSebas"}}');
-
         $calendar = $this->getCalendar('eyeID_Calendar_64', 'personal', 'personal\'s personal calendar.', 'eyeID_EyeosUser_63');
-
         $this->calendarManagerMock->expects($this->at(0))
             ->method('getCalendarById')
             ->with($calendarId)
@@ -152,46 +166,198 @@ class ApiCalendarManagerTest extends PHPUnit_Framework_TestCase
         $this->calendarManagerMock->expects($this->at(1))
             ->method('getAllEventsByPeriod')
             ->with($calendar,null,null)
-            ->will($this->returnValue($this->getEvents()));
+            ->will($this->returnValue(array()));
 
-        $this->u1dbCredsManagerMock->expects($this->exactly(5))
-            ->method('callProcessCredentials')
-            ->will($this->returnValue($this->credentials));
+        $this->apiManagerMock->expects($this->once())
+            ->method('getEvents')
+            ->with($this->cloud,$this->token,"eyeos","personal","http://192.68.56.101/")
+            ->will($this->returnValue(array()));
 
-        $this->accessorProviderMock->expects($this->at(0))
-            ->method('getProcessDataU1db')
-            ->with(json_encode($event))
-            ->will($this->returnValue('[]'));
+        $this->calendarManagerMock->expects($this->never())
+            ->method('deleteEvent');
 
-        $this->accessorProviderMock->expects($this->exactly(5))
-            ->method('getProcessDataU1db')
-            ->will($this->returnValue('true'));
+        $this->calendarManagerMock->expects($this->never())
+            ->method('getNewEvent')
+            ->will($this->returnValue(new CalendarEvent()));
 
-        $this->sut->synchronizeCalendar($calendarId,$user);
+        $this->calendarManagerMock->expects($this->never())
+            ->method('saveEvent');
+
+
+        $result = $this->sut->synchronizeCalendar($this->cloud,$this->token,$this->user,$calendarId,$this->resourceUrl);
+        $this->assertEquals(array(),$result);
+    }
+
+
+    /**
+     * method: synchronizeCalendar
+     * when: called
+     * with: cloudAndTokenAndUserAndCalendarIdAndResourceUrl
+     * should: calledCalendarEventsAndServerEmpty
+     */
+    public function test_synchronizeCalendar_called_cloudAndTokenAndUserAndCalendarIdAndResourceUrl_calledCalendarEventsAndServerEmpty()
+    {
+        $calendarId = 'eyeID_Calendar_f';
+        $calendar = $this->getCalendar('eyeID_Calendar_64', 'personal', 'personal\'s personal calendar.', 'eyeID_EyeosUser_63');
+        $eventsCalendar = $this->getEvents();
+        $this->calendarManagerMock->expects($this->at(0))
+            ->method('getCalendarById')
+            ->with($calendarId)
+            ->will($this->returnValue($calendar));
+
+        $this->calendarManagerMock->expects($this->at(1))
+            ->method('getAllEventsByPeriod')
+            ->with($calendar,null,null)
+            ->will($this->returnValue($eventsCalendar));
+
+        $this->apiManagerMock->expects($this->at(0))
+        ->method('getEvents')
+        ->with($this->cloud,$this->token,"eyeos","personal","http://192.68.56.101/")
+        ->will($this->returnValue(array()));
+
+        $this->calendarManagerMock->expects($this->at(2))
+            ->method('deleteEvent')
+            ->with($eventsCalendar[0]);
+
+
+        $this->calendarManagerMock->expects($this->at(3))
+            ->method('deleteEvent')
+            ->with($eventsCalendar[1]);
+
+        $this->calendarManagerMock->expects($this->at(4))
+            ->method('deleteEvent')
+            ->with($eventsCalendar[2]);
+
+        $this->calendarManagerMock->expects($this->at(5))
+            ->method('deleteEvent')
+            ->with($eventsCalendar[3]);
+
+        $this->calendarManagerMock->expects($this->never())
+            ->method('getNewEvent')
+            ->will($this->returnValue(new CalendarEvent()));
+
+        $this->calendarManagerMock->expects($this->never())
+            ->method('saveEvent');
+
+
+        $result = $this->sut->synchronizeCalendar($this->cloud,$this->token,$this->user,$calendarId,$this->resourceUrl);
+        $this->assertEquals(array(),$result);
     }
 
     /**
      * method: synchronizeCalendar
      * when: called
-     * with: userAndCalendarIdAndUser
-     * should: calledU1db
+     * with: cloudAndTokenAndUserAndCalendarIdAndResourceUrl
+     * should: calledCalendarEventsEmptyAndServerData
      */
-    public function test_synchronizeCalendar_called_userAndCalendarIdAndUser_calledU1db()
+    public function test_synchronizeCalendar_called_cloudAndTokenAndUserAndCalendarIdAndResourceUrl_calledCalendarEventsEmptyAndServerData()
     {
         $calendarId = 'eyeID_Calendar_f';
-        $user = 'eyeos';
-        $event['type'] = 'selectEvent';
-        $event['lista'] = json_decode('[{"type":"event","user_eyeos":"eyeos","calendar":"personal"}]');
-        $event['credentials'] = json_decode('{"oauth":{"token_key":"1234","token_secret":"ABCD","consumer_key":"keySebas","consumer_secret":"secretSebas"}}');
         $calendar = $this->getCalendar('eyeID_Calendar_64', 'personal', 'personal\'s personal calendar.', 'eyeID_EyeosUser_63');
-
-        $eventsU1db = array();
-        array_push($eventsU1db,$this->getEventsU1db('eyeos','personal',"DELETED",0,1395730800,1395738000,'None','n',1,0,"Examen","Barcelona","Examen de matemáticas"));
-        array_push($eventsU1db,$this->getEventsU1db('eyeos','personal',"NEW",0,1395820800,1395828000,'None','n',1,0,"Médico","Girona","Radiografia"));
-        array_push($eventsU1db,$this->getEventsU1db('eyeos','personal',"CHANGED",0,1394820800,1394820800,'None','n',1,0,"Salida","Barcelona","Parc Güell"));
-        array_push($eventsU1db,$this->getEventsU1db('eyeos','personal',"NEW",0,1394720800,1394720800,'None','n',1,0,"Clase","Tarragona","Matemáticas"));
-
         $eventsCalendar = $this->getEvents();
+        $eventsServer = $this->createEventsServer($this->user,"personal",$eventsCalendar);
+        $this->calendarManagerMock->expects($this->at(0))
+            ->method('getCalendarById')
+            ->with($calendarId)
+            ->will($this->returnValue($calendar));
+
+        $this->calendarManagerMock->expects($this->at(1))
+            ->method('getAllEventsByPeriod')
+            ->with($calendar,null,null)
+            ->will($this->returnValue(array()));
+
+
+        $this->apiManagerMock->expects($this->at(0))
+            ->method('getEvents')
+            ->with($this->cloud,$this->token,"eyeos","personal","http://192.68.56.101/")
+            ->will($this->returnValue($eventsServer));
+
+        $this->calendarManagerMock->expects($this->at(2))
+            ->method('getNewEvent')
+            ->will($this->returnValue(new CalendarEvent()));
+
+        $this->calendarManagerMock->expects($this->at(3))
+            ->method('saveEvent')
+            ->with($eventsCalendar[0]);
+
+        $this->calendarManagerMock->expects($this->at(4))
+            ->method('getNewEvent')
+            ->will($this->returnValue(new CalendarEvent()));
+
+        $this->calendarManagerMock->expects($this->at(5))
+            ->method('saveEvent')
+            ->with($eventsCalendar[1]);
+
+        $this->calendarManagerMock->expects($this->at(6))
+            ->method('getNewEvent')
+            ->will($this->returnValue(new CalendarEvent()));
+
+        $this->calendarManagerMock->expects($this->at(7))
+            ->method('saveEvent')
+            ->with($eventsCalendar[2]);
+
+        $this->calendarManagerMock->expects($this->at(8))
+            ->method('getNewEvent')
+            ->will($this->returnValue(new CalendarEvent()));
+
+        $this->calendarManagerMock->expects($this->at(9))
+            ->method('saveEvent')
+            ->with($eventsCalendar[3]);
+
+
+        $result = $this->sut->synchronizeCalendar($this->cloud,$this->token,$this->user,$calendarId,$this->resourceUrl);
+        $this->assertEquals($eventsCalendar,$result);
+
+    }
+
+    /**
+     * method: synchronizeCalendar
+     * when: called
+     * with: cloudAndTokenAndUserAndCalendarIdAndResourceUrl
+     * should: calledSameData
+     */
+    public function test_synchronizeCalendar_called_cloudAndTokenAndUserAndCalendarIdAndResourceUrl_calledSameData()
+    {
+        $calendarId = 'eyeID_Calendar_f';
+        $calendar = $this->getCalendar('eyeID_Calendar_64', 'personal', 'personal\'s personal calendar.', 'eyeID_EyeosUser_63');
+        $eventsCalendar = $this->getEvents();
+        $eventsServer = $this->createEventsServer($this->user,"personal",$eventsCalendar);
+        $this->calendarManagerMock->expects($this->at(0))
+            ->method('getCalendarById')
+            ->with($calendarId)
+            ->will($this->returnValue($calendar));
+
+        $this->calendarManagerMock->expects($this->at(1))
+            ->method('getAllEventsByPeriod')
+            ->with($calendar,null,null)
+            ->will($this->returnValue($eventsCalendar));
+
+
+        $this->apiManagerMock->expects($this->at(0))
+            ->method('getEvents')
+            ->with($this->cloud,$this->token,"eyeos","personal","http://192.68.56.101/")
+            ->will($this->returnValue($eventsServer));
+
+        $result = $this->sut->synchronizeCalendar($this->cloud,$this->token,$this->user,$calendarId,$this->resourceUrl);
+        $this->assertEquals($this->getEvents(),$result);
+    }
+
+    /**
+     * method: synchronizeCalendar
+     * when: called
+     * with: cloudAndTokenAndUserAndCalendarIdAndResourceUrl
+     * should: calledDistinctData
+     */
+    public function test_synchronizeCalendar_called_cloudAndTokenAndUserAndCalendarIdAndResourceUrl_calledDistinctData()
+    {
+        $calendarId = 'eyeID_Calendar_f';
+        $calendar = $this->getCalendar('eyeID_Calendar_64', 'personal', 'personal\'s personal calendar.', 'eyeID_EyeosUser_63');
+        $eventsCalendar = $this->getEvents();
+        $eventsServer = $this->createEventsServer($this->user,"personal",$eventsCalendar);
+        unset($eventsCalendar[0]);
+        $eventsServer[1]->subject = "Examen trimestre";
+        unset($eventsServer[2]);
+        $expected = array();
 
         $this->calendarManagerMock->expects($this->at(0))
             ->method('getCalendarById')
@@ -203,120 +369,94 @@ class ApiCalendarManagerTest extends PHPUnit_Framework_TestCase
             ->with($calendar,null,null)
             ->will($this->returnValue($eventsCalendar));
 
-        $this->u1dbCredsManagerMock->expects($this->exactly(2))
-            ->method('callProcessCredentials')
-            ->will($this->returnValue($this->credentials));
 
-        $this->accessorProviderMock->expects($this->at(0))
-            ->method('getProcessDataU1db')
-            ->with(json_encode($event))
-            ->will($this->returnValue(json_encode($eventsU1db)));
-
+        $this->apiManagerMock->expects($this->at(0))
+            ->method('getEvents')
+            ->with($this->cloud,$this->token,"eyeos","personal","http://192.68.56.101/")
+            ->will($this->returnValue($eventsServer));
 
         $this->calendarManagerMock->expects($this->at(2))
-            ->method('deleteEvent')
-            ->with($eventsCalendar[0]);
-
-        $this->calendarManagerMock->expects($this->at(3))
-            ->method('saveEvent')
-            ->with(new CalendarEvent('eyeID_CalendarEvent_67','Salida','Barcelona','Parc Güell',false,1394820800,1394820800,'eyeID_EyeosUser_63','other','eyeID_Calendar_64','private','None','n',1,0,null,null));
-
-        $this->calendarManagerMock->expects($this->at(4))
             ->method('getNewEvent')
             ->will($this->returnValue(new CalendarEvent()));
 
-        $this->calendarManagerMock->expects($this->at(5))
+        $event1 = new CalendarEvent(null,'Examen','Barcelona','Examen de matemáticas',false,1395730800,1395738000,'eyeID_EyeosUser_63','other','eyeID_Calendar_64','private','None','n',1,0,null,null);
+
+        $this->calendarManagerMock->expects($this->at(3))
             ->method('saveEvent')
-            ->with(new CalendarEvent(null,'Clase','Tarragona','Matemáticas',false,1394720800,1394720800,'eyeID_EyeosUser_63',null,'eyeID_Calendar_64','private','None','n',1,0,null,null));
+            ->with($event1);
 
-        $event['type'] = 'insertEvent';
-        $event['lista'] = array($this->getEventsU1db('eyeos','personal',"NEW",0,1494820800,1494820800,'None','n',1,0,"Clase","Barcelona","Ingles"));
+        $event2 = new CalendarEvent(null,'Examen trimestre','Girona','Radiografia',false,1395820800,1395828000,'eyeID_EyeosUser_63','other','eyeID_Calendar_64','private','None','n',1,0,null,null);
 
-        $this->accessorProviderMock->expects($this->at(1))
-            ->method('getProcessDataU1db')
-            ->with(json_encode($event))
-            ->will($this->returnValue('true'));
+        $this->calendarManagerMock->expects($this->at(4))
+            ->method('saveEvent')
+            ->with($event2);
+
+        $this->calendarManagerMock->expects($this->at(5))
+            ->method('deleteEvent')
+            ->with($eventsCalendar[2]);
 
 
-        $this->sut->synchronizeCalendar($calendarId,$user);
+        array_push($expected,$event2);
+        array_push($expected,$eventsCalendar[3]);
+        array_push($expected,$event1);
+
+        $result = $this->sut->synchronizeCalendar($this->cloud,$this->token,$this->user,$calendarId,$this->resourceUrl);
+        $this->assertEquals($expected,$result);
+
     }
 
     /**
      *method: synchronizeCalendars
      * when: called
-     * with: user
-     * should: calledU1dbEmpty
+     * with: cloudAndTokenAndUserAndResourceUrl
+     * should: calledCalendarsServerEmptyAndCalendarsEmpty
      */
-    public function test_synchronizeCalendars_called_user_calledU1dbEmpty()
+    public function test_called_cloudAndTokenAndUserAndResourceUrl_calledCalendarsServerEmptyAndCalendarsEmpty()
     {
-        $userMock = $this->getMock("EyeosUserCalendarTest");
-
-        $event['type'] = 'selectCalendar';
-        $event['lista'] = json_decode('[{"type":"calendar","user_eyeos":"eyeos"}]');
-        $event['credentials'] = json_decode('{"oauth":{"token_key":"1234","token_secret":"ABCD","consumer_key":"keySebas","consumer_secret":"secretSebas"}}');
         $calendars = array();
-        array_push($calendars,$this->getCalendar('eyeID_Calendar_64', 'personal', 'personal\'s personal calendar.', 'eyeID_EyeosUser_63'));
-        array_push($calendars,$this->getCalendar('eyeID_Calendar_65', 'school', 'school calendar.', 'eyeID_EyeosUser_63'));
-
+        $userMock = $this->getMock("EyeosUserCalendarTest");
         $userMock->expects($this->any())
             ->method("getName")
             ->will($this->returnValue('eyeos'));
-
-        $this->u1dbCredsManagerMock->expects($this->exactly(3))
-            ->method('callProcessCredentials')
-            ->will($this->returnValue($this->credentials));
-
-        $this->accessorProviderMock->expects($this->at(0))
-            ->method('getProcessDataU1db')
-            ->with(json_encode($event))
-            ->will($this->returnValue('[]'));
-
 
         $this->calendarManagerMock->expects($this->at(0))
             ->method('getAllCalendarsFromOwner')
             ->with($userMock)
             ->will($this->returnValue($calendars));
 
-        $this->accessorProviderMock->expects($this->at(1))
-            ->method('getProcessDataU1db')
-            ->will($this->returnValue('true'));
+        $this->apiManagerMock->expects($this->at(0))
+            ->method('getCalendars')
+            ->with($this->cloud,$this->token,"eyeos","http://192.68.56.101/")
+            ->will($this->returnValue(array()));
 
-        $this->sut->synchronizeCalendars($userMock);
+        $this->calendarManagerMock->expects($this->never())
+            ->method('getNewCalendar')
+            ->will($this->returnValue(new Calendar()));
+
+        $this->calendarManagerMock->expects($this->never())
+            ->method('saveCalendar');
+
+        $this->calendarManagerMock->expects($this->never())
+            ->method('deleteCalendar');
+
+        $result = $this->sut->synchronizeCalendars($this->cloud,$this->token,$userMock,$this->resourceUrl);
+        $this->assertEquals(array(),$result);
 
     }
 
     /**
-     * method: synchronizeCalendars
+     *method: synchronizeCalendars
      * when: called
-     * with: user
-     * should: calledU1db
+     * with: cloudAndTokenAndUserAndResourceUrl
+     * should: calledCalendarsServerDataAndCalendarsEmpty
      */
-    public function test_synchronizeCalendars_called_user_calledU1db()
+    public function test_synchronizeCalendars_called_cloudAndTokenAndUserAndResourceUrl_calledCalendarsServerDataAndCalendarsEmpty()
     {
-        $userMock = $this->getMock("EyeosUserCalendarTest");
-
-        $event['type'] = 'selectCalendar';
-        $event['lista'] = json_decode('[{"type":"calendar","user_eyeos":"eyeos"}]');
-        $event['credentials'] = json_decode('{"oauth":{"token_key":"1234","token_secret":"ABCD","consumer_key":"keySebas","consumer_secret":"secretSebas"}}');
-
-        $calendarInsert = array();
-        $calendarInsert['type'] = 'insertCalendar';
-        $calendarInsert['lista'] = json_decode('[{"name":"people","type":"calendar","status":"NEW","user_eyeos":"eyeos","timezone":0,"description":"people calendar."}]');
-        $calendarInsert['credentials'] = json_decode('{"oauth":{"token_key":"1234","token_secret":"ABCD","consumer_key":"keySebas","consumer_secret":"secretSebas"}}');
-
         $calendars = array();
-        array_push($calendars,$this->getCalendar('eyeID_Calendar_64', 'personal', 'personal\'s personal calendar.', 'eyeID_EyeosUser_63'));
-        array_push($calendars,$this->getCalendar('eyeID_Calendar_65', 'school', 'school calendar.', 'eyeID_EyeosUser_63'));
-        array_push($calendars,$this->getCalendar('eyeID_Calendar_66', 'people', 'people calendar.', 'eyeID_EyeosUser_63'));
-        array_push($calendars,$this->getCalendar('eyeID_Calendar_66', 'family', 'family calendar.', 'eyeID_EyeosUser_63'));
-
-        $calendarsU1db = array();
-        array_push($calendarsU1db,$this->getCalendarU1db("eyeos","personal","NEW","personal calendar",0));
-        array_push($calendarsU1db,$this->getCalendarU1db("eyeos","school","NEW","school calendar",0));
-        array_push($calendarsU1db,$this->getCalendarU1db("eyeos","work","NEW","work calendar",0));
-        array_push($calendarsU1db,$this->getCalendarU1db("eyeos","family","DELETED","family calendar",0));
-        array_push($calendarsU1db,$this->getCalendarU1db("eyeos","class","DELETED","class calendar",0));
-        $calendar = new Calendar();
+        $calendarsServer = json_decode('[{"type": "calendar","user": "eyeos","cloud": "Stacksync","name": "personal","description": "Calendario personal","timezone": 0,"status": "NEW"}]');
+        $userMock = $this->getMock("EyeosUserCalendarTest");
+        $expected = array();
+        array_push($expected,$this->getCalendar(null, 'personal', 'Calendario personal', 'eyeID_EyeosUser_63'));
 
         $userMock->expects($this->any())
             ->method("getName")
@@ -326,117 +466,284 @@ class ApiCalendarManagerTest extends PHPUnit_Framework_TestCase
             ->method("getId")
             ->will($this->returnValue('eyeID_EyeosUser_63'));
 
-        $this->u1dbCredsManagerMock->expects($this->exactly(2))
-            ->method('callProcessCredentials')
-            ->will($this->returnValue($this->credentials));
+        $this->calendarManagerMock->expects($this->at(0))
+            ->method('getAllCalendarsFromOwner')
+            ->with($userMock)
+            ->will($this->returnValue($calendars));
 
-        $this->accessorProviderMock->expects($this->at(0))
-            ->method('getProcessDataU1db')
-            ->with(json_encode($event))
-            ->will($this->returnValue(json_encode($calendarsU1db)));
+        $this->apiManagerMock->expects($this->at(0))
+            ->method('getCalendars')
+            ->with($this->cloud,$this->token,"eyeos","http://192.68.56.101/")
+            ->will($this->returnValue($calendarsServer));
+
+
+        $this->calendarManagerMock->expects($this->at(1))
+            ->method('getNewCalendar')
+            ->will($this->returnValue(new Calendar()));
+
+        $this->calendarManagerMock->expects($this->at(2))
+            ->method('saveCalendar')
+            ->with($expected[0]);
+
+        $this->calendarManagerMock->expects($this->never())
+            ->method('deleteCalendar');
+
+
+        $result = $this->sut->synchronizeCalendars($this->cloud,$this->token,$userMock,$this->resourceUrl);
+        $this->assertEquals($expected,$result);
+    }
+
+    /**
+     *method: synchronizeCalendars
+     * when: called
+     * with: cloudAndTokenAndUserAndResourceUrl
+     * should: calledCalendarsServerEmptyAndCalendarsData
+     */
+    public function test_synchronizeCalendars_called_cloudAndTokenAndUserAndResourceUrl_calledCalendarsServerEmptyAndCalendarsData()
+    {
+        $calendarsServer = array();
+        $userMock = $this->getMock("EyeosUserCalendarTest");
+        $calendars = array();
+        array_push($calendars,$this->getCalendar(null, 'personal', 'Calendario personal', 'eyeID_EyeosUser_63'));
+
+        $userMock->expects($this->any())
+            ->method("getName")
+            ->will($this->returnValue('eyeos'));
+
+        $userMock->expects($this->any())
+            ->method("getId")
+            ->will($this->returnValue('eyeID_EyeosUser_63'));
 
         $this->calendarManagerMock->expects($this->at(0))
             ->method('getAllCalendarsFromOwner')
             ->with($userMock)
             ->will($this->returnValue($calendars));
 
-        $this->calendarManagerMock->expects($this->at(1))
-            ->method('getNewCalendar')
-            ->will($this->returnValue($calendar));
+        $this->apiManagerMock->expects($this->at(0))
+            ->method('getCalendars')
+            ->with($this->cloud,$this->token,"eyeos","http://192.68.56.101/")
+            ->will($this->returnValue($calendarsServer));
 
-        $this->calendarManagerMock->expects($this->at(2))
+        $this->calendarManagerMock->expects($this->at(1))
+            ->method('deleteCalendar')
+            ->with($calendars[0]);
+
+        $result = $this->sut->synchronizeCalendars($this->cloud,$this->token,$userMock,$this->resourceUrl);
+        $this->assertEquals(array(),$result);
+    }
+
+    /**
+     *method: synchronizeCalendars
+     * when: called
+     * with: cloudAndTokenAndUserAndResourceUrl
+     * should: calledSameData
+     */
+    public function test_synchronizeCalendars_called_cloudAndTokenAndUserAndResourceUrl_calledSameData()
+    {
+        $calendarsServer = json_decode('[{"type": "calendar","user": "eyeos","cloud": "Stacksync","name": "personal","description": "Calendario personal","timezone": 0,"status": "NEW"}]');
+        $userMock = $this->getMock("EyeosUserCalendarTest");
+        $calendars = array();
+        array_push($calendars,$this->getCalendar(null, 'personal', 'Calendario personal', 'eyeID_EyeosUser_63'));
+
+        $userMock->expects($this->any())
+            ->method("getName")
+            ->will($this->returnValue('eyeos'));
+
+        $userMock->expects($this->any())
+            ->method("getId")
+            ->will($this->returnValue('eyeID_EyeosUser_63'));
+
+        $this->calendarManagerMock->expects($this->at(0))
+            ->method('getAllCalendarsFromOwner')
+            ->with($userMock)
+            ->will($this->returnValue($calendars));
+
+        $this->apiManagerMock->expects($this->at(0))
+            ->method('getCalendars')
+            ->with($this->cloud,$this->token,"eyeos","http://192.68.56.101/")
+            ->will($this->returnValue($calendarsServer));
+
+        $this->calendarManagerMock->expects($this->never())
+            ->method('getNewCalendar')
+            ->will($this->returnValue(new Calendar()));
+
+        $this->calendarManagerMock->expects($this->never())
             ->method('saveCalendar');
 
-        $this->calendarManagerMock->expects($this->at(3))
+        $this->calendarManagerMock->expects($this->never())
             ->method('deleteCalendar');
 
-        $this->accessorProviderMock->expects($this->at(1))
-            ->method('getProcessDataU1db')
-            ->with(json_encode($calendarInsert))
-            ->will($this->returnValue("true"));
+        $result = $this->sut->synchronizeCalendars($this->cloud,$this->token,$userMock,$this->resourceUrl);
+        $this->assertEquals($calendars,$result);
 
-        $this->sut->synchronizeCalendars($userMock);
+    }
+
+    /**
+     *method: synchronizeCalendars
+     * when: called
+     * with: cloudAndTokenAndUserAndResourceUrl
+     * should: calledDistinctData
+     */
+    public function test_synchronizeCalendars_called_cloudAndTokenAndUserAndResourceUrl_calledDistinctData()
+    {
+        $userMock = $this->getMock("EyeosUserCalendarTest");
+        $calendarsServer = json_decode('[{"type": "calendar","user": "eyeos","cloud": "Stacksync","name": "personal","description": "Calendario personal","timezone": 0,"status": "NEW"},
+                                        {"type": "calendar","user": "eyeos","cloud": "Stacksync","name": "laboral","description": "Calendario Laboral","timezone": 0,"status": "NEW"},
+                                        {"type": "calendar","user": "eyeos","cloud": "Stacksync","name": "academico","description": "Calendario academico","timezone": 0,"status": "NEW"}]');
+        $calendars = array();
+        array_push($calendars,$this->getCalendar('eyeID_Calendar_64','laboral', 'Calendario Laboral', 'eyeID_EyeosUser_63'));
+        array_push($calendars,$this->getCalendar('eyeID_Calendar_65','escolar', 'Calendario Escolar', 'eyeID_EyeosUser_63'));
+        array_push($calendars,$this->getCalendar('eyeID_Calendar_66','academico', 'Calendario Ingles', 'eyeID_EyeosUser_63'));
+
+        $userMock->expects($this->any())
+            ->method("getName")
+            ->will($this->returnValue('eyeos'));
+
+        $userMock->expects($this->any())
+            ->method("getId")
+            ->will($this->returnValue('eyeID_EyeosUser_63'));
+
+        $this->calendarManagerMock->expects($this->at(0))
+            ->method('getAllCalendarsFromOwner')
+            ->with($userMock)
+            ->will($this->returnValue($calendars));
+
+        $this->apiManagerMock->expects($this->at(0))
+            ->method('getCalendars')
+            ->with($this->cloud,$this->token,"eyeos","http://192.68.56.101/")
+            ->will($this->returnValue($calendarsServer));
+
+
+        $this->calendarManagerMock->expects($this->at(1))
+            ->method('getNewCalendar')
+            ->will($this->returnValue(new Calendar()));
+
+        $this->calendarManagerMock->expects($this->at(2))
+            ->method('saveCalendar')
+            ->with($this->getCalendar(null,'personal', 'Calendario personal', 'eyeID_EyeosUser_63'));
+
+        $this->calendarManagerMock->expects($this->at(3))
+            ->method('deleteCalendar')
+            ->with($calendars[1]);
+
+        $this->calendarManagerMock->expects($this->at(4))
+            ->method('saveCalendar')
+            ->with($this->getCalendar('eyeID_Calendar_66','academico', 'Calendario academico', 'eyeID_EyeosUser_63'));
+
+        $expected = array();
+        array_push($expected,$calendars[0]);
+        array_push($expected,$this->getCalendar('eyeID_Calendar_66','academico', 'Calendario academico', 'eyeID_EyeosUser_63'));
+        array_push($expected,$this->getCalendar(null,'personal', 'Calendario personal', 'eyeID_EyeosUser_63'));
+
+        $result = $this->sut->synchronizeCalendars($this->cloud,$this->token,$userMock,$this->resourceUrl);
+        $this->assertEquals($expected,$result);
     }
 
 
     /**
      * method: insertCalendar
      * when: called
-     * with: userAndCalendar
-     * should: calledU1db
+     * with: cloudAndTokenAndCalendarAndResourceUrl
+     * should: returnInsertCorrect
      */
-    public function test_insertCalendar_called_userAndCalendar_calledU1db()
+    public function test_insertCalendar_called__cloudAndTokenAndCalendarAndResourceUrl_returnInsertCorrect()
     {
-        $user = 'eyeos';
-        $calendar = $this->getCalendar('eyeID_Calendar_64', 'personal', 'personal\'s personal calendar.', 'eyeID_EyeosUser_63');
-        $calendarU1db = '{"type":"insertCalendar","lista":[{"type":"calendar","user_eyeos":"eyeos","name":"personal","description":"personal\'s personal calendar.","timezone":0,"status":"NEW"}],"credentials":{"oauth":{"token_key":"1234","token_secret":"ABCD","consumer_key":"keySebas","consumer_secret":"secretSebas"}}}';
+        $check = array("status" => "OK");
+        $this->exerciseInsertCalendar($check);
+    }
 
-        $this->u1dbCredsManagerMock->expects($this->exactly(1))
-            ->method('callProcessCredentials')
-            ->will($this->returnValue($this->credentials));
 
-        $this->accessorProviderMock->expects($this->at(0))
-            ->method('getProcessDataU1db')
-            ->with($calendarU1db)
-            ->will($this->returnValue("true"));
-
-        $this->sut->insertCalendar($user,$calendar);
+    /**
+     * method: insertCalendar
+     * when: called
+     * with: cloudAndTokenAndCalendarAndResourceUrl
+     * should: returnException
+     */
+    public function test_insertCalendar_called__cloudAndTokenAndCalendarAndResourceUrl_returnException()
+    {
+        $check = array("status" => "KO","error" => -1);
+        $this->exerciseInsertCalendar($check);
     }
 
     /**
      * method: deleteCalendar
      * when: called
-     * with: userAndCalendarName
-     * should: calledU1db
+     * with: cloudAndTokenAndCalendarAndResourceUrl
+     * should: returnDeleteCorrect
      */
-    public function test_deleteCalendar_called_userAndCalendarName_calledU1db()
+    public function test_deleteCalendar_called_cloudAndTokenAndCalendarAndResourceUrl_returnDeleteCorrect()
     {
-        $user = 'eyeos';
-        $calendar = 'personal';
-        $calendarU1db = '{"type":"deleteCalendar","lista":[{"type":"calendar","user_eyeos":"eyeos","name":"personal"}],"credentials":{"oauth":{"token_key":"1234","token_secret":"ABCD","consumer_key":"keySebas","consumer_secret":"secretSebas"}}}';
-
-        $this->u1dbCredsManagerMock->expects($this->exactly(1))
-            ->method('callProcessCredentials')
-            ->will($this->returnValue($this->credentials));
-
-        $this->accessorProviderMock->expects($this->at(0))
-            ->method('getProcessDataU1db')
-            ->with($calendarU1db)
-            ->will($this->returnValue("true"));
-
-        $this->sut->deleteCalendar($user,$calendar);
+        $check = array("status" => "OK");
+        $this->exerciseDeleteCalendar($check);
     }
 
     /**
-     *method: deleteCalendarAndEventsByUser
+     * method: deleteCalendar
      * when: called
-     * with: user
-     * should: calledU1db
+     * with: cloudAndTokenAndCalendarAndResourceUrl
+     * should: returnException
      */
-    public function test_deleteCalendarAndEventsByUser_called_user_calledU1db()
+    public function test_deleteCalendar_called_cloudAndTokenAndCalendarAndResourceUrl_returnException()
     {
-        $user = 'eyeos';
-        $calendarU1db = '{"type":"deleteCalendarUser","lista":[{"user_eyeos":"eyeos"}],"credentials":{"oauth":{"token_key":"1234","token_secret":"ABCD","consumer_key":"keySebas","consumer_secret":"secretSebas"}}}';
+        $check = array("status" => "KO","error" => -1);
+        $this->exerciseDeleteCalendar($check);
+    }
 
-        $this->u1dbCredsManagerMock->expects($this->exactly(1))
-            ->method('callProcessCredentials')
-            ->will($this->returnValue($this->credentials));
+    /**
+     * method: updateCalendar
+     * when: called
+     * with: cloudAndTokenAndCalendarAndResourceUrl
+     * should: returnUpdateCorrect
+     */
+    public function test_updateCalendar_called_cloudAndTokenAndCalendarAndResourceUrl_returnUpdateCorrect()
+    {
+        $check = array("status" => "OK");
+        $this->exerciseUpdateCalendar($check);
+    }
 
-        $this->accessorProviderMock->expects($this->at(0))
-            ->method('getProcessDataU1db')
-            ->with($calendarU1db)
-            ->will($this->returnValue("true"));
+    /**
+     * method: updateCalendar
+     * when: called
+     * with: cloudAndTokenAndCalendarAndResourceUrl
+     * should: returnException
+     */
+    public function test_updateCalendar_called_cloudAndTokenAndCalendarAndResourceUrl_returnException()
+    {
+        $check = array("status" => "KO","error" => -1);
+        $this->exerciseUpdateCalendar($check);
+    }
 
-        $this->sut->deleteCalendarAndEventsByUser($user);
+    /**
+     * method: deleteCalendarAndEventsByUser
+     * when: called
+     * with: cloudAndTokenAndCalendarAndResourceUrl
+     * should: returnDeleteCorrect
+     */
+    public function test_deleteCalendarAndEventsByUser_called_cloudAndTokenAndCalendarAndResourceUrl_returnDeleteCorrect()
+    {
+        $check = array("status" => "OK");
+        $this->exerciseDeleteCalendarByUser($check);
+    }
+
+    /**
+     * method: deleteCalendarAndEventsByUser
+     * when: called
+     * with: cloudAndTokenAndCalendarAndResourceUrl
+     * should: returnException
+     */
+    public function test_deleteCalendarAndEventsByUser_called_cloudAndTokenAndCalendarAndResourceUrl_returnException()
+    {
+        $check = array("status" => "KO","error" => -1);
+        $this->exerciseDeleteCalendarByUser($check);
     }
 
     private function getEvents()
     {
         $events = array();
-        array_push($events,new CalendarEvent('eyeID_CalendarEvent_65','Examen','Barcelona','Examen de matemáticas',false,1395730800,1395738000,'eyeID_EyeosUser_63','other','eyeID_Calendar_64','private','None','n',1,0,null,null));
-        array_push($events,new CalendarEvent('eyeID_CalendarEvent_66','Médico','Girona','Radiografia',false,1395820800,1395828000,'eyeID_EyeosUser_63','other','eyeID_Calendar_64','private','None','n',1,0,null,null));
-        array_push($events,new CalendarEvent('eyeID_CalendarEvent_67','Salida','Lleida','Justificante',false,1394820800,1394820800,'eyeID_EyeosUser_63','other','eyeID_Calendar_64','private','None','n',1,0,null,null));
-        array_push($events,new CalendarEvent('eyeID_CalendarEvent_67','Clase','Barcelona','Ingles',false,1494820800,1494820800,'eyeID_EyeosUser_63','other','eyeID_Calendar_64','private','None','n',1,0,null,null));
+        array_push($events,new CalendarEvent(null,'Examen','Barcelona','Examen de matemáticas',false,1395730800,1395738000,'eyeID_EyeosUser_63','other','eyeID_Calendar_64','private','None','n',1,0,null,null));
+        array_push($events,new CalendarEvent(null,'Médico','Girona','Radiografia',false,1395820800,1395828000,'eyeID_EyeosUser_63','other','eyeID_Calendar_64','private','None','n',1,0,null,null));
+        array_push($events,new CalendarEvent(null,'Salida','Lleida','Justificante',false,1394820800,1394820800,'eyeID_EyeosUser_63','other','eyeID_Calendar_64','private','None','n',1,0,null,null));
+        array_push($events,new CalendarEvent(null,'Clase','Barcelona','Ingles',false,1494820800,1494820800,'eyeID_EyeosUser_63','other','eyeID_Calendar_64','private','None','n',1,0,null,null));
         return $events;
     }
 
@@ -451,38 +758,129 @@ class ApiCalendarManagerTest extends PHPUnit_Framework_TestCase
         return $calendar;
     }
 
-    private function getEventsU1db($user,$calendar,$status,$isallday,$timestart,$timeend,$repetition,$repeattype,$finaltype,$finalvalue,$subject,$location,$description)
+    private function exerciseCreateEvent($event,$check)
     {
-        $eventU1db = array();
-        $eventU1db['type'] = 'event';
-        $eventU1db['user_eyeos'] = $user;
-        $eventU1db['calendar'] = $calendar;
-        $eventU1db['status'] = $status;
-        $eventU1db['isallday'] = $isallday;
-        $eventU1db['timestart'] = $timestart;
-        $eventU1db['timeend'] = $timeend;
-        $eventU1db['repetition'] = $repetition;
-        $eventU1db['finaltype'] = $finaltype;
-        $eventU1db['finalvalue'] = $finalvalue;
-        $eventU1db['subject'] = $subject;
-        $eventU1db['location'] = $location;
-        $eventU1db['repeattype'] = $repeattype;
-        $eventU1db['description'] = $description;
+        $this->apiManagerMock->expects($this->once())
+            ->method('insertEvent')
+            ->with($this->cloud,$this->token,"eyeos","personal",0,"201419160000","201419170000","None","1","0","Visita","Barcelona","Dentista","n","http://192.68.56.101/")
+            ->will($this->returnValue($check));
 
-        return $eventU1db;
+        $result = $this->sut->createEvent($this->cloud,$this->token,$event,$this->resourceUrl);
+        $this->assertEquals($check,$result);
     }
 
-    private function getCalendarU1db($user,$name,$status,$description,$timezone)
+    private function exerciseDeleteEvent($event,$check)
     {
-        $calendarU1db = array();
-        $calendarU1db['type'] = 'calendar';
-        $calendarU1db['user_eyeos'] = $user;
-        $calendarU1db['name'] = $name;
-        $calendarU1db['status'] = $status;
-        $calendarU1db['description'] = $description;
-        $calendarU1db['timezone'] = $timezone;
+        $this->apiManagerMock->expects($this->once())
+            ->method('deleteEvent')
+            ->with($this->cloud,$this->token,"eyeos","personal","201419160000","201419170000",0,"http://192.68.56.101/")
+            ->will($this->returnValue($check));
 
-        return $calendarU1db;
+        $result = $this->sut->deleteEvent($this->cloud,$this->token,$event,$this->resourceUrl);
+        $this->assertEquals($check,$result);
+    }
+
+    private function exerciseUpdateEvent($event,$check)
+    {
+        $this->apiManagerMock->expects($this->once())
+            ->method('updateEvent')
+            ->with($this->cloud,$this->token,"eyeos","personal",0,"201419160000","201419170000","None","1","0","Visita","Barcelona","Dentista","n","http://192.68.56.101/")
+            ->will($this->returnValue($check));
+
+        $result = $this->sut->updateEvent($this->cloud,$this->token,$event,$this->resourceUrl);
+        $this->assertEquals($check,$result);
+    }
+
+    private function exerciseSelectEvent($check)
+    {
+        $event = json_decode('{"user":"eyeos","calendar":"personal"}');
+        $this->apiManagerMock->expects($this->once())
+            ->method('getEvents')
+            ->with($this->cloud,$this->token,"eyeos","personal","http://192.68.56.101/")
+            ->will($this->returnValue($check));
+
+        $result = $this->sut->selectEvent($this->cloud,$this->token,$event,$this->resourceUrl);
+        $this->assertEquals($check,$result);
+    }
+
+    private function createEventsServer($user,$calendar,$eventsCalendar)
+    {
+        $eventsServer = array();
+
+        foreach($eventsCalendar as $eventCalendar)
+        {
+            $event = new stdClass();
+            $event->type = 'event';
+            $event->user_eyeos = $user;
+            $event->calendar = $calendar;
+            $event->status = 'NEW';
+            $event->isallday = $eventCalendar->getIsAllDay()?1:0;
+            $event->timestart = (int)$eventCalendar->getTimeStart();
+            $event->timeend = (int)$eventCalendar->getTimeEnd();
+            $event->repetition = $eventCalendar->getRepetition();
+            $event->finaltype = (int)$eventCalendar->getFinalType();
+            $event->finalvalue = (int)$eventCalendar->getFinalValue();
+            $event->subject = $eventCalendar->getSubject();
+            $event->location = $eventCalendar->getLocation();
+            $event->repeattype = $eventCalendar->getRepeatType();
+            $event->description = $eventCalendar->getDescription();
+            array_push($eventsServer,$event);
+        }
+
+        return $eventsServer;
+    }
+
+    private function getCalendarStruct($user,$name,$description,$timezone)
+    {
+        $calendar = new stdClass();
+        $calendar->user = $user;
+        $calendar->name = $name;
+        $calendar->description = $description;
+        $calendar->timezone = $timezone;
+        return $calendar;
+    }
+
+    private function exerciseInsertCalendar($check)
+    {
+        $calendar = $this->getCalendarStruct('eyeos','personal','personal\'s personal calendar.',0);
+        $this->apiManagerMock->expects($this->once())
+            ->method('insertCalendar')
+            ->with($this->cloud,$this->token,"eyeos","personal",'personal\'s personal calendar.',0,"http://192.68.56.101/")
+            ->will($this->returnValue($check));
+        $result = $this->sut->insertCalendar($this->cloud,$this->token,$calendar,$this->resourceUrl);
+        $this->assertEquals($check,$result);
+    }
+
+    private function exerciseDeleteCalendar($check)
+    {
+        $calendar = $this->getCalendarStruct('eyeos','personal','personal\'s personal calendar.',0);
+        $this->apiManagerMock->expects($this->once())
+            ->method('deleteCalendar')
+            ->with($this->cloud,$this->token,"eyeos","personal","http://192.68.56.101/")
+            ->will($this->returnValue($check));
+        $result = $this->sut->deleteCalendar($this->cloud,$this->token,$calendar,$this->resourceUrl);
+        $this->assertEquals($check,$result);
+    }
+
+    private function exerciseUpdateCalendar($check)
+    {
+        $calendar = $this->getCalendarStruct('eyeos','personal','personal\'s personal calendar.',0);
+        $this->apiManagerMock->expects($this->once())
+            ->method('updateCalendar')
+            ->with($this->cloud,$this->token,"eyeos","personal",'personal\'s personal calendar.',0,"http://192.68.56.101/")
+            ->will($this->returnValue($check));
+        $result = $this->sut->updateCalendar($this->cloud,$this->token,$calendar,$this->resourceUrl);
+        $this->assertEquals($check,$result);
+    }
+
+    private function exerciseDeleteCalendarByUser($check)
+    {
+        $this->apiManagerMock->expects($this->once())
+            ->method('deleteCalendarsUser')
+            ->with($this->cloud,$this->token,"eyeos","http://192.68.56.101/")
+            ->will($this->returnValue($check));
+        $result = $this->sut->deleteCalendarAndEventsByUser($this->cloud,$this->token,"eyeos",$this->resourceUrl);
+        $this->assertEquals($check,$result);
     }
 }
 

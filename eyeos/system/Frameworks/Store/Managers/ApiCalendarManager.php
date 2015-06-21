@@ -8,309 +8,261 @@
 
 class ApiCalendarManager
 {
-    private $accessorProvider;
     private $calendarManager;
-    private $u1dbCredsManager;
+    private $apiManager;
 
-    public function __construct(AccessorProvider $accessorProvider = NULL,ICalendarManager $calendarManager = NULL,U1DBCredsManager $u1dbCredsManager = NULL)
+    public function __construct(ICalendarManager $calendarManager = NULL,ApiManager $apiManager = NULL)
     {
-        if(!$accessorProvider) $accessorProvider = new AccessorProvider();
-        $this->accessorProvider = $accessorProvider;
-
         if(!$calendarManager) $calendarManager = CalendarManager::getInstance();
         $this->calendarManager = $calendarManager;
 
-        if(!$u1dbCredsManager) $u1dbCredsManager = new U1DBCredsManager($this->accessorProvider);
-        $this->u1dbCredsManager = $u1dbCredsManager;
+        if(!$apiManager) $apiManager = new ApiManager();
+        $this->apiManager = $apiManager;
     }
 
-    public function createEvent($event)
+    public function createEvent($cloud,$token,$event,$resourceUrl)
     {
-        $credentials = $this->u1dbCredsManager->callProcessCredentials();
-        return json_decode($this->callProcessU1db("insertEvent",$event,$credentials));
+        return  $this->apiManager->insertEvent($cloud,$token,$event->user,$event->calendar,$event->isallday,$event->timestart,
+            $event->timeend,$event->repetition,$event->finaltype,$event->finalvalue,$event->subject,$event->location,
+            $event->description,$event->repeattype,$resourceUrl);
     }
 
-    /*public function callProcessCredentials()
-    {
-        $credentials = NULL;
-        $token = isset($_SESSION['request_token'])?$_SESSION['request_token']:null;
-        $verifier = isset($_SESSION['verifier'])?$_SESSION['verifier']:null;
-        $creds = json_decode($this->accessorProvider->getProcessCredentials($token,$verifier));
-        if ($creds) {
-            $_SESSION['request_token'] = json_encode($creds->request_token);
-            $_SESSION['verifier'] = $creds->verifier;
-            $json['oauth'] = $creds->credentials;
-            $credentials = $json;
-            //Logger::getLogger('sebas')->error('Credenciales:' . json_encode($credentials));
-        }
-        return $credentials;
-    }*/
 
-    public function callProcessU1db($type,$lista,$credentials=NULL)
+    public function deleteEvent($cloud,$token,$event,$resourceUrl)
     {
-        $json['type'] = $type;
-        $json['lista'] = array();
-        array_push($json['lista'],$lista);
-        if ($credentials) {
-            $json['credentials'] = $credentials;
-        }
-
-        return $this->accessorProvider->getProcessDataU1db(json_encode($json));
+        return $this->apiManager->deleteEvent($cloud,$token,$event->user,$event->calendar,$event->timestart,$event->timeend,
+            $event->isallday,$resourceUrl);
     }
 
-    public function deleteEvent($event)
+    public function updateEvent($cloud,$token,$event,$resourceUrl)
     {
-        $credentials = $this->u1dbCredsManager->callProcessCredentials();
-        return json_decode($this->callProcessU1db("deleteEvent",$event,$credentials));
+        return $this->apiManager->updateEvent($cloud,$token,$event->user,$event->calendar,$event->isallday,$event->timestart,
+            $event->timeend,$event->repetition,$event->finaltype,$event->finalvalue,$event->subject,$event->location,
+            $event->description,$event->repeattype,$resourceUrl);
     }
 
-    public function updateEvent($event)
+    public function selectEvent($cloud,$token,$event,$resourceUrl)
     {
-        $credentials = $this->u1dbCredsManager->callProcessCredentials();
-        return json_decode($this->callProcessU1db("updateEvent",$event,$credentials));
+        return $this->apiManager->getEvents($cloud,$token,$event->user,$event->calendar,$resourceUrl);
     }
 
-    public function selectEvent($event)
-    {
-        $credentials = $this->u1dbCredsManager->callProcessCredentials();
-        return json_decode($this->callProcessU1db("selectEvent",$event,$credentials));
-    }
-
-    public function synchronizeCalendar($calendarId,$user)
+    public function synchronizeCalendar($cloud,$token,$user,$calendarId,$resourceUrl)
     {
         $cal = null;
+        $result = array();
+        $arrayDelete = array();
+        $arrayInsert = array();
+        $arrayUpdate = array();
         try {
             $cal = $this->calendarManager->getCalendarById($calendarId);
         } catch(Exception $e){}
+
         if($cal) {
             $eventsCalendar = $this->calendarManager->getAllEventsByPeriod($cal,null,null);
-            $event['type'] = 'event';
-            $event['user_eyeos'] = $user;
-            $event['calendar'] = $cal->getName();
-            $u1dbCalendar = $this->selectEvent($event);
-
-            if (is_array($u1dbCalendar)) {
-                if(count($u1dbCalendar) === 0 && count($eventsCalendar) > 0) {
-                    foreach($eventsCalendar as $eventCalendar) {
-                        $eventInsert = $this->getEventInsert($eventCalendar,$user,$cal->getName());
-                        $this->createEvent($eventInsert);
-                    }
+            $event = new stdClass();
+            $event->user = $user;
+            $event->calendar = $cal->getName();
+            $eventsServer = $this->selectEvent($cloud,$token,$event,$resourceUrl);
+            if(count($eventsServer) > 0) {
+                if(count($eventsCalendar) == 0) {
+                    $arrayInsert = $eventsServer;
                 } else {
-                    $arrayInsert = array();
-
-                    for($i = 0;$i < count($u1dbCalendar);$i++) {
+                    foreach($eventsServer as $eventServer)
+                    {
                         $encontrado = false;
-                        for($j = 0;$j < count($eventsCalendar);$j++) {
-                            if($this->sameEvent($u1dbCalendar[$i],$eventsCalendar[$j])) {
+                        foreach($eventsCalendar as $eventCalendar)
+                        {
+                            if($this->sameEvent($eventServer,$eventCalendar))
+                            {
                                 $encontrado = true;
-                                if($u1dbCalendar[$i]->status === "DELETED") {
-                                    $this->calendarManager->deleteEvent($eventsCalendar[$j]);
-                                    unset($eventsCalendar[$j]);
-                                    $eventsCalendar = array_values($eventsCalendar);
-                                } else {
-                                    if($this->changeEvent($u1dbCalendar[$i],$eventsCalendar[$j])) {
-                                        $this->calendarManager->saveEvent($eventsCalendar[$j]);
-                                    }
+                                if($this->changeEvent($eventServer,$eventCalendar)) {
+                                    array_push($arrayUpdate,$eventCalendar);
                                 }
+                                array_push($result,$eventCalendar);
                                 break;
                             }
+
                         }
 
                         if(!$encontrado) {
-                            if($u1dbCalendar[$i]->status !== "DELETED") {
-                                array_push($arrayInsert,$this->insertEvent($u1dbCalendar[$i],$cal));
-                            }
+                            array_push($arrayInsert,$eventServer);
                         }
                     }
 
-                    if(count($arrayInsert) > 0) {
-                        $eventsCalendar = array_merge($eventsCalendar,$arrayInsert);
-                    }
-
-                    for($i = 0;$i < count($eventsCalendar);$i++) {
+                    foreach($eventsCalendar as $eventCalendar) {
                         $encontrado = false;
-                        for($j = 0;$j < count($u1dbCalendar);$j++) {
-                            if($this->sameEvent($u1dbCalendar[$j],$eventsCalendar[$i])) {
+                        foreach($eventsServer as $eventServer) {
+                            if($this->sameEvent($eventServer,$eventCalendar)) {
                                 $encontrado = true;
                                 break;
                             }
                         }
+
                         if(!$encontrado) {
-                            $eventInsert = $this->getEventInsert($eventsCalendar[$i],$user,$cal->getName());
-                            $this->createEvent($eventInsert);
+                            array_push($arrayDelete,$eventCalendar);
                         }
                     }
-                }
-            }
-            return $eventsCalendar;
-        }
-
-        return array();
-    }
-
-    public function synchronizeCalendars($user)
-    {
-        $credentials = $this->u1dbCredsManager->callProcessCredentials();
-        $calendar = array();
-        $calendar['type'] = 'calendar';
-        $calendar['user_eyeos'] = $user->getName();
-        $u1dbCalendar = json_decode($this->callProcessU1db("selectCalendar",$calendar,$credentials));
-
-        if(is_array($u1dbCalendar)) {
-            $calendars = $this->calendarManager->getAllCalendarsFromOwner($user);
-            if(count($u1dbCalendar) === 0 && count($calendars) > 0) {
-                foreach($calendars as $calendar) {
-                    $credentials = $this->u1dbCredsManager->callProcessCredentials();
-                    $calendarU1db = $this->getCalendarInsert($calendar->getName(),$user->getName(),$calendar->getTimezone(),$calendar->getDescription());
-                    $this->callProcessU1db("insertCalendar",$calendarU1db,$credentials);
                 }
             } else {
-                $arrayInsert = array();
-
-                for($i = 0;$i < count($u1dbCalendar);$i++) {
-                    $encontrado = false;
-                    for($j = 0;$j < count($calendars);$j++) {
-                        if($u1dbCalendar[$i]->name == $calendars[$j]->getName()) {
-                            $encontrado = true;
-
-                            if($u1dbCalendar[$i]->status == "DELETED") {
-                                $this->calendarManager->deleteCalendar($calendars[$j]);
-                                unset($calendars[$j]);
-                                $calendars = array_values($calendars);
-                            }
-
-                            break;
-                        }
-                    }
-
-                    if(!$encontrado) {
-                        if($u1dbCalendar[$i]->status != "DELETED") {
-                            array_push($arrayInsert,$this->createNewCalendar($u1dbCalendar[$i]->name,$u1dbCalendar[$i]->description,$u1dbCalendar[$i]->timezone,$user->getId()));
-                        }
-                    }
+                if(count($eventsCalendar) > 0) {
+                    $arrayDelete = $eventsCalendar;
                 }
-
-                if(count($arrayInsert) > 0) {
-                    $calendars = array_merge($calendars,$arrayInsert);
-                }
-
-                for($i = 0;$i < count($calendars);$i++) {
-                    $encontrado = false;
-                    for($j = 0;$j < count($u1dbCalendar);$j++) {
-                        if($calendars[$i]->getName() == $u1dbCalendar[$j]->name) {
-                            $encontrado = true;
-                            break;
-                        }
-                    }
-
-                    if(!$encontrado) {
-                        $credentials = $this->u1dbCredsManager->callProcessCredentials();
-                        $calendar = $this->getCalendarInsert($calendars[$i]->getName(),$user->getName(),$calendars[$i]->getTimezone(),$calendars[$i]->getDescription());
-                        $this->callProcessU1db("insertCalendar",$calendar,$credentials);
-                    }
-                }
-
             }
 
-            return $calendars;
+            if(count($arrayInsert) > 0) {
+               foreach($arrayInsert as $event) {
+                   array_push($result,$this->insertEvent($event,$cal));
+               }
+            }
+
+            if(count($arrayUpdate) > 0) {
+                foreach($arrayUpdate as $event) {
+                    $this->calendarManager->saveEvent($event);
+                }
+            }
+
+            if(count($arrayDelete) > 0) {
+                foreach($arrayDelete as $event) {
+                    $this->calendarManager->deleteEvent($event);
+                }
+            }
+        }
+        return $result;
+    }
+
+    public function synchronizeCalendars($cloud,$token,$user,$resourceUrl)
+    {
+        $calendars = $this->calendarManager->getAllCalendarsFromOwner($user);
+        $calendarsServer = $this->apiManager->getCalendars($cloud,$token,$user->getName(),$resourceUrl);
+        $result = array();
+        $arrayInsert = array();
+        $arrayDelete = array();
+        $arrayUpdate = array();
+
+        if(count($calendarsServer) > 0) {
+            if(count($calendars) == 0) {
+                $arrayInsert = $calendarsServer;
+            } else {
+                foreach($calendarsServer as $calendarServer) {
+                    $encontrado = false;
+                    foreach($calendars as $calendar) {
+                        if($calendarServer->name == $calendar->getName()) {
+                            $encontrado = true;
+                            if(strtolower($calendarServer->description) != strtolower($calendar->getDescription())) {
+                                $calendar->setDescription($calendarServer->description);
+                                array_push($arrayUpdate,$calendar);
+                            }
+                            array_push($result,$calendar);
+                            break;
+                        }
+                    }
+
+                    if(!$encontrado) {
+                        array_push($arrayInsert,$calendarServer);
+                    }
+                }
+
+                foreach($calendars as $calendar) {
+                    $encontrado = false;
+                    foreach($calendarsServer as $calendarServer) {
+                        if($calendar->getName() == $calendarServer->name) {
+                            $encontrado = true;
+                            break;
+                        }
+                    }
+                    if(!$encontrado) {
+                        array_push($arrayDelete,$calendar);
+                    }
+                }
+            }
+        } else {
+            if(count($calendars) > 0) {
+                $arrayDelete = $calendars;
+            }
         }
 
-        return array();
+        if(count($arrayInsert) > 0) {
+            foreach($arrayInsert as $calendar) {
+                array_push($result,$this->createNewCalendar($calendar->name,$calendar->description,$calendar->timezone,$user->getId()));
+            }
+        }
 
+        if(count($arrayDelete) > 0) {
+            foreach($arrayDelete as $calendar) {
+                $this->calendarManager->deleteCalendar($calendar);
+            }
+        }
+
+        if(count($arrayUpdate) > 0) {
+            foreach($arrayUpdate as $calendar) {
+                $this->calendarManager->saveCalendar($calendar);
+            }
+        }
+
+        return $result;
     }
 
-    public function deleteCalendar($user,$calendar)
+    public function deleteCalendar($cloud,$token,$calendar,$resourceUrl)
     {
-        $credentials = $this->u1dbCredsManager->callProcessCredentials();
-        $calendarU1db = array();
-        $calendarU1db['type'] = 'calendar';
-        $calendarU1db['user_eyeos'] = $user;
-        $calendarU1db['name'] = $calendar;
-        return json_decode($this->callProcessU1db("deleteCalendar",$calendarU1db,$credentials));
+        return $this->apiManager->deleteCalendar($cloud,$token,$calendar->user,$calendar->name,$resourceUrl);
     }
 
-    public function deleteCalendarAndEventsByUser($user)
+    public function updateCalendar($cloud,$token,$calendar,$resourceUrl)
     {
-        $credentials = $this->u1dbCredsManager->callProcessCredentials();
-        $calendarU1db = array();
-        $calendarU1db['user_eyeos'] = $user;
-        return json_decode($this->callProcessU1db("deleteCalendarUser",$calendarU1db,$credentials));
+        return $this->apiManager->updateCalendar($cloud,$token,$calendar->user,$calendar->name,$calendar->description,$calendar->timezone,$resourceUrl);
     }
 
-    public function insertCalendar($user,Calendar $calendar)
+    public function deleteCalendarAndEventsByUser($cloud,$token,$user,$resourceUrl)
     {
-        $credentials = $this->u1dbCredsManager->callProcessCredentials();
-        $calendarU1db = array();
-        $calendarU1db['type'] = 'calendar';
-        $calendarU1db['user_eyeos'] = $user;
-        $calendarU1db['name'] = $calendar->getName();
-        $calendarU1db['description'] = $calendar->getDescription();
-        $calendarU1db['timezone'] = $calendar->getTimezone();
-        $calendarU1db['status'] = 'NEW';
-        return json_decode($this->callProcessU1db("insertCalendar",$calendarU1db,$credentials));
+        return $this->apiManager->deleteCalendarsUser($cloud,$token,$user,$resourceUrl);
     }
 
-    public function getEventInsert($event,$user,$calendarName)
+    public function insertCalendar($cloud,$token,$calendar,$resourceUrl)
     {
-        $eventU1db = array();
-        $eventU1db['type'] = 'event';
-        $eventU1db['user_eyeos'] = $user;
-        $eventU1db['calendar'] = $calendarName;
-        $eventU1db['status'] = 'NEW';
-        $eventU1db['isallday'] = $event->getIsAllDay()?1:0;
-        $eventU1db['timestart'] = (int)$event->getTimeStart();
-        $eventU1db['timeend'] = (int)$event->getTimeEnd();
-        $eventU1db['repetition'] = $event->getRepetition();
-        $eventU1db['finaltype'] = (int)$event->getFinalType();
-        $eventU1db['finalvalue'] = (int)$event->getFinalValue();
-        $eventU1db['subject'] = $event->getSubject();
-        $eventU1db['location'] = $event->getLocation();
-        $eventU1db['repeattype'] = $event->getRepeatType();
-        $eventU1db['description'] = $event->getDescription();
-        return $eventU1db;
+        return $this->apiManager->insertCalendar($cloud,$token,$calendar->user,$calendar->name,$calendar->description,$calendar->timezone,$resourceUrl);
     }
 
-    public function sameEvent($eventU1db,$eventCalendar)
+    public function sameEvent($eventServer,$eventCalendar)
     {
         $isallday = $eventCalendar->getIsAllDay()?1:0;
-        if($isallday == $eventU1db->isallday && $eventCalendar->getTimeStart() == $eventU1db->timestart && $eventCalendar->getTimeEnd() == $eventU1db->timeend) {
+        if($isallday == $eventServer->isallday && $eventCalendar->getTimeStart() == $eventServer->timestart && $eventCalendar->getTimeEnd() == $eventServer->timeend) {
             return true;
         }
         return false;
     }
 
-    public function changeEvent($eventU1db,&$eventCalendar)
+    public function changeEvent($eventServer,&$eventCalendar)
     {
-        if(strtolower($eventCalendar->getSubject()) !== strtolower($eventU1db->subject) || strtolower($eventCalendar->getLocation()) !== strtolower($eventU1db->location) ||
-            $eventCalendar->getRepetition() !== $eventU1db->repetition || $eventCalendar->getRepeatType() !== $eventU1db->repeattype || $eventCalendar->getFinalType() !== $eventU1db->finaltype ||
-            $eventCalendar->getFinalValue() !== $eventU1db->finalvalue || strtolower($eventCalendar->getDescription()) !== strtolower($eventU1db->description)) {
-            $eventCalendar->setSubject($eventU1db->subject);
-            $eventCalendar->setLocation($eventU1db->location);
-            $eventCalendar->setRepetition($eventU1db->repetition);
-            $eventCalendar->setRepeatType($eventU1db->repeattype);
-            $eventCalendar->setFinalType($eventU1db->finaltype);
-            $eventCalendar->setFinalValue($eventU1db->finalvalue);
-            $eventCalendar->setDescription($eventU1db->description);
+        if(strtolower($eventCalendar->getSubject()) !== strtolower($eventServer->subject) || strtolower($eventCalendar->getLocation()) !== strtolower($eventServer->location) ||
+            $eventCalendar->getRepetition() !== $eventServer->repetition || $eventCalendar->getRepeatType() !== $eventServer->repeattype || $eventCalendar->getFinalType() !== $eventServer->finaltype ||
+            $eventCalendar->getFinalValue() !== $eventServer->finalvalue || strtolower($eventCalendar->getDescription()) !== strtolower($eventServer->description)) {
+            $eventCalendar->setSubject($eventServer->subject);
+            $eventCalendar->setLocation($eventServer->location);
+            $eventCalendar->setRepetition($eventServer->repetition);
+            $eventCalendar->setRepeatType($eventServer->repeattype);
+            $eventCalendar->setFinalType($eventServer->finaltype);
+            $eventCalendar->setFinalValue($eventServer->finalvalue);
+            $eventCalendar->setDescription($eventServer->description);
             return true;
         }
 
         return false;
     }
 
-    public function insertEvent($eventU1db,$cal)
+    public function insertEvent($eventServer,$cal)
     {
         $newEvent = $this->calendarManager->getNewEvent();
-        $newEvent->setSubject($eventU1db->subject);
-        $newEvent->setTimeStart($eventU1db->timestart);
-        $newEvent->setTimeEnd($eventU1db->timeend);
+        $newEvent->setSubject($eventServer->subject);
+        $newEvent->setTimeStart($eventServer->timestart);
+        $newEvent->setTimeEnd($eventServer->timeend);
         $newEvent->setCalendarId($cal->getId());
-        $newEvent->setIsAllDay($eventU1db->isallday);
-        $newEvent->setRepetition($eventU1db->repetition);
-        $newEvent->setRepeatType($eventU1db->repeattype);
-        $newEvent->setLocation($eventU1db->location);
-        $newEvent->setDescription($eventU1db->description);
-        $newEvent->setFinalType($eventU1db->finaltype);
-        $newEvent->setFinalValue($eventU1db->finalvalue);
+        $newEvent->setIsAllDay($eventServer->isallday == 1?true:false);
+        $newEvent->setRepetition($eventServer->repetition);
+        $newEvent->setRepeatType($eventServer->repeattype);
+        $newEvent->setLocation($eventServer->location);
+        $newEvent->setDescription($eventServer->description);
+        $newEvent->setFinalType($eventServer->finaltype);
+        $newEvent->setFinalValue($eventServer->finalvalue);
         $newEvent->setCreatorId($cal->getOwnerId());
         $this->calendarManager->saveEvent($newEvent);
         return $newEvent;
