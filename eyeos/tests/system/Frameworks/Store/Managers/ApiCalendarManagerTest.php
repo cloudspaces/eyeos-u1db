@@ -411,7 +411,7 @@ class ApiCalendarManagerTest extends PHPUnit_Framework_TestCase
      * with: cloudAndTokenAndUserAndResourceUrl
      * should: calledCalendarsServerEmptyAndCalendarsEmpty
      */
-    public function test_called_cloudAndTokenAndUserAndResourceUrl_calledCalendarsServerEmptyAndCalendarsEmpty()
+    public function test_synchronizeCalendars_called_cloudAndTokenAndUserAndResourceUrl_calledCalendarsServerEmptyAndCalendarsEmpty()
     {
         $calendars = array();
         $userMock = $this->getMock("EyeosUserCalendarTest");
@@ -456,7 +456,7 @@ class ApiCalendarManagerTest extends PHPUnit_Framework_TestCase
         $calendarsServer = json_decode('[{"type": "calendar","user": "eyeos","cloud": "Stacksync","name": "personal","description": "Calendario personal","timezone": 0,"status": "NEW"}]');
         $userMock = $this->getMock("EyeosUserCalendarTest");
         $expected = array();
-        array_push($expected,$this->getCalendar(null, 'personal', 'Calendario personal', 'eyeID_EyeosUser_63'));
+        array_push($expected,$this->getCalendar(null, 'Stacksync_personal', 'Calendario personal', 'eyeID_EyeosUser_63'));
 
         $userMock->expects($this->any())
             ->method("getName")
@@ -504,7 +504,7 @@ class ApiCalendarManagerTest extends PHPUnit_Framework_TestCase
         $calendarsServer = array();
         $userMock = $this->getMock("EyeosUserCalendarTest");
         $calendars = array();
-        array_push($calendars,$this->getCalendar(null, 'personal', 'Calendario personal', 'eyeID_EyeosUser_63'));
+        array_push($calendars,$this->getCalendar(null, 'Stacksync_personal', 'Calendario personal', 'eyeID_EyeosUser_63'));
 
         $userMock->expects($this->any())
             ->method("getName")
@@ -543,7 +543,7 @@ class ApiCalendarManagerTest extends PHPUnit_Framework_TestCase
         $calendarsServer = json_decode('[{"type": "calendar","user": "eyeos","cloud": "Stacksync","name": "personal","description": "Calendario personal","timezone": 0,"status": "NEW"}]');
         $userMock = $this->getMock("EyeosUserCalendarTest");
         $calendars = array();
-        array_push($calendars,$this->getCalendar(null, 'personal', 'Calendario personal', 'eyeID_EyeosUser_63'));
+        array_push($calendars,$this->getCalendar(null, 'Stacksync_personal', 'Calendario personal', 'eyeID_EyeosUser_63'));
 
         $userMock->expects($this->any())
             ->method("getName")
@@ -591,9 +591,9 @@ class ApiCalendarManagerTest extends PHPUnit_Framework_TestCase
                                         {"type": "calendar","user": "eyeos","cloud": "Stacksync","name": "laboral","description": "Calendario Laboral","timezone": 0,"status": "NEW"},
                                         {"type": "calendar","user": "eyeos","cloud": "Stacksync","name": "academico","description": "Calendario academico","timezone": 0,"status": "NEW"}]');
         $calendars = array();
-        array_push($calendars,$this->getCalendar('eyeID_Calendar_64','laboral', 'Calendario Laboral', 'eyeID_EyeosUser_63'));
-        array_push($calendars,$this->getCalendar('eyeID_Calendar_65','escolar', 'Calendario Escolar', 'eyeID_EyeosUser_63'));
-        array_push($calendars,$this->getCalendar('eyeID_Calendar_66','academico', 'Calendario Ingles', 'eyeID_EyeosUser_63'));
+        array_push($calendars,$this->getCalendar('eyeID_Calendar_64','Stacksync_laboral', 'Calendario Laboral', 'eyeID_EyeosUser_63'));
+        array_push($calendars,$this->getCalendar('eyeID_Calendar_65','Stacksync_escolar', 'Calendario Escolar', 'eyeID_EyeosUser_63'));
+        array_push($calendars,$this->getCalendar('eyeID_Calendar_66','Stacksync_academico', 'Calendario Ingles', 'eyeID_EyeosUser_63'));
 
         $userMock->expects($this->any())
             ->method("getName")
@@ -620,7 +620,7 @@ class ApiCalendarManagerTest extends PHPUnit_Framework_TestCase
 
         $this->calendarManagerMock->expects($this->at(2))
             ->method('saveCalendar')
-            ->with($this->getCalendar(null,'personal', 'Calendario personal', 'eyeID_EyeosUser_63'));
+            ->with($this->getCalendar(null,'Stacksync_personal', 'Calendario personal', 'eyeID_EyeosUser_63'));
 
         $this->calendarManagerMock->expects($this->at(3))
             ->method('deleteCalendar')
@@ -628,12 +628,12 @@ class ApiCalendarManagerTest extends PHPUnit_Framework_TestCase
 
         $this->calendarManagerMock->expects($this->at(4))
             ->method('saveCalendar')
-            ->with($this->getCalendar('eyeID_Calendar_66','academico', 'Calendario academico', 'eyeID_EyeosUser_63'));
+            ->with($this->getCalendar('eyeID_Calendar_66','Stacksync_academico', 'Calendario academico', 'eyeID_EyeosUser_63'));
 
         $expected = array();
         array_push($expected,$calendars[0]);
-        array_push($expected,$this->getCalendar('eyeID_Calendar_66','academico', 'Calendario academico', 'eyeID_EyeosUser_63'));
-        array_push($expected,$this->getCalendar(null,'personal', 'Calendario personal', 'eyeID_EyeosUser_63'));
+        array_push($expected,$this->getCalendar('eyeID_Calendar_66','Stacksync_academico', 'Calendario academico', 'eyeID_EyeosUser_63'));
+        array_push($expected,$this->getCalendar(null,'Stacksync_personal', 'Calendario personal', 'eyeID_EyeosUser_63'));
 
         $result = $this->sut->synchronizeCalendars($this->cloud,$this->token,$userMock,$this->resourceUrl);
         $this->assertEquals($expected,$result);

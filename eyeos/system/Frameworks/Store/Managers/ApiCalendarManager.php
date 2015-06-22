@@ -146,14 +146,18 @@ class ApiCalendarManager
                 foreach($calendarsServer as $calendarServer) {
                     $encontrado = false;
                     foreach($calendars as $calendar) {
-                        if($calendarServer->name == $calendar->getName()) {
-                            $encontrado = true;
-                            if(strtolower($calendarServer->description) != strtolower($calendar->getDescription())) {
-                                $calendar->setDescription($calendarServer->description);
-                                array_push($arrayUpdate,$calendar);
+                        $name = $calendar->getName();
+                        if(strrpos($name,$cloud . '_') !== false) {
+                            $name = substr($name, strrpos($name, '_') + 1);
+                            if ($calendarServer->name == $name) {
+                                $encontrado = true;
+                                if (strtolower($calendarServer->description) != strtolower($calendar->getDescription())) {
+                                    $calendar->setDescription($calendarServer->description);
+                                    array_push($arrayUpdate, $calendar);
+                                }
+                                array_push($result, $calendar);
+                                break;
                             }
-                            array_push($result,$calendar);
-                            break;
                         }
                     }
 
@@ -163,15 +167,20 @@ class ApiCalendarManager
                 }
 
                 foreach($calendars as $calendar) {
-                    $encontrado = false;
-                    foreach($calendarsServer as $calendarServer) {
-                        if($calendar->getName() == $calendarServer->name) {
-                            $encontrado = true;
-                            break;
+                    $name = $calendar->getName();
+                    if(strrpos($name,$cloud . '_') !== false) {
+                        $encontrado = false;
+                        foreach ($calendarsServer as $calendarServer) {
+                            $name = $calendar->getName();
+                            $name = substr($name, strrpos($name, '_') + 1);
+                            if ($name == $calendarServer->name) {
+                                $encontrado = true;
+                                break;
+                            }
                         }
-                    }
-                    if(!$encontrado) {
-                        array_push($arrayDelete,$calendar);
+                        if (!$encontrado) {
+                            array_push($arrayDelete, $calendar);
+                        }
                     }
                 }
             }
@@ -183,7 +192,7 @@ class ApiCalendarManager
 
         if(count($arrayInsert) > 0) {
             foreach($arrayInsert as $calendar) {
-                array_push($result,$this->createNewCalendar($calendar->name,$calendar->description,$calendar->timezone,$user->getId()));
+                array_push($result,$this->createNewCalendar($cloud . '_' . $calendar->name,$calendar->description,$calendar->timezone,$user->getId()));
             }
         }
 
