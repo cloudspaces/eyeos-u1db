@@ -61,6 +61,7 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 			$buffer .= file_get_contents(EYE_ROOT . '/' . APPS_DIR . '/calendar/classes/view/EventPopup.js');
 			$buffer .= file_get_contents(EYE_ROOT . '/' . APPS_DIR . '/calendar/classes/view/GridCalendar.js');
 			$buffer .= file_get_contents(EYE_ROOT . '/' . APPS_DIR . '/calendar/classes/view/GridCalendar.EventsContainer.js');
+            $buffer .= file_get_contents(EYE_ROOT . '/' . APPS_DIR . '/calendar/classes/view/Cursor.js');
 			
 			$response->appendToBody($buffer);
 		//}
@@ -75,7 +76,67 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 	 * @return Calendar The calendar with all missing field filed in.
 	 */
 	public static function createCalendar($params) {
-		if (!isset($params['name']) || !is_string($params['name'])) {
+        $result['status'] = 'KO';
+        $result['error'] = -1;
+        $insert = true;
+        if(isset($params['isCloud']) && isset($params['calendarData'])) {
+            $userId = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
+            $calendarData = $params['calendarData'];
+            $owner = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
+            $fieldsDoNotSave = array('id','username','password');
+            $calendarManager = CalendarManager::getInstance();
+
+            $newCalendar = CalendarManager::getInstance()->getNewCalendar();
+            foreach($calendarData as $attributeName => $attributeValue) {
+                if (!in_array($attributeName, $fieldsDoNotSave)) {
+                    $setMethod = 'set' . ucfirst($attributeName);
+                    $newCalendar->$setMethod($attributeValue);
+                }
+            }
+
+            $newCalendar->setOwnerId($owner->getId());
+            $calendarName = $newCalendar->getName();
+            if($params['isCloud'] === true) {
+                $newCalendar->setName($params['typeCalendar'] . '_' . $calendarName);
+            }
+            $calendarManager->saveCalendar($newCalendar);
+            $calendarData = self::getCalendar(array('id' => $newCalendar->getId()));
+
+            if($params['isCloud'] === true) {
+                $cloud = $params['typeCalendar'];
+                $oauthManager = new OAuthManager();
+                $token = $oauthManager->getTokenUserCloud($userId, $cloud);
+                if ($token) {
+                    $tokenAux = new stdClass();
+                    $tokenAux->key = $token->getTKey();
+                    $tokenAux->secret = $token->getTSecret();
+                    $resourceUrl = API_SYNC;
+                    $apiCalendarManager = new ApiCalendarManager();
+                    $calendar = new stdClass();
+                    $calendar->user = $owner->getName();
+                    $calendar->name = $calendarName;
+                    $calendar->description = $newCalendar->getDescription();
+                    $calendar->timezone = $newCalendar->getTimezone();
+                    $insert = $apiCalendarManager->insertCalendar($cloud,$tokenAux,$calendar,$resourceUrl);
+                    if($insert['status'] !== 'OK') {
+                        $insert = false;
+                        $calendarManager->deleteCalendar($newCalendar);
+                    }
+                } else {
+                    $insert = false;
+                }
+            }
+
+            if($insert) {
+                $result['status'] = 'OK';
+                unset($result['error']);
+                $result['calendarData'] = $calendarData;
+            }
+
+        }
+        return $result;
+
+		/*if (!isset($params['name']) || !is_string($params['name'])) {
 			throw new EyeMissingArgumentException('Missing or invalid $params[\'name\'].');
 		}
 		
@@ -89,6 +150,9 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 				$newCalendar->$setMethod($attributeValue);
 			}
 		}
+
+
+
 		$newCalendar->setOwnerId($owner->getId());
 		CalendarManager::getInstance()->saveCalendar($newCalendar);
 
@@ -96,7 +160,7 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
         $apiCalendarManager->insertCalendar($owner->getName(),$newCalendar);
 		
 		// Use self::getCalendar() to retrieve the preferences at the same time
-		return self::getCalendar(array('id' => $newCalendar->getId()));
+		return self::getCalendar(array('id' => $newCalendar->getId()));*/
 	}
 	public static function createRemoteCalendar($params) {
 		if (!isset($params['id']) || !is_string($params['id'])) {
@@ -135,7 +199,92 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 	 * @return Event The event with all missing field filed in.
 	 */
 	public static function createEvent($params) {
-		if (!isset($params['subject']) || !is_string($params['subject'])) {
+        $result['status'] = 'KO';
+        $result['error'] = -1;
+        $continuar = true;
+
+        if(isset($params['isCloud']) && isset($params['eventData'])) {
+            $eventData = $params['eventData'];
+            if(isset($eventData['subject']) && is_string($eventData['subject']) &&
+                isset($eventData['timeStart']) && is_numeric($eventData['timeStart']) &&
+                isset($eventData['timeEnd']) && is_numeric($eventData['timeEnd']) &&
+                isset($eventData['calendarId']) && is_string($eventData['calendarId']) &&
+                isset($eventData['finalType'])) {
+
+                $maxEventLimit = CalendarManager::getInstance()->getMaxEventLimit();
+                if($eventData['finalType'] == '3' && $eventData['finalType'] > $maxEventLimit ){
+                    $eventData['finalType'] = $maxEventLimit;
+                }
+
+                $creator = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
+                CalendarManager::getInstance()->setProviderLocation('local');
+
+                $newEvent = CalendarManager::getInstance()->getNewEvent();
+                $newEvent->setSubject($eventData['subject']);
+                $newEvent->setTimeStart($eventData['timeStart']);
+                $newEvent->setTimeEnd($eventData['timeEnd']);
+                $newEvent->setCalendarId($eventData['calendarId']);
+                $newEvent->setIsAllDay($eventData['isAllDay']);
+                $newEvent->setRepetition($eventData['repetition']);
+                $newEvent->setRepeatType($eventData['repeatType']);
+                $newEvent->setLocation($eventData['location']);
+                $newEvent->setDescription($eventData['description']);
+                $newEvent->setFinalType($eventData['finalType']);
+                $newEvent->setFinalValue($eventData['finalValue']);
+                $newEvent->setGmtTimeDiffrence($eventData['gmtTimeDiffrence']);
+                $newEvent->setCreatorId($creator->getId());
+                $newEventArr=array();
+
+                if($eventData['repeatType'] !='n'){
+                    $newEventArr = self::createRepeatEvent($params);
+                } else {
+                    CalendarManager::getInstance()->saveEvent($newEvent);
+                    $newEventArr[] = $newEvent;
+                    if($params['isCloud'] === true) {
+                        $cloud = $params['typeCalendar'];
+                        $oauthManager = new OAuthManager();
+                        $token = $oauthManager->getTokenUserCloud($creator->getId(), $cloud);
+                        if ($token) {
+                            $tokenAux = new stdClass();
+                            $tokenAux->key = $token->getTKey();
+                            $tokenAux->secret = $token->getTSecret();
+                            $resourceUrl = API_SYNC;
+                            $apiCalendarManager = new ApiCalendarManager();
+                            $event = new stdClass();
+                            $event->user = $creator->getName();
+                            $event->calendar = $eventData['calendar'];
+                            $event->isallday = $eventData['isAllDay'];
+                            $event->timestart = $eventData['timeStart'];
+                            $event->timeend = $eventData['timeEnd'];
+                            $event->repetition = $eventData['repetition'];
+                            $event->finaltype = $eventData['finalType'];
+                            $event->finalvalue = $eventData['finalValue'];
+                            $event->subject = bin2hex($eventData['subject']);
+                            $event->location = bin2hex($eventData['location']);
+                            $event->description = bin2hex($eventData['description']);
+                            $event->repeattype = $eventData['repeatType'];
+                            $insert = $apiCalendarManager->createEvent($cloud,$tokenAux,$event,$resourceUrl);
+                            if($insert['status'] === 'KO') {
+                                $continuar = false;
+                                $calendarManager = CalendarManager::getInstance();
+                                $calendarManager->deleteEvent($newEvent);
+                            }
+
+                        } else {
+                            $continuar = false;
+                        }
+                    }
+                }
+                if($continuar == true) {
+                    $result['status'] = 'OK';
+                    unset($result['error']);
+                    $result['eventData'] = self::toArray($newEventArr);
+                }
+            }
+        }
+        return $result;
+
+		/*if (!isset($params['subject']) || !is_string($params['subject'])) {
 			throw new EyeMissingArgumentException('Missing or invalid $params[\'subject\'].');
 		}
 		if (!isset($params['timeStart']) || !is_numeric($params['timeStart'])) {
@@ -193,7 +342,7 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
             $apiCalendarManager->createEvent($u1dbEvent);
 		}
 				
-		return self::toArray($newEventArr);
+		return self::toArray($newEventArr);*/
 	}
     /**
 	 * @param array $params(
@@ -211,7 +360,52 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 	 * )
 	 */
 	public static function deleteCalendar($params) {
-		$params['calendarId']=$params['id'];
+        $result['status'] = 'KO';
+        $result['error'] = -1;
+        $continuar = true;
+
+        if(isset($params['isCloud']) && isset($params['calendarData']) &&
+            isset($params['calendarData']['id']) && is_string($params['calendarData']['id'])) {
+            $calendarData = $params['calendarData'];
+            $cal = CalendarManager::getInstance()->getCalendarById($calendarData['id']);
+            if($params['isCloud'] === true) {
+                $cloud = $params['typeCalendar'];
+                $userId = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
+                $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
+                $oauthManager = new OAuthManager();
+                $token = $oauthManager->getTokenUserCloud($userId, $cloud);
+                if ($token) {
+                    $tokenAux = new stdClass();
+                    $tokenAux->key = $token->getTKey();
+                    $tokenAux->secret = $token->getTSecret();
+                    $resourceUrl = API_SYNC;
+                    $apiCalendarManager = new ApiCalendarManager();
+                    $calendar = new stdClass();
+                    $calendar->user = $user;
+                    $name = $cal->getName();
+                    if(strrpos($name,$cloud . '_') !== false) {
+                        $name = substr($name, strrpos($name, '_') + 1);
+                    }
+                    $calendar->name = $name;
+                    $delete = $apiCalendarManager->deleteCalendar($cloud,$tokenAux,$calendar,$resourceUrl);
+                    if($delete['status'] === 'KO') {
+                        $continuar = false;
+                    }
+
+                } else {
+                    $continuar = false;
+                }
+
+            }
+
+            if($continuar == true) {
+                CalendarManager::getInstance()->deleteCalendar($cal);
+                $result = self::getAllUserCalendars($params);
+            }
+        }
+        return $result;
+
+		/*$params['calendarId']=$params['id'];
                 $owner = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
                 if($owner->getName() == $params['name'])
                 {
@@ -227,7 +421,7 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
         $apiCalendarManager = new ApiCalendarManager();
         $apiCalendarManager->deleteCalendar($owner->getName(),$cal->getName());
 
-		return  self::getAllUserCalendars($params);
+		return  self::getAllUserCalendars($params);*/
 	}
 	public static function deleteRemoteCalendar($params) {
 		$params['calendarId']=$params['id'];                
@@ -245,7 +439,72 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 	 * )
 	 */
 	public static function deleteEvent($params) {
-		if (!isset($params['eventId']) || !is_string($params['eventId'])) {
+        $result['status'] = 'KO';
+        $result['error'] = -1;
+        $continuar = true;
+
+        if(isset($params['isCloud']) && $params['eventData']) {
+            $eventData = $params['eventData'];
+            if(isset($eventData['id']) && is_string($eventData['id'])) {
+                $event = null;
+                $cal = null;
+                try {
+                    $event = CalendarManager::getInstance()->getEventById($eventData['id']);
+                } catch(Exception $e) {}
+
+                try {
+                    $cal = CalendarManager::getInstance()->getCalendarById($event->getCalendarId());
+                }catch (Exception $e) {}
+
+                if($event && $cal) {
+                    if($params['isCloud'] === true) {
+                        $cloud = $params['typeCalendar'];
+                        $creator = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
+                        $oauthManager = new OAuthManager();
+                        $token = $oauthManager->getTokenUserCloud($creator->getId(), $cloud);
+                        if ($token) {
+                            $tokenAux = new stdClass();
+                            $tokenAux->key = $token->getTKey();
+                            $tokenAux->secret = $token->getTSecret();
+                            $resourceUrl = API_SYNC;
+                            $apiCalendarManager = new ApiCalendarManager();
+
+                            $name = $cal->getName();
+                            if(strrpos($name,$cloud . '_') !== false) {
+                                $name = substr($name, strrpos($name, '_') + 1);
+                            }
+                            $isallday = $event->getIsAllDay()?1:0;
+                            $timeStart = $event->getTimeStart();
+                            $timeEnd = $event->getTimeEnd();
+
+                            $eventDelete = new stdClass();
+                            $eventDelete->user = $creator->getName();
+                            $eventDelete->calendar = $name;
+                            $eventDelete->timestart = $timeStart;
+                            $eventDelete->timeend = $timeEnd;
+                            $eventDelete->isallday = $isallday;
+                            $delete = $apiCalendarManager->deleteEvent($cloud,$tokenAux,$eventDelete,$resourceUrl);
+                            if($delete['status'] == 'KO') {
+                                $continuar = false;
+                            }
+
+                        } else {
+                            $continuar = false;
+                        }
+                    }
+
+                    if($continuar) {
+                        CalendarManager::getInstance()->deleteEvent($event);
+                        $result['status'] = 'OK';
+                        unset($result['error']);
+                    }
+                }
+            }
+        }
+
+        return $result;
+
+		/*if (!isset($params['eventId']) || !is_string($params['eventId'])) {
 			throw new EyeMissingArgumentException('Missing or invalid $params[\'eventId\'].');
 		}
         
@@ -279,7 +538,7 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
                        }
               }
         }
-        return;
+        return;*/
 		
 	}
 
@@ -301,19 +560,49 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 	 * @return array(Event)
 	 */
 	public static function getAllEventsFromPeriod($params) {
-        if(!isset($params['calendar'])) {
-            throw new EyeMissingArgumentException('Missing calendars');
+        $result['status'] = 'KO';
+        $result['error'] = -1;
+        if(isset($params['calendar']) && isset($params['typeCalendar']) && isset($params['isCloud'])) {
+            $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
+            $events = array();
+            if($params['isCloud'] === true) {
+                $cloud = $params['typeCalendar'];
+                $oauthManager = new OAuthManager();
+                $userId = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
+                $token = $oauthManager->getTokenUserCloud($userId, $cloud);
+                if($token) {
+                    $tokenAux = new stdClass();
+                    $tokenAux->key = $token->getTKey();
+                    $tokenAux->secret = $token->getTSecret();
+                    $resourceUrl = API_SYNC;
+                    $apiCalendarManager = new ApiCalendarManager();
+                    foreach($params['calendar'] as $calendar)
+                    {
+                        array_push($events,self::toArray($apiCalendarManager->synchronizeCalendar($cloud,$tokenAux,$user->getName(),$calendar['id'],$resourceUrl)));
+                    }
+                }
+
+            } else {
+                $calendarManager = CalendarManager::getInstance();
+                foreach($params['calendar'] as $calendar) {
+                    $cal = null;
+                    try {
+                        $cal = $calendarManager->getCalendarById($calendar['id']);
+                    } catch(Exception $e){}
+                    if($cal) {
+                        array_push($events,self::toArray($calendarManager->getAllEventsByPeriod($cal,null,null)));
+                    }
+                }
+            }
+            $result['status'] = 'OK';
+            unset($result['error']);
+            $result['events'] = $events;
+            /*foreach($params['calendar'] as $calendar) {
+                array_push($results,self::toArray($apiCalendarManager->synchronizeCalendar($calendar['id'],$user->getName())));
+            }*/
         }
 
-        $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
-        $apiCalendarManager = new ApiCalendarManager();
-        $results = array();
-
-        foreach($params['calendar'] as $calendar) {
-            array_push($results,self::toArray($apiCalendarManager->synchronizeCalendar($calendar['id'],$user->getName())));
-        }
-
-        return $results;
+        return $result;
 	}
 
     /**
@@ -366,19 +655,52 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 	 * @return array(Calendar)
 	 */
 	public static function getAllUserCalendars($params) {
-		$owner = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
-        $apiCalendarManager = new ApiCalendarManager();
-		//$results = CalendarManager::getInstance()->getAllCalendarsFromOwner($owner);
-        $results = $apiCalendarManager->synchronizeCalendars($owner);
-		$userId = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getid();
-		$results = self::toArray($results);
-		foreach($results as &$result) {
-			$preferences = CalendarManager::getInstance()->getCalendarPreferences($userId, $result['id']);
-			$result['preferences'] = self::toArray($preferences);
+        $return['status'] = 'KO';
+        $return['error'] = -1;
+        $continuar = true;
 
-		}
-		
-		return $results;
+        if(isset($params['typeCalendar']) && isset($params['isCloud'])) {
+            $userId = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
+            $owner = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
+            if($params['isCloud'] === true) {
+                $cloud = $params['typeCalendar'];
+                $oauthManager = new OAuthManager();
+                $token = $oauthManager->getTokenUserCloud($userId, $cloud);
+                if($token) {
+                    $tokenAux = new stdClass();
+                    $tokenAux->key = $token->getTKey();
+                    $tokenAux->secret =$token->getTSecret();
+                    $resourceUrl = API_SYNC;
+                    $apiCalendarManager = new ApiCalendarManager();
+                    $results = $apiCalendarManager->synchronizeCalendars($cloud, $tokenAux, $owner, $resourceUrl);
+                } else {
+                    $continuar = false;
+                }
+            } else {
+                $calendarManager = CalendarManager::getInstance();
+                $results = $calendarManager->getAllCalendarsFromOwner($owner);
+                foreach ($results as $i => $row) {
+                    if(strrpos($row->getName(),'_') !== false) {
+                        unset($results[$i]);
+                    }
+                }
+            }
+
+            if($continuar == true) {
+                $results = self::toArray($results);
+                $calendars = array();
+                foreach ($results as &$result) {
+                    $preferences = CalendarManager::getInstance()->getCalendarPreferences($userId, $result['id']);
+                    $result['preferences'] = self::toArray($preferences);
+                    array_push($calendars,$result);
+                }
+
+                $return['status'] = 'OK';
+                unset($return['error']);
+                $return['calendars'] = $calendars;
+            }
+        }
+		return $return;
 	}
 	
 	/**
@@ -528,7 +850,119 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 	 * 		'...' => ...
 	 */
 	public static function updateEvent($params) {
-        $apiCalendarManager = new ApiCalendarManager();
+        $result['status'] = 'KO';
+        $result['error'] = -1;
+        $continuar = true;
+
+        if(isset($params['isCloud']) && $params['typeCalendar'] && $params['eventData']) {
+            $eventData = $params['eventData'];
+            if (isset($eventData['id']) || is_string($eventData['id'])) {
+                $maxEventLimit = CalendarManager::getInstance()->getMaxEventLimit();
+                $paramsToNotSave = array('id','isEditAll','gmtTimeDiffrence');
+                $eventsArr = array();
+                $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
+                if($eventData['finalType'] == '3' && $eventData['finalType'] > $maxEventLimit ){
+                    $eventData['finalType'] = $maxEventLimit;
+                }
+                if($params['isCloud'] == true) {
+                    $cloud = $params['typeCalendar'];
+                    $creator = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser();
+                    $apiCalendarManager = new ApiCalendarManager();
+                    $oauthManager = new OAuthManager();
+                    $token = $oauthManager->getTokenUserCloud($creator->getId(), $cloud);
+                    if ($token) {
+                        $event = null;
+                        $cal = null;
+                        try {
+                            $event = CalendarManager::getInstance()->getEventById($eventData['id']);
+                        } catch(Exception $e) {}
+                        if($event) {
+                            try {
+                                $cal = CalendarManager::getInstance()->getCalendarById($event->getCalendarId());
+                            }catch (Exception $e) {}
+
+                            if($cal) {
+                                $name = $cal->getName();
+                                if(strrpos($name,$cloud . '_') !== false) {
+                                    $name = substr($name, strrpos($name, '_') + 1);
+                                }
+
+                                $isallday = $event->getIsAllDay()?1:0;
+                                $timeStart = $event->getTimeStart();
+                                $timeEnd = $event->getTimeEnd();
+                                $event = new stdClass();
+                                $event->user = $creator->getName();
+                                $event->calendar = $name;
+                                $event->timestart = "" . $timeStart;
+                                $event->timeend = "" . $timeEnd;
+                                $event->isallday = $isallday;
+
+                                $tokenAux = new stdClass();
+                                $tokenAux->key = $token->getTKey();
+                                $tokenAux->secret = $token->getTSecret();
+                                $resourceUrl = API_SYNC;
+
+                                $delete = $apiCalendarManager->deleteEvent($cloud,$tokenAux,$event,$resourceUrl);
+                                if($delete['status'] == 'OK') {
+                                    $event = new stdClass();
+                                    $event->user = $creator->getName();
+                                    $event->calendar = $eventData['calendar'];
+                                    $event->isallday = $eventData['isAllDay'];
+                                    $event->timestart = $eventData['timeStart'];
+                                    $event->timeend = $eventData['timeEnd'];
+                                    $event->repetition = $eventData['repetition'];
+                                    $event->finaltype = $eventData['finalType'];
+                                    $event->finalvalue = $eventData['finalValue'];
+                                    $event->subject = bin2hex($eventData['subject']);
+                                    $event->location = bin2hex($eventData['location']);
+                                    $event->description = bin2hex($eventData['description']);
+                                    $event->repeattype = $eventData['repeatType'];
+                                    $insert = $apiCalendarManager->createEvent($cloud,$tokenAux,$event,$resourceUrl);
+                                    if($insert['status'] == 'KO')  {
+                                        $continuar = false;
+                                    }
+                                } else {
+                                    $continuar = false;
+                                }
+                            } else {
+                                $continuar = false;
+                            }
+                        } else {
+                            $continuar = false;
+                        }
+                    } else {
+                        $continuar = false;
+                    }
+                }
+
+                if ($continuar == true) {
+                    $calendarManager = CalendarManager::getInstance();
+                    CalendarManager::getInstance()->setProviderLocation('local');
+                    $updateEvent = CalendarManager::getInstance()->getNewEvent();
+                    $updateEvent->setId($eventData['id']);
+                    $updateEvent->setSubject($eventData['subject']);
+                    $updateEvent->setTimeStart($eventData['timeStart']);
+                    $updateEvent->setTimeEnd($eventData['timeEnd']);
+                    $updateEvent->setCalendarId($eventData['calendarId']);
+                    $updateEvent->setIsAllDay($eventData['isAllDay']);
+                    $updateEvent->setRepetition($eventData['repetition']);
+                    $updateEvent->setRepeatType($eventData['repeatType']);
+                    $updateEvent->setLocation($eventData['location']);
+                    $updateEvent->setDescription($eventData['description']);
+                    $updateEvent->setFinalType($eventData['finalType']);
+                    $updateEvent->setFinalValue($eventData['finalValue']);
+                    $updateEvent->setGmtTimeDiffrence($eventData['gmtTimeDiffrence']);
+                    $updateEvent->setCreatorId($user->getId());
+                    $calendarManager->saveEvent($updateEvent);
+                    $result['status'] = 'OK';
+                    unset($result['error']);
+                    $result['eventData'] = self::toArray($updateEvent);
+                }
+            }
+        }
+        return $result;
+
+        /*$apiCalendarManager = new ApiCalendarManager();
 		if (!isset($params['id']) || !is_string($params['id'])) {
 			throw new EyeMissingArgumentException('Missing or invalid $params[\'id\'].');
 		}
@@ -626,7 +1060,7 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
 				}
 			}
 			return self::toArray($eventsArr);
-		}
+		}*/
     }
     /**
 	 * @param array $params(
@@ -940,6 +1374,36 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
         $u1dbEvent->description = $event->getDescription();
 
         return $u1dbEvent;
+    }
+
+    public static function getTypeCalendars()
+    {
+        $result['status'] = 'KO';
+        $result['error'] = -1;
+        $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
+        $oauthManager = new OAuthManager();
+
+        $apiManager =  new ApiManager();
+        $clouds = json_decode($apiManager->getCloudsList());
+        if(!isset($clouds->error) && count($clouds) > 0) {
+            $result['status'] = 'OK';
+            unset($result['error']);
+            $result['clouds'] = array();
+            foreach($clouds as $cloud) {
+                $cloudType['cloud'] = $cloud;
+                $calendar = $apiManager->getControlCalendarCloud($cloud);
+                if(!isset($calendar->error)) {
+                    $token = $oauthManager->getTokenUserCloud($user, $cloud);
+                    if ($token) {
+                        if (strlen($token->getTsecret()) > 0) {
+                            $cloudType['permission'] = $calendar->calendar;
+                        }
+                    }
+                }
+                array_push($result['clouds'],$cloudType);
+            }
+        }
+        return $result;
     }
 
 }

@@ -178,6 +178,7 @@ class mongodbTest(unittest.TestCase):
     def test_deleteCalendar_called_userAndNameAndCloud_returnCalendar(self):
         document = {"type":"calendar","user":self.user,"name":self.calendar,"cloud":self.cloud,"description":self.description,"timezone":self.timezone,"status":"NEW"}
         self.sut.insertCalendar(self.user,self.calendar,self.cloud,self.description,self.timezone)
+        self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description,self.repeattype)
         document['status'] = 'DELETED'
         result = self.sut.deleteCalendar(self.user,self.calendar,self.cloud)
         self.assertEquals(document,result)

@@ -271,6 +271,32 @@ qx.Class.define('eyeos.calendar.view.ViewModeSelector', {
 		
 		destruct : function() {
 			//TODO
-		}
+		},
+        showSelector: function(enabled) {
+            var cursor = 'default';
+            if(enabled) {
+                cursor = 'pointer';
+            }
+            this._goPreviousButton.set({
+                enabled: enabled,
+                cursor: cursor
+            });
+            this._dayButton.set({
+                enabled: enabled,
+                cursor: cursor
+            });
+            this._weekButton.set({
+                enabled: enabled,
+                cursor: cursor
+            });
+            this._monthButton.set({
+                enabled: enabled,
+                cursor: cursor
+            })
+            this._goNextButton.set({
+                enabled: enabled,
+                cursor: cursor
+            })
+        }
 	}
 });

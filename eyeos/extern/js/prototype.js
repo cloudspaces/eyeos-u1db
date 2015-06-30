@@ -40,7 +40,7 @@ Date.prototype.getLocalizedFirstDayOfWeek = function() {
 	var firstDay = qx.locale.Date.getWeekStart();
 	var firstDayDate = new Date(this);
 	if (firstDayDate.getDay() == 0) {
-		firstDayDate.setDate(firstDayDate.getDate() - 7 - firstDayDate.getDay() + firstDay);	//date of the first day of the week (localized)
+		firstDayDate.setDate(firstDayDate.getDate() - 7 - (firstDayDate.getDay() - 1) + firstDay);	//date of the first day of the week (localized)
 	} else {
 		firstDayDate.setDate(firstDayDate.getDate() - firstDayDate.getDay() + firstDay);	//date of the first day of the week (localized)
 	}

@@ -156,13 +156,13 @@ qx.Class.define('eyeos.calendar.view.MyCalendarsList', {
 		
 		// Add "New" button on bottom-left
         var btnDecorator = new qx.ui.decoration.RoundBorderBeveled(null, "#b9b9b9", 0, 5, 5, 5, 5);
-		var newCalendarButton = new qx.ui.form.Button(tr('New')).set({
+		this._newCalendarButton = new qx.ui.form.Button(tr('New')).set({
 		/*decorator: btnDecorator,
         backgroundColor:"#e9e9e9",
 		cursor: 'pointer'*/
 		});
-        this._buttonsGroupBox.add(newCalendarButton);
-		this.__attachNewCalendarPopup(newCalendarButton);
+        this._buttonsGroupBox.add(this._newCalendarButton);
+		this.__attachNewCalendarPopup(this._newCalendarButton);
 	},
 	properties: {
 		controller: {
@@ -175,6 +175,7 @@ qx.Class.define('eyeos.calendar.view.MyCalendarsList', {
 	members: {
 		
 		__calendars: null,
+        _newCalendarButton: null,
 		
 		_applyController: function(value, old) { 
 			value.addListener('changeCalendars', function(e) {
@@ -203,7 +204,9 @@ qx.Class.define('eyeos.calendar.view.MyCalendarsList', {
 			popup.add(new qx.ui.basic.Label(tr('New calendar name:')), {row: 0, column: 0});
 			
 			// Textfield
-			var textField = new qx.ui.form.TextField();
+			var textField = new qx.ui.form.TextField().set({
+                filter:'[a-zA-Z0-9]'
+            });
 			popup.add(textField, {row: 0, column: 1});
 			
 			// OK Button
@@ -243,6 +246,16 @@ qx.Class.define('eyeos.calendar.view.MyCalendarsList', {
 		},
 		
 		__addCheckBox: function(calendar) {
+            var name = calendar.getName();
+            if(this.getController().getTypeCalendar() !== tr('EyeOS')) {
+                var cloud = this.getController().getTypeCalendar();
+                if(name.indexOf(cloud + "_") !== -1) {
+                    name = name.substring(name.indexOf('_') + 1);
+                }
+            }
+
+            calendar.setName(name);
+
 			var chkbox = new eyeos.calendar.view.CalendarsList.CheckBox(calendar).set({
 				allowGrowY: false
 			});
@@ -258,14 +271,13 @@ qx.Class.define('eyeos.calendar.view.MyCalendarsList', {
 		
 		__createMenu: function(calendar) {
 			var menu = new qx.ui.menu.Menu();
-			
 			var calendarLabel = new qx.ui.menu.Button(calendar.getName(), 'index.php?extern=images/16x16/actions/view-pim-calendar.png').set({
 				enabled: false
 			});
 			menu.add(calendarLabel);
 			menu.add(new qx.ui.menu.Separator());
-			menu.add(new qx.ui.menu.Button(tr('Add event'), 'index.php?extern=images/16x16/actions/appointment-new.png'));
-			menu.add(new qx.ui.menu.Button(tr('Settings'), 'index.php?extern=images/16x16/actions/configure.png'));
+			//menu.add(new qx.ui.menu.Button(tr('Add event'), 'index.php?extern=images/16x16/actions/appointment-new.png'));
+			//menu.add(new qx.ui.menu.Button(tr('Settings'), 'index.php?extern=images/16x16/actions/configure.png'));
 			var deleteButton= new qx.ui.menu.Button(tr('Delete Calendar'), 'index.php?extern=images/16x16/actions/edit-delete.png');
 				
 			deleteButton.addListener('execute', function(e) {
@@ -304,7 +316,19 @@ qx.Class.define('eyeos.calendar.view.MyCalendarsList', {
 		
 		destruct : function() {
 			//TODO
-		}
+		},
+        enabledCalendarList: function(enabled) {
+            var cursor = 'default';
+            if(enabled) {
+                cursor = 'pointer';
+            }
+            this._newCalendarButton.set({
+                enabled: enabled,
+                cursor: cursor
+            });
+
+            this._calendarsContainer.setEnabled(enabled);
+        }
 	}
 });
 

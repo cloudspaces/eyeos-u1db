@@ -374,7 +374,12 @@ qx.Class.define('eyeos.calendar.view.GridCalendar.EventsContainer', {
 			if (this.__eventDrawingContext != null) {
 				this.autoLayoutEvents();
 				var dialog = new eyeos.calendar.dialogs.EditEvent(this.__eventDrawingContext.eventView);
-				dialog.open(e);
+                if(this.__controller.getEnabled() === false) {
+                    dialog.setVisibility('hidden');
+                }
+
+                dialog.open(e);
+
 				// Delete drawing context data
 				this.__eventDrawingContext.eventView.removeListenerById(this.__eventDrawingContext.eventMouseMoveListenerId);
 				this.removeListenerById(this.__eventDrawingContext.thisMouseMoveListenerId);
@@ -382,6 +387,9 @@ qx.Class.define('eyeos.calendar.view.GridCalendar.EventsContainer', {
 				this.__eventDrawingContext.eventView.removeListenerById(this.__eventDrawingContext.eventMouseUpListenerId);
 				this.removeListenerById(this.__eventDrawingContext.thisMouseUpListenerId);
 				delete this.__eventDrawingContext;
+                if(this.__controller.getEnabled() === false) {
+                    dialog.close();
+                }
             }
 		},
 		

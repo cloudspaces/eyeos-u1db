@@ -32,10 +32,11 @@
 qx.Class.define('eyeos.calendar.Controller', {
 	extend: qx.core.Object,
 	
-	construct: function(checknum) {
+	construct: function(checknum,application) {
 		arguments.callee.base.call(this);
 		
 		this.__checknum = checknum;
+        this.__application = application;
 		
 		this.setCalendarSelectedDate(new Date());
 	},
@@ -98,6 +99,15 @@ qx.Class.define('eyeos.calendar.Controller', {
         },
         maxEventLimt: {
           init:null
+        },
+        typeCalendar: {
+            init: null
+        },
+        gridCalendar: {
+            init : null
+        },
+        enabled: {
+            init : null
         }
 	},
 	
@@ -107,6 +117,7 @@ qx.Class.define('eyeos.calendar.Controller', {
 		__registeredViewParts: null,
         __timer: null,
         __timerCalendar: null,
+        __application: null,
         close: false,
 		
 		/**
@@ -231,33 +242,40 @@ qx.Class.define('eyeos.calendar.Controller', {
                       }
               }*/
 
-            this.refreshEventsCalendar(true);
+            this.refreshEventsCalendar(false);
 					
 						//console.log(this.__eventModels,'after');
 			eyeos.consoleInfo('Event saved: [' + event.getId() + '] "' + event.getSubject() + '" on ' + event.getTimeStart());
 		},
 		
 		__onUserCalendarsLoaded: function(data) {
-			if (data.length == 0) {
-                // Force triggering the "EventsLoaded" event
-				this.__onCalendarEventsLoaded(null, []);
-			}
-			
+            //if(data.status == 'KO' || (data.status == 'OK' && data.calendars.length == 0)) {
+                this.getGridCalendar().showHeader(true);
+                this.__onCalendarEventsLoaded(null, []);
+            //}
+            if(data.status == 'KO') {
+                eyeos.error(tr('Error load calendars'));
+            }
 			var calendars = {};
-			for(var i = 0; i < data.length; i++) {
-				var cal = eyeos.calendar.model.Calendar.fromJson(data[i])
+			for(var i = 0; i < data.calendars.length; i++) {
+				var cal = eyeos.calendar.model.Calendar.fromJson(data.calendars[i]);
+                if(i == 0) cal.setVisible(true);
 				cal.addListener('changeVisibility', this.__onCalendarChangeVisibility, this);
 				cal.addListener('changeColor', this.__onChangeCalendarPreferences, this);
 				calendars[cal.getId()] = cal;
 			}
 			this.setCalendars(calendars);
 
-            var that = this;
-            var reffunction = function(){that.__refreshCalendars()};
-            this.__timerCalendar = setTimeout(reffunction,10000);
+            if(this.getTypeCalendar() !== tr('EyeOS')) {
+                var that = this;
+                var reffunction = function () {
+                    that.__refreshCalendars()
+                };
+                this.__timerCalendar = setTimeout(reffunction, 20000);
+            }
 
 			// Retrieve events for each calendar from the server
-			for(var id in calendars) {
+			//for(var id in calendars) {
 				/*eyeos.callMessage(
 					this.__checknum,
 					'getAllEventsFromPeriod',
@@ -279,8 +297,14 @@ qx.Class.define('eyeos.calendar.Controller', {
 					}(id),
 					this
 				);*/
-                this.refreshEventsCalendar(true);
-			}
+			//}
+            if(data.calendars.length > 0) {
+                this.refreshEventsCalendar(false);
+            } else {
+                this.__application.closeCursor();
+                this.__application.enabledWindowsComponents(true);
+            }
+
 		},
 		__onGroupCalendarsLoaded: function(data) {
 			if (data.length == 0) {
@@ -444,8 +468,25 @@ qx.Class.define('eyeos.calendar.Controller', {
 				calendar.setTimezone(0);		//FIXME
 			}
 			var calendarData = eyeos.calendar.model.Calendar.toJson(calendar);
-			eyeos.callMessage(this.__checknum, 'createCalendar', calendarData, function(calendarData) {
-				this.__onCalendarSaved(calendar, calendarData);
+            var params = new Object();
+            params.calendarData = calendarData;
+            params.typeCalendar = this.getTypeCalendar();
+            params.isCloud = false;
+            if(this.getTypeCalendar() !== tr('EyeOS')) {
+                params.isCloud = true;
+            }
+
+            this.__application.showCursor();
+            this.__application.enabledWindowsComponents(false);
+
+			eyeos.callMessage(this.__checknum, 'createCalendar', params, function(result) {
+                this.__application.closeCursor();
+                this.__application.enabledWindowsComponents(true);
+                if(result.status == 'OK') {
+                    this.__onCalendarSaved(calendar, result.calendarData);
+                } else {
+                    eyeos.error(tr('Error create calendar'));
+                }
                 this.__refreshCalendars();
 			}, this);
 		},
@@ -462,13 +503,30 @@ qx.Class.define('eyeos.calendar.Controller', {
             this.closeTimerCalendar();
             this.closeTimer();
 			var calendarData = eyeos.calendar.model.Calendar.toJson(calendar);
-			eyeos.callMessage(this.__checknum, 'deleteCalendar', calendarData, function(calendarData) {
-                if (calendarData == null ){
+            var params = new Object();
+            params.calendarData = calendarData;
+            params.typeCalendar = this.getTypeCalendar();
+            params.isCloud = false;
+            if(this.getTypeCalendar() !== tr('EyeOS')) {
+                params.isCloud = true;
+            }
+            this.__application.showCursor();
+            this.__application.enabledWindowsComponents(false);
+			eyeos.callMessage(this.__checknum, 'deleteCalendar', params, function(result) {
+                this.__application.closeCursor();
+                this.__application.enabledWindowsComponents(true);
+                if(result.status === 'OK') {
+                    this.__onCalendarDeleted(calendar,result.calendars)
+                } else {
+                    eyeos.error(tr('Error delete calendar'));
+                }
+                this.__refreshCalendars();
+                /*if (calendarData == null ){
                     eyeos.alert(tr("Primary calendar can't be deleted"));
                 } else{
                     this.__onCalendarDeleted(calendar, calendarData);
                 }
-                this.__refreshCalendars();
+                this.__refreshCalendars();*/
             }, this);
 		},
 		deleteRemoteCalendar: function(calendar) {
@@ -494,8 +552,30 @@ qx.Class.define('eyeos.calendar.Controller', {
 				this.__onEventDeleted(event);
 				return;
 			}
-			eyeos.callMessage(
-				this.__checknum,
+
+            var eventData = eyeos.calendar.model.Event.toJson(event);
+            var params = new Object();
+            params.eventData = eventData;
+            params.typeCalendar = this.getTypeCalendar();
+            params.isCloud = false;
+            if(this.getTypeCalendar() !== tr('EyeOS')) {
+                params.isCloud = true;
+            }
+
+            this.closeTimer();
+            this.__application.showCursor();
+            this.__application.enabledWindowsComponents(false);
+            eyeos.callMessage(this.__checknum,'deleteEvent',params,function(result) {
+                if(result.status === 'KO') {
+                    eyeos.error(tr('Error delete event'));
+                }
+                this.__application.closeCursor();
+                this.__application.enabledWindowsComponents(true);
+                this.refreshEventsCalendar(false);
+            },this);
+
+			/*eyeos.callMessage(
+                this.__checknum,
 				'deleteEvent',
 				{
 					eventId: event.getId(), dtstart:startTime.getTime() / 1000, isDeleteAll:deleteAll, groupId:event.getEventGroup(),calendarId:event.getCalendar().getId(),
@@ -504,19 +584,19 @@ qx.Class.define('eyeos.calendar.Controller', {
                     repeatType: event.getRepeatType(),description: event.getDescription()
 				},
 				function(e) {	//console.log(this.__eventModels)
-                      /*if(deleteAll == '1' && e.length > 0){
+                      if(deleteAll == '1' && e.length > 0){
                           for(var i = 0; i < e.length; i++){
                               var evn = this.__eventModels[e[i]]; 
                               this.__onEventDeleted(evn);
                           }
                       } else {
                           this.__onEventDeleted(event);
-                      }*/
+                      }
 
-                     this.refreshEventsCalendar(event.getCalendar());
+                     this.refreshEventsCalendar(false);
 				},
 				this
-			);
+			);*/
 		},
 		
 		dispose: function() {
@@ -616,13 +696,21 @@ qx.Class.define('eyeos.calendar.Controller', {
 		init: function() {
 			eyeos.consoleInfo('[eyeos.calendar.Controller] init() Init started');
 			//...
+            this.setCalendars([]);
+            this.__eventModels = {};
 			
 			qx.event.Timer.once(function(e) {
                 eyeos.callMessage(this.__checknum, 'getMaxEventLimit', ['test'], function(maxLimit){
                     this.setMaxEventLimt(maxLimit);
                 }, this);
-				eyeos.callMessage(this.__checknum, 'getAllUserCalendars', null, this.__onUserCalendarsLoaded, this);
-				eyeos.callMessage(this.__checknum, 'getAllGroupCalendars', null, this.__onGroupCalendarsLoaded, this);
+                var params = new Object();
+                params.typeCalendar = this.getTypeCalendar();
+                params.isCloud = false;
+                if(this.getTypeCalendar() !== tr('EyeOS')) {
+                    params.isCloud = true;
+                }
+				eyeos.callMessage(this.__checknum, 'getAllUserCalendars', params, this.__onUserCalendarsLoaded, this);
+				//eyeos.callMessage(this.__checknum, 'getAllGroupCalendars', null, this.__onGroupCalendarsLoaded, this);
 				/*try {
 					eyeos.callMessage(this.__checknum, 'getAllRemoteCalendars', null, this.__onRemoteCalendarsLoaded, this);
 				} catch (error) {
@@ -662,11 +750,31 @@ qx.Class.define('eyeos.calendar.Controller', {
 				if (unsavedEvent == null) {
 					throw '[eyeos.calendar.Controller] saveEvent() Unable to save event: object not found!';
 				}
-				eyeos.callMessage(this.__checknum, 'createEvent', eventData, function(eventData) {
-					this.__onEventSaved(event, eventData,'NEW');
-					if (callback) {
-						callback.call(callbackContext);
-					}
+
+                var params = new Object();
+                params.eventData = eventData;
+                params.typeCalendar = this.getTypeCalendar();
+                params.isCloud = false;
+                if(this.getTypeCalendar() !== tr('EyeOS')) {
+                    params.isCloud = true;
+                }
+
+                this.closeTimer();
+                this.__application.showCursor();
+                this.__application.enabledWindowsComponents(false);
+				eyeos.callMessage(this.__checknum, 'createEvent', params, function(result) {
+                    this.__application.closeCursor();
+                    this.__application.enabledWindowsComponents(true);
+                    if(result.status === 'OK') {
+                        this.__onEventSaved(event,result.eventData, 'NEW');
+                        //this.__refresh(true);
+                        if (callback) {
+                            callback.call(callbackContext);
+                        }
+                    } else {
+                        eyeos.error(tr('Error create event'));
+                        this.__refresh(true);
+                    }
 				}, this, {
                           onException: function(e) {
 
@@ -683,15 +791,40 @@ qx.Class.define('eyeos.calendar.Controller', {
                 if (callback){
                     eventData['isEditAll'] = callbackContext.getIsEditAll();
                 }
-				eyeos.callMessage(this.__checknum, 'updateEvent', eventData, function(eventData) {
-					if (callback){	
-                        if(callbackContext.getIsEditAll()){ 
-                                this.__onEventSaved(event,eventData,'EDIT'); //console.log(eventData);
-                         } else if(eventData.length > 0){	
-                                this.__onEventSaved(event,eventData,'EDIT');
-                         }else {								
+
+                var params = new Object();
+                params.eventData = eventData;
+                params.typeCalendar = this.getTypeCalendar();
+                params.isCloud = false;
+                if(this.getTypeCalendar() !== tr('EyeOS')) {
+                    params.isCloud = true;
+                }
+                this.closeTimer();
+                this.__application.showCursor();
+                this.__application.enabledWindowsComponents(false);
+				eyeos.callMessage(this.__checknum, 'updateEvent', params, function(result) {
+                    this.__application.closeCursor();
+                    this.__application.enabledWindowsComponents(true);
+                    if(result.status === 'OK') {
+                        if (callback) {
+                            /*if (callbackContext.getIsEditAll()) {
+                                this.__onEventSaved(event, result.eventData, 'EDIT'); //console.log(eventData);
+                            } else if (result.eventData.length > 0) {
+                                this.__onEventSaved(event, result.eventData, 'EDIT');
+                            } else {
                                 callback.call(callbackContext);
-                         }
+                            }*/
+
+                            this.__onEventSaved(event,result.eventData, 'EDIT');
+                            //this.__refresh(true);
+                            if (callback) {
+                                callback.call(callbackContext);
+                            }
+
+                        }
+                    } else {
+                        eyeos.error(tr('Error update event'));
+                        this.__refresh(true);
                     }
 				}, this, {
                       onException: function(e) {
@@ -782,6 +915,11 @@ qx.Class.define('eyeos.calendar.Controller', {
                 params.calendar = new Array();
                 params.periodFrom = null;
                 params.periodTo = null;
+                params.isCloud = false;
+                params.typeCalendar = this.getTypeCalendar();
+                if(this.getTypeCalendar() !== tr('EyeOS')) {
+                    params.isCloud = true;
+                }
 
                 for(var id in this.getCalendars())
                 {
@@ -794,8 +932,67 @@ qx.Class.define('eyeos.calendar.Controller', {
                 }
 
                 if(params.calendar.length > 0) {
+                    if(refresh === false) {
+                        this.__application.showCursor();
+                        this.__application.enabledWindowsComponents(false);
+                    }
+
                     eyeos.callMessage(this.__checknum,'getAllEventsFromPeriod',params,function(calendars) {
-                        if(calendars && calendars.length > 0 && this.__tieneEventos(calendars)) {
+                        this.__application.closeCursor();
+                        this.__application.enabledWindowsComponents(true);
+                        if(calendars.status === 'OK' && calendars.events.length > 0 &&
+                            this.__tieneEventos(calendars.events)) {
+
+                            var change = false;
+                            var events = [];
+                            for(var i in calendars.events) {
+                                var eventsOld = [];
+                                var eventsNew = [];
+                                if(this.__eventModels !== {} && !change) {
+                                    if(calendars.events[i].length > 0) {
+                                        eventsOld = this.__getEventsByPeriod(calendars.events[i][0].calendarId);
+                                        this.deleteEventModels(calendars.events[i][0].calendarId);
+                                    } else {
+                                        this.__eventModels = {};
+                                        change = true;
+                                    }
+                                }
+
+                                for (var j = 0; j < calendars.events[i].length; j++) {
+                                    calendars.events[i][j].calendar = this.getCalendars()[calendars.events[i][j].calendarId];
+                                    var event = eyeos.calendar.model.Event.fromJson(calendars.events[i][j]);
+                                    this.__eventModels[event.getId()] = event;
+                                    events.splice(events.length,0,event);
+                                }
+
+                                if(!change) {
+                                    if(calendars.events[i].length > 0) {
+                                        var eventsNew = this.__getEventsByPeriod(calendars.events[i][0].calendarId);
+                                        console.log('LongitudOld:' + eventsOld.length);
+                                        console.log('LongitudNew:' + eventsNew.length);
+                                        change = this.__getDataChange(eventsOld,eventsNew);
+                                    } else {
+                                        change = true;
+                                    }
+                                }
+
+                            }
+
+                            console.log('Change:' + change + 'Refresh:' + refresh);
+                            if((change && refresh) || !refresh) {
+                                console.log('Refrescando');
+                                this.fireDataEvent('refreshEventsCalendar',events);
+                            }
+
+
+                            this.__refresh(true);
+
+                        } else {
+                            this.__eventModels = {};
+                            this.fireDataEvent('refreshEventsCalendar',[]);
+                            this.__refresh(true);
+                        }
+                        /*if(calendars && calendars.length > 0 && this.__tieneEventos(calendars)) {
 //                            this.__eventModels = {};
                             var change = false;
                             var events = [];
@@ -834,7 +1031,7 @@ qx.Class.define('eyeos.calendar.Controller', {
                         } else {
                             this.fireDataEvent('refreshEventsCalendar',[]);
                             this.__refresh(true);
-                        }
+                        }*/
                     },this);
                 }
             }
@@ -842,9 +1039,13 @@ qx.Class.define('eyeos.calendar.Controller', {
         },
 
         __refresh: function(refresh) {
-            var that = this;
-            var reffunction = function(){that.refreshEventsCalendar(refresh)};
-            this.__timer = setTimeout(reffunction,10000);
+            if(this.getTypeCalendar() !== tr('EyeOS')) {
+                var that = this;
+                var reffunction = function () {
+                    that.refreshEventsCalendar(refresh)
+                };
+                this.__timer = setTimeout(reffunction, 10000);
+            }
         },
 
         __getEventsByPeriod: function(id) {
@@ -859,7 +1060,6 @@ qx.Class.define('eyeos.calendar.Controller', {
 
         __getDataChange: function(eventsOld,eventsNew) {
             var resp = true;
-
             if(eventsOld.length > 0) {
                 if(eventsOld.length == eventsNew.length) {
                     resp = false;
@@ -905,10 +1105,51 @@ qx.Class.define('eyeos.calendar.Controller', {
         },
 
         __refreshCalendars: function() {
-            if(!this.close) {
+            if(!this.close && this.getTypeCalendar() !== tr('EyeOS')) {
                 this.closeTimerCalendar();
-                eyeos.callMessage(this.__checknum, 'getAllUserCalendars', null,function(calendars) {
-                    if(calendars) {
+                var params = new Object();
+                params.typeCalendar = this.getTypeCalendar();
+                params.isCloud = false;
+                if(this.getTypeCalendar() !== tr('EyeOS')) {
+                    params.isCloud = true;
+                }
+
+                eyeos.callMessage(this.__checknum, 'getAllUserCalendars', params,function(data) {
+                    if(data.status === 'OK') {
+                        var listCalendars ={};
+                        for(var i in data.calendars) {
+                            var cal = eyeos.calendar.model.Calendar.fromJson(data.calendars[i]);
+                            cal.addListener('changeVisibility', this.__onCalendarChangeVisibility, this);
+                            cal.addListener('changeColor', this.__onChangeCalendarPreferences, this);
+                            listCalendars[cal.getId()] = cal;
+
+                            if(this.getCalendars()[cal.getId()]) {
+                             //console.log('Visible:' + this.getCalendars()[cal.getId()].isVisible());
+                                listCalendars[cal.getId()].removeListener('changeVisibility', this.__onCalendarChangeVisibility, this);
+                                listCalendars[cal.getId()].setVisible(this.getCalendars()[cal.getId()].isVisible());
+                                listCalendars[cal.getId()].addListener('changeVisibility', this.__onCalendarChangeVisibility, this);
+                            }
+                        }
+
+                        var change = this.__calendarsChanged(listCalendars);
+                        if(change) {
+                            this.setCalendars(listCalendars);
+                            this.fireDataEvent("changeCalendars");
+                            this.refreshEventsCalendar(false);
+                        }
+                    } else {
+                        eyeos.error(tr('Error load calendars'));
+                    }
+
+                    if(this.getTypeCalendar() !== tr('EyeOS')) {
+                        var that = this;
+                        var reffunction = function () {
+                            that.__refreshCalendars()
+                        };
+                        this.__timerCalendar = setTimeout(reffunction, 20000);
+                    }
+
+                    /*if(calendars) {
                         var listCalendars ={};
                         for(var i in calendars) {
                             var cal = eyeos.calendar.model.Calendar.fromJson(calendars[i])
@@ -928,7 +1169,7 @@ qx.Class.define('eyeos.calendar.Controller', {
 
                     var that = this;
                     var reffunction = function(){that.__refreshCalendars()};
-                    this.__timerCalendar = setTimeout(reffunction,20000);
+                    this.__timerCalendar = setTimeout(reffunction,20000);*/
 
                 }, this);
             }
@@ -960,6 +1201,11 @@ qx.Class.define('eyeos.calendar.Controller', {
            }
 
             return resp;
+        },
+        selectCalendars: function() {
+            eyeos.callMessage(this.__checknum, 'getTypeCalendars', null,function(calendars) {
+                this.__application.selectCalendars(calendars);
+            }, this);
         }
 	}
 });

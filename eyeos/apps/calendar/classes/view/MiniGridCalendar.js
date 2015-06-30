@@ -123,6 +123,9 @@ qx.Class.define('eyeos.calendar.view.MiniGridCalendar', {
 		
 		destruct : function() {
 			//TODO
-		}
+		},
+        enabledCalendar: function(enabled) {
+            this._labelsGrid.setEnabled(enabled);
+        }
 	}
 });

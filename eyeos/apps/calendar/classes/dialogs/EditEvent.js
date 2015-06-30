@@ -82,6 +82,7 @@ qx.Class.define('eyeos.calendar.dialogs.EditEvent', {
           __eventView: null,
 
           __saveChanges: function() {
+              var save = true;
               var startTime = this.__startDateField.getValue();
               startTime.setHours(0);
               startTime.setMinutes(0);
@@ -98,7 +99,7 @@ qx.Class.define('eyeos.calendar.dialogs.EditEvent', {
 
               if (endTime.getTime() <= startTime.getTime()) {
                   eyeos.alert(tr('Please specify a correct time range.'));
-                  return;
+                  return false;
               }
 
               this.__eventModel.setSubject(this.__subjectTextField.getValue());
@@ -134,6 +135,7 @@ qx.Class.define('eyeos.calendar.dialogs.EditEvent', {
                       this.__eventModel.getCalendar().setVisible(true);
                   }
               }, this);
+              return save;
            },
            _getRepeatType:function(fulVal){
                       switch(fulVal){
@@ -268,6 +270,19 @@ qx.Class.define('eyeos.calendar.dialogs.EditEvent', {
                   }
                   this.__lastEndTime=item;
               }
+
+              if(this.__eventModel.getId() == null) {
+                  var selection = this.__endTimeSelectBox.getSelection();
+                  if(selection.length > 0) {
+                      var items = this.__endTimeSelectBox.getChildren();
+                      var index = this.__endTimeSelectBox.indexOf(selection[0]);
+                      if(index !== - 1 && (index + 1) < 48) {
+                          this.__endTimeSelectBox.setSelection([this.__endTimeSelectBox.getChildren()[index + 1]]);
+                          this.__endItem= (index + 1);
+                          this.__lastEndTime = this.__endTimeSelectBox.getChildren()[index + 1];
+                      }
+                  }
+              }
               whenFieldsContainer.add(this.__endTimeSelectBox, {row: 1, column: 1});
               this.__allDayCheckBox = new qx.ui.form.CheckBox(tr('All Day')).set({
                   enabled: true
@@ -292,10 +307,13 @@ qx.Class.define('eyeos.calendar.dialogs.EditEvent', {
               }, this);
               whenFieldsContainer.add(this.__allDayCheckBox, {row: 0, column: 2});
               //Repeats
-              this.add(new qx.ui.basic.Label(tr('Repeats:')), {row: rowIdx, column: 0});
+              this.add(new qx.ui.basic.Label(tr('Repeats:')).set({
+                  visibility: 'excluded'
+              }), {row: rowIdx, column: 0});
               this.__repeatsSelectBox = new qx.ui.form.SelectBox().set({
                   enabled: true,
-                  allowGrowX: false
+                  allowGrowX: false,
+                  visibility : 'excluded'
               });
               // repeats options
               this.__repeatsSelectBoxItem1 = new qx.ui.form.ListItem(tr("None")).set({model:'None'});
@@ -329,10 +347,13 @@ qx.Class.define('eyeos.calendar.dialogs.EditEvent', {
               }
               this.add(this.__repeatsSelectBox, {row: rowIdx++, column: 1});
               //final
-              this.add(new qx.ui.basic.Label(tr('Final:')), {row: rowIdx, column: 0});
+              this.add(new qx.ui.basic.Label(tr('Final:')).set({
+                  visibility: 'excluded'
+              }), {row: rowIdx, column: 0});
               this.__finalSelectBox = new qx.ui.form.SelectBox().set({
                   enabled: true,
-                  allowGrowX: false
+                  allowGrowX: false,
+                  visibility: 'excluded'
               });
               // final options
               this.__finalSelectBoxItem1 = new qx.ui.form.ListItem(tr("None")).set({model:'None'});
@@ -360,7 +381,9 @@ qx.Class.define('eyeos.calendar.dialogs.EditEvent', {
                     }
               }, this);
               
-              var timesLabel = new qx.ui.basic.Label(tr('times (max: '+this.__controller.getMaxEventLimt().toString()+')'));
+              var timesLabel = new qx.ui.basic.Label(tr('times (max: '+this.__controller.getMaxEventLimt().toString()+')')).set({
+                  visibility: 'excluded'
+              });
               var finalSubFieldsContainer = new qx.ui.container.Composite(new qx.ui.layout.Grid(5, 5));
               switch(parseInt(this.__eventModel.getFinalType()))
               {
@@ -400,12 +423,14 @@ qx.Class.define('eyeos.calendar.dialogs.EditEvent', {
               this.__repeatsSelectBox.addListener("changeSelection", function(e) {
                   this.setVisibilityOfFinal();
               }, this);
+
               this.add(new qx.ui.menu.Separator(), {row: rowIdx++, column: 0, colSpan: 2});
               // Calendar
               this.add(new qx.ui.basic.Label(tr('Calendar')+':'), {row: rowIdx, column: 0});
               this.__calendarSelectBox = new qx.ui.form.SelectBox().set({
                   allowGrowX: false
               });
+
               var calendars = this.__controller.getCalendars();
               for(var id in calendars) {
                   if (calendars[id].isVisible()) {
@@ -488,12 +513,12 @@ qx.Class.define('eyeos.calendar.dialogs.EditEvent', {
                               menu.open();
                      } else {
                           this.saveAndClose();
-                          var sDate=this.__startDateField.getValue();
+                          /*var sDate=this.__startDateField.getValue();
                           if(parseInt(sDate.getDay())== 0)
                           {
                               sDate.setDate(sDate.getDate() + 1);
                           }
-                          this.__controller.setCalendarSelectedDate(sDate);
+                          this.__controller.setCalendarSelectedDate(sDate);*/
                     }
               }, this);
               buttonsContainer.add(saveButton);
@@ -520,7 +545,7 @@ qx.Class.define('eyeos.calendar.dialogs.EditEvent', {
                   this.finalFieldsContainer.setVisibility('excluded');
         },
         cancel: function() {
-              if (this.__eventModel.getId() == null) {
+              /*if (this.__eventModel.getId() == null) {
                   this.__controller.cancelNewEvent(this.__eventModel);
               }
               var sDate=this.__startDateField.getValue();
@@ -528,7 +553,7 @@ qx.Class.define('eyeos.calendar.dialogs.EditEvent', {
               {
                   sDate.setDate(sDate.getDate() + 1);
               }
-              this.__controller.setCalendarSelectedDate(sDate);
+              this.__controller.setCalendarSelectedDate(sDate);*/
               this.close();
         },
         close: function() {
@@ -544,8 +569,9 @@ qx.Class.define('eyeos.calendar.dialogs.EditEvent', {
               this.__eventView.setResizable(true, false, true, false);
         },
         saveAndClose: function() {
-              this.__saveChanges();
-              this.close();
+              if(this.__saveChanges() === true) {
+                  this.close();
+              }
         },
         open: function(e) {
               this.__eventView.setMoveable(false);
@@ -634,12 +660,12 @@ qx.Class.define('eyeos.calendar.dialogs.EditEvent', {
                       deleteThisOnly.addListener('execute', function(e) {
                               this.setIsEditAll(false);
                               this.saveAndClose();
-                              var sDate=this.__startDateField.getValue();
+                              /*var sDate=this.__startDateField.getValue();
                               if(parseInt(sDate.getDay())== 0)
                               {
                                   sDate.setDate(sDate.getDate() + 1);
                               }
-                              this.__controller.setCalendarSelectedDate(sDate);
+                              this.__controller.setCalendarSelectedDate(sDate);*/
                       }, this);
                       menu.add(new qx.ui.menu.Separator());
                       var deleteAll = new qx.ui.menu.Button(tr('Edit all events of this series'), 'index.php?extern=images/calendar/edit_all.png')

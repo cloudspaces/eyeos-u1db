@@ -73,6 +73,9 @@ qx.Class.define('eyeos.calendar.view.BlockCalendar', {
 		_miniGridCalendar: null,
 		_periodMode: null,
 		_periodModeButtons: null,
+        _previousMonthLabel: null,
+        _nextMonthLabel: null,
+
 		
 		_applyController: function(value, old) {
 			value.addListener('changeCalendarSelectedDate', function(e) {
@@ -98,13 +101,13 @@ qx.Class.define('eyeos.calendar.view.BlockCalendar', {
 				padding: 2
 			});
 			// Previous (<<)
-			var previousMonthLabel = new qx.ui.basic.Label('«').set({
+			this._previousMonthLabel = new qx.ui.basic.Label('«').set({
 				font: new qx.bom.Font(14, ['Sans-serif']),
 				paddingLeft: 4
 			});
-			previousMonthLabel.setCursor('pointer');
-			previousMonthLabel.addListener('click', this._onPreviousMonthClick, this);
-			monthSelector.add(previousMonthLabel);
+			this._previousMonthLabel.setCursor('pointer');
+			this._previousMonthLabel.addListener('click', this._onPreviousMonthClick, this);
+			monthSelector.add(this._previousMonthLabel);
 			
 			// Current (name + year)
 			this._currentMonthLabel = new qx.ui.basic.Label().set({
@@ -117,13 +120,13 @@ qx.Class.define('eyeos.calendar.view.BlockCalendar', {
 			monthSelector.add(this._currentMonthLabel, {flex: 1});
 			
 			// Next (>>)
-			var nextMonthLabel = new qx.ui.basic.Label('»').set({
+			this._nextMonthLabel = new qx.ui.basic.Label('»').set({
 				font: new qx.bom.Font(14, ['Sans-serif']),
 				paddingRight: 4
 			});
-			nextMonthLabel.setCursor('pointer');
-			nextMonthLabel.addListener('click', this._onNextMonthClick, this);
-			monthSelector.add(nextMonthLabel);
+			this._nextMonthLabel.setCursor('pointer');
+			this._nextMonthLabel.addListener('click', this._onNextMonthClick, this);
+			monthSelector.add(this._nextMonthLabel);
 			this.add(monthSelector);
 			
 			
@@ -420,6 +423,32 @@ qx.Class.define('eyeos.calendar.view.BlockCalendar', {
 		
 		destruct : function() {
 			//TODO
-		}
+		},
+
+        enabledCalendar: function(enabled) {
+            var cursor = 'default';
+            if(enabled) {
+                cursor = 'pointer';
+            }
+
+            this._previousMonthLabel.set({
+                enabled: enabled,
+                cursor: cursor
+            });
+
+            this._currentMonthLabel.set({
+                enabled: enabled,
+                cursor: cursor
+            });
+
+            this._nextMonthLabel.set({
+                enabled: enabled,
+                cursor: cursor
+            });
+
+            this._atomsGrid.setEnabled(enabled);
+            this._miniGridCalendar.enabledCalendar(enabled);
+
+        }
 	}
 });

@@ -61,9 +61,13 @@ class ApiCalendarManager
             $eventsCalendar = $this->calendarManager->getAllEventsByPeriod($cal,null,null);
             $event = new stdClass();
             $event->user = $user;
-            $event->calendar = $cal->getName();
+            $name = $cal->getName();
+            if(strrpos($name,$cloud . '_') !== false) {
+                $name = substr($name, strrpos($name, '_') + 1);
+            }
+            $event->calendar = $name;
             $eventsServer = $this->selectEvent($cloud,$token,$event,$resourceUrl);
-            if(count($eventsServer) > 0) {
+            if(count($eventsServer) > 0 && !isset($eventsServer->error)) {
                 if(count($eventsCalendar) == 0) {
                     $arrayInsert = $eventsServer;
                 } else {
@@ -104,8 +108,10 @@ class ApiCalendarManager
                     }
                 }
             } else {
-                if(count($eventsCalendar) > 0) {
-                    $arrayDelete = $eventsCalendar;
+                if(!isset($eventsServer->error)) {
+                    if (count($eventsCalendar) > 0) {
+                        $arrayDelete = $eventsCalendar;
+                    }
                 }
             }
 
@@ -139,7 +145,7 @@ class ApiCalendarManager
         $arrayDelete = array();
         $arrayUpdate = array();
 
-        if(count($calendarsServer) > 0) {
+        if(count($calendarsServer) > 0 && !isset($calendarsServer->error)) {
             if(count($calendars) == 0) {
                 $arrayInsert = $calendarsServer;
             } else {
@@ -185,8 +191,14 @@ class ApiCalendarManager
                 }
             }
         } else {
-            if(count($calendars) > 0) {
-                $arrayDelete = $calendars;
+            if(!isset($calendarsServer->error)) {
+                if (count($calendars) > 0) {
+                    foreach($calendars as $calendar) {
+                        if(strrpos($calendar->getName(),$cloud . '_') !== false) {
+                            array_push($arrayDelete,$calendar);
+                        }
+                    }
+                }
             }
         }
 

@@ -282,18 +282,22 @@ qx.Class.define('eyeos.calendar.view.Event', {
 		},
 		_onClickDetailled: function(e) {
 			if (this.__simpleClick && e.getButton() == 'left') {
-				var dialog = new eyeos.calendar.dialogs.EditEvent(this); 
-				dialog.open(e);
-				e.stopPropagation();
+                if(this.getController().getEnabled() === true) {
+                    var dialog = new eyeos.calendar.dialogs.EditEvent(this);
+                    dialog.open(e);
+                    e.stopPropagation();
+                }
 			}
 			this.__simpleClick = true;
 		},
 		
 		_onClickInline: function(e) {
 			if (this.__simpleClick && e.getButton() == 'left') {
-				 var dialog = new eyeos.calendar.dialogs.EditEvent(this); 
-				dialog.open(e);
-				e.stopPropagation();
+                if(this.getController().getEnabled() === true) {
+                    var dialog = new eyeos.calendar.dialogs.EditEvent(this);
+                    dialog.open(e);
+                    e.stopPropagation();
+                }
 			}
 			this.__simpleClick = true;
 		},

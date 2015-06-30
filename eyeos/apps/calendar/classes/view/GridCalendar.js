@@ -354,7 +354,7 @@ qx.Class.define('eyeos.calendar.view.GridCalendar', {
 				
 				// Add today marker
 				if (date.isSameDay(now)) {
-					var todayMarker = new qx.html.Element('div');
+					/*var todayMarker = new qx.html.Element('div');
 					todayMarker.setStyles({
 						'position': 'relative',
 						'display': 'block',
@@ -367,7 +367,12 @@ qx.Class.define('eyeos.calendar.view.GridCalendar', {
 						'z-index': '-1',
 						'top': '-100%'
 					});
-					td.add(todayMarker);
+					td.add(todayMarker);*/
+                    //if(this.getController().getCalendarMode() !=  eyeos.calendar.Constants.PERIOD_MODE_DAY) {
+                    if(this.getController().getCalendarPeriodMode() != eyeos.calendar.Constants.PERIOD_MODE_DAY) {
+                        td.setStyle('background-color', '#ECF2F9');
+                    }
+
 				}
 				
 				date.setDate(date.getDate() + 1);
@@ -421,7 +426,6 @@ qx.Class.define('eyeos.calendar.view.GridCalendar', {
                 this.clearEvents();
                 this.displayEvents(e.getData());
             },this);
-			
 		},
 		
 		_init: function() {
@@ -432,7 +436,7 @@ qx.Class.define('eyeos.calendar.view.GridCalendar', {
 			//
 			var headersContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox(-1));
 			this._rowsHeaderSpacerLeft = new qx.ui.core.Spacer().set({
-				width: this.self(arguments).TIMES_HEADER_WIDTH + 2,
+				width: this.self(arguments).TIMES_HEADER_WIDTH  + 2,
 				allowStretchX: false
 			});
 			headersContainer.add(this._rowsHeaderSpacerLeft);
@@ -445,7 +449,8 @@ qx.Class.define('eyeos.calendar.view.GridCalendar', {
 						allowGrowX: true,
 						textColor: '#b2b5b8',
 						backgroundColor: '#fdfdfd',
-						textAlign: 'center'
+						textAlign: 'center',
+                        width: 59
 					}),
 					allDayEventsContainer: new qx.ui.container.Composite(new qx.ui.layout.VBox(1)).set({
 						allowGrowX: true,
@@ -526,6 +531,8 @@ qx.Class.define('eyeos.calendar.view.GridCalendar', {
 				var weekDay = qx.locale.Date.getDayName('abbreviated', iDate.getDay());
 				this.__headerComponents[i].dayLabel.setValue(weekDay);
 				iDate.setDate(iDate.getDate() + 1);
+                this.__headerComponents[i].allDayEventsContainer.setDecorator(null);
+
 			}
 		},
 		
@@ -568,8 +575,8 @@ qx.Class.define('eyeos.calendar.view.GridCalendar', {
 				this._rowsHeaderSpacerLeft.setWidth(this.self(arguments).TIMES_HEADER_WIDTH + 2);
 				this._rowsHeaderSpacerRight.setWidth(this.self(arguments).SCROLLBAR_WIDTH - 1);
 			} else {
-				this._rowsHeaderSpacerLeft.setWidth(0);
-				this._rowsHeaderSpacerRight.setWidth(0);
+				this._rowsHeaderSpacerLeft.setWidth(1);
+				this._rowsHeaderSpacerRight.setWidth(2);
 			}
 		},
 		
@@ -673,6 +680,7 @@ qx.Class.define('eyeos.calendar.view.GridCalendar', {
 			var controller = this.getController();
             controller.closeTimer();
 			var calendars = controller.getCalendars();
+            var refresh = false;
 			for(var id in calendars) {
 				if (calendars[id].isVisible()) {
 					/*var events = this.getController().getAllEventsFromPeriod(
@@ -681,10 +689,16 @@ qx.Class.define('eyeos.calendar.view.GridCalendar', {
 						controller.getCalendarCurrentPeriod().end
 					);
 					this.displayEvents(events);*/
-                    controller.refreshEventsCalendar(calendars[id]);
+                    //controller.refreshEventsCalendar(calendars[id]);
+                    refresh = true;
 					//console.log(events);
 				}
 			}
+
+            if(refresh === true) {
+                controller.closeTimer();
+                controller.refreshEventsCalendar(false);
+            }
 			
 			calendars = controller.getGroupcalendars();
 			for(var id in calendars) {
@@ -716,6 +730,16 @@ qx.Class.define('eyeos.calendar.view.GridCalendar', {
 		
 		destruct : function() {
 			//TODO
-		}
+		},
+        showHeader: function(show) {
+            for(var i in this.__headerComponents) {
+                var visibility = 'hidden';
+                if(show) {
+                    visibility = 'visible';
+                }
+                this.__headerComponents[i].dayLabel.setVisibility(visibility);
+                this.__headerComponents[i].allDayEventsContainer.setVisibility(visibility);
+            }
+        }
 	}
 });

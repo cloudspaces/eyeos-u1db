@@ -63,13 +63,13 @@ qx.Class.define('eyeos.calendar.menu.Items', {
 			}]
 		},*/ {
 			name: tr('Calendar'),
-			id: 'Calendar',
-			subMenu: [{
+			id: 'Calendar'
+			/*subMenu: [{
 				name: tr('Settings'),
 				id: 'Settings',
 				image: 'configure.png',
 				cmd: 'settings'
-			}]
+			}]*/
 		}]
 	}
 });

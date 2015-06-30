@@ -123,9 +123,14 @@ class mongoDb:
             del document['_id']
             document['status'] = 'DELETED'
             self.db.collection.remove({"type":"calendar","user":user,"name":name,"cloud":cloud})
-            result = self.db.collection.find({"type":"event","user":user,"name":name,"cloud":cloud})
+            result = self.db.collection.find({"type":"calendar","user":user,"name":name,"cloud":cloud})
             if result.count() == 0:
-                return document;
+                self.db.collection.remove({"type":"event","user":user,"calendar":name})
+                result = self.db.collection.find({"type":"event","user":user,"calendar":name})
+                if result.count() == 0:
+                    return document;
+                else:
+                    return {"error":400,"descripcion":"Error al borrar calendario"}
             else:
                return {"error":400,"descripcion":"Error al borrar calendario"}
         else:

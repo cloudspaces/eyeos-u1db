@@ -305,6 +305,23 @@ var eyeos = {
 			}
 		}
 	},
+
+    error: function(message, callback, context) {
+        try {
+            var op = new eyeos.dialogs.OptionPane(
+                message,
+                eyeos.dialogs.OptionPane.ERROR_MESSAGE);
+            var d = op.createDialog(null, 'Error', callback, context).set({
+                modal: false
+            });
+            d.open();
+        } catch (e) {
+            alert(message);
+            if (typeof callback == 'function') {
+                callback.call(context);
+            }
+        }
+    },
 	
 	/**
 	 * Sends a request to the server.

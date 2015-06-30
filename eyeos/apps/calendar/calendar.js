@@ -61,6 +61,13 @@ qx.Class.define('eyeos.application.Calendar', {
 		
 		// Other
 		_controller: null,
+        _today: null,
+        _viewModeSelector: null,
+        _imageBack: null,
+        _labelBack: null,
+        _blockCalendar: null,
+        _myCalendars: null,
+        _cursor: null,
 		
 		_buildMenuBar: function() {
 			this.__menuBar = new eyeos.ui.menubar.MenuBar();
@@ -117,20 +124,20 @@ qx.Class.define('eyeos.application.Calendar', {
 			//
 			//	BLOCK CALENDAR (MINI-CALENDAR)
 			//
-			var blockCalendar = new eyeos.calendar.view.BlockCalendar().set({
+			this._blockCalendar = new eyeos.calendar.view.BlockCalendar().set({
 				controller: this._controller
 			});
 		
-			blockCalendar.setPeriodMode(eyeos.calendar.Constants.PERIOD_MODE_MONTH);		//TODO default mode will be configurable by the user
-			leftContainer.add(blockCalendar);
+			this._blockCalendar.setPeriodMode(eyeos.calendar.Constants.PERIOD_MODE_MONTH);		//TODO default mode will be configurable by the user
+			leftContainer.add(this._blockCalendar);
 			
 			//
 			//	MY CALENDARS
 			//
-			var myCalendars = new eyeos.calendar.view.MyCalendarsList().set({
+			this._myCalendars = new eyeos.calendar.view.MyCalendarsList().set({
 				controller: this._controller
 			});
-			leftContainer.add(myCalendars);
+			leftContainer.add(this._myCalendars);
 			
 			//
 			//	group CALENDARS
@@ -176,32 +183,57 @@ qx.Class.define('eyeos.application.Calendar', {
 			});
 			firstContainer.getLayout().setAlignY('bottom');
 			rightContainer.add(firstContainer);
-			var today = new qx.ui.form.Button(tr('Today')).set({
+			this._today = new qx.ui.form.Button(tr('Today')).set({
 				
 				/*allowGrowY: false,
 				decorator: btnDecorator,
 				cursor: 'pointer',
                 backgroundColor:"#e9e9e9",
-                marginRight:3*/				
+                marginRight:3*/
 			});
-			today.addListener('execute', function(e) {
+			this._today.addListener('execute', function(e) {
 				this._controller.setCalendarSelectedDate(new Date());
 				//console.log(this._controller);
 			}, this);
-			firstContainer.add(today, {flex: 1, width: '10%'});
+			firstContainer.add(this._today, {flex: 1, width: '10%'});
 			firstContainer.add(new qx.ui.core.Spacer(5))
 			var currentPeriodLabel = new eyeos.calendar.view.SimplePeriodDisplay().set({
 				controller: this._controller
 			});
 			firstContainer.add(currentPeriodLabel, {flex: 1, width: '25%'});
 			
-			var viewModeSelector = new eyeos.calendar.view.ViewModeSelector().set({
+			this._viewModeSelector = new eyeos.calendar.view.ViewModeSelector().set({
 				controller: this._controller
 			});
-			firstContainer.add(viewModeSelector, {flex: 1, width: '50%'});
+			firstContainer.add(this._viewModeSelector, {flex: 1, width: '40%'});
 			
 			// Spacer (right)
 			firstContainer.add(new qx.ui.core.Spacer(), {flex: 1, width: '15%'});
+
+            this._imageBack = new qx.ui.basic.Image().set({
+                width: 16,
+                height: 16,
+                source: "index.php?extern=images/16x16/actions/go-previous-view.png",
+                cursor: 'pointer'
+            });
+
+            this._imageBack.addListener('click',this.createSelectCalendars,this);
+
+            firstContainer.add(this._imageBack);
+
+            this._labelBack = new qx.ui.basic.Label(tr('Back')).set({
+                font: new qx.bom.Font(12, ['Sans-serif']).set({
+                    bold :true
+                }),
+                textColor: '#4f565c',
+                marginLeft: 5,
+                marginRight: 10,
+                cursor: 'pointer'
+            });
+            this._labelBack.addListener('click',this.createSelectCalendars,this);
+            firstContainer.add(this._labelBack);
+
+
 			//
 			//	SECOND ROW: Ribbon calendar
 			//
@@ -225,6 +257,8 @@ qx.Class.define('eyeos.application.Calendar', {
 			var gridCalendar = new eyeos.calendar.view.GridCalendar().set({
 				controller: this._controller
 			});
+            this._controller.setGridCalendar(gridCalendar);
+            gridCalendar.showHeader(false);
 			thirdContainer.add(gridCalendar, {flex: 1});
 			rightContainer.add(thirdContainer, {flex: 1});
 			return rightContainer;
@@ -278,30 +312,194 @@ qx.Class.define('eyeos.application.Calendar', {
 			// --For debug purposes only--
 			
 			// Initialize controller for view parts
-			this._controller = new eyeos.calendar.Controller(this._checknum);
-			this._controller.init();
-			this._controller.setMainWindow(this.__window);
+            this._controller = new eyeos.calendar.Controller(this._checknum,this);
+            this._controller.setMainWindow(this.__window);
 
             this.__window.addListener('beforeClose',function() {
+                this.__closeTimers();
                 this._controller.close = true;
-                this._controller.closeTimer();
-                this._controller.closeTimerCalendar();
+                this.closeCursor();
             },this);
 
-			//
-			//	MENUBAR
-			//
-			this.__window.add(this._buildMenuBar());
-			//
-			//	TOOLBAR
-			//
-			//this.__window.add(this._buildToolBar());  
-			//
-			//	WORKAREA
-			//
-			this.__window.add(this._buildWorkArea(), {flex: 1});
+            this.__window.addListener('appear',function() {
+                this.createSelectCalendars();
+            },this);
+
+            this.__window.addListener('resize',function() {
+                this.centerCursor();
+            },this);
+
+            this.__window.addListener('move',function() {
+                this.centerCursor();
+            },this);
+
 			this.__window.open();
-		}
+		},
+        __createCalendars: function(typeCalendar) {
+            this.__window.removeAll();
+            this.__window.setCaption(tr('Calendar') + '-' + tr(typeCalendar));
+            this._controller.setTypeCalendar(typeCalendar);
+
+            //
+            //	MENUBAR
+            //
+            this.__window.add(this._buildMenuBar());
+            //
+            //	TOOLBAR
+            //
+            //this.__window.add(this._buildToolBar());
+            //
+            //	WORKAREA
+            //
+            this.__window.add(this._buildWorkArea(), {flex: 1});
+            this.enabledWindowsComponents(false);
+            this.showCursor();
+            this._controller.setCalendarPeriodMode(eyeos.calendar.Constants.PERIOD_MODE_WEEK);
+            this._controller.init();
+        },
+        enabledWindowsComponents: function(enabled) {
+            var cursor = 'default';
+            if(enabled) {
+                cursor = 'pointer';
+            }
+
+            this._today.set({
+                enabled: enabled,
+                cursor: cursor
+            });
+
+            this._imageBack.set({
+                enabled: enabled,
+                cursor: cursor
+            });
+
+            this._labelBack.set({
+                enabled: enabled,
+                cursor: cursor
+            })
+
+            this._viewModeSelector.showSelector(enabled);
+            this._blockCalendar.enabledCalendar(enabled);
+            this._myCalendars.enabledCalendarList(enabled);
+            this._controller.setEnabled(enabled);
+        },
+        createSelectCalendars:function() {
+            this.__window.setCaption(tr('Calendar'));
+            this.__window.removeAll();
+            this.__closeTimers();
+            this._controller.setTypeCalendar(null);
+            this.closeCursor();
+
+            var cursor = new qx.ui.basic.Image().set({
+                width: 42,
+                height: 42,
+                source: "index.php?extern=images/ajax-loader-1.gif"
+            });
+            this.__centerCursor(cursor);
+            this._controller.selectCalendars();
+            this.__window.add(cursor);
+        },
+        __closeTimers: function() {
+            this._controller.closeTimer();
+            this._controller.closeTimerCalendar();
+        },
+        __centerCursor:function(cursor) {
+            var left = (this.__window.getWidth() - cursor.getWidth())/2;
+            var top = ((this.__window.getHeight() - cursor.getHeight())/2) - 40;
+            cursor.setMarginTop(top);
+            cursor.setMarginLeft(left);
+        },
+        selectCalendars: function(calendars) {
+            this.__window.removeAll();
+            var cals = [];
+            if(calendars.status == 'OK') {
+                for(var i in calendars.clouds) {
+                    if(calendars.clouds[i].permission === "true") {
+                        cals.push(calendars.clouds[i].cloud);
+                    }
+                }
+
+            } else {
+                eyeos.error(tr('Error load calendars'));
+            }
+            cals.push(tr('EyeOS'));
+
+            var labelCalendars = new qx.ui.basic.Label().set({
+                 value: tr('Calendars'),
+                 font: new qx.bom.Font(24, ["Lucida Grande", "Verdana"]).set({bold: true}),
+                 alignX: 'center',
+                 marginTop: 50
+            });
+
+            this.__window.add(labelCalendars);
+
+            var scroll = new qx.ui.container.Scroll().set({
+                allowStretchY: false,
+                allowStretchX: false,
+                width: 170,
+                height: 400,
+                alignX: 'center',
+                marginTop: 60
+            });
+
+            var containerCalendars = new qx.ui.container.Composite().set({
+                layout: new qx.ui.layout.VBox()
+            });
+            scroll.add(containerCalendars);
+            this.__window.add(scroll);
+
+            for(var i in cals) {
+                var containerCal = new qx.ui.container.Composite().set({
+                    layout: new qx.ui.layout.HBox(),
+                    marginBottom: 40
+                });
+
+                var imageCloud = new qx.ui.basic.Image().set({
+                    width: 32,
+                    height: 32,
+                    source: "index.php?extern=images/32x32/actions/go-next-view.png",
+                    cursor: 'pointer'
+                });
+
+                imageCloud.setUserData('cloud',cals[i]);
+                imageCloud.addListener('click',this.__cloudClick,this);
+
+                var labelCloud = new qx.ui.basic.Label().set({
+                    value: cals[i],
+                    font: new qx.bom.Font(18, ["Lucida Grande", "Verdana"]),
+                    marginTop: 4,
+                    marginLeft: 10,
+                    cursor: 'pointer'
+                });
+                labelCloud.setUserData('cloud',cals[i]);
+                labelCloud.addListener('click',this.__cloudClick,this);
+                containerCal.add(imageCloud);
+                containerCal.add(labelCloud);
+                containerCalendars.add(containerCal);
+            }
+        },
+        __cloudClick: function(e) {
+            var cloud = e.getCurrentTarget().getUserData('cloud');
+            this.__createCalendars(cloud);
+
+        },
+        showCursor: function() {
+            if(this._cursor == null) {
+                this._cursor = new eyeos.calendar.view.Cursor(this.__window);
+                this._cursor.open();
+            }
+        },
+        closeCursor: function() {
+            if(this._cursor != null) {
+                this._cursor.close();
+                this._cursor = null;
+            }
+        },
+        centerCursor: function() {
+            if(this._cursor != null) {
+                this._cursor.centerCursor(this.__window);
+            }
+        }
 	},
 	destruct : function() {
 		this._disposeObjects('_controller');
