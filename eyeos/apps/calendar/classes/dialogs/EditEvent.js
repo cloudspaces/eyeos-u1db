@@ -480,19 +480,21 @@ qx.Class.define('eyeos.calendar.dialogs.EditEvent', {
                   alignX: 'right'
               }));
               this.add(buttonsContainer, {row: rowIdx, column: 0, colSpan: 2});
-              var deleteButton = new qx.ui.form.Button(tr('Delete'));
-              deleteButton.addListener('click', function(e) {
-                    if (this.__eventModel.getEventGroup() > 0){
-                            var menu = this.__createDeleteMenu("group");
-                            menu.setOpener(deleteButton);
-                            e.stopPropagation();
-                            menu.open();
-                    } else {
-                        this.__controller.deleteEvent(this.__eventModel,0);
-                        this.cancel();
-                    }
-              }, this);
-              buttonsContainer.add(deleteButton);
+              if(this.__eventModel.getId() != null) {
+                  var deleteButton = new qx.ui.form.Button(tr('Delete'));
+                  deleteButton.addListener('click', function (e) {
+                      if (this.__eventModel.getEventGroup() > 0) {
+                          var menu = this.__createDeleteMenu("group");
+                          menu.setOpener(deleteButton);
+                          e.stopPropagation();
+                          menu.open();
+                      } else {
+                          this.__controller.deleteEvent(this.__eventModel, 0);
+                          this.cancel();
+                      }
+                  }, this);
+                  buttonsContainer.add(deleteButton);
+              }
               buttonsContainer.add(new qx.ui.core.Spacer(180));
               /*var applyButton = new qx.ui.form.Button(tr('Apply'));
               applyButton.addListener('execute', function(e) {
