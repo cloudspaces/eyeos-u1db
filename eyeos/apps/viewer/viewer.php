@@ -161,7 +161,8 @@ abstract class ViewerApplication extends EyeosApplicationExecutable {
 		if($type == 'convert2FLV'||$myExt == 'mov'||$myExt ==  '3gp'||$myExt=='wav'||$myExt=='wma'||$myExt == '3gpp'||$myExt == '3g2'||$myExt == 'mp4'||$myExt == 'mpg'||$myExt == 'mpv'||$myExt ==  'avi'||$myExt ==  'ogg'||$myExt ==  'ogv'||$myExt ==  'webm') {
 Logger::getLogger('VIEWEEER')->debug('$fileNameDestination before transcode: '.$myExt);
 			$mediaConverter = new MediaConverter();
-			$fileNameDestination = $mediaConverter->Convert($fileNameDestination, 'FLV');
+            $fileNameDestination = $mediaConverter->Convert($fileNameDestination, 'FLV');
+
 			$type = 'flv';
 Logger::getLogger('VIEWEEER')->debug('$fileNameDestination after transcode: '.$fileNameDestination);
 		}

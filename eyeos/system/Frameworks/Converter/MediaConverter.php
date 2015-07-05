@@ -83,7 +83,13 @@ class MediaConverter {
 
 		} else {
 			//Call the proper converter
-            return self::ConvertVLC($fileName, $format);
+            $avi = null;
+            Logger::getLogger('MediaConverter::ConvertVLC')->debug(strtolower($myFile->getExtension()));
+            $myExt = strtolower($myFile->getExtension());
+            if($myExt == 'avi') {
+                $avi = true;
+            }
+            return self::ConvertVLC($fileName, $format,$avi);
 			/*if($format == 'MP4') {
 				return self::video2mp4($fileName);
 			} else if($format == 'JPG') {
@@ -245,7 +251,7 @@ class MediaConverter {
 	 * @return:
 	 *	string	path of the converted file
 	 */
-	private function ConvertVLC($fileName, $format) {
+	private function ConvertVLC($fileName, $format, $avi = null) {
 		if (!isset($fileName) || !is_string($fileName)) {
 			throw new EyeInvalidArgumentException('Missing or invalid param $fileName');
 		}
@@ -304,7 +310,11 @@ class MediaConverter {
 		}
 
 		if ($video) {
-			$cmd = 'cvlc --play-and-exit --sout "#transcode{acodec='. $acodec .',vcodec='.$vcodec.',vb='.$vb.',ab='.$ab.',samplerate='.$samplerate.',fps='.$fps.',scale=1}:std{access=file,mux='.$mux.',dst='.escapeshellarg($this->pathOutputFile).'}" '.escapeshellarg($fileName);
+            if($avi == true) {
+                $cmd = 'ffmpeg -i ' . escapeshellarg($fileName) . ' -y -ab 56 -ar 44100 -b 200k -r 15 -f flv ' . escapeshellarg($this->pathOutputFile);
+            } else {
+                $cmd = 'cvlc --play-and-exit --sout "#transcode{acodec=' . $acodec . ',vcodec=' . $vcodec . ',vb=' . $vb . ',ab=' . $ab . ',samplerate=' . $samplerate . ',fps=' . $fps . ',scale=1}:std{access=file,mux=' . $mux . ',dst=' . escapeshellarg($this->pathOutputFile) . '}" ' . escapeshellarg($fileName);
+            }
 		} else {
 			$cmd = 'cvlc --play-and-exit --no-video --sout "#transcode{acodec='. $acodec .',ab='.$ab.',samplerate='.$samplerate.'}:std{access=file,mux='.$mux.',dst='.escapeshellarg($this->pathOutputFile).'}" '.escapeshellarg($fileName);
 		}
