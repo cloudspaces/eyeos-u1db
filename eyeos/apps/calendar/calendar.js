@@ -471,8 +471,13 @@ qx.Class.define('eyeos.application.Calendar', {
                     marginLeft: 10,
                     cursor: 'pointer'
                 });
+                labelCloud.addListener('mouseover',this.__labelMouseOver,this);
+                labelCloud.addListener('mouseout',this.__labelMouseOut,this);
                 labelCloud.setUserData('cloud',cals[i]);
                 labelCloud.addListener('click',this.__cloudClick,this);
+                imageCloud.setUserData('labelCloud',labelCloud);
+                imageCloud.addListener('mouseover',this.__imageMouseOver,this);
+                imageCloud.addListener('mouseout',this.__imageMouseOut,this);
                 containerCal.add(imageCloud);
                 containerCal.add(labelCloud);
                 containerCalendars.add(containerCal);
@@ -499,6 +504,20 @@ qx.Class.define('eyeos.application.Calendar', {
             if(this._cursor != null) {
                 this._cursor.centerCursor(this.__window);
             }
+        },
+        __labelMouseOver: function(e) {
+            e.getCurrentTarget().setTextColor('blue');
+        },
+        __labelMouseOut: function(e) {
+            e.getCurrentTarget().setTextColor('black');
+        },
+        __imageMouseOver: function(e) {
+            var labelCloud = e.getCurrentTarget().getUserData('labelCloud');
+            labelCloud.setTextColor('blue');
+        },
+        __imageMouseOut: function(e) {
+            var labelCloud = e.getCurrentTarget().getUserData('labelCloud');
+            labelCloud.setTextColor('black');
         }
 	},
 	destruct : function() {
