@@ -19,7 +19,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         if self.path.startswith('/comment'):
             if postdata.has_key('id') and postdata.has_key('user') and postdata.has_key('text') and postdata.has_key('cloud'):
                 time_created = time.strftime("%Y%m%d%H%M%S")
-                response = self.comments.insertComment(postdata['id'],postdata['user'],postdata['text'],postdata['cloud'],time_created)
+                response = self.comments.insertComment(postdata['id'],postdata['user'],postdata['text'].decode('hex'),postdata['cloud'],time_created)
             else:
                 response = {"error":400,"descripcion":"Parametros incorrectos"}
         elif self.path.startswith('/event'):

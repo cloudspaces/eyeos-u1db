@@ -1732,7 +1732,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             if(!isset($data->error)) {
                 $data = self::sortDate($data);
                 $result['status'] = 'OK';
-                $result['comments'] = self::decodeString($data);
+                $result['comments'] = $data;
                 unset($result['error']);
             }
         }
@@ -1746,7 +1746,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
         if(isset($params['id']) && isset($params['text']) && isset($params['cloud']) && isset($_SESSION['access_token_' . $params[ 'cloud' ] . '_v2'])) {
             $id = $params['id'];
-            $text = self::base256ToBase10($params['text']);
+            $text = bin2hex($params['text']);
             $cloud = $params['cloud'];
             $token = $_SESSION['access_token_' . $params[ 'cloud' ] . '_v2'];
             $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
