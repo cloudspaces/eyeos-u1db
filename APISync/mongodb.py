@@ -1,6 +1,7 @@
 __author__ = 'root'
 
 from pymongo import MongoClient
+import datetime
 
 class mongoDb:
     def __init__(self, host,port,name):
@@ -176,3 +177,80 @@ class mongoDb:
             return {"delete":True}
         else:
             return {"error":400,"descripcion":"Error al borrar calendario de Usuarios"}
+
+    def lockFile(self,id,cloud,user,ipserver,dateTime,timelimit):
+        files = self.db.collection.find({"id":id,"cloud":cloud})
+        data = {"id":id,"cloud":cloud,"user":user,"ipserver":ipserver,"datetime":dateTime,"status":"open"}
+        if files.count() == 0:
+            self.db.collection.insert(data)
+            del data['_id']
+        else:
+            if files[0]['status'] == 'close':
+                self.db.collection.update({"id":id,"cloud":cloud},data)
+            else:
+                if files[0]['user'] == user and files[0]['ipserver'] == ipserver:
+                    self.db.collection.update({"id":id,"cloud":cloud},data)
+                else:
+                    dt=datetime.datetime.strptime(files[0]['datetime'],'%Y-%m-%d %H:%M:%S')
+                    dt_plus_timeLimit = dt + datetime.timedelta(minutes = timelimit)
+                    dt_now = datetime.datetime.strptime(dateTime,'%Y-%m-%d %H:%M:%S')
+                    if dt_now > dt_plus_timeLimit:
+                         self.db.collection.update({"id":id,"cloud":cloud},data)
+                    else:
+                        return {"error":400,"descripcion":"Error al bloquear fichero"}
+
+        files = self.db.collection.find({"id":id,"cloud":cloud})
+        if files.count() == 1:
+            document = files[0]
+            del document['_id']
+            if document == data:
+                return {"lockFile":True}
+            else:
+                return {"error":400,"descripcion":"Error al bloquear fichero"}
+        else:
+            return {"error":400,"descripcion":"Error al bloquear fichero"}
+
+    def updateDateTime(self,id,cloud,user,ipserver,dateTime):
+        files = self.db.collection.find({"id":id,"cloud":cloud,"user":user,"ipserver":ipserver})
+        if files.count() == 1:
+            data = {"id":id,"cloud":cloud,"user":user,"ipserver":ipserver,"datetime":dateTime,"status":"open"}
+            self.db.collection.update({"id":id,"cloud":cloud,"user":user,"ipserver":ipserver},data)
+            files = self.db.collection.find({"id":id,"cloud":cloud,"user":user,"ipserver":ipserver})
+            if files.count() == 1:
+                document = files[0]
+                del document['_id']
+                if document == data:
+                    return {"updateFile":True}
+                else:
+                    return {"error":400,"descripcion":"Error al actualizar fecha"}
+            else:
+                return {"error":400,"descripcion":"Error al actualizar fecha"}
+
+        else:
+            return {"error":400,"descripcion":"Error al actualizar fecha"}
+
+    def unLockFile(self,id,cloud,user,ipserver,dateTime):
+        files = self.db.collection.find({"id":id,"cloud":cloud,"user":user,"ipserver":ipserver})
+        if files.count() == 1:
+            data = {"id":id,"cloud":cloud,"user":user,"ipserver":ipserver,"datetime":dateTime,"status":"close"}
+            self.db.collection.update({"id":id,"cloud":cloud,"user":user,"ipserver":ipserver},data)
+            if files.count() == 1:
+                document = files[0]
+                del document['_id']
+                if document == data:
+                    return {"unLockFile":True}
+                else:
+                    return {"error":400,"descripcion":"Error al liberar fichero"}
+            else:
+                return {"error":400,"descripcion":"Error al liberar fichero"}
+        else:
+            return {"error":400,"descripcion":"Error al liberar fichero"}
+
+    def getMetadataFile(self,id,cloud):
+        result = []
+        files = self.db.collection.find({"id":id,"cloud":cloud})
+        if files.count() > 0:
+            for file in files:
+                del file['_id']
+                result.append(file)
+        return result

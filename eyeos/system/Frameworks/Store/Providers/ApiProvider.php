@@ -271,6 +271,44 @@ class ApiProvider
         return $this->exerciseMetadata($request);
     }
 
+    public function lockFile($cloud,$token,$id,$user,$ipserver,$datetime,$timelimit,$resourceUrl)
+    {
+        $request = $this->getRequest('lockFile',$token,$cloud,$resourceUrl);
+        $request->metadata->id = "" . $id;
+        $request->metadata->user = $user;
+        $request->metadata->ipserver = $ipserver;
+        $request->metadata->datetime = $datetime;
+        $request->metadata->timelimit = $timelimit;
+        return $this->exerciseMetadata($request);
+    }
+
+    public function updateDateTime($cloud,$token,$id,$user,$ipserver,$datetime,$resourceUrl)
+    {
+        $request = $this->getRequest('updateDateTime',$token,$cloud,$resourceUrl);
+        $request->metadata->id = "" . $id;
+        $request->metadata->user = $user;
+        $request->metadata->ipserver = $ipserver;
+        $request->metadata->datetime = $datetime;
+        return $this->exerciseMetadata($request);
+    }
+
+    public function unLockFile($cloud,$token,$id,$user,$ipserver,$datetime,$resourceUrl)
+    {
+        $request = $this->getRequest('unLockFile',$token,$cloud,$resourceUrl);
+        $request->metadata->id = "" . $id;
+        $request->metadata->user = $user;
+        $request->metadata->ipserver = $ipserver;
+        $request->metadata->datetime = $datetime;
+        return $this->exerciseMetadata($request);
+    }
+
+    public function getMetadataFile($cloud,$token,$id,$resourceUrl)
+    {
+        $request = $this->getRequest('getMetadataFile',$token,$cloud,$resourceUrl);
+        $request->metadata->id = "" . $id;
+        return $this->exerciseMetadata($request);
+    }
+
     private function getRequest($type, $token = NULL, $cloud = NULL, $resourceUrl = NULL)
     {
         $request = new stdClass();

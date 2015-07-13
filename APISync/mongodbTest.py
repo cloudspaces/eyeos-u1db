@@ -23,6 +23,8 @@ class mongodbTest(unittest.TestCase):
         self.description= "Llevar justificante"
         self.timezone = 0
         self.repeattype = "n"
+        self.ipserver = "192.168.56.101"
+        self.timelimit = 10
 
     def tearDown(self):
         self.sut.client.drop_database('test')
@@ -244,3 +246,139 @@ class mongodbTest(unittest.TestCase):
         self.sut.insertEvent(self.user,self.calendar,self.cloud,self.isallday,self.timestart,self.timeend,self.repetition,self.finaltype,self.finalvalue,self.subject,self.location,self.description,self.repeattype)
         result = self.sut.deleteCalendarsUser(self.user,self.cloud)
         self.assertEquals({"delete":True},result)
+
+
+    """
+    method: lockFile
+    when: called
+    with: idAndCloudAndUserAndIpServerAndDateTimeAndTimeLimit
+    should: emptyData
+    """
+    def test_lockFile_called_idAndCloudAndUserAndIpServerAndDateTimeAndTimeLimit_emptyData(self):
+        datetime = "2015-05-12 10:50:00"
+        result = self.sut.lockFile(self.idFile,self.cloud,self.user,self.ipserver,datetime,self.timelimit)
+        self.assertEquals({"lockFile":True},result)
+
+    """
+    method: lockFile
+    when: called
+    with: idAndCloudAndUserAndIpServerAndDateTimeAndTimeLimit
+    should: updateData
+    """
+    def test_lockFile_called_idAndCloudAndUserAndIpServerAndDateTimeAndTimeLimit_updateData(self):
+        datetime = "2015-05-12 10:51:00"
+        data = {"id":self.idFile,"cloud":self.cloud,"user":self.user,"ipserver":self.ipserver,"datetime":datetime,"status":"close"}
+        self.sut.db.collection.insert(data)
+        result = self.sut.lockFile(self.idFile,self.cloud,self.user,self.ipserver,datetime,self.timelimit)
+        self.assertEquals({"lockFile":True},result)
+
+
+    """
+    method: lockFile
+    when: called
+    with: idAndCloudAndUserAndIpServerAndDateTimeAndTimeLimit
+    should: updateDataSameUser
+    """
+    def test_lockFile_called_idAndCloudAndUserAndIpServerAndDateTimeAndTimeLimit_updateDataSameUserAndServer(self):
+        data = {"id":self.idFile,"cloud":self.cloud,"user":self.user,"ipserver":self.ipserver,"datetime":"2015-05-12 10:50:00","status":"open"}
+        self.sut.db.collection.insert(data)
+        result = self.sut.lockFile(self.idFile,self.cloud,self.user,self.ipserver,"2015-05-12 10:55:00",self.timelimit)
+        self.assertEquals({"lockFile":True},result)
+
+    """
+    method: lockFile
+    when: called
+    with: idAndCloudAndUserAndIpServerAndDateTimeAndTimeLimit
+    should: updateDataTimeExpired
+    """
+    def test_lockFile_called_idAndCloudAndUserAndIpServerAndDateTimeAndTimeLimit_updateDataTimeExpired(self):
+        data = {"id":self.idFile,"cloud":self.cloud,"user":"tester","ipserver":"192.168.56.101","datetime":"2015-05-12 10:50:00","status":"open"}
+        self.sut.db.collection.insert(data)
+        result = self.sut.lockFile(self.idFile,self.cloud,self.user,self.ipserver,"2015-05-12 11:05:00",self.timelimit)
+        self.assertEquals({"lockFile":True},result)
+
+    """
+    method: lockFile
+    when: called
+    with: idAndCloudAndUserAndIpServerAndDateTimeAndTimeLimit
+    should: returnIncorrectDistinctUser
+    """
+    def test_lockFile_called_idAndCloudAndUserAndIpServerAndDateTimeAndTimeLimit_returnIncorrectDistinctUser(self):
+        data = {"id":self.idFile,"cloud":self.cloud,"user":self.user,'ipserver':self.ipserver,"datetime":"2015-05-12 10:50:00","status":"open"}
+        self.sut.db.collection.insert(data)
+        result = self.sut.lockFile(self.idFile,self.cloud,"tester",self.ipserver,"2015-05-12 10:55:00",self.timelimit)
+        self.assertEquals({"error":400,"descripcion":"Error al bloquear fichero"},result)
+
+    """
+    method: lockFile
+    when: called
+    with: idAndCloudAndUserAndIpServerAndDateTimeAndTimeLimit
+    should: returnIncorrectDistinctServer
+    """
+    def test_lockFile_called_idAndCloudAndUserAndIpServerAndDateTimeAndTimeLimit_returnIncorrectDistinctServer(self):
+        data = {"id":self.idFile,"cloud":self.cloud,"user":self.user,"ipserver":self.ipserver,"datetime":"2015-05-12 10:50:00","status":"open"}
+        self.sut.db.collection.insert(data)
+        result = self.sut.lockFile(self.idFile,self.cloud,self.user,"192.168.56.102","2015-05-12 10:55:00",self.timelimit)
+        self.assertEquals({"error":400,"descripcion":"Error al bloquear fichero"},result)
+
+    """
+    method: updateDateTime
+    when: called
+    with: idAndCloudAndUserAndIpServerAndDateTime
+    should: returnUpdateCorrect
+    """
+    def test_updateDateTime_called_idAndCloudAndUserAndIpServerAndDateTime_returnUpdateCorrect(self):
+        data = {"id":self.idFile,"cloud":self.cloud,"user":self.user,"ipserver":self.ipserver,"datetime":"2015-05-12 10:50:00","status":"open"}
+        self.sut.db.collection.insert(data)
+        result = self.sut.updateDateTime(self.idFile,self.cloud,self.user,self.ipserver,"2015-05-12 11:50:00")
+        self.assertEquals({"updateFile":True},result)
+
+    """
+    method: updateDateTime
+    when: called
+    with: idAndCloudAndUserAndIpServerAndDateTime
+    should: returnIncorrectDistinctUser
+    """
+    def test_updateDateTime_called_idAndCloudAndUserAndIpServerAndDateTime_returnIncorrectDistinctUser(self):
+        datetime = "2015-05-12 10:50:00"
+        data = {"id":self.idFile,"cloud":self.cloud,"user":self.user,"ipserver":self.ipserver,"datetime":datetime,"status":"open"}
+        self.sut.db.collection.insert(data)
+        result = self.sut.updateDateTime(self.idFile,self.cloud,"tester",self.ipserver,datetime)
+        self.assertEquals({"error":400,"descripcion":"Error al actualizar fecha"},result)
+
+    """
+    method: unLockFile
+    when: called
+    with: idAndCloudAndUserAndIpServerAndDateTime
+    should: returnCorrect
+    """
+    def test_unLockFile_called_metadata_returnCorrect(self):
+        data = {"id":self.idFile,"cloud":self.cloud,"user":self.user,"ipserver":self.ipserver,"datetime":"2015-05-12 10:50:00","status":"open"}
+        self.sut.db.collection.insert(data)
+        result = self.sut.unLockFile(self.idFile,self.cloud,self.user,self.ipserver,"2015-05-12 11:50:00")
+        self.assertEquals({"unLockFile":True},result)
+
+
+    """
+    method: unLockFile
+    when: called
+    with: idAndCloudAndUserAndIpServerAndDateTime
+    should: returnIncorrectDistinctUser
+    """
+    def test_unLockFile_called_metadata_returnIncorrectDistinctUser(self):
+        data = {"id":self.idFile,"cloud":self.cloud,"user":self.user,"ipserver":self.ipserver,"datetime":"2015-05-12 10:50:00","status":"open"}
+        self.sut.db.collection.insert(data)
+        result = self.sut.unLockFile(self.idFile,self.cloud,"tester",self.ipserver,"2015-05-12 11:50:00")
+        self.assertEquals({"error":400,"descripcion":"Error al liberar fichero"},result)
+
+    """
+    method: getMetadataFile
+    when: called
+    with: idAndCloud
+    should: returnArray
+    """
+    def test_getMetadataFile_called_user_returnArray(self):
+        data = {"id":self.idFile,"cloud":self.cloud,"user":self.user,"ipserver":self.ipserver,"datetime":"2015-05-12 10:50:00","status":"close"}
+        self.sut.db.collection.insert(data)
+        result = self.sut.getMetadataFile(self.idFile,self.cloud)
+        self.assertEquals(1,len(result))

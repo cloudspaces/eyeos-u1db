@@ -34,6 +34,10 @@ class OauthCredentialsTest (unittest.TestCase):
         self.timezone = 0
         self.cloud = 'Stacksync'
         self.repeattype = "n"
+        self.idFile = "2150"
+        self.ipserver = "192.168.56.101"
+        self.datetime = "2015-05-12 10:50:00"
+        self.timelimit = 10
 
     def tearDown(self):
         self.oauthCredentials = None
@@ -1001,6 +1005,147 @@ class OauthCredentialsTest (unittest.TestCase):
         oauth.delete.return_value = metadataIn
         result = self.oauthCredentials.deleteCalendarsUser(oauth,self.user,self.cloud)
         oauth.delete.assert_called_once_with(self.resourceurl + 'calUser/' + self.user + '/' + self.cloud)
+        self.assertEquals(metadataOut,result)
+
+
+    """
+    method: lockFile
+    when: called
+    with: accessTokenAndIdAndCloudAndUserAndIpServerAndDateTimeAndTimeLimit
+    should: returnLockCorrect
+    """
+    def test_lockFile_called_accessTokenAndIdAndCloudAndUserAndIpServerAndDateTimeAndTimeLimit_returnLockCorrect(self):
+        data = {"id":self.idFile,"cloud":self.cloud,"user":self.user,"ipserver":self.ipserver,"datetime":self.datetime,"timelimit":self.timelimit}
+        metadataIn = {"lockFile":True}
+        metadataOut = json.dumps(metadataIn)
+        oauth = self.createOauthSession()
+        oauth.post = Mock()
+        oauth.post.return_value = metadataIn
+        result = self.oauthCredentials.lockFile(oauth,self.idFile,self.cloud,self.user,self.ipserver,self.datetime,self.timelimit)
+        oauth.post.assert_called_once_with(self.resourceurl + 'lockFile',data)
+        self.assertEquals(metadataOut,result)
+
+
+    """
+    method: lockFile
+    when: called
+    with: accessTokenAndIdAndCloudAndUserAndIpServerAndDateTimeAndTimeLimit
+    should: returnException
+    """
+    def test_lockFile_called_accessTokenAndIdAndCloudAndUserAndIpServerAndDateTimeAndTimeLimit_returnException(self):
+        data = {"id":self.idFile,"cloud":self.cloud,"user":self.user,"ipserver":self.ipserver,"datetime":self.datetime,"timelimit":self.timelimit}
+        metadataIn =  {"error":400, "description": "Recurso no encontrado"}
+        metadataOut = 'false'
+        oauth = self.createOauthSession()
+        oauth.post = Mock()
+        oauth.post.return_value = metadataIn
+        result = self.oauthCredentials.lockFile(oauth,self.idFile,self.cloud,self.user,self.ipserver,self.datetime,self.timelimit)
+        oauth.post.assert_called_once_with(self.resourceurl + 'lockFile',data)
+        self.assertEquals(metadataOut,result)
+
+
+
+    """
+    method: updateDateTime
+    when: called
+    with: accessTokenAndIdAndCloudAndUserAndIpServerAndDateTime
+    should: returnUpdateCorrect
+    """
+    def test_updateDateTime_called_accessTokenAndIdAndCloudAndUserAndIpServerAndDateTime_returnUpdateCorrect(self):
+        data = {"id":self.idFile,"cloud":self.cloud,"user":self.user,"ipserver":self.ipserver,"datetime":self.datetime}
+        metadataIn = {"updateFile":True}
+        metadataOut = json.dumps(metadataIn)
+        oauth = self.createOauthSession()
+        oauth.put = Mock()
+        oauth.put.return_value = metadataIn
+        result = self.oauthCredentials.updateDateTime(oauth,self.idFile,self.cloud,self.user,self.ipserver,self.datetime)
+        oauth.put.assert_called_once_with(self.resourceurl + 'updateTime',data)
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: updateDateTime
+    when: called
+    with: accessTokenAndIdAndCloudAndUserAndIpServerAndDateTime
+    should: returnException
+    """
+    def test_updateDateTime_called_accessTokenAndIdAndCloudAndUserAndIpServerAndDateTime_returnException(self):
+        data = {"id":self.idFile,"cloud":self.cloud,"user":self.user,"ipserver":self.ipserver,"datetime":self.datetime}
+        metadataIn =  {"error":400, "description": "Recurso no encontrado"}
+        metadataOut = 'false'
+        oauth = self.createOauthSession()
+        oauth.put = Mock()
+        oauth.put.return_value = metadataIn
+        result = self.oauthCredentials.updateDateTime(oauth,self.idFile,self.cloud,self.user,self.ipserver,self.datetime)
+        oauth.put.assert_called_once_with(self.resourceurl + 'updateTime',data)
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: unLockFile
+    when: called
+    with: accessTokenAndIdAndCloudAndUserAndIpServerAndDateTime
+    should: returnUnLockCorrect
+    """
+    def test_unLockFile_called_accessTokenAndIdAndCloudAndUserAndIpServerAndDateTime_returnUnLockCorrect(self):
+        data = {"id":self.idFile,"cloud":self.cloud,"user":self.user,"ipserver":self.ipserver,"datetime":self.datetime}
+        metadataIn = {"unLockFile":True}
+        metadataOut = json.dumps(metadataIn)
+        oauth = self.createOauthSession()
+        oauth.put = Mock()
+        oauth.put.return_value = metadataIn
+        result = self.oauthCredentials.unLockFile(oauth,self.idFile,self.cloud,self.user,self.ipserver,self.datetime)
+        oauth.put.assert_called_once_with(self.resourceurl + 'unLockFile',data)
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: unLockFile
+    when: called
+    with: accessTokenAndIdAndCloudAndUserAndIpServerAndDateTime
+    should: returnException
+    """
+    def test_unLockFile_called_accessTokenAndIdAndCloudAndUserAndIpServerAndDateTime_returnException(self):
+        data = {"id":self.idFile,"cloud":self.cloud,"user":self.user,"ipserver":self.ipserver,"datetime":self.datetime}
+        metadataIn =  {"error":400, "description": "Recurso no encontrado"}
+        metadataOut = 'false'
+        oauth = self.createOauthSession()
+        oauth.put = Mock()
+        oauth.put.return_value = metadataIn
+        result = self.oauthCredentials.unLockFile(oauth,self.idFile,self.cloud,self.user,self.ipserver,self.datetime)
+        oauth.put.assert_called_once_with(self.resourceurl + 'unLockFile',data)
+        self.assertEquals(metadataOut,result)
+
+
+    """
+    method: getMetadataFile
+    when: called
+    with: accessTokenAndIdAndCloud
+    should: returnMetadataFile
+    """
+    def test_getMetadataFile_called_accessTokenAndIdAndCloud_returnMetadataFile(self):
+        metadataIn = []
+        metadataIn.append( {"id":self.idFile,"cloud":self.cloud,"user":self.user,"ipserver":self.ipserver,"datetime":self.datetime,"status":"open"})
+        metadataIn = json.dumps(metadataIn)
+        metadataOut = '[{"status": "open", "datetime": "2015-05-12 10:50:00", "user": "eyeos", "ipserver": "192.168.56.101", "id": "2150", "cloud": "Stacksync"}]'
+        oauth = self.createOauthSession()
+        oauth.get = Mock()
+        oauth.get.return_value = metadataIn
+        result = self.oauthCredentials.getMetadataFile(oauth,self.idFile,self.cloud)
+        oauth.get.assert_called_once_with(self.resourceurl + 'lockFile/' + self.idFile + '/' + self.cloud)
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: getMetadataFile
+    when: called
+    with: accessTokenAndIdAndCloud
+    should: returnException
+    """
+    def test_getMetadataFile_called_accessTokenAndIdAndCloud_returnException(self):
+        metadataIn =  {"error":400, "description": "Recurso no encontrado"}
+        metadataOut = 'false'
+        oauth = self.createOauthSession()
+        oauth.get = Mock()
+        oauth.get.return_value = metadataIn
+        result = self.oauthCredentials.getMetadataFile(oauth,self.idFile,self.cloud)
+        oauth.get.assert_called_once_with(self.resourceurl + 'lockFile/' + self.idFile + '/' + self.cloud)
         self.assertEquals(metadataOut,result)
 
 

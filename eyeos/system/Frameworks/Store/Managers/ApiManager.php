@@ -566,28 +566,25 @@ class ApiManager
         return $result;
     }
 
-    public function unLockedFile($id,$cloud,$user,$IpServer,$timeLimit,$dt_now)
+    public function unLockedFile($cloud,$token,$id,$user,$ipserver,$timeLimit,$dt_now,$resourceUrl)
     {
-        $result[ 'status' ] = 'KO';
-        $result[ 'error' ] = -1;
-        $lista = new stdClass();
-        $lista->id = "" . $id;
-        $lista->cloud = $cloud;
+        $result['status'] = 'KO';
+        $result['error'] = -1;
         $free = false;
-        $metadataU1db = $this->callProcessU1db('getMetadataFile', $lista);
-        if($metadataU1db == "[]") {
-            $free = true;
-        } else {
-            $metadata = json_decode($metadataU1db);
-            if($metadata && count($metadata) > 0) {
+        $metadata = $this->apiProvider->getMetadataFile($cloud,$token,$id,$resourceUrl);
+
+        if(is_array($metadata)) {
+            if (count($metadata) == 0) {
+                $free = true;
+            } else {
                 $file = $metadata[0];
-                if($file->status == 'close') {
+                if ($file->status == 'close') {
                     $free = true;
                 } else {
-                    if($file->username == $user && $file->IpServer == $IpServer) {
+                    if ($file->user == $user && $file->ipserver == $ipserver) {
                         $free = true;
                     } else {
-                        $dt_plus_timeLimit = DateTime::createFromFormat('Y-m-d H:i:s',$file->datetime);
+                        $dt_plus_timeLimit = DateTime::createFromFormat('Y-m-d H:i:s', $file->datetime);
                         $dt_plus_timeLimit->add(new DateInterval('PT' . $timeLimit . 'M'));
                         $dt_now = strtotime($dt_now->format('Y-m-d H:i:s'));
                         $dt_plus_timeLimit = strtotime($dt_plus_timeLimit->format('Y-m-d H:i:s'));
@@ -609,19 +606,54 @@ class ApiManager
         return $result;
     }
 
-    public function lockFile($id,$cloud,$user,$IpServer,$timeLimit,$dt_now)
+    public function lockFile($cloud,$token,$id,$user,$ipserver,$timeLimit,$dt_now,$resourceUrl)
     {
-        return $this->exerciseLockFile($id,$cloud,$user,$IpServer,$timeLimit,$dt_now,'lockFile');
+        $result[ 'status' ] = 'KO';
+        $result[ 'error' ] = -1;
+        $lock = $this->apiProvider->lockFile($cloud,$token,$id,$user,$ipserver,$dt_now,$timeLimit,$resourceUrl);
+        if($lock) {
+            if(isset($lock->lockFile)) {
+                $result['status'] = 'OK';
+                unset($result['error']);
+            } else {
+                $result['error'] = "BLOCK";
+            }
+        }
+
+        return $result;
     }
 
-    public function updateDateTime($id,$cloud,$user,$IpServer,$dt_now)
+    public function updateDateTime($cloud,$token,$id,$user,$ipserver,$dt_now,$resourceUrl)
     {
-        return $this->exerciseLockFile($id,$cloud,$user,$IpServer,null,$dt_now,'updateDateTime');
+        $result[ 'status' ] = 'KO';
+        $result[ 'error' ] = -1;
+        $update = $this->apiProvider->updateDateTime($cloud,$token,$id,$user,$ipserver,$dt_now,$resourceUrl);
+        if($update) {
+            if(isset($update->updateFile)) {
+                $result['status'] = 'OK';
+                unset($result['error']);
+            } else {
+                $result['error'] = "BLOCK";
+            }
+        }
+
+        return $result;
     }
 
-    public function unLockFile($id,$cloud,$user,$IpServer,$dt_now)
+    public function unLockFile($cloud,$token,$id,$user,$ipserver,$dt_now,$resourceUrl)
     {
-        return $this->exerciseLockFile($id,$cloud,$user,$IpServer,null,$dt_now,'unLockFile');
+        $result[ 'status' ] = 'KO';
+        $result[ 'error' ] = -1;
+        $unLock = $this->apiProvider->unLockFile($cloud,$token,$id,$user,$ipserver,$dt_now,$resourceUrl);
+        if($unLock) {
+            if(isset($unLock->unLockFile)) {
+                $result['status'] = 'OK';
+                unset($result['error']);
+            } else {
+                $result['error'] = "BLOCK";
+            }
+        }
+        return $result;
     }
 
     public function getMetadataFolder($cloud, $token, $id, $resourceUrl=NULL)

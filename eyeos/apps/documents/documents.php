@@ -1127,14 +1127,18 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
         $IpServer = $_SERVER['SERVER_ADDR'];
         $timeLimit = TIME_LIMIT_BLOCK;
         $dt_now = new DateTime('NOW');
+        $resourceUrl = API_SYNC;
 
         if(isset($params['id']) && isset($params['cloud'])) {
-            $apiManager = new ApiManager();
             $id = $params['id'];
             $cloud = $params['cloud'];
-            $result = $apiManager->unLockedFile($id,$cloud,$username,$IpServer,$timeLimit,$dt_now);
-            if(isset($params['block']) && $result['status'] == 'OK') {
-                $result = $apiManager->lockFile($id,$cloud,$username,$IpServer,$timeLimit,$dt_now);
+            if(isset($_SESSION[ 'access_token_' . $cloud . '_v2' ])) {
+                $token = $_SESSION[ 'access_token_' . $cloud . '_v2' ];
+                $apiManager = new ApiManager();
+                $result = $apiManager->unLockedFile($cloud,$token,$id,$username,$IpServer,$timeLimit,$dt_now,$resourceUrl);
+                if (isset($params['block']) && $result['status'] == 'OK') {
+                    $result = $apiManager->lockFile($cloud,$token,$id,$username,$IpServer,$timeLimit,bin2hex($dt_now->format("Y-m-d H:i:s")),$resourceUrl);
+                }
             }
         }
 
@@ -1148,11 +1152,15 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
         $username = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
         $IpServer = $_SERVER['SERVER_ADDR'];
         $dt_now = new DateTime('NOW');
+        $resourceUrl = API_SYNC;
         if(isset($params['id']) && $params['cloud']) {
             $id = $params['id'];
             $cloud = $params['cloud'];
-            $apiManager = new ApiManager();
-            $result = $apiManager->updateDateTime($id,$cloud,$username,$IpServer,$dt_now);
+            if(isset($_SESSION[ 'access_token_' . $cloud . '_v2' ])) {
+                $token = $_SESSION['access_token_' . $cloud . '_v2'];
+                $apiManager = new ApiManager();
+                $result = $apiManager->updateDateTime($cloud,$token,$id,$username,$IpServer,bin2hex($dt_now->format("Y-m-d H:i:s")),$resourceUrl);
+            }
         }
         return $result;
     }
@@ -1164,11 +1172,15 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
         $username = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
         $IpServer = $_SERVER['SERVER_ADDR'];
         $dt_now = new DateTime('NOW');
+        $resourceUrl = API_SYNC;
         if(isset($params['id']) && $params['cloud']) {
             $id = $params['id'];
             $cloud = $params['cloud'];
-            $apiManager = new ApiManager();
-            $result = $apiManager->unLockFile($id,$cloud,$username,$IpServer,$dt_now);
+            if(isset($_SESSION[ 'access_token_' . $cloud . '_v2' ])) {
+                $token = $_SESSION['access_token_' . $cloud . '_v2'];
+                $apiManager = new ApiManager();
+                $result = $apiManager->unLockFile($cloud,$token,$id,$username,$IpServer,bin2hex($dt_now->format("Y-m-d H:i:s")),$resourceUrl);
+            }
         }
         return $result;
     }

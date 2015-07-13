@@ -1660,6 +1660,110 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(json_decode($metadataOut),$actual);
     }
 
+    /**
+     * method: lockFile
+     * when: called
+     * with: cloudAndTokenAndIdAndUserAndIpServerAndDateTimeAndTimeLimitAndResourceUrl
+     * should: returnLockCorrect
+     */
+    public function test_lockFile_called_cloudAndTokenAndIdAndUserAndIpServerAndDateTimeAndTimeLimitAndResourceUrl_returnLockCorrect()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"lockFile","id":"2150","user":"eyeos","ipserver":"192.168.56.101","datetime":"2015-05-12 10:50:00","timelimit":10}}';
+        $metadataOut = '{"lockFile":true}';
+        $this->exerciseLockFile($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: lockFile
+     * when: called
+     * with: cloudAndTokenAndIdAndUserAndIpServerAndDateTimeAndTimeLimitAndResourceUrl
+     * should: returnException
+     */
+    public function test_lockFile_called_cloudAndTokenAndIdAndUserAndIpServerAndDateTimeAndTimeLimitAndResourceUrl_returnException()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"lockFile","id":"2150","user":"eyeos","ipserver":"192.168.56.101","datetime":"2015-05-12 10:50:00","timelimit":10}}';
+        $metadataOut = 400;
+        $this->exerciseLockFile($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: updateDateTime
+     * when: called
+     * with: cloudAndTokenAndIdAndUserAndIpServerAndDateTimeAndResourceUrl
+     * should: returnUpdateCorrect
+     */
+    public function test_updateDateTime_called_cloudAndTokenAndIdAndUserAndIpServerAndDateTimeAndResourceUrl_returnUpdateCorrect()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"updateDateTime","id":"2150","user":"eyeos","ipserver":"192.168.56.101","datetime":"2015-05-12 10:50:00"}}';
+        $metadataOut = '{"updateFile":true}';
+        $this->exerciseUpdateTime($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: updateDateTime
+     * when: called
+     * with: cloudAndTokenAndIdAndUserAndIpServerAndDateTimeAndResourceUrl
+     * should: returnException
+     */
+    public function test_updateDateTime_called_cloudAndTokenAndIdAndUserAndIpServerAndDateTimeAndResourceUrl_returnException()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"updateDateTime","id":"2150","user":"eyeos","ipserver":"192.168.56.101","datetime":"2015-05-12 10:50:00"}}';
+        $metadataOut = 400;
+        $this->exerciseUpdateTime($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: unLockFile
+     * when: called
+     * with: cloudAndTokenAndIdAndUserAndIpServerAndDateTimeAndResourceUrl
+     * should: returnUnLockCorrect
+     */
+    public function test_unLockFile_called_cloudAndTokenAndIdAndUserAndIpServerAndDateTimeAndResourceUrl_returnLockCorrect()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"unLockFile","id":"2150","user":"eyeos","ipserver":"192.168.56.101","datetime":"2015-05-12 10:50:00"}}';
+        $metadataOut = '{"unLockFile":true}';
+        $this->exerciseUnLockFile($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: unLockFile
+     * when: called
+     * with: cloudAndTokenAndIdAndUserAndIpServerAndDateTimeAndResourceUrl
+     * should: returnException
+     */
+    public function test_unLockFile_called_cloudAndTokenAndIdAndUserAndIpServerAndDateTimeAndResourceUrl_returnException()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"unLockFile","id":"2150","user":"eyeos","ipserver":"192.168.56.101","datetime":"2015-05-12 10:50:00"}}';
+        $metadataOut = 400;
+        $this->exerciseUnLockFile($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: getMetadataFile
+     * when: called
+     * with: cloudAndTokenAndIdResourceUrl
+     * should: returnMetadataFile
+     */
+    public function test_getMetadataFile_called_cloudAndTokenAndIdResourceUrl_returnMetadataFile()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"getMetadataFile","id":"2150"}}';
+        $metadataOut = '[{"id":"2150","cloud":"Stacksync","user":"eyeos","ipserver":"192.168.56.101","datetime":"2015-05-12 10:50:00","status":"open"}]';
+        $this->exerciseGetMetadataFile($metadataIn,$metadataOut);
+    }
+
+    /**
+     * method: getMetadataFile
+     * when: called
+     * with: cloudAndTokenAndIdResourceUrl
+     * should: returnException
+     */
+    public function test_getMetadataFile_called_cloudAndTokenAndIdResourceUrl_returnException()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"getMetadataFile","id":"2150"}}';
+        $metadataOut = 400;
+        $this->exerciseGetMetadataFile($metadataIn,$metadataOut);
+    }
+
     private function exerciseGetMetadata($metadataIn,$metadataOut,$check,$file,$id,$contents = null,$url = null)
     {
         $this->exerciseMockMetadata($metadataIn,$metadataOut);
@@ -1846,6 +1950,34 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     {
         $this->exerciseMockMetadata($metadataIn, $metadataOut);
         $actual = $this->sut->deleteCalendarsUser($this->cloud,$this->token,"eyeos","http://192.68.56.101/");
+        $this->assertEquals(json_decode($metadataOut),$actual);
+    }
+
+    private function exerciseLockFile($metadataIn,$metadataOut)
+    {
+        $this->exerciseMockMetadata($metadataIn, $metadataOut);
+        $actual = $this->sut->lockFile($this->cloud,$this->token,"2150","eyeos","192.168.56.101","2015-05-12 10:50:00",10,"http://192.68.56.101/");
+        $this->assertEquals(json_decode($metadataOut),$actual);
+    }
+
+    private function exerciseUpdateTime($metadataIn,$metadataOut)
+    {
+        $this->exerciseMockMetadata($metadataIn, $metadataOut);
+        $actual = $this->sut->updateDateTime($this->cloud,$this->token,"2150","eyeos","192.168.56.101","2015-05-12 10:50:00","http://192.68.56.101/");
+        $this->assertEquals(json_decode($metadataOut),$actual);
+    }
+
+    private function exerciseUnLockFile($metadataIn,$metadataOut)
+    {
+        $this->exerciseMockMetadata($metadataIn, $metadataOut);
+        $actual = $this->sut->unLockFile($this->cloud,$this->token,"2150","eyeos","192.168.56.101","2015-05-12 10:50:00","http://192.68.56.101/");
+        $this->assertEquals(json_decode($metadataOut),$actual);
+    }
+
+    private function exerciseGetMetadataFile($metadataIn,$metadataOut)
+    {
+        $this->exerciseMockMetadata($metadataIn, $metadataOut);
+        $actual = $this->sut->getMetadataFile($this->cloud,$this->token,"2150","http://192.68.56.101/");
         $this->assertEquals(json_decode($metadataOut),$actual);
     }
 }

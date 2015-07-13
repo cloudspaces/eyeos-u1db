@@ -9,6 +9,7 @@ class RequestHandler(BaseHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         self.comments = mongoDb("localhost",27017,"comments")
         self.calendars = mongoDb("localhost",27017,"calendars")
+        self.eyedocs = mongoDb("localhost",27017,"eyedocs")
         BaseHTTPRequestHandler.__init__(self, *args, **kwargs)
 
     def do_POST(self):
@@ -39,6 +40,12 @@ class RequestHandler(BaseHTTPRequestHandler):
             if postdata.has_key('user') and postdata.has_key('name') and postdata.has_key('cloud') and postdata.has_key('description') and \
                postdata.has_key('timezone'):
                 response = self.calendars.insertCalendar(postdata['user'],postdata['name'],postdata['cloud'],postdata['description'],postdata['timezone'])
+            else:
+                response = {"error":400,"descripcion":"Parametros incorrectos"}
+        elif self.path.startswith('/lockFile'):
+            if postdata.has_key('id') and postdata.has_key('cloud') and postdata.has_key('user') and postdata.has_key('ipserver') and \
+               postdata.has_key('datetime') and postdata.has_key('timelimit'):
+                response = self.eyedocs.lockFile(postdata['id'],postdata['cloud'],postdata['user'],postdata['ipserver'],postdata['datetime'].decode('hex'),int(postdata['timelimit']))
             else:
                 response = {"error":400,"descripcion":"Parametros incorrectos"}
         else:
@@ -130,6 +137,15 @@ class RequestHandler(BaseHTTPRequestHandler):
             else:
                 response = {"error":400,"descripcion":"Parametros incorrectos"}
                 self.sendData(response)
+        elif self.path.startswith('/lockFile'):
+            if len(params) == 4:
+                id = params[2]
+                cloud = params[3]
+                data = self.eyedocs.getMetadataFile(id,cloud)
+                self.sendDataArray(data)
+            else:
+                response = {"error":400,"descripcion":"Parametros incorrectos"}
+                self.sendData(response)
         else:
             response = {"error":400,"descripcion":"Recurso no encontrado"}
             self.sendData(response)
@@ -155,6 +171,18 @@ class RequestHandler(BaseHTTPRequestHandler):
                 response = self.calendars.updateCalendar(postdata['user'],postdata['name'],postdata['cloud'],postdata['description'],postdata['timezone'])
             else:
                response = {"error":400,"descripcion":"Parametros incorrectos"}
+        elif self.path.startswith('/updateTime'):
+            if postdata.has_key('id') and postdata.has_key('cloud') and postdata.has_key('user') and postdata.has_key('ipserver') and \
+               postdata.has_key('datetime'):
+                response = self.eyedocs.updateDateTime(postdata['id'],postdata['cloud'],postdata['user'],postdata['ipserver'],postdata['datetime'].decode('hex'))
+            else:
+                response = {"error":400,"descripcion":"Parametros incorrectos"}
+        elif self.path.startswith('/unLockFile'):
+            if postdata.has_key('id') and postdata.has_key('cloud') and postdata.has_key('user') and postdata.has_key('ipserver') and \
+               postdata.has_key('datetime'):
+                response = self.eyedocs.unLockFile(postdata['id'],postdata['cloud'],postdata['user'],postdata['ipserver'],postdata['datetime'].decode('hex'))
+            else:
+                response = {"error":400,"descripcion":"Parametros incorrectos"}
         else:
             response = {"error":400,"descripcion":"Recurso no encontrado"}
 
