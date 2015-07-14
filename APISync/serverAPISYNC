@@ -1,0 +1,63 @@
+#!/bin/bash
+
+PID_FILE=/var/run/serverOauth.pid
+
+start(){
+ if [ -f $PID_FILE ];
+ then
+     echo -e -n "\nServer APISYNC is running\n"
+ else
+    echo -e -n "\nStarting Server APISYNC\n"
+    python /usr/local/src/serverAPISYNC/APISync.py >> /var/log/serverAPISYNC.log 2>&1
+    RETVAL=$?
+ fi
+}
+
+stop(){
+ if [ -f $PID_FILE ];
+ then
+    echo -e -n "\nStopping server APISYNC\n"
+    PID=$(cat $PID_FILE)
+    kill -9 ${PID}
+    rm $PID_FILE
+    RETVAL=$?
+ else
+    echo -e -n "\nServer APISYNC is not running\n"
+ fi
+}
+
+restart(){
+ stop
+ sleep 5
+ start
+}
+
+status(){
+    if [ -f $PID_FILE ]; then
+        echo -e -n "\nServer APISYNC is running\n"
+    else
+        echo -e -n "\nServer APISYNC is not running\n"
+    fi
+}
+
+# Dependiendo del parametro que se le pase
+#start - stop - restart ejecuta la función correspondiente.
+case "$1" in
+start)
+ start
+ ;;
+stop)
+ stop
+ ;;
+restart)
+ restart
+ ;;
+status)
+ status
+ ;;
+*)
+ echo $"Usar: $0 {start|stop|restart|status}"
+ exit 1
+esac
+
+exit 0

@@ -4,6 +4,7 @@ from mongodb import mongoDb
 import time
 from urlparse import urlparse
 import json
+import sys, os
 
 class RequestHandler(BaseHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -210,8 +211,27 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(json.dumps(data))
 
+def createPid(pid):
+    try:
+        file = open('/var/run/serverOauth.pid', 'w')
+        file.write(str(pid))
+        file.close()
+    except IOError as e:
+        print >>sys.stderr, "Error create file pid:%d (%s)" % (e.errno, e.strerror)
+        os.kill(int(pid), 9)
+        sys.exit(0)
 
-
-server = HTTPServer((settings['Server']['host'], settings['Server']['port']), RequestHandler)
-print 'Test server running...'
-server.serve_forever()
+try:
+    try:
+        pid = os.fork()
+        if pid > 0:
+            createPid(str(pid))
+            sys.exit(0)
+    except OSError, e:
+        print >>sys.stderr, "fork #1 failed: %d (%s)" % (e.errno, e.strerror)
+        sys.exit(1)
+    server = HTTPServer((settings['Server']['host'], settings['Server']['port']), RequestHandler)
+    print 'Server APISYNC running...'
+    server.serve_forever()
+except KeyboardInterrupt:
+    server.socket.close()
