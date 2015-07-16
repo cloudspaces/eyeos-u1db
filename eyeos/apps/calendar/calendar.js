@@ -425,7 +425,7 @@ qx.Class.define('eyeos.application.Calendar', {
             cals.push(tr('EyeOS'));
 
             var labelCalendars = new qx.ui.basic.Label().set({
-                 value: tr('Calendars'),
+                 value: tr('Select Cloud'),
                  font: new qx.bom.Font(24, ["Lucida Grande", "Verdana"]).set({bold: true}),
                  alignX: 'center',
                  marginTop: 50
