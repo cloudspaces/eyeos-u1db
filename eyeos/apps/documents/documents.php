@@ -1127,7 +1127,7 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
         $IpServer = $_SERVER['SERVER_ADDR'];
         $timeLimit = TIME_LIMIT_BLOCK;
         $dt_now = new DateTime('NOW');
-        $resourceUrl = API_SYNC;
+        $resourceUrl = self::getResourceUrl();
 
         if(isset($params['id']) && isset($params['cloud'])) {
             $id = $params['id'];
@@ -1152,7 +1152,7 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
         $username = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
         $IpServer = $_SERVER['SERVER_ADDR'];
         $dt_now = new DateTime('NOW');
-        $resourceUrl = API_SYNC;
+        $resourceUrl = self::getResourceUrl();
         if(isset($params['id']) && $params['cloud']) {
             $id = $params['id'];
             $cloud = $params['cloud'];
@@ -1172,7 +1172,7 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
         $username = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
         $IpServer = $_SERVER['SERVER_ADDR'];
         $dt_now = new DateTime('NOW');
-        $resourceUrl = API_SYNC;
+        $resourceUrl = self::getResourceUrl();
         if(isset($params['id']) && $params['cloud']) {
             $id = $params['id'];
             $cloud = $params['cloud'];
@@ -1352,6 +1352,17 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
             }
         }
         return false;
+    }
+
+    private static function getResourceUrl()
+    {
+        $resourceUrl = null;
+
+        if(defined('API_SYNC') && strlen(API_SYNC) > 0) {
+            $resourceUrl = API_SYNC;
+        }
+
+        return $resourceUrl;
     }
 }
 ?>

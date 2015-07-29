@@ -1725,7 +1725,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         if(isset($params['id']) && isset($params['cloud']) && isset($_SESSION['access_token_' . $params[ 'cloud' ] . '_v2'])) {
             $id = $params['id'];
             $cloud = $params['cloud'];
-            $resourceUrl = API_SYNC;
+            $resourceUrl = self::getResourceUrl();
             $apiManager = new ApiManager();
             $token = $_SESSION['access_token_' . $params[ 'cloud' ] . '_v2'];
             $data = $apiManager->getComments($cloud,$token,$id,$resourceUrl);
@@ -1750,7 +1750,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $cloud = $params['cloud'];
             $token = $_SESSION['access_token_' . $params[ 'cloud' ] . '_v2'];
             $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
-            $resourceUrl = API_SYNC;
+            $resourceUrl = self::getResourceUrl();
             $apiManager = new ApiManager();
             $result = $apiManager->insertComment($cloud,$token,$id,$user,$text,$resourceUrl);
         }
@@ -1768,7 +1768,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $cloud = $params['cloud'];
             $token = $_SESSION['access_token_' . $params[ 'cloud' ] . '_v2'];
             $user = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getName();
-            $resourceUrl = API_SYNC;
+            $resourceUrl = self::getResourceUrl();
             $apiManager = new ApiManager();
             $result = $apiManager->deleteComment($cloud,$token,$id,$user,$time_created,$resourceUrl);
         }
@@ -1812,6 +1812,17 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
         usort($comments, "sortFunction");
         return $comments;
+    }
+
+    private static function getResourceUrl()
+    {
+        $resourceUrl = null;
+
+        if(defined('API_SYNC') && strlen(API_SYNC) > 0) {
+            $resourceUrl = API_SYNC;
+        }
+
+        return $resourceUrl;
     }
 }
 ?>

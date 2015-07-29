@@ -110,7 +110,7 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
                     $tokenAux = new stdClass();
                     $tokenAux->key = $token->getTKey();
                     $tokenAux->secret = $token->getTSecret();
-                    $resourceUrl = API_SYNC;
+                    $resourceUrl = self::getResourceUrl();
                     $apiCalendarManager = new ApiCalendarManager();
                     $calendar = new stdClass();
                     $calendar->user = $owner->getName();
@@ -248,7 +248,7 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
                             $tokenAux = new stdClass();
                             $tokenAux->key = $token->getTKey();
                             $tokenAux->secret = $token->getTSecret();
-                            $resourceUrl = API_SYNC;
+                            $resourceUrl = self::getResourceUrl();
                             $apiCalendarManager = new ApiCalendarManager();
                             $event = new stdClass();
                             $event->user = $creator->getName();
@@ -378,7 +378,7 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
                     $tokenAux = new stdClass();
                     $tokenAux->key = $token->getTKey();
                     $tokenAux->secret = $token->getTSecret();
-                    $resourceUrl = API_SYNC;
+                    $resourceUrl = self::getResourceUrl();
                     $apiCalendarManager = new ApiCalendarManager();
                     $calendar = new stdClass();
                     $calendar->user = $user;
@@ -466,7 +466,7 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
                             $tokenAux = new stdClass();
                             $tokenAux->key = $token->getTKey();
                             $tokenAux->secret = $token->getTSecret();
-                            $resourceUrl = API_SYNC;
+                            $resourceUrl = self::getResourceUrl();
                             $apiCalendarManager = new ApiCalendarManager();
 
                             $name = $cal->getName();
@@ -574,7 +574,7 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
                     $tokenAux = new stdClass();
                     $tokenAux->key = $token->getTKey();
                     $tokenAux->secret = $token->getTSecret();
-                    $resourceUrl = API_SYNC;
+                    $resourceUrl = self::getResourceUrl();
                     $apiCalendarManager = new ApiCalendarManager();
                     foreach($params['calendar'] as $calendar)
                     {
@@ -670,7 +670,7 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
                     $tokenAux = new stdClass();
                     $tokenAux->key = $token->getTKey();
                     $tokenAux->secret =$token->getTSecret();
-                    $resourceUrl = API_SYNC;
+                    $resourceUrl = self::getResourceUrl();
                     $apiCalendarManager = new ApiCalendarManager();
                     $results = $apiCalendarManager->synchronizeCalendars($cloud, $tokenAux, $owner, $resourceUrl);
                 } else {
@@ -900,7 +900,7 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
                                 $tokenAux = new stdClass();
                                 $tokenAux->key = $token->getTKey();
                                 $tokenAux->secret = $token->getTSecret();
-                                $resourceUrl = API_SYNC;
+                                $resourceUrl = self::getResourceUrl();
 
                                 $delete = $apiCalendarManager->deleteEvent($cloud,$tokenAux,$event,$resourceUrl);
                                 if($delete['status'] == 'OK') {
@@ -1404,6 +1404,17 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
             }
         }
         return $result;
+    }
+
+    private static function getResourceUrl()
+    {
+        $resourceUrl = null;
+
+        if(defined('API_SYNC') && strlen(API_SYNC) > 0) {
+            $resourceUrl = API_SYNC;
+        }
+
+        return $resourceUrl;
     }
 
 }
