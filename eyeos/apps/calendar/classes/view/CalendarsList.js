@@ -247,7 +247,7 @@ qx.Class.define('eyeos.calendar.view.MyCalendarsList', {
 		
 		__addCheckBox: function(calendar) {
             var name = calendar.getName();
-            if(this.getController().getTypeCalendar() !== tr('EyeOS')) {
+            if(this.getController().getTypeCalendar() !== tr('Local (EyeOS)')) {
                 var cloud = this.getController().getTypeCalendar();
                 if(name.indexOf(cloud + "_") !== -1) {
                     name = name.substring(name.indexOf('_') + 1);

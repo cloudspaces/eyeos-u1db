@@ -68,6 +68,8 @@ qx.Class.define('eyeos.application.Calendar', {
         _blockCalendar: null,
         _myCalendars: null,
         _cursor: null,
+        _left: null,
+        _top: null,
 		
 		_buildMenuBar: function() {
 			this.__menuBar = new eyeos.ui.menubar.MenuBar();
@@ -77,8 +79,11 @@ qx.Class.define('eyeos.application.Calendar', {
 	        );
 			this.__menuBar.setActions(this._getMenuToolbarActions());
 			this.__menuBar.createMenuBar();
+
+            this.__menuBar.getMenuButtons()[0].setCursor('pointer');
+            this.__menuBar.getMenuButtons()[0].addListener('execute',this.__resetWindow,this);
 			
-			return this.__menuBar;
+			return this.__menuBar
 		},
 		
 		_buildToolBar: function() {
@@ -210,14 +215,16 @@ qx.Class.define('eyeos.application.Calendar', {
 			// Spacer (right)
 			firstContainer.add(new qx.ui.core.Spacer(), {flex: 1, width: '15%'});
 
-            this._imageBack = new qx.ui.basic.Image().set({
+            /*this._imageBack = new qx.ui.basic.Image().set({
                 width: 16,
                 height: 16,
                 source: "index.php?extern=images/16x16/actions/go-previous-view.png",
                 cursor: 'pointer'
             });
 
-            this._imageBack.addListener('click',this.createSelectCalendars,this);
+            this._imageBack.addListener('click',function() {
+                this.__resetWindow();
+            },this);
 
             firstContainer.add(this._imageBack);
 
@@ -230,8 +237,10 @@ qx.Class.define('eyeos.application.Calendar', {
                 marginRight: 10,
                 cursor: 'pointer'
             });
-            this._labelBack.addListener('click',this.createSelectCalendars,this);
-            firstContainer.add(this._labelBack);
+            this._labelBack.addListener('click',function() {
+                this.__resetWindow();
+            },this);
+            firstContainer.add(this._labelBack);*/
 
 
 			//
@@ -263,6 +272,13 @@ qx.Class.define('eyeos.application.Calendar', {
 			rightContainer.add(thirdContainer, {flex: 1});
 			return rightContainer;
 		},
+
+        __resetWindow: function() {
+            this.__window.setWidth(300);
+            this.__window.setHeight(270);
+            this.__window.moveTo(this._left,this._top);
+            this.createSelectCalendars();
+        },
 		
 		_getMenuToolbarActions: function() {
 			if (!this._menuToolbarActions) {
@@ -276,8 +292,8 @@ qx.Class.define('eyeos.application.Calendar', {
 		 */
 		drawGUI: function() {
 			this.__window = new eyeos.ui.Window(this, tr('Calendar'), 'index.php?extern=images/16x16/apps/office-calendar.png').set({
-				width: this.self(arguments).DEFAULT_WIDTH,
-				height: this.self(arguments).DEFAULT_HEIGHT,
+				width: 300,
+				height: 270,
 				contentPadding: 0,
 				backgroundColor: '#ffffff',
 				destroyOnClose: true
@@ -323,6 +339,9 @@ qx.Class.define('eyeos.application.Calendar', {
 
             this.__window.addListener('appear',function() {
                 this.createSelectCalendars();
+                this._left = this.__window.getBounds().left;
+                this._top = this.__window.getBounds().top;
+
             },this);
 
             this.__window.addListener('resize',function() {
@@ -337,6 +356,8 @@ qx.Class.define('eyeos.application.Calendar', {
 		},
         __createCalendars: function(typeCalendar) {
             this.__window.removeAll();
+            this.__window.setWidth(this.self(arguments).DEFAULT_WIDTH);
+            this.__window.setHeight(this.self(arguments).DEFAULT_HEIGHT);
             this.__window.setCaption(tr('Calendar') + '-' + tr(typeCalendar));
             this._controller.setTypeCalendar(typeCalendar);
 
@@ -356,6 +377,7 @@ qx.Class.define('eyeos.application.Calendar', {
             this.showCursor();
             this._controller.setCalendarPeriodMode(eyeos.calendar.Constants.PERIOD_MODE_WEEK);
             this._controller.init();
+            this.__window.center();
         },
         enabledWindowsComponents: function(enabled) {
             var cursor = 'default';
@@ -368,7 +390,7 @@ qx.Class.define('eyeos.application.Calendar', {
                 cursor: cursor
             });
 
-            this._imageBack.set({
+            /*this._imageBack.set({
                 enabled: enabled,
                 cursor: cursor
             });
@@ -376,7 +398,7 @@ qx.Class.define('eyeos.application.Calendar', {
             this._labelBack.set({
                 enabled: enabled,
                 cursor: cursor
-            })
+            })*/
 
             this._viewModeSelector.showSelector(enabled);
             this._blockCalendar.enabledCalendar(enabled);
@@ -422,13 +444,13 @@ qx.Class.define('eyeos.application.Calendar', {
             } else {
                 eyeos.error(tr('Error load calendars'));
             }
-            cals.push(tr('EyeOS'));
+            cals.push(tr('Local (EyeOS)'));
 
             var labelCalendars = new qx.ui.basic.Label().set({
                  value: tr('Select Cloud'),
-                 font: new qx.bom.Font(24, ["Lucida Grande", "Verdana"]).set({bold: true}),
+                 font: new qx.bom.Font(14, ["Sans-serif"]).set({bold: true}),
                  alignX: 'center',
-                 marginTop: 50
+                 marginTop: 30
             });
 
             this.__window.add(labelCalendars);
@@ -436,14 +458,17 @@ qx.Class.define('eyeos.application.Calendar', {
             var scroll = new qx.ui.container.Scroll().set({
                 allowStretchY: false,
                 allowStretchX: false,
-                width: 170,
-                height: 400,
+                width: 150,
+                height: 130,
                 alignX: 'center',
-                marginTop: 60
+                marginTop: 15,
+                decorator: new qx.ui.decoration.Single(1,null,'grey')
             });
 
             var containerCalendars = new qx.ui.container.Composite().set({
-                layout: new qx.ui.layout.VBox()
+                layout: new qx.ui.layout.VBox(),
+                backgroundColor: 'white',
+                paddingTop: 10
             });
             scroll.add(containerCalendars);
             this.__window.add(scroll);
@@ -451,34 +476,20 @@ qx.Class.define('eyeos.application.Calendar', {
             for(var i in cals) {
                 var containerCal = new qx.ui.container.Composite().set({
                     layout: new qx.ui.layout.HBox(),
-                    marginBottom: 40
+                    marginLeft: 20
                 });
-
-                var imageCloud = new qx.ui.basic.Image().set({
-                    width: 32,
-                    height: 32,
-                    source: "index.php?extern=images/32x32/actions/go-next-view.png",
-                    cursor: 'pointer'
-                });
-
-                imageCloud.setUserData('cloud',cals[i]);
-                imageCloud.addListener('click',this.__cloudClick,this);
 
                 var labelCloud = new qx.ui.basic.Label().set({
                     value: cals[i],
-                    font: new qx.bom.Font(18, ["Lucida Grande", "Verdana"]),
-                    marginTop: 4,
-                    marginLeft: 10,
-                    cursor: 'pointer'
+                    font: new qx.bom.Font(13, ["Sans-serif"]),
+                    cursor: 'pointer',
+                    padding: 10,
+                    width: 110
                 });
                 labelCloud.addListener('mouseover',this.__labelMouseOver,this);
                 labelCloud.addListener('mouseout',this.__labelMouseOut,this);
                 labelCloud.setUserData('cloud',cals[i]);
                 labelCloud.addListener('click',this.__cloudClick,this);
-                imageCloud.setUserData('labelCloud',labelCloud);
-                imageCloud.addListener('mouseover',this.__imageMouseOver,this);
-                imageCloud.addListener('mouseout',this.__imageMouseOut,this);
-                containerCal.add(imageCloud);
                 containerCal.add(labelCloud);
                 containerCalendars.add(containerCal);
             }
@@ -506,10 +517,15 @@ qx.Class.define('eyeos.application.Calendar', {
             }
         },
         __labelMouseOver: function(e) {
-            e.getCurrentTarget().setTextColor('blue');
+            e.getCurrentTarget().setTextColor('gray');
+            e.getCurrentTarget().setBackgroundColor('#f0f0f0');
+            e.getCurrentTarget().setFont(new qx.bom.Font(13, ["Sans-serif"]).set({bold:true}));
         },
         __labelMouseOut: function(e) {
             e.getCurrentTarget().setTextColor('black');
+            e.getCurrentTarget().resetBackgroundColor();
+            e.getCurrentTarget().setFont(new qx.bom.Font(13, ["Sans-serif"]));
+
         },
         __imageMouseOver: function(e) {
             var labelCloud = e.getCurrentTarget().getUserData('labelCloud');

@@ -62,7 +62,7 @@ qx.Class.define('eyeos.calendar.menu.Items', {
 				cmd: 'close'
 			}]
 		},*/ {
-			name: tr('Calendar'),
+			name: '< ' + tr('Back'),
 			id: 'Calendar'
 			/*subMenu: [{
 				name: tr('Settings'),

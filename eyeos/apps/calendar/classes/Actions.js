@@ -204,7 +204,7 @@ qx.Class.define('eyeos.calendar.Actions', {
 			var dialog = new eyeos.calendar.dialogs.Settings(this.getController());
 			dialog.open();
 		},
-		
+
 		addressBook: function() {
 			eyeos.alert(tr('Not available yet...'));
 		}

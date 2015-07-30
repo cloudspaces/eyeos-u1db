@@ -266,7 +266,7 @@ qx.Class.define('eyeos.calendar.Controller', {
 			}
 			this.setCalendars(calendars);
 
-            if(this.getTypeCalendar() !== tr('EyeOS')) {
+            if(this.getTypeCalendar() !== tr('Local (EyeOS)')) {
                 var that = this;
                 var reffunction = function () {
                     that.__refreshCalendars()
@@ -472,7 +472,7 @@ qx.Class.define('eyeos.calendar.Controller', {
             params.calendarData = calendarData;
             params.typeCalendar = this.getTypeCalendar();
             params.isCloud = false;
-            if(this.getTypeCalendar() !== tr('EyeOS')) {
+            if(this.getTypeCalendar() !== tr('Local (EyeOS)')) {
                 params.isCloud = true;
             }
 
@@ -507,7 +507,7 @@ qx.Class.define('eyeos.calendar.Controller', {
             params.calendarData = calendarData;
             params.typeCalendar = this.getTypeCalendar();
             params.isCloud = false;
-            if(this.getTypeCalendar() !== tr('EyeOS')) {
+            if(this.getTypeCalendar() !== tr('Local (EyeOS)')) {
                 params.isCloud = true;
             }
             this.__application.showCursor();
@@ -558,7 +558,7 @@ qx.Class.define('eyeos.calendar.Controller', {
             params.eventData = eventData;
             params.typeCalendar = this.getTypeCalendar();
             params.isCloud = false;
-            if(this.getTypeCalendar() !== tr('EyeOS')) {
+            if(this.getTypeCalendar() !== tr('Local (EyeOS)')) {
                 params.isCloud = true;
             }
 
@@ -706,7 +706,7 @@ qx.Class.define('eyeos.calendar.Controller', {
                 var params = new Object();
                 params.typeCalendar = this.getTypeCalendar();
                 params.isCloud = false;
-                if(this.getTypeCalendar() !== tr('EyeOS')) {
+                if(this.getTypeCalendar() !== tr('Local (EyeOS)')) {
                     params.isCloud = true;
                 }
 				eyeos.callMessage(this.__checknum, 'getAllUserCalendars', params, this.__onUserCalendarsLoaded, this);
@@ -755,7 +755,7 @@ qx.Class.define('eyeos.calendar.Controller', {
                 params.eventData = eventData;
                 params.typeCalendar = this.getTypeCalendar();
                 params.isCloud = false;
-                if(this.getTypeCalendar() !== tr('EyeOS')) {
+                if(this.getTypeCalendar() !== tr('Local (EyeOS)')) {
                     params.isCloud = true;
                 }
 
@@ -796,7 +796,7 @@ qx.Class.define('eyeos.calendar.Controller', {
                 params.eventData = eventData;
                 params.typeCalendar = this.getTypeCalendar();
                 params.isCloud = false;
-                if(this.getTypeCalendar() !== tr('EyeOS')) {
+                if(this.getTypeCalendar() !== tr('Local (EyeOS)')) {
                     params.isCloud = true;
                 }
                 this.closeTimer();
@@ -917,7 +917,7 @@ qx.Class.define('eyeos.calendar.Controller', {
                 params.periodTo = null;
                 params.isCloud = false;
                 params.typeCalendar = this.getTypeCalendar();
-                if(this.getTypeCalendar() !== tr('EyeOS')) {
+                if(this.getTypeCalendar() !== tr('Local (EyeOS)')) {
                     params.isCloud = true;
                 }
 
@@ -1039,7 +1039,7 @@ qx.Class.define('eyeos.calendar.Controller', {
         },
 
         __refresh: function(refresh) {
-            if(this.getTypeCalendar() !== tr('EyeOS')) {
+            if(this.getTypeCalendar() !== tr('Local (EyeOS)')) {
                 var that = this;
                 var reffunction = function () {
                     that.refreshEventsCalendar(refresh)
@@ -1105,12 +1105,12 @@ qx.Class.define('eyeos.calendar.Controller', {
         },
 
         __refreshCalendars: function() {
-            if(!this.close && this.getTypeCalendar() !== tr('EyeOS')) {
+            if(!this.close && this.getTypeCalendar() !== tr('Local (EyeOS)')) {
                 this.closeTimerCalendar();
                 var params = new Object();
                 params.typeCalendar = this.getTypeCalendar();
                 params.isCloud = false;
-                if(this.getTypeCalendar() !== tr('EyeOS')) {
+                if(this.getTypeCalendar() !== tr('Local (EyeOS)')) {
                     params.isCloud = true;
                 }
 
@@ -1141,7 +1141,7 @@ qx.Class.define('eyeos.calendar.Controller', {
                         eyeos.error(tr('Error load calendars'));
                     }
 
-                    if(this.getTypeCalendar() !== tr('EyeOS')) {
+                    if(this.getTypeCalendar() !== tr('Local (EyeOS)')) {
                         var that = this;
                         var reffunction = function () {
                             that.__refreshCalendars()
