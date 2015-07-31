@@ -557,7 +557,7 @@
             <collectionProp name="Arguments.arguments">
               <elementProp name="params" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.value">{&quot;path&quot;:&quot;home://~sebas/Cloudspaces/Stacksync&quot;,&quot;cloud&quot;:&quot;Stacksync&quot;,&quot;id&quot;:0}</stringProp>
+                <stringProp name="Argument.value">{&quot;path&quot;:&quot;home://~${user}/Cloudspaces/Stacksync&quot;,&quot;cloud&quot;:&quot;${cloud}&quot;,&quot;id&quot;:0}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
                 <stringProp name="Argument.name">params</stringProp>
