@@ -1390,6 +1390,7 @@ abstract class CalendarApplication extends EyeosApplicationExecutable {
             unset($result['error']);
             $result['clouds'] = array();
             foreach($clouds as $cloud) {
+                $cloudType = array();
                 $cloudType['cloud'] = $cloud;
                 $calendar = $apiManager->getControlCalendarCloud($cloud);
                 if(!isset($calendar->error)) {
