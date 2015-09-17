@@ -523,7 +523,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
             });
 
             var eraseButton = new qx.ui.form.Button().set({
-                label: tr('Erase'),
+                label: tr('Delete'),
                 width: 60,
                 marginLeft: 10,
                 cursor: 'pointer'

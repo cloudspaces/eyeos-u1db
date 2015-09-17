@@ -424,7 +424,7 @@ qx.Class.define('eyeos.files.ViewManager', {
             dialog.add(logo);
 
             var label = new qx.ui.basic.Label().set({
-               value: !isActive? tr("Do you want to log on ") + cloud + "?" : tr("Do you want to logout ") + cloud + "?",
+               value: !isActive? tr("Do you want to log on ") + cloud + "?" : tr("Do you want to log out from ") + cloud + "?",
                font:  new qx.bom.Font(18, ['Arial', 'sans-serif']),
                alignX: 'center',
                marginTop: 20
@@ -497,7 +497,7 @@ qx.Class.define('eyeos.files.ViewManager', {
             containerWait.add(logo);
 
             var label = new qx.ui.basic.Label().set({
-                value: tr("Waiting ") + cloud,
+                value: tr("Waiting for ") + cloud,
                 font:  new qx.bom.Font(18, ['Arial', 'sans-serif']),
                 alignX: 'center',
                 marginTop: 20

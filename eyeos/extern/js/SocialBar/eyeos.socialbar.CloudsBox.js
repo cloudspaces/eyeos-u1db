@@ -101,7 +101,7 @@ qx.Class.define('eyeos.socialbar.CloudsBox', {
 
             var titleLabel = new qx.ui.basic.Label().set({
                 textColor: '#333333',
-                value: "Status cloudspaces:",
+                value: "Cloudspace status:",
                 font: new qx.bom.Font(14).set({
                     family: ["Helvetica", "Arial", "Lucida Grande"],
                     bold: true

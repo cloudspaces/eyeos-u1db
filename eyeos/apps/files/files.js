@@ -2393,7 +2393,7 @@ qx.Class.define('eyeos.files.Controller', {
                     marginLeft: 20
                 },this);
 
-                var lbErase = unShare === true?tr('Reload'):tr('Erase');
+                var lbErase = unShare === true?tr('Reload'):tr('Delete');
                 var buttonErase = new qx.ui.form.Button().set({
                     label: lbErase,
                     font: new qx.bom.Font(11),
