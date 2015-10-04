@@ -1294,6 +1294,8 @@ external Rest API can be used, following the same defined contract in our Sync A
 which can be configured in settings.php, identifying the url where our API should
 connect. The constant is *API_SYNC*.
 
+[Installation Sync API](APISync/Readme.md)
+
 ### ANNEXES
 
 #### ANNEX 1 Configuration file
