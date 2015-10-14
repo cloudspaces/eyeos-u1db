@@ -194,7 +194,7 @@ qx.Class.define('eyeos.files.IconViewItem', {
                         menu[menu.length -1].label = tr('Share');
                         var metadata = this.getManager().getViewManager().getController().__getFileIdFolder(this.getFile().getAbsolutePath(), cloud.cloud);
                         var isObject = metadata === Object(metadata);
-                        if(!(isObject && metadata.id.indexOf('_' + cloud.cloud) !== -1)) {
+                        if(!(isObject && (metadata.id + "").indexOf('_' + cloud.cloud) !== -1)) {
                             menu[menu.length -1].id = 'shareFolder()';
                             menu[menu.length -1].image = 'index.php?extern=images/16x16/categories/share-cloud.png';
                         }

@@ -111,6 +111,20 @@ class Metadata:
             files = self.db.get_from_index("by-path-filename", lista[ 'path' ], lista[ 'filename' ], lista[ 'user_eyeos' ])
         if len(files) > 0:
             results.append(files[0].content)
+        else:
+             self.db.create_index("by-path-cloud-name", "cloud", "path", "name", "user_eyeos")
+             files = self.db.get_from_index("by-path-cloud-name", lista[ 'cloud' ], lista[ 'path' ], lista[ 'filename' ], lista[ 'user_eyeos' ])
+             if len(files) > 0:
+                 id = str(files[0].content['id'])
+                 try:
+                     pos = id.index("_" + lista['cloud'])
+                     id = id[:pos]
+                     files[0].content['id'] = id
+                 except:
+                     pass
+
+                 results.append(files[0].content)
+
         return results
 
     def deleteFolder(self, lista):

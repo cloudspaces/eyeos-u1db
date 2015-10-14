@@ -493,7 +493,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
 		$dirToCreate->mkdir();
 
-        if(count($params) === 4) {
+        if(count($params) === 4 || count($params) == 7) {
             $apiManager = new ApiManager();
             $idParent = $params[2]; //$params[2] === 0?'null':$params[2];
             $cloud = $params[3];
@@ -686,9 +686,9 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                     $resourceUrl = null;
                     if(count($params) === 9) {
                         $token = new stdClass();
-                        $resourceUrl = $params[7];
-                        $token->key = $params[8];
-                        $token->secret = $params[9];
+                        $resourceUrl = $params[6];
+                        $token->key = $params[7];
+                        $token->secret = $params[8];
                     }
 
                     $metadata = $apiManager->downloadMetadata($token, $params[3], $pathAbsolute, $currentUser->getId(), false, $cloud, $resourceUrl);
@@ -725,9 +725,9 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                     $resourceUrl = null;
                     if(count($params) === 9) {
                         $token = new stdClass();
-                        $resourceUrl = $params[7];
-                        $token->key = $params[8];
-                        $token->secret = $params[9];
+                        $resourceUrl = $params[6];
+                        $token->key = $params[7];
+                        $token->secret = $params[8];
                     }
 
                     $resultado = $apiManager->renameMetadata($cloud, $token, !$fileToRename->isDirectory(), $params[3], $renamed->getName(), $path, $currentUser->getId(), $parent,$resourceUrl);

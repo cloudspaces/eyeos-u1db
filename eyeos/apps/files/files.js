@@ -1137,13 +1137,16 @@ qx.Class.define('eyeos.files.Controller', {
                     if(metadata !== null) {
                         var isObject = metadata === Object(metadata);
                         var fileId = isObject?metadata.id:metadata;
+                        if(isObject && (fileId + "").indexOf("_" + cloud.cloud) !== -1) {
+                            fileId = fileId.substring(0,(fileId + "").indexOf("_" + cloud.cloud));
+                        }
                         params.splice(params.length,0,fileId);
                         params.splice(params.length,0,cloud.cloud);
 
-                        if(isObject) {
+                        if(isObject && metadata.resource_url != null) {
                             params.splice(params.length,0,metadata.resource_url);
                             params.splice(params.length,0,metadata.access_token_key);
-                            params.splice(params.length,0,metadata.access_token_secret);
+                            params.splice(params.length,0,metadata.access_token_secret)
                         }
                     }
                 }
@@ -1384,6 +1387,10 @@ qx.Class.define('eyeos.files.Controller', {
                         var isObjectParent = metadataParent === Object(metadataParent);
                         var idParent = isObjectParent?metadataParent.id:metadataParent;
 
+                        if(isObjectParent && (idParent + "").indexOf("_" + cloud.cloud) !== -1) {
+                            idParent = idParent.substring(0,(idParent + "").indexOf("_" + cloud.cloud));
+                        }
+
                         params.splice(params.length, 0, idFile);
                         params.splice(params.length, 0, idParent);
                         params.splice(params.length, 0, cloud.cloud);
@@ -1542,7 +1549,11 @@ qx.Class.define('eyeos.files.Controller', {
                                 if(this._metadatas[cloud][i].metadata.contents && this._metadatas[cloud][i].metadata.contents.length > 0) {
                                     for(var j in this._metadatas[cloud][i].metadata.contents) {
                                         if(this._metadatas[cloud][i].metadata.contents[j].filename === name) {
-                                            fileIdFolder = this._metadatas[cloud][i].metadata.contents[j].id;
+                                            if(this._metadatas[cloud][i].metadata.contents[j].resource_url != null) {
+                                                fileIdFolder = this._metadatas[cloud][i].metadata.contents[j];
+                                            } else {
+                                                fileIdFolder = this._metadatas[cloud][i].metadata.contents[j].id;
+                                            }
                                             break;
                                         } else if(this._metadatas[cloud][i].metadata.contents[j].name === name) {
                                             fileIdFolder = this._metadatas[cloud][i].metadata.contents[j];
@@ -2627,8 +2638,8 @@ qx.Class.define('eyeos.files.Controller', {
         __getResourceUrlId:function(id,cloud) {
             var file_id = id;
 
-            if(id.indexOf('_' + cloud) !== -1) {
-                file_id = id.substring(0,id.indexOf('_' + cloud));
+            if((id + "").indexOf('_' + cloud) !== -1) {
+                file_id = id.substring(0,(id + "").indexOf('_' + cloud));
             }
 
             return file_id;

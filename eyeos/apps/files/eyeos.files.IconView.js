@@ -349,7 +349,7 @@ qx.Class.define('eyeos.files.IconView', {
                         if(type === 'folder') {
                             var metadata = self.getViewManager().getController().__getFileIdFolder(folder, cloud.cloud);
                             var isObject = metadata === Object(metadata);
-                            if (isObject && metadata.id.indexOf("_" + cloud.cloud) !== -1) {
+                            if (isObject && (metadata.id + "").indexOf("_" + cloud.cloud) !== -1) {
                                 enabled = false;
                             }
                             metadata = self.getViewManager().getController().__getFileId(parentPath,filename,true,cloud.cloud);
@@ -478,7 +478,7 @@ qx.Class.define('eyeos.files.IconView', {
                                     if(cloud.isCloud === true) {
                                         var metadata = self.getViewManager().getController().__getFileIdFolder(selected[j].getFile().getAbsolutePath(), cloud.cloud);
                                         var isObject = metadata === Object(metadata);
-                                        if(isObject && metadata.id.indexOf('_' + cloud.cloud) !== -1) {
+                                        if(isObject && (metadata.id + "").indexOf('_' + cloud.cloud) !== -1) {
                                             childrens[i].setEnabled(false);
                                         }
 
