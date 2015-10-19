@@ -909,7 +909,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
             if(metadata !== null) {
                 params.activity.getChildren()[1].getChildren()[0].setEnabled(false);
                 this.closeTimerVersion();
-                params.controller.getVersion(metadata.id, params.version, params.activity, params.file, params.cloud,metadata.resource_url,metadata.access_token_key,metadata.access_token_secret);
+                params.controller.getVersion(metadata.id, params.version, params.activity, params.file, params.cloud,metadata.resource_url,metadata.access_token_key,metadata.access_token_secret,metadata.consumer_key,metadata.consumer_secret);
             }
         },
 

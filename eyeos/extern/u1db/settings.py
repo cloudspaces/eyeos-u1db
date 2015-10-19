@@ -30,8 +30,14 @@ settings = {
                 "key": "8224c4148302d09e287ba35fe96f214e0ac5b3c5c",
                 "secret" : "f88a48225a02542ec720dc18cba36023"
             },
+            "interop": {
+              "consumer": {
+                  "key": "b3af4e669daf880fb16563e6f36051b105188d413",
+                  "secret": "c168e65c18d75b35d8999b534a3776cf"
+              }
+            },
             "version": "v2",
-            "controlVersion": "true",
+            "controlVersion": "false",
             "comments": "true",
             "calendar": "true"
         },
@@ -46,6 +52,12 @@ settings = {
             "consumer": {
                 "key": "8224c4148302d09e287ba35fe96f214e0ac5b3c5c",
                 "secret" : "f88a48225a02542ec720dc18cba36023"
+            },
+            "interop": {
+              "consumer": {
+                  "key": "b3af4e669daf880fb16563e6f36051b105188d413",
+                  "secret": "c168e65c18d75b35d8999b534a3776cf"
+              }
             },
             "version": "v2",
             "controlVersion": "false",

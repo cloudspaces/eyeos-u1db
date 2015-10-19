@@ -670,9 +670,15 @@ qx.Class.define('eyeos.files.Controller', {
                         params.id = id;
                     } else {
                         params.id = this.__getResourceUrlId(id.id,cloud.cloud);
-                        params.resource_url = id.resource_url;
-                        params.access_token_key = id.access_token_key;
-                        params.access_token_secret = id.access_token_secret;
+                        if(id.resource_url) {
+                            params.resource_url = id.resource_url;
+                            params.access_token_key = id.access_token_key;
+                            params.access_token_secret = id.access_token_secret;
+                            if(id.consumer_key && id.consumer_secret) {
+                                params.consumer_key = id.consumer_key;
+                                params.consumer_secret = id.consumer_secret;
+                            }
+                        }
                     }
 
                     if(params.id !== null) {
@@ -1146,7 +1152,11 @@ qx.Class.define('eyeos.files.Controller', {
                         if(isObject && metadata.resource_url != null) {
                             params.splice(params.length,0,metadata.resource_url);
                             params.splice(params.length,0,metadata.access_token_key);
-                            params.splice(params.length,0,metadata.access_token_secret)
+                            params.splice(params.length,0,metadata.access_token_secret);
+                            if(metadata.consumer_key && metadata.consumer_secret) {
+                                params.splice(params.length,0,metadata.consumer_key);
+                                params.splice(params.length,0,metadata.consumer_secret);
+                            }
                         }
                     }
                 }
@@ -1194,6 +1204,10 @@ qx.Class.define('eyeos.files.Controller', {
                                     params.resource_url = metadata.resource_url;
                                     params.access_token_key = metadata.access_token_key;
                                     params.access_token_secret = metadata.access_token_secret;
+                                    if(metadata.consumer_key && metadata.consumer_secret) {
+                                        params.consumer_key = metadata.consumer_key;
+                                        params.consumer_secret = metadata.consumer_secret;
+                                    }
                                 }
                             }
                         }
@@ -1399,6 +1413,10 @@ qx.Class.define('eyeos.files.Controller', {
                             params.splice(params.length, 0, metadataFile.resource_url);
                             params.splice(params.length, 0, metadataFile.access_token_key);
                             params.splice(params.length, 0, metadataFile.access_token_secret);
+                            if(metadataFile.consumer_key && metadataFile.consumer_secret) {
+                                params.splice(params.length, 0, metadataFile.consumer_key);
+                                params.splice(params.length, 0, metadataFile.consumer_secret);
+                            }
                         }
                     }
                 }
@@ -1444,6 +1462,10 @@ qx.Class.define('eyeos.files.Controller', {
                         params.resource_url = metadata.resource_url;
                         params.access_token_key = metadata.access_token_key;
                         params.access_token_secret = metadata.access_token_secret;
+                        if(metadata.consumer_key && metadata.consumer_secret) {
+                            params.consumer_key = metadata.consumer_key;
+                            params.consumer_secret = metadata.consumer_secret;
+                        }
                     }
                     download = true;
                     this.openCursorLoad();
@@ -1722,6 +1744,10 @@ qx.Class.define('eyeos.files.Controller', {
                 file.resource_url = metadata.resource_url;
                 file.access_token_key = metadata.access_token_key;
                 file.access_token_secret = metadata.access_token_secret;
+                if(metadata.consumer_key && metadata.consumer_secret) {
+                    file.consumer_key = metadata.consumer_key;
+                    file.consumer_secret = metadata.consumer_secret;
+                }
             }
             return file;
         },
@@ -2240,11 +2266,11 @@ qx.Class.define('eyeos.files.Controller', {
             this.getSocialBarUpdater().showCursorLoad(listContainer);
 
             if(type) {
-               this.__loadActivityCloud(metadata.id, versionsBox, file, type, cloud, listContainer,metadata.resource_url,metadata.access_token_key,metadata.access_token_secret);
+               this.__loadActivityCloud(metadata.id, versionsBox, file, type, cloud, listContainer,metadata.resource_url,metadata.access_token_key,metadata.access_token_secret,metadata.consumer_key,metadata.consumer_secret);
             } else {
                 eyeos.callMessage(this.getApplication().getChecknum(), 'getControlVersionCloud', cloud, function (result) {
                     if(result.controlVersion === 'true') {
-                        this.__loadActivityCloud(metadata.id, versionsBox, file, type, cloud, listContainer,metadata.resource_url,metadata.access_token_key,metadata.access_token_secret);
+                        this.__loadActivityCloud(metadata.id, versionsBox, file, type, cloud, listContainer,metadata.resource_url,metadata.access_token_key,metadata.access_token_secret,metadata.consumer_key,metadata.consumer_secret);
                     } else {
                         this.getSocialBarUpdater().closeCursorLoad(listContainer);
                         var versions = [];
@@ -2255,7 +2281,7 @@ qx.Class.define('eyeos.files.Controller', {
             }
         },
 
-        __loadActivityCloud: function(id, versionsBox, file, type, cloud, listContainer,resource_url,access_token_key,access_token_secret) {
+        __loadActivityCloud: function(id, versionsBox, file, type, cloud, listContainer,resource_url,access_token_key,access_token_secret,consumer_key,consumer_secret) {
             var params = new Object();
             params.id = id;
             params.cloud = cloud;
@@ -2263,6 +2289,10 @@ qx.Class.define('eyeos.files.Controller', {
                 params.resource_url = resource_url;
                 params.access_token_key = access_token_key;
                 params.access_token_secret = access_token_secret;
+                if(consumer_key && consumer_secret) {
+                    params.consumer_key = consumer_key;
+                    params.consumer_secret = consumer_secret;
+                }
             }
             var callFunction = type ? 'listUsersShare' : 'listVersions';
 
@@ -2283,7 +2313,7 @@ qx.Class.define('eyeos.files.Controller', {
             },this);
         },
 
-        getVersion: function(id, version, versionBox, file, cloud, resource_url, access_token_key,access_token_secret) {
+        getVersion: function(id, version, versionBox, file, cloud, resource_url, access_token_key,access_token_secret,consumer_key,consumer_secret) {
             var params = new Object();
             params.id = id;
             params.version = version;
@@ -2294,6 +2324,10 @@ qx.Class.define('eyeos.files.Controller', {
                 params.resource_url = resource_url;
                 params.access_token_key = access_token_key;
                 params.access_token_secret = access_token_secret;
+                if(consumer_key && consumer_secret) {
+                    params.consumer_key = consumer_key;
+                    params.consumer_secret = consumer_secret;
+                }
             }
 
             eyeos.callMessage(this.getApplication().getChecknum(), 'getFileVersionData', params, function (result) {

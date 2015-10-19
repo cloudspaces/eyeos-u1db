@@ -431,13 +431,19 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                     $cloud = $param['cloud'];
                     $token = $_SESSION['access_token_' . $cloud . '_v2'];
                     $resourceUrl = null;
+                    $consumer_key = null;
+                    $consumer_secret = null;
                     if(isset($param['resource_url'])) {
                         $token = new stdClass();
                         $token->key = $param['access_token_key'];
                         $token->secret = $param['access_token_secret'];
                         $resourceUrl = $param['resource_url'];
+                        if(isset($params['consumer_key']) && isset($params['consumer_secret'])) {
+                            $consumer_key = $params['consumer_key'];
+                            $consumer_secret = $params['consumer_secret'];
+                        }
                     }
-                    $result = $apiManager->deleteMetadata($cloud, $token, $isFile, $param['id'], $currentUser->getId(), $fileToRemove->getParentPath(),$resourceUrl);
+                    $result = $apiManager->deleteMetadata($cloud, $token, $isFile, $param['id'], $currentUser->getId(), $fileToRemove->getParentPath(),$resourceUrl,$consumer_key,$consumer_secret);
                     if($result) {
                         if(isset($result['error']) && $result['error'] == 403) {
                             $denied = self::permissionDeniedCloud($cloud);
@@ -493,22 +499,28 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
 
 		$dirToCreate->mkdir();
 
-        if(count($params) === 4 || count($params) == 7) {
+        if(count($params) === 4 || count($params) == 7 || count($params) == 9) {
             $apiManager = new ApiManager();
             $idParent = $params[2]; //$params[2] === 0?'null':$params[2];
             $cloud = $params[3];
             $path = self::getPathCloud($dirToCreate,$cloud);
             $token = $_SESSION['access_token_' . $cloud . '_v2'];
             $resourceUrl = null;
-            if(count($params) == 7) {
+            $consumer_key = null;
+            $consumer_secret = null;
+            if(count($params) == 7 || count($params) == 9) {
                 $token = new stdClass();
                 $resourceUrl = $params[4];
                 $token->key = $params[5];
                 $token->secret = $params[6];
+                if(count($params) == 9) {
+                    $consumer_key = $params[7];
+                    $consumer_secret = $params[8];
+                }
             }
 
             //$result = $apiManager->createMetadata($_SESSION['access_token_v2'],$currentUser->getId(),false,$dirToCreate->getName(),$idParent,$path);
-            $result = $apiManager->createMetadata($cloud,$token,$currentUser->getId(),false,$dirToCreate->getName(),$idParent,$path,null,$resourceUrl);
+            $result = $apiManager->createMetadata($cloud,$token,$currentUser->getId(),false,$dirToCreate->getName(),$idParent,$path,null,$resourceUrl,$consumer_key,$consumer_secret);
 
             if($result) {
                 if (isset($result['error']) && $result['error'] === 403) {
@@ -676,7 +688,7 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         $apiManager = new ApiManager();
         $cloudspace = count($params) == 6 ? true : false;
 
-        if($cloudspace || count($params) === 9) {
+        if($cloudspace || count($params) === 9 || count($params) === 11) {
             $cloud = $params[5];
             $parent = $params[4] === 0? 'null' : $params[4];
             if(!$fileToRename->isDirectory()) {
@@ -684,14 +696,20 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                     $pathAbsolute = AdvancedPathLib::getPhpLocalHackPath($fileToRename->getRealFile()->getAbsolutePath());
                     $token = $_SESSION['access_token_' . $cloud . '_v2'];
                     $resourceUrl = null;
-                    if(count($params) === 9) {
+                    $consumer_key = null;
+                    $consumer_secret = null;
+                    if(count($params) === 9 || count($params) === 11) {
                         $token = new stdClass();
                         $resourceUrl = $params[6];
                         $token->key = $params[7];
                         $token->secret = $params[8];
+                        if(count($params) == 11) {
+                            $consumer_key = $params[9];
+                            $consumer_secret = $params[10];
+                        }
                     }
 
-                    $metadata = $apiManager->downloadMetadata($token, $params[3], $pathAbsolute, $currentUser->getId(), false, $cloud, $resourceUrl);
+                    $metadata = $apiManager->downloadMetadata($token, $params[3], $pathAbsolute, $currentUser->getId(), false, $cloud, $resourceUrl,$consumer_key,$consumer_secret);
                     if (isset($metadata['error'])) {
                         if ($metadata['error'] == 403) {
                             $denied = self::permissionDeniedCloud($cloud);
@@ -723,14 +741,20 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
                 if($params[3] !== -1) {
                     $token = $_SESSION['access_token_' . $cloud . '_v2'];
                     $resourceUrl = null;
-                    if(count($params) === 9) {
+                    $consumer_key = null;
+                    $consumer_secret = null;
+                    if(count($params) === 9 || count($params) === 11) {
                         $token = new stdClass();
                         $resourceUrl = $params[6];
                         $token->key = $params[7];
                         $token->secret = $params[8];
+                        if(count($params) === 11) {
+                            $consumer_key = $params[9];
+                            $consumer_secret = $params[10];
+                        }
                     }
 
-                    $resultado = $apiManager->renameMetadata($cloud, $token, !$fileToRename->isDirectory(), $params[3], $renamed->getName(), $path, $currentUser->getId(), $parent,$resourceUrl);
+                    $resultado = $apiManager->renameMetadata($cloud, $token, !$fileToRename->isDirectory(), $params[3], $renamed->getName(), $path, $currentUser->getId(), $parent,$resourceUrl,$consumer_key,$consumer_secret);
                     if (isset($resultado['error'])) {
                         if ($resultado['error'] == 403) {
                             $denied = self::permissionDeniedCloud($cloud);
@@ -791,18 +815,25 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $path = $params[ 'path' ];
             $id = $params[ 'id' ];
             $resource_url = null;
+            $consumer_key = null;
+            $consumer_secret = null;
 
             $token = new stdClass();
             if(isset($params['resource_url'])) {
                 $token->key = $params['access_token_key'];
                 $token->secret = $params['access_token_secret'];
                 $resource_url = $params['resource_url'];
+                if(isset($params['consumer_key']) && isset($params['consumer_secret'])) {
+                    $consumer_key = $params['consumer_key'];
+                    $consumer_secret = $params['consumer_secret'];
+                }
+
             } else {
                 $token = $_SESSION[ 'access_token_' . $cloud . '_v2' ];
             }
 
             $apiManager = new ApiManager();
-            $result = $apiManager->getMetadata($cloud,$token,$id,$path,$user,$resource_url);
+            $result = $apiManager->getMetadata($cloud,$token,$id,$path,$user,$resource_url,$consumer_key,$consumer_secret);
             if($result) {
                 if(isset($result[ 'error' ]) && $result[ 'error' ] == 403) {
                     $denied = self::permissionDeniedCloud($cloud);
@@ -983,14 +1014,20 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
         $apiManager = new ApiManager();
         $token = $_SESSION[ 'access_token_' . $cloud . '_v2'];
         $resourceUrl = null;
+        $consumer_key = null;
+        $consumer_secret = null;
         if(isset($params['resource_url'])) {
             $token = new stdClass();
             $token->key = $params['access_token_key'];
             $token->secret = $params['access_token_secret'];
             $resourceUrl = $params['resource_url'];
+            if(isset($params['consumer_key']) && isset($params['consumer_secret'])) {
+                $consumer_key = $params['consumer_key'];
+                $consumer_secret = $params['consumer_secret'];
+            }
         }
 
-        $result = $apiManager->downloadMetadata($token, $id, $path, $user, false, $cloud,$resourceUrl);
+        $result = $apiManager->downloadMetadata($token, $id, $path, $user, false, $cloud,$resourceUrl,$consumer_key,$consumer_secret);
         if($result[ 'status' ] == 'KO') {
             if($result[ 'error' ] == 403) {
                 $denied = self::permissionDeniedCloud($cloud);
@@ -1476,15 +1513,22 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $apiManager = new ApiManager();
             $token = $_SESSION['access_token_' . $cloud . '_v2'];
             $resourceUrl = null;
+            $consumer_key = null;
+            $consumer_secret = null;
 
             if(isset($params['resource_url'])) {
                 $token = new stdClass();
                 $resourceUrl = $params['resource_url'];
                 $token->key = $params['access_token_key'];
                 $token->secret = $params['access_token_secret'];
+                if(isset($params['consumer_key']) && isset($params['consumer_secret'])) {
+                    $consumer_key = $params['consumer_key'];
+                    $consumer_secret = $params['consumer_secret'];
+                }
+
             }
 
-            $result = $apiManager->listVersions($cloud, $token, $id, $user, $resourceUrl);
+            $result = $apiManager->listVersions($cloud, $token, $id, $user, $resourceUrl,$consumer_key,$consumer_secret);
 
             if ($result) {
                 if (isset($result['error']) && $result['error'] == 403) {
@@ -1512,13 +1556,19 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $path = AdvancedPathLib::getPhpLocalHackPath($file->getRealFile()->getAbsolutePath());
             $token = $_SESSION['access_token_' . $cloud . '_v2'];
             $resourceUrl = null;
+            $consumer_key = null;
+            $consumer_secret = null;
             if(isset($params['resource_url'])) {
                 $token = new stdClass();
                 $resourceUrl = $params['resource_url'];
                 $token->key = $params['access_token_key'];
                 $token->secret = $params['access_token_secret'];
+                if(isset($params['consumer_key']) && isset($params['consumer_secret'])) {
+                    $consumer_key = $params['consumer_key'];
+                    $consumer_secret = $params['consumer_secret'];
+                }
             }
-            $result = $apiManager->getFileVersionData($cloud, $token, $id, $version, $path, $user, $resourceUrl);
+            $result = $apiManager->getFileVersionData($cloud, $token, $id, $version, $path, $user, $resourceUrl,$consumer_key,$consumer_secret);
             if($result) {
                 if(isset($result[ 'error' ]) && $result[ 'error' ] == 403) {
                     $denied = self::permissionDeniedCloud($cloud);
@@ -1540,14 +1590,20 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $apiManager = new ApiManager();
             $token = $_SESSION[ 'access_token_' . $cloud . '_v2' ];
             $resourceUrl = null;
+            $consumer_key = null;
+            $consumer_secret = null;
             if(isset($params['resource_url'])) {
                 $token = new stdClass();
                 $resourceUrl = $params['resource_url'];
                 $token->key = $params['access_token_key'];
                 $token->secret = $params['access_token_secret'];
+                if(isset($params['consumer_key']) && $params['consumer_secret']) {
+                    $consumer_key = $params['consumer_key'];
+                    $consumer_secret = $params['consumer_secret'];
+                }
             }
 
-            $result = $apiManager->getListUsersShare($cloud, $token, $id,$resourceUrl);
+            $result = $apiManager->getListUsersShare($cloud, $token, $id,$resourceUrl,$consumer_key,$consumer_secret);
             if($result) {
                 if(isset($result['error']) && $result['error'] == 403) {
                     $denied = self::permissionDeniedCloud($cloud);

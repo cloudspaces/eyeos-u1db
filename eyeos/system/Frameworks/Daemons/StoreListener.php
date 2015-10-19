@@ -75,6 +75,8 @@ class StoreListener extends AbstractFileAdapter implements ISharingListener {
         $userName = $user->getName();
         $cloud = $this->isCloud($path, $userName);
         $resourceUrl = null;
+        $consumer_key = null;
+        $consumer_secret = null;
         if($cloud->isCloud) {
             $pathU1db = substr($path, strlen($cloud->path));
             $lenfinal = strrpos($pathU1db, $e->getSource()->getName());
@@ -104,6 +106,10 @@ class StoreListener extends AbstractFileAdapter implements ISharingListener {
                         $resourceUrl->token = new stdClass();
                         $resourceUrl->token->key = $u1db[0]->access_token_key;
                         $resourceUrl->token->secret = $u1db[0]->access_token_secret;
+                        if(isset($u1db[0]->consumer_key) && isset($u1db[0]->consumer_secret)) {
+                            $resourceUrl->consumer_key = $u1db[0]->consumer_key;
+                            $resourceUrl->consumer_secret = $u1db[0]->consumer_secret;
+                        }
                         if($parentId === 'null') {
                             $parentId = 0;
                         }
@@ -120,8 +126,13 @@ class StoreListener extends AbstractFileAdapter implements ISharingListener {
                 if($resourceUrl) {
                     $token = $resourceUrl->token;
                     $resourceUrl = $resourceUrl->resource_url;
+
+                    if(isset($resourceUrl->consumer_key) && isset($resourceUrl->consumer_secret)) {
+                        $consumer_key = $resourceUrl->consumer_key;
+                        $consumer_secret = $resourceUrl->consumer_secret;
+                    }
                 }
-                $result = $apiManager->createMetadata($cloud->name, $token, $user->getId(), true, $e->getSource()->getName(), $parentId, $path, $pathAbsolute,$resourceUrl);
+                $result = $apiManager->createMetadata($cloud->name, $token, $user->getId(), true, $e->getSource()->getName(), $parentId, $path, $pathAbsolute,$resourceUrl,$consumer_key,$consumer_secret);
                 if($result['status'] == 'OK') {
                     $params = array($e->getSource()->getParentPath(),$e->getSource()->getPath());
                     $message = new ClientBusMessage('file', 'refreshStackSync', $params);

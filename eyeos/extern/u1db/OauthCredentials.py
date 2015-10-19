@@ -347,18 +347,26 @@ if __name__ == "__main__":
                             result = json.dumps({"calendar": "" + settingsCloud['calendar'] + ""})
 
                     else:
+                        key = settingsCloud[ 'consumer' ][ 'key' ]
+                        secret = settingsCloud[ 'consumer' ][ 'secret' ]
+                        resource_url = settingsCloud[ 'urls' ][ 'RESOURCE_URL' ]
+                        callbackUrl = settingsCloud[ 'urls' ][ 'CALLBACK_URL' ]
+
                         if params[ 'config' ].has_key( 'resource_url' ):
                             resource_url = params['config']['resource_url']
-                        else:
-                            resource_url = settingsCloud[ 'urls' ][ 'RESOURCE_URL' ]
+                            if params['config'].has_key('consumer_key') and params['config'].has_key('consumer_secret'):
+                                key = params['config']['consumer_key']
+                                secret = params['config']['consumer_secret']
+
+                            if settingsCloud.has_key('interop') and settingsCloud['interop'].has_key('consumer'):
+                                key = settingsCloud['interop']['consumer']['key']
+                                secret = settingsCloud['interop']['consumer']['secret']
 
                         oauthCredentials = OauthCredentials(settingsCloud[ 'urls' ][ 'REQUEST_TOKEN_URL' ],
                                                             settingsCloud[ 'urls' ][ 'ACCESS_TOKEN_URL' ],
                                                             resource_url,
                                                             settingsCloud[ 'version' ])
-                        key = settingsCloud[ 'consumer' ][ 'key' ]
-                        secret = settingsCloud[ 'consumer' ][ 'secret' ]
-                        callbackUrl = settingsCloud[ 'urls' ][ 'CALLBACK_URL' ]
+
                         if params.has_key( 'verifier' ) and params.has_key( 'token' ):
                             token_key = params['token']['key']
                             token_secret = params['token']['secret']
@@ -371,7 +379,13 @@ if __name__ == "__main__":
                             token_secret = params[ 'token' ][ 'secret' ]
                             metadata = params[ 'metadata' ]
                             type = metadata[ 'type' ]
+
                             oauth = OAuthRequest(key, client_secret=secret, resource_owner_key=token_key, resource_owner_secret=token_secret)
+
+                            #print("access_token_key:" + token_key)
+                            #print("access_token_secret:" + token_secret)
+                            #print("consumer_key:" + key)
+                            #print("consumer_secret:" + secret)
 
                             if type == 'get':
                                 result = oauthCredentials.getMetadata(oauth, metadata[ 'file' ], metadata[ 'id' ], metadata[ 'contents' ])

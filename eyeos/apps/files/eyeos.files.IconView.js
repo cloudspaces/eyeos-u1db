@@ -412,6 +412,10 @@ qx.Class.define('eyeos.files.IconView', {
                                 params.resource_url = metadata.resource_url;
                                 params.access_token_key = metadata.access_token_key;
                                 params.access_token_secret = metadata.access_token_secret;
+                                if(metadata.consumer_key && metadata.consumer_secret) {
+                                    params.consumer_key = metadata.consumer_key;
+                                    params.consumer_secret = metadata.consumer_secret;
+                                }
                             }
 
                             this.getManager().getViewManager().getController().openCursorLoad();
