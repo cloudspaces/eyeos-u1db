@@ -46,7 +46,10 @@ class RequestHandler(BaseHTTPRequestHandler):
         elif self.path.startswith('/lockFile'):
             if postdata.has_key('id') and postdata.has_key('cloud') and postdata.has_key('user') and postdata.has_key('ipserver') and \
                postdata.has_key('datetime') and postdata.has_key('timelimit'):
-                response = self.eyedocs.lockFile(postdata['id'],postdata['cloud'],postdata['user'],postdata['ipserver'],postdata['datetime'].decode('hex'),int(postdata['timelimit']))
+                interop = None
+                if postdata.has_key('interop'):
+                    interop = postdata['interop']
+                response = self.eyedocs.lockFile(postdata['id'],postdata['cloud'],postdata['user'],postdata['ipserver'],postdata['datetime'].decode('hex'),int(postdata['timelimit']),interop)
             else:
                 response = {"error":400,"descripcion":"Parametros incorrectos"}
         else:
@@ -139,10 +142,13 @@ class RequestHandler(BaseHTTPRequestHandler):
                 response = {"error":400,"descripcion":"Parametros incorrectos"}
                 self.sendData(response)
         elif self.path.startswith('/lockFile'):
-            if len(params) == 4:
+            if len(params) == 4 or len(params) == 5:
                 id = params[2]
                 cloud = params[3]
-                data = self.eyedocs.getMetadataFile(id,cloud)
+                interop = None
+                if len(params) == 5 and params[4] == True:
+                    interop = params[4]
+                data = self.eyedocs.getMetadataFile(id,cloud,interop)
                 self.sendDataArray(data)
             else:
                 response = {"error":400,"descripcion":"Parametros incorrectos"}

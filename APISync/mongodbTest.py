@@ -25,6 +25,8 @@ class mongodbTest(unittest.TestCase):
         self.repeattype = "n"
         self.ipserver = "192.168.56.101"
         self.timelimit = 10
+        self.interop = "true"
+        self.cloudInterop = "NEC"
 
     def tearDown(self):
         self.sut.client.drop_database('test')
@@ -262,6 +264,18 @@ class mongodbTest(unittest.TestCase):
     """
     method: lockFile
     when: called
+    with: idAndCloudAndUserAndIpServerAndDateTimeAndTimeLimitAndInterop
+    should: emptyData
+    """
+
+    def test_lockFile_called_idAndCloudAndUserAndIpServerAndDateTimeAndTimeLimitAndInterop_emptyData(self):
+        datetime = "2015-05-12 10:50:00"
+        result = self.sut.lockFile(self.idFile,self.cloudInterop,self.user,self.ipserver,datetime,self.timelimit,self.interop)
+        self.assertEquals({"lockFile":True},result)
+
+    """
+    method: lockFile
+    when: called
     with: idAndCloudAndUserAndIpServerAndDateTimeAndTimeLimit
     should: updateData
     """
@@ -276,6 +290,19 @@ class mongodbTest(unittest.TestCase):
     """
     method: lockFile
     when: called
+    with: idAndCloudAndUserAndIpServerAndDateTimeAndTimeLimitAndInterop
+    should: updateData
+    """
+    def test_lockFile_called_idAndCloudAndUserAndIpServerAndDateTimeAndTimeLimitAndInterop_updateData(self):
+         datetime = "2015-05-12 10:51:00"
+         data = {"id":self.idFile,"cloud":self.cloud,"user":self.user,"ipserver":self.ipserver,"datetime":datetime,"status":"close"}
+         self.sut.db.collection.insert(data)
+         result = self.sut.lockFile(self.idFile,self.cloudInterop,self.user,self.ipserver,datetime,self.timelimit,self.interop)
+         self.assertEquals({"lockFile":True},result)
+
+    """
+    method: lockFile
+    when: called
     with: idAndCloudAndUserAndIpServerAndDateTimeAndTimeLimit
     should: updateDataSameUser
     """
@@ -283,6 +310,18 @@ class mongodbTest(unittest.TestCase):
         data = {"id":self.idFile,"cloud":self.cloud,"user":self.user,"ipserver":self.ipserver,"datetime":"2015-05-12 10:50:00","status":"open"}
         self.sut.db.collection.insert(data)
         result = self.sut.lockFile(self.idFile,self.cloud,self.user,self.ipserver,"2015-05-12 10:55:00",self.timelimit)
+        self.assertEquals({"lockFile":True},result)
+
+    """
+    method: lockFile
+    when: called
+    with: idAndCloudAndUserAndIpServerAndDateTimeAndTimeLimitAndInterop
+    should: updateDataSameUser
+    """
+    def test_lockFile_called_idAndCloudAndUserAndIpServerAndDateTimeAndTimeLimitAndInterop_updateDataSameUserAndServer(self):
+        data = {"id":self.idFile,"cloud":self.cloud,"user":self.user,"ipserver":self.ipserver,"datetime":"2015-05-12 10:50:00","status":"open"}
+        self.sut.db.collection.insert(data)
+        result = self.sut.lockFile(self.idFile,self.cloudInterop,self.user,self.ipserver,"2015-05-12 10:55:00",self.timelimit,self.interop)
         self.assertEquals({"lockFile":True},result)
 
     """
@@ -300,6 +339,19 @@ class mongodbTest(unittest.TestCase):
     """
     method: lockFile
     when: called
+    with: idAndCloudAndUserAndIpServerAndDateTimeAndTimeLimitAndInterop
+    should: updateDataTimeExpired
+    """
+    def test_lockFile_called_idAndCloudAndUserAndIpServerAndDateTimeAndTimeLimitAndInterop_updateDataTimeExpired(self):
+        data = {"id":self.idFile,"cloud":self.cloud,"user":"tester","ipserver":"192.168.56.101","datetime":"2015-05-12 10:50:00","status":"open"}
+        self.sut.db.collection.insert(data)
+        result = self.sut.lockFile(self.idFile,self.cloudInterop,self.user,self.ipserver,"2015-05-12 11:05:00",self.timelimit,self.interop)
+        self.assertEquals({"lockFile":True},result)
+
+
+    """
+    method: lockFile
+    when: called
     with: idAndCloudAndUserAndIpServerAndDateTimeAndTimeLimit
     should: returnIncorrectDistinctUser
     """
@@ -307,6 +359,18 @@ class mongodbTest(unittest.TestCase):
         data = {"id":self.idFile,"cloud":self.cloud,"user":self.user,'ipserver':self.ipserver,"datetime":"2015-05-12 10:50:00","status":"open"}
         self.sut.db.collection.insert(data)
         result = self.sut.lockFile(self.idFile,self.cloud,"tester",self.ipserver,"2015-05-12 10:55:00",self.timelimit)
+        self.assertEquals({"error":400,"descripcion":"Error al bloquear fichero"},result)
+
+    """
+    method: lockFile
+    when: called
+    with: idAndCloudAndUserAndIpServerAndDateTimeAndTimeLimitAndInterop
+    should: returnIncorrectDistinctUser
+    """
+    def test_lockFile_called_idAndCloudAndUserAndIpServerAndDateTimeAndTimeLimitAndInterop_returnIncorrectDistinctUser(self):
+        data = {"id":self.idFile,"cloud":self.cloud,"user":self.user,'ipserver':self.ipserver,"datetime":"2015-05-12 10:50:00","status":"open"}
+        self.sut.db.collection.insert(data)
+        result = self.sut.lockFile(self.idFile,self.cloudInterop,"tester",self.ipserver,"2015-05-12 10:55:00",self.timelimit,self.interop)
         self.assertEquals({"error":400,"descripcion":"Error al bloquear fichero"},result)
 
     """
@@ -320,6 +384,20 @@ class mongodbTest(unittest.TestCase):
         self.sut.db.collection.insert(data)
         result = self.sut.lockFile(self.idFile,self.cloud,self.user,"192.168.56.102","2015-05-12 10:55:00",self.timelimit)
         self.assertEquals({"error":400,"descripcion":"Error al bloquear fichero"},result)
+
+
+    """
+    method: lockFile
+    when: called
+    with: idAndCloudAndUserAndIpServerAndDateTimeAndTimeLimitAndInterop
+    should: returnIncorrectDistinctServer
+    """
+    def test_lockFile_called_idAndCloudAndUserAndIpServerAndDateTimeAndTimeLimitAndInterop_returnIncorrectDistinctServer(self):
+        data = {"id":self.idFile,"cloud":self.cloud,"user":self.user,"ipserver":self.ipserver,"datetime":"2015-05-12 10:50:00","status":"open"}
+        self.sut.db.collection.insert(data)
+        result = self.sut.lockFile(self.idFile,self.cloudInterop,self.user,"192.168.56.102","2015-05-12 10:55:00",self.timelimit,self.interop)
+        self.assertEquals({"error":400,"descripcion":"Error al bloquear fichero"},result)
+
 
     """
     method: updateDateTime
@@ -377,8 +455,21 @@ class mongodbTest(unittest.TestCase):
     with: idAndCloud
     should: returnArray
     """
-    def test_getMetadataFile_called_user_returnArray(self):
+    def test_getMetadataFile_called_idAndCloud_returnArray(self):
         data = {"id":self.idFile,"cloud":self.cloud,"user":self.user,"ipserver":self.ipserver,"datetime":"2015-05-12 10:50:00","status":"close"}
         self.sut.db.collection.insert(data)
         result = self.sut.getMetadataFile(self.idFile,self.cloud)
+        self.assertEquals(1,len(result))
+
+
+    """
+    method: getMetadataFile
+    when: called
+    with: idAndCloudAndInterop
+    should: returnArray
+    """
+    def test_getMetadataFile_called_idAndCloudAndInterop_returnArray(self):
+        data = {"id":self.idFile,"cloud":self.cloud,"user":self.user,"ipserver":self.ipserver,"datetime":"2015-05-12 10:50:00","status":"close"}
+        self.sut.db.collection.insert(data)
+        result = self.sut.getMetadataFile(self.idFile,self.cloudInterop,self.interop)
         self.assertEquals(1,len(result))

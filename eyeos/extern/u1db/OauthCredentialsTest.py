@@ -1025,6 +1025,23 @@ class OauthCredentialsTest (unittest.TestCase):
         oauth.post.assert_called_once_with(self.resourceurl + 'lockFile',data)
         self.assertEquals(metadataOut,result)
 
+    """
+    method: lockFile
+    when: called
+    with: accessTokenAndIdAndCloudAndUserAndIpServerAndDateTimeAndTimeLimitAndInterop
+    should: returnLockCorrect
+    """
+    def test_lockFile_called_accessTokenAndIdAndCloudAndUserAndIpServerAndDateTimeAndTimeLimitAndInterop_returnLockCorrect(self):
+        data = {"id":self.idFile,"cloud":self.cloud,"user":self.user,"ipserver":self.ipserver,"datetime":self.datetime,"timelimit":self.timelimit,"interop":"true"}
+        metadataIn = {"lockFile":True}
+        metadataOut = json.dumps(metadataIn)
+        oauth = self.createOauthSession()
+        oauth.post = Mock()
+        oauth.post.return_value = metadataIn
+        result = self.oauthCredentials.lockFile(oauth,self.idFile,self.cloud,self.user,self.ipserver,self.datetime,self.timelimit,"true")
+        oauth.post.assert_called_once_with(self.resourceurl + 'lockFile',data)
+        self.assertEquals(metadataOut,result)
+
 
     """
     method: lockFile
@@ -1040,6 +1057,23 @@ class OauthCredentialsTest (unittest.TestCase):
         oauth.post = Mock()
         oauth.post.return_value = metadataIn
         result = self.oauthCredentials.lockFile(oauth,self.idFile,self.cloud,self.user,self.ipserver,self.datetime,self.timelimit)
+        oauth.post.assert_called_once_with(self.resourceurl + 'lockFile',data)
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: lockFile
+    when: called
+    with: accessTokenAndIdAndCloudAndUserAndIpServerAndDateTimeAndTimeLimitAndInterop
+    should: returnException
+    """
+    def test_lockFile_called_accessTokenAndIdAndCloudAndUserAndIpServerAndDateTimeAndTimeLimitAndInterop_returnException(self):
+        data = {"id":self.idFile,"cloud":self.cloud,"user":self.user,"ipserver":self.ipserver,"datetime":self.datetime,"timelimit":self.timelimit,"interop":"true"}
+        metadataIn =  {"error":400, "description": "Recurso no encontrado"}
+        metadataOut = 'false'
+        oauth = self.createOauthSession()
+        oauth.post = Mock()
+        oauth.post.return_value = metadataIn
+        result = self.oauthCredentials.lockFile(oauth,self.idFile,self.cloud,self.user,self.ipserver,self.datetime,self.timelimit,"true")
         oauth.post.assert_called_once_with(self.resourceurl + 'lockFile',data)
         self.assertEquals(metadataOut,result)
 
@@ -1132,6 +1166,25 @@ class OauthCredentialsTest (unittest.TestCase):
         oauth.get.assert_called_once_with(self.resourceurl + 'lockFile/' + self.idFile + '/' + self.cloud)
         self.assertEquals(metadataOut,result)
 
+
+    """
+    method: getMetadataFile
+    when: called
+    with: accessTokenAndIdAndCloudAndInterop
+    should: returnMetadataFile
+    """
+    def test_getMetadataFile_called_accessTokenAndIdAndCloudAndInterop_returnMetadataFile(self):
+        metadataIn = []
+        metadataIn.append( {"id":self.idFile,"cloud":self.cloud,"user":self.user,"ipserver":self.ipserver,"datetime":self.datetime,"status":"open"})
+        metadataIn = json.dumps(metadataIn)
+        metadataOut = '[{"status": "open", "datetime": "2015-05-12 10:50:00", "user": "eyeos", "ipserver": "192.168.56.101", "id": "2150", "cloud": "Stacksync"}]'
+        oauth = self.createOauthSession()
+        oauth.get = Mock()
+        oauth.get.return_value = metadataIn
+        result = self.oauthCredentials.getMetadataFile(oauth,self.idFile,self.cloud,"interop")
+        oauth.get.assert_called_once_with(self.resourceurl + 'lockFile/' + self.idFile + '/' + self.cloud + '/interop')
+        self.assertEquals(metadataOut,result)
+
     """
     method: getMetadataFile
     when: called
@@ -1146,6 +1199,22 @@ class OauthCredentialsTest (unittest.TestCase):
         oauth.get.return_value = metadataIn
         result = self.oauthCredentials.getMetadataFile(oauth,self.idFile,self.cloud)
         oauth.get.assert_called_once_with(self.resourceurl + 'lockFile/' + self.idFile + '/' + self.cloud)
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: getMetadataFile
+    when: called
+    with: accessTokenAndIdAndCloudAndInterop
+    should: returnException
+    """
+    def test_getMetadataFile_called_accessTokenAndIdAndCloud_returnException(self):
+        metadataIn =  {"error":400, "description": "Recurso no encontrado"}
+        metadataOut = 'false'
+        oauth = self.createOauthSession()
+        oauth.get = Mock()
+        oauth.get.return_value = metadataIn
+        result = self.oauthCredentials.getMetadataFile(oauth,self.idFile,self.cloud,"interop")
+        oauth.get.assert_called_once_with(self.resourceurl + 'lockFile/' + self.idFile + '/' + self.cloud + '/interop')
         self.assertEquals(metadataOut,result)
 
 

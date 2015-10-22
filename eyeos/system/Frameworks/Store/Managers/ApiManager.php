@@ -566,12 +566,12 @@ class ApiManager
         return $result;
     }
 
-    public function unLockedFile($cloud,$token,$id,$user,$ipserver,$timeLimit,$dt_now,$resourceUrl = null,$consumerKey = null,$consumerSecret = null)
+    public function unLockedFile($cloud,$token,$id,$user,$ipserver,$timeLimit,$dt_now,$resourceUrl = null,$consumerKey = null,$consumerSecret = null,$interop = null)
     {
         $result['status'] = 'KO';
         $result['error'] = -1;
         $free = false;
-        $metadata = $this->apiProvider->getMetadataFile($cloud,$token,$id,$resourceUrl,$consumerKey,$consumerSecret);
+        $metadata = $this->apiProvider->getMetadataFile($cloud,$token,$id,$resourceUrl,$consumerKey,$consumerSecret,$interop);
 
         if(is_array($metadata)) {
             if (count($metadata) == 0) {
@@ -606,11 +606,11 @@ class ApiManager
         return $result;
     }
 
-    public function lockFile($cloud,$token,$id,$user,$ipserver,$timeLimit,$dt_now,$resourceUrl = null, $consumerKey = null, $consumerSecret = null)
+    public function lockFile($cloud,$token,$id,$user,$ipserver,$timeLimit,$dt_now,$resourceUrl = null, $consumerKey = null, $consumerSecret = null, $interop = null)
     {
         $result[ 'status' ] = 'KO';
         $result[ 'error' ] = -1;
-        $lock = $this->apiProvider->lockFile($cloud,$token,$id,$user,$ipserver,$dt_now,$timeLimit,$resourceUrl,$consumerKey,$consumerSecret);
+        $lock = $this->apiProvider->lockFile($cloud,$token,$id,$user,$ipserver,$dt_now,$timeLimit,$resourceUrl,$consumerKey,$consumerSecret,$interop);
         if($lock) {
             if(isset($lock->lockFile)) {
                 $result['status'] = 'OK';

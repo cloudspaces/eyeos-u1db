@@ -1132,12 +1132,13 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
         if(isset($params['id']) && isset($params['cloud'])) {
             $id = $params['id'];
             $cloud = $params['cloud'];
+            $interop=isset($params['interop'])?"true":null;
             if(isset($_SESSION[ 'access_token_' . $cloud . '_v2' ])) {
                 $token = $_SESSION[ 'access_token_' . $cloud . '_v2' ];
                 $apiManager = new ApiManager();
-                $result = $apiManager->unLockedFile($cloud,$token,$id,$username,$IpServer,$timeLimit,$dt_now,$resourceUrl);
+                $result = $apiManager->unLockedFile($cloud,$token,$id,$username,$IpServer,$timeLimit,$dt_now,$resourceUrl,null,null,$interop);
                 if (isset($params['block']) && $result['status'] == 'OK') {
-                    $result = $apiManager->lockFile($cloud,$token,$id,$username,$IpServer,$timeLimit,bin2hex($dt_now->format("Y-m-d H:i:s")),$resourceUrl);
+                    $result = $apiManager->lockFile($cloud,$token,$id,$username,$IpServer,$timeLimit,bin2hex($dt_now->format("Y-m-d H:i:s")),$resourceUrl,null,null,$interop);
                 }
             }
         }
@@ -1224,6 +1225,7 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
                             $resourceUrl->token = new stdClass();
                             $resourceUrl->token->key = $u1db[0]->access_token_key;
                             $resourceUrl->token->secret = $u1db[0]->access_token_secret;
+                            $resourceUrl->interop = true;
                             if ($parentId === 'null') {
                                 $parentId = 0;
                             }
@@ -1251,6 +1253,7 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
                         $result['access_token_key'] = $resourceUrl->token->key;
                         $result['access_token_secret'] = $resourceUrl->token->secret;
                         $result['resource_url'] = $resourceUrl->resource_url;
+                        $result['interop'] = $resourceUrl->interop;
                     }
                     unset($result['error']);
                 }
@@ -1273,7 +1276,6 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
         if(isset($_SESSION[ 'access_token_' . $cloud . '_v2' ])) {
             $id = $params[ 'id' ];
             $resource_url = null;
-
             $token = new stdClass();
             if(isset($params['resource_url'])) {
                 $token->key = $params['access_token_key'];

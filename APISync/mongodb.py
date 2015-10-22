@@ -178,28 +178,48 @@ class mongoDb:
         else:
             return {"error":400,"descripcion":"Error al borrar calendario de Usuarios"}
 
-    def lockFile(self,id,cloud,user,ipserver,dateTime,timelimit):
+    def lockFile(self,id,cloud,user,ipserver,dateTime,timelimit,interop=None):
         files = self.db.collection.find({"id":id,"cloud":cloud})
         data = {"id":id,"cloud":cloud,"user":user,"ipserver":ipserver,"datetime":dateTime,"status":"open"}
+        emptyData = False
+
         if files.count() == 0:
+            if interop != None:
+                files = self.db.collection.find({"id":id})
+                if files.count() == 0:
+                    emptyData = True
+            else:
+                emptyData = True
+
+        if emptyData == True:
             self.db.collection.insert(data)
             del data['_id']
         else:
             if files[0]['status'] == 'close':
-                self.db.collection.update({"id":id,"cloud":cloud},data)
+                search = {"id":id,"cloud":cloud}
+                if files[0]['cloud'] != cloud and interop != None:
+                    search = {"id":id}
+                self.db.collection.update(search,data)
             else:
                 if files[0]['user'] == user and files[0]['ipserver'] == ipserver:
-                    self.db.collection.update({"id":id,"cloud":cloud},data)
+                    if interop != None:
+                        self.db.collection.update({"id":id},data)
+                    else:
+                        self.db.collection.update({"id":id,"cloud":cloud},data)
                 else:
                     dt=datetime.datetime.strptime(files[0]['datetime'],'%Y-%m-%d %H:%M:%S')
                     dt_plus_timeLimit = dt + datetime.timedelta(minutes = timelimit)
                     dt_now = datetime.datetime.strptime(dateTime,'%Y-%m-%d %H:%M:%S')
                     if dt_now > dt_plus_timeLimit:
-                         self.db.collection.update({"id":id,"cloud":cloud},data)
+                         search = {"id":id,"cloud":cloud}
+                         if interop != None:
+                             search = {"id":id}
+                         self.db.collection.update(search,data)
                     else:
                         return {"error":400,"descripcion":"Error al bloquear fichero"}
 
         files = self.db.collection.find({"id":id,"cloud":cloud})
+
         if files.count() == 1:
             document = files[0]
             del document['_id']
@@ -246,9 +266,13 @@ class mongoDb:
         else:
             return {"error":400,"descripcion":"Error al liberar fichero"}
 
-    def getMetadataFile(self,id,cloud):
+    def getMetadataFile(self,id,cloud,interop=None):
         result = []
         files = self.db.collection.find({"id":id,"cloud":cloud})
+
+        if files.count() == 0 and interop != None:
+            files = self.db.collection.find({"id":id})
+
         if files.count() > 0:
             for file in files:
                 del file['_id']

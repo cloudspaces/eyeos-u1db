@@ -271,7 +271,7 @@ class ApiProvider
         return $this->exerciseMetadata($request);
     }
 
-    public function lockFile($cloud,$token,$id,$user,$ipserver,$datetime,$timelimit,$resourceUrl=NULL,$consumerKey=NULL,$consumerSecret=NULL)
+    public function lockFile($cloud,$token,$id,$user,$ipserver,$datetime,$timelimit,$resourceUrl=NULL,$consumerKey=NULL,$consumerSecret=NULL,$interop=NULL)
     {
         $request = $this->getRequest('lockFile',$token,$cloud,$resourceUrl,$consumerKey,$consumerSecret);
         $request->metadata->id = "" . $id;
@@ -279,6 +279,9 @@ class ApiProvider
         $request->metadata->ipserver = $ipserver;
         $request->metadata->datetime = $datetime;
         $request->metadata->timelimit = $timelimit;
+        if($interop) {
+            $request->metadata->interop = $interop;
+        }
         return $this->exerciseMetadata($request);
     }
 
@@ -302,10 +305,13 @@ class ApiProvider
         return $this->exerciseMetadata($request);
     }
 
-    public function getMetadataFile($cloud,$token,$id,$resourceUrl=NULL,$consumerKey=NULL,$consumerSecret=NULL)
+    public function getMetadataFile($cloud,$token,$id,$resourceUrl=NULL,$consumerKey=NULL,$consumerSecret=NULL,$interop=NULL)
     {
         $request = $this->getRequest('getMetadataFile',$token,$cloud,$resourceUrl,$consumerKey,$consumerSecret);
         $request->metadata->id = "" . $id;
+        if($interop) {
+            $request->metadata->interop = $interop;
+        }
         return $this->exerciseMetadata($request);
     }
 

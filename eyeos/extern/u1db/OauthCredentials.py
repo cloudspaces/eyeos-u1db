@@ -237,10 +237,12 @@ class OauthCredentials:
         result = oauth.delete(url)
         return self.createRequest(result)
 
-    def lockFile(self,oauth,id,cloud,user,ipserver,datetime,timelimit):
+    def lockFile(self,oauth,id,cloud,user,ipserver,datetime,timelimit,interop=None):
         url = self.resourceurl + 'lockFile'
         self.createApplicationJson(oauth)
         data = {"id":id,"cloud":cloud,"user":user,"ipserver":ipserver,"datetime":datetime,"timelimit":timelimit}
+        if interop != None:
+            data['interop'] = interop
         result = oauth.post(url,data)
         return self.createRequest(result)
 
@@ -258,8 +260,10 @@ class OauthCredentials:
         result = oauth.put(url,data)
         return self.createRequest(result)
 
-    def getMetadataFile(self,oauth,id,cloud):
+    def getMetadataFile(self,oauth,id,cloud,interop=None):
         url = self.resourceurl + 'lockFile/' + id + '/' + cloud
+        if interop != None:
+            url += '/' + interop
         result = oauth.get(url)
         return self.createRequest(result)
 
@@ -379,6 +383,9 @@ if __name__ == "__main__":
                             token_secret = params[ 'token' ][ 'secret' ]
                             metadata = params[ 'metadata' ]
                             type = metadata[ 'type' ]
+                            interop = None
+                            if metadata.has_key('interop'):
+                                interop = metadata['interop']
 
                             oauth = OAuthRequest(key, client_secret=secret, resource_owner_key=token_key, resource_owner_secret=token_secret)
 
@@ -438,13 +445,13 @@ if __name__ == "__main__":
                             elif type == "deleteCalendarsUser":
                                 result = oauthCredentials.deleteCalendarsUser(oauth,metadata['user'],cloud)
                             elif type == "lockFile":
-                                result = oauthCredentials.lockFile(oauth,metadata['id'],cloud,metadata['user'],metadata['ipserver'],metadata['datetime'],metadata['timelimit'])
+                                result = oauthCredentials.lockFile(oauth,metadata['id'],cloud,metadata['user'],metadata['ipserver'],metadata['datetime'],metadata['timelimit'],interop)
                             elif type == "updateDateTime":
                                 result = oauthCredentials.updateDateTime(oauth,metadata['id'],cloud,metadata['user'],metadata['ipserver'],metadata['datetime'])
                             elif type == "unLockFile":
                                 result = oauthCredentials.unLockFile(oauth,metadata['id'],cloud,metadata['user'],metadata['ipserver'],metadata['datetime'])
                             elif type == "getMetadataFile":
-                                result = oauthCredentials.getMetadataFile(oauth,metadata['id'],cloud)
+                                result = oauthCredentials.getMetadataFile(oauth,metadata['id'],cloud,interop)
 
                         elif not(params.has_key( 'metadata' ) or params.has_key( 'verifier' ) or params.has_key( 'token' )):
                             oauth = OAuthRequest(key, client_secret=secret, callback_uri=callbackUrl, signature_method=SIGNATURE_PLAINTEXT)

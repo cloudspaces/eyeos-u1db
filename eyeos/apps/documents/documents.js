@@ -437,6 +437,7 @@ qx.Class.define('eyeos.application.Documents', {
                             this.getMetadataFile().resource_url = result.resource_url;
                             this.getMetadataFile().access_token_key = result.access_token_key;
                             this.getMetadataFile().access_token_secret = result.access_token_secret;
+                            this.getMetadataFile().interop = result.interop;
                         }
                         this.__getMetadataFile(callback);
 
@@ -480,6 +481,10 @@ qx.Class.define('eyeos.application.Documents', {
             params.id = this.getMetadataFile().id;
             params.cloud = this.getMetadataFile().cloud;
             params.block = true;
+
+            if(this.getMetadataFile().interop) {
+                params.interop = this.getMetadataFile().interop;
+            }
 
             eyeos.callMessage(this.getChecknum(), 'lockFile',params, function(result) {
                 if(!(result && result.status == 'OK')) {
@@ -1135,6 +1140,10 @@ qx.Class.define('eyeos.application.Documents', {
                 params.cloud = this.getMetadataFile().cloud;
                 params.block = true;
                 var block = false;
+
+                if(this.getMetadataFile().interop) {
+                    params.interop = this.getMetadataFile().interop;
+                }
 
                 eyeos.callMessage(this.getChecknum(), 'lockFile',params, function(result) {
                     if(result.status == 'OK') {

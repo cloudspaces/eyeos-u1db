@@ -2971,6 +2971,19 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     /**
      * method: lockFile
      * when: called
+     * with: cloudAndTokenAndIdAndUserAndIpServerAndDateTimeAndTimeLimitAndResourceUrlAndInterop
+     * should: returnLockCorrect
+     */
+    public function test_lockFile_called_cloudAndTokenAndIdAndUserAndIpServerAndDateTimeAndTimeLimitAndResourceUrlAndInterop_returnLockCorrect()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"lockFile","id":"2150","user":"eyeos","ipserver":"192.168.56.101","datetime":"2015-05-12 10:50:00","timelimit":10,"interop":"true"}}';
+        $metadataOut = '{"lockFile":true}';
+        $this->exerciseLockFile($metadataIn,$metadataOut,$this->urlAPISync,null,null,"true");
+    }
+
+    /**
+     * method: lockFile
+     * when: called
      * with: cloudAndTokenAndIdAndUserAndIpServerAndDateTimeAndTimeLimitAndResourceUrlAndConsumerKeyAndConsumerSecret
      * should: returnLockCorrect
      */
@@ -3005,6 +3018,19 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"lockFile","id":"2150","user":"eyeos","ipserver":"192.168.56.101","datetime":"2015-05-12 10:50:00","timelimit":10}}';
         $metadataOut = 400;
         $this->exerciseLockFile($metadataIn,$metadataOut,$this->urlAPISync);
+    }
+
+    /**
+     * method: lockFile
+     * when: called
+     * with: cloudAndTokenAndIdAndUserAndIpServerAndDateTimeAndTimeLimitAndResourceUrlAndInterop
+     * should: returnException
+     */
+    public function test_lockFile_called_cloudAndTokenAndIdAndUserAndIpServerAndDateTimeAndTimeLimitAndResourceUrlAndInterop_returnException()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"lockFile","id":"2150","user":"eyeos","ipserver":"192.168.56.101","datetime":"2015-05-12 10:50:00","timelimit":10,"interop":"true"}}';
+        $metadataOut = 400;
+        $this->exerciseLockFile($metadataIn,$metadataOut,$this->urlAPISync,null,null,"true");
     }
 
     /**
@@ -3205,6 +3231,19 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     /**
      * method: getMetadataFile
      * when: called
+     * with: cloudAndTokenAndIdAndResourceUrlAndInterop
+     * should: returnMetadataFile
+     */
+    public function test_getMetadataFile_called_cloudAndTokenAndIdAndResourceUrlAndInterop_returnMetadataFile()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"getMetadataFile","id":"2150","interop":"true"}}';
+        $metadataOut = '[{"id":"2150","cloud":"Stacksync","user":"eyeos","ipserver":"192.168.56.101","datetime":"2015-05-12 10:50:00","status":"open"}]';
+        $this->exerciseGetMetadataFile($metadataIn,$metadataOut,$this->urlAPISync,null,null,"true");
+    }
+
+    /**
+     * method: getMetadataFile
+     * when: called
      * with: cloudAndTokenAndIdAndResourceUrlAndConsumerKeyAndConsumerSecret
      * should: returnMetadataFile
      */
@@ -3239,6 +3278,19 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"getMetadataFile","id":"2150"}}';
         $metadataOut = 400;
         $this->exerciseGetMetadataFile($metadataIn,$metadataOut,$this->urlAPISync);
+    }
+
+    /**
+     * method: getMetadataFile
+     * when: called
+     * with: cloudAndTokenAndIdAndResourceUrlAndInterop
+     * should: returnException
+     */
+    public function test_getMetadataFile_called_cloudAndTokenAndIdAndResourceUrlAndInterop_returnException()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"getMetadataFile","id":"2150","interop":"true"}}';
+        $metadataOut = 400;
+        $this->exerciseGetMetadataFile($metadataIn,$metadataOut,$this->urlAPISync,null,null,"true");
     }
 
     /**
@@ -3461,10 +3513,10 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(json_decode($metadataOut),$actual);
     }
 
-    private function exerciseLockFile($metadataIn,$metadataOut,$resourceUrl = NULL,$consumerKey = NULL,$consumerSecret = NULL)
+    private function exerciseLockFile($metadataIn,$metadataOut,$resourceUrl = NULL,$consumerKey = NULL,$consumerSecret = NULL, $interop = NULL)
     {
         $this->exerciseMockMetadata($metadataIn, $metadataOut);
-        $actual = $this->sut->lockFile($this->cloud,$this->token,"2150","eyeos","192.168.56.101","2015-05-12 10:50:00",10,$resourceUrl,$consumerKey,$consumerSecret);
+        $actual = $this->sut->lockFile($this->cloud,$this->token,"2150","eyeos","192.168.56.101","2015-05-12 10:50:00",10,$resourceUrl,$consumerKey,$consumerSecret,$interop);
         $this->assertEquals(json_decode($metadataOut),$actual);
     }
 
@@ -3482,10 +3534,10 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(json_decode($metadataOut),$actual);
     }
 
-    private function exerciseGetMetadataFile($metadataIn,$metadataOut,$resourceUrl = NULL,$consumerKey = NULL,$consumerSecret = NULL)
+    private function exerciseGetMetadataFile($metadataIn,$metadataOut,$resourceUrl = NULL,$consumerKey = NULL,$consumerSecret = NULL,$interop = NULL)
     {
         $this->exerciseMockMetadata($metadataIn, $metadataOut);
-        $actual = $this->sut->getMetadataFile($this->cloud,$this->token,"2150",$resourceUrl,$consumerKey,$consumerSecret);
+        $actual = $this->sut->getMetadataFile($this->cloud,$this->token,"2150",$resourceUrl,$consumerKey,$consumerSecret,$interop);
         $this->assertEquals(json_decode($metadataOut),$actual);
     }
 }
