@@ -623,7 +623,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
                         form.showCursorLoad(commentsContainer);
                         form.getSocialBar().getTab('Comments').getChildren()[0].setVisibility('excluded');
                         //form.__deleteComment(comments[pos].time_created,controller,file);
-                        controller.deleteComment(metadata,form.getSocialBar().getTab('Comments'),file,cloud,shared,comments[pos].time_created);
+                        controller.deleteComment(metadata,form.getSocialBar().getTab('Comments'),file,comments[pos].cloud,shared,comments[pos].time_created);
                     }
                 },form);
 
@@ -635,7 +635,7 @@ qx.Class.define('eyeos.suhandlers.LocalFile', {
                         form.showCursorLoad(commentsContainer);
                         form.getSocialBar().getTab('Comments').getChildren()[0].setVisibility('excluded');
                         //form.__deleteComment(comments[pos].time_created,controller,file);
-                        controller.deleteComment(metadata,form.getSocialBar().getTab('Comments'),file,cloud,shared,comments[pos].time_created);
+                        controller.deleteComment(metadata,form.getSocialBar().getTab('Comments'),file,comments[pos].cloud,shared,comments[pos].time_created);
                     }
                 },form);
 

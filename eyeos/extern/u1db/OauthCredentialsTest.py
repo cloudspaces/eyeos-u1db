@@ -656,6 +656,24 @@ class OauthCredentialsTest (unittest.TestCase):
     """
     method: getComments
     when: called
+    with: accessTokenAndIdAndCloudAndInterop
+    should: returnJsonMetadata
+    """
+    def test_getComments_called_accessTokenAndIdAndCloudAndInterop_returnJsonMetadata(self):
+        id = "2150"
+        cloud = "stacksync"
+        metadataOut = '[{"status": "NEW", "text": "prueba", "time_created": "201406201548", "user": "eyeos", "id": "' + id + '", "cloud": "' + cloud + '"}]'
+        metadataIn = metadataOut
+        oauth = self.createOauthSession()
+        oauth.get = Mock()
+        oauth.get.return_value = metadataIn
+        result = self.oauthCredentials.getComments(oauth,id,cloud,"true")
+        oauth.get.assert_called_once_with(self.resourceurl + 'comment/' + id + '/' + cloud + '/true')
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: getComments
+    when: called
     with: accessTokenAndIdAndCloud
     should: returnException
     """
@@ -669,6 +687,24 @@ class OauthCredentialsTest (unittest.TestCase):
         oauth.get.return_value = metadataIn
         result = self.oauthCredentials.getComments(oauth,id,cloud)
         oauth.get.assert_called_once_with(self.resourceurl + 'comment/' + id + '/' + cloud)
+        self.assertEquals(metadataOut,result)
+
+    """
+    method: getComments
+    when: called
+    with: accessTokenAndIdAndCloudAndInterop
+    should: returnException
+    """
+    def test_getComments_called_accessTokenAndIdAndCloudAndInterop_returnException(self):
+        id = "2150"
+        cloud = "stacksync"
+        metadataIn =  {"error":400, "description": "Recurso no encontrado"}
+        metadataOut = 'false'
+        oauth = self.createOauthSession()
+        oauth.get = Mock()
+        oauth.get.return_value = metadataIn
+        result = self.oauthCredentials.getComments(oauth,id,cloud,"true")
+        oauth.get.assert_called_once_with(self.resourceurl + 'comment/' + id + '/' + cloud + '/true')
         self.assertEquals(metadataOut,result)
 
     """
@@ -1181,8 +1217,8 @@ class OauthCredentialsTest (unittest.TestCase):
         oauth = self.createOauthSession()
         oauth.get = Mock()
         oauth.get.return_value = metadataIn
-        result = self.oauthCredentials.getMetadataFile(oauth,self.idFile,self.cloud,"interop")
-        oauth.get.assert_called_once_with(self.resourceurl + 'lockFile/' + self.idFile + '/' + self.cloud + '/interop')
+        result = self.oauthCredentials.getMetadataFile(oauth,self.idFile,self.cloud,"true")
+        oauth.get.assert_called_once_with(self.resourceurl + 'lockFile/' + self.idFile + '/' + self.cloud + '/true')
         self.assertEquals(metadataOut,result)
 
     """
@@ -1213,8 +1249,8 @@ class OauthCredentialsTest (unittest.TestCase):
         oauth = self.createOauthSession()
         oauth.get = Mock()
         oauth.get.return_value = metadataIn
-        result = self.oauthCredentials.getMetadataFile(oauth,self.idFile,self.cloud,"interop")
-        oauth.get.assert_called_once_with(self.resourceurl + 'lockFile/' + self.idFile + '/' + self.cloud + '/interop')
+        result = self.oauthCredentials.getMetadataFile(oauth,self.idFile,self.cloud,"true")
+        oauth.get.assert_called_once_with(self.resourceurl + 'lockFile/' + self.idFile + '/' + self.cloud + '/true')
         self.assertEquals(metadataOut,result)
 
 

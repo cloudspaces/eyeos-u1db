@@ -2068,6 +2068,20 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
     /**
      * method: getComments
      * when: called
+     * with: cloudAndTokenAndIdAndResourceUrlAndInterop
+     * should: returnListMetadata
+     */
+    public function test_getComments_called_cloudAndTokenAndIdAndResourceUrlAndInterop_returnListMetadata()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"getComments","id":"153","interop":"true"}}';
+        $metadataOut = '[{"id":"153","user":"eyeos","text":"prueba","cloud":"stacksync","status":"NEW","time_created":"201406201548"}]';
+        $this->exerciseGetComments($metadataIn,$metadataOut,$this->urlAPISync,null,null,"true");
+
+    }
+
+    /**
+     * method: getComments
+     * when: called
      * with: cloudAndTokenAndIdAndResourceUrlAndConsumerKeyAndConsumerSecret
      * should: returnListMetadata
      */
@@ -2104,6 +2118,19 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"getComments","id":"153"}}';
         $metadataOut = 400;
         $this->exerciseGetComments($metadataIn,$metadataOut,$this->urlAPISync);
+    }
+
+    /**
+     * method: getComments
+     * when: called
+     * with: cloudAndTokenAndIdAndResourceUrlAndInterop
+     * should: returnException
+     */
+    public function test_getComments_called_cloudAndTokenAndIdAndResourceUrlAndInterop_returnException()
+    {
+        $metadataIn = '{"config":{"cloud":"Stacksync","resource_url":"http:\/\/192.68.56.101\/"},"token":{"key":"ABCD","secret":"EFGH"},"metadata":{"type":"getComments","id":"153","interop":"true"}}';
+        $metadataOut = 400;
+        $this->exerciseGetComments($metadataIn,$metadataOut,$this->urlAPISync,null,null,"true");
     }
 
     /**
@@ -3436,10 +3463,10 @@ class ApiProviderTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(json_decode($metadataOut),$actual);
     }
 
-    private function exerciseGetComments($metadataIn,$metadataOut,$resourceUrl = NULL,$consumerKey = NULL,$consumerSecret = NULL)
+    private function exerciseGetComments($metadataIn,$metadataOut,$resourceUrl = NULL,$consumerKey = NULL,$consumerSecret = NULL,$interop = NULL)
     {
         $this->exerciseMockMetadata($metadataIn, $metadataOut);
-        $actual = $this->sut->getComments($this->cloud,$this->token,"153",$resourceUrl,$consumerKey,$consumerSecret);
+        $actual = $this->sut->getComments($this->cloud,$this->token,"153",$resourceUrl,$consumerKey,$consumerSecret,$interop);
         $this->assertEquals(json_decode($metadataOut),$actual);
     }
 

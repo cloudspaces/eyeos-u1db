@@ -2232,6 +2232,10 @@ qx.Class.define('eyeos.files.Controller', {
             params.cloud = cloud;
             params.time_created = time_created;
 
+            if(metadata.resource_url) {
+                shared = true;
+            }
+
             eyeos.callMessage(this.getApplication().getChecknum(), 'deleteCommentCloud', params, function () {
                 this._comments = [];
                 this.loadCommentsCloud(metadata,commentsBox,file,cloud,shared,true);
@@ -2797,6 +2801,11 @@ qx.Class.define('eyeos.files.Controller', {
                 params.id = "" + metadata.id;
                 params.cloud = cloud;
                 this.closeTimerComments();
+
+                if(metadata.resource_url) {
+                    params.interop = true;
+                    shared = true;
+                }
 
                 eyeos.callMessage(this.getApplication().getChecknum(), 'getCommentsCloud', params, function (result) {
                     if(remove === true) {

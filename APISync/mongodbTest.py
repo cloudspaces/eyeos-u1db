@@ -75,6 +75,26 @@ class mongodbTest(unittest.TestCase):
         data.sort()
         self.assertEquals(data,result)
 
+
+    """
+    method: getComments
+    when: called
+    with: idAndCloudAndInterop
+    should: returnComments
+    """
+    def test_getComments_called_idAndCloudAndInterop_returnComments(self):
+        data = []
+        self.sut.insertComment(self.idFile,self.user,self.text,"NEC","201406211810")
+        data.append({"id": self.idFile,"user": self.user,"text":self.text,"cloud": "NEC","time_created":"201406211810","status":"NEW"})
+        data.append({"id": self.idFile,"user": self.user,"text":self.text,"cloud": self.cloud,"time_created":self.time_created,"status":"NEW"})
+        self.sut.insertComment(self.idFile,self.user,self.text,self.cloud,self.time_created)
+        data.append({"id": self.idFile,"user": "test","text":"test1","cloud": self.cloud,"time_created":"201406211600","status":"NEW"})
+        self.sut.insertComment(self.idFile,"test","test1",self.cloud,"201406211600")
+        self.sut.insertComment("2000",self.user,self.text,self.cloud,"201406211705")
+        result = self.sut.getComments(self.idFile,self.cloud,self.interop)
+        data.sort()
+        self.assertEquals(data,result)
+
     """
     method: insertEvent
     when: called

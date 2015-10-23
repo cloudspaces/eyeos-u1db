@@ -105,10 +105,13 @@ class RequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         params = self.path.split('/')
         if self.path.startswith('/comment'):
-            if len(params) == 4:
+            if len(params) == 4 or len(params) == 5:
                 id = params[2]
                 cloud = params[3]
-                data = self.comments.getComments(id,cloud)
+                interop = None
+                if len(params) == 5:
+                    interop = params[4]
+                data = self.comments.getComments(id,cloud,interop)
                 self.sendDataArray(data)
             else:
                 response = {"error":400,"descripcion":"Parametros incorrectos"}
@@ -146,7 +149,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 id = params[2]
                 cloud = params[3]
                 interop = None
-                if len(params) == 5 and params[4] == True:
+                if len(params) == 5:
                     interop = params[4]
                 data = self.eyedocs.getMetadataFile(id,cloud,interop)
                 self.sendDataArray(data)

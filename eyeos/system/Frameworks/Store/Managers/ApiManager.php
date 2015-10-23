@@ -673,9 +673,9 @@ class ApiManager
         return $this->createResponse($metadata);
     }
 
-    public function getComments($cloud,$token,$id,$resourceUrl=NULL,$consumerKey=NULL,$consumerSecret=NULL)
+    public function getComments($cloud,$token,$id,$resourceUrl=NULL,$consumerKey=NULL,$consumerSecret=NULL,$interop=NULL)
     {
-        return $this->apiProvider->getComments($cloud,$token,$id,$resourceUrl,$consumerKey,$consumerSecret);
+        return $this->apiProvider->getComments($cloud,$token,$id,$resourceUrl,$consumerKey,$consumerSecret,$interop);
     }
 
     public function getControlCommentsCloud($cloud)

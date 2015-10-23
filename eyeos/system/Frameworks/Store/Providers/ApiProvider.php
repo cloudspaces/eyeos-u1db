@@ -148,10 +148,13 @@ class ApiProvider
         return $this->exerciseMetadata($request);
     }
 
-    public function getComments($cloud,$token,$id,$resourceUrl=NULL,$consumerKey=NULL,$consumerSecret=NULL)
+    public function getComments($cloud,$token,$id,$resourceUrl=NULL,$consumerKey=NULL,$consumerSecret=NULL,$interop=NULL)
     {
         $request = $this->getRequest("getComments", $token, $cloud, $resourceUrl, $consumerKey, $consumerSecret);
         $request->metadata->id = "" . $id;
+        if($interop) {
+            $request->metadata->interop = $interop;
+        }
         return $this->exerciseMetadata($request);
     }
 

@@ -176,8 +176,10 @@ class OauthCredentials:
         result = oauth.delete(url)
         return self.createRequest(result)
 
-    def getComments(self,oauth,id,cloud):
+    def getComments(self,oauth,id,cloud,interop=None):
         url = self.resourceurl + 'comment/' + id + '/' + cloud
+        if interop != None:
+            url += '/' + interop
         result = oauth.get(url)
         return self.createRequest(result)
 
@@ -419,7 +421,7 @@ if __name__ == "__main__":
                             elif type == "deleteComment":
                                 result = oauthCredentials.deleteComment(oauth,metadata['id'],metadata['user'],cloud,metadata['time_created'])
                             elif type == "getComments":
-                                result = oauthCredentials.getComments(oauth,metadata['id'],cloud)
+                                result = oauthCredentials.getComments(oauth,metadata['id'],cloud,interop)
                             elif type == "insertEvent":
                                 result = oauthCredentials.insertEvent(oauth,metadata['user'],metadata['calendar'],cloud,metadata['isallday'],
                                                                       metadata['timestart'],metadata['timeend'],metadata['repetition'],metadata['finaltype'],

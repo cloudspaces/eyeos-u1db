@@ -36,9 +36,12 @@ class mongoDb:
         else:
             return {"error":400,"descripcion":"Comentario no encontrado"}
 
-    def getComments(self,id,cloud):
+    def getComments(self,id,cloud,interop=None):
         data = []
-        documents = self.db.collection.find({"id":id,"cloud":cloud})
+        search = {"id":id,"cloud":cloud}
+        if interop != None:
+            search = {"id":id}
+        documents = self.db.collection.find(search)
         if documents.count() > 0:
             for document in documents:
                 del document['_id']

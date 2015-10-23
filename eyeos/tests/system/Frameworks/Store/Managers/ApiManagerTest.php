@@ -4991,6 +4991,18 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     /**
      * method: getComments
      * when: called
+     * with: cloudAndTokenAndIdAndResourceUrlAndInterop
+     * should: returnException
+     */
+    public function test_getComments_called_cloudAndTokenAndIdAndResourceUrlAndInterop_returnListMetadata()
+    {
+        $metadata = '[{"id":"153","user":"eyeos","text":"prueba","cloud":"stacksync","status":"NEW","time_created":"201406201548"}]';
+        $this->exerciseGetComments($metadata,$this->resourceUrl,null,null,"true");
+    }
+
+    /**
+     * method: getComments
+     * when: called
      * with: cloudAndTokenAndIdAndResourceUrlAndConsumerKeyAndConsumerSecret
      * should: returnException
      */
@@ -5022,6 +5034,18 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
     {
         $metadata = '{"error":-1}';
         $this->exerciseGetComments($metadata,$this->resourceUrl);
+    }
+
+    /**
+     * method: getComments
+     * when: called
+     * with: cloudAndTokenAndIdAndResourceUrlAndInterop
+     * should: returnException
+     */
+    public function test_getComments_called_cloudAndTokenAndIdAndResourceUrlAndInterop_returnException()
+    {
+        $metadata = '{"error":-1}';
+        $this->exerciseGetComments($metadata,$this->resourceUrl,null,null,"true");
     }
 
     /**
@@ -6242,16 +6266,16 @@ class ApiManagerTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($check, $result);
     }
 
-    private function exerciseGetComments($metadata,$resourceUrl = null,$consumerKey = null,$consumerSecret = null)
+    private function exerciseGetComments($metadata,$resourceUrl = null,$consumerKey = null,$consumerSecret = null,$interop = null)
     {
         $id = "153";
 
         $this->apiProviderMock->expects($this->at(0))
             ->method('getComments')
-            ->with($this->cloud, $this->token,$id,$resourceUrl,$consumerKey,$consumerSecret)
+            ->with($this->cloud, $this->token,$id,$resourceUrl,$consumerKey,$consumerSecret,$interop)
             ->will($this->returnValue(json_decode($metadata)));
 
-        $result = $this->sut->getComments($this->cloud,$this->token,$id,$resourceUrl,$consumerKey,$consumerSecret);
+        $result = $this->sut->getComments($this->cloud,$this->token,$id,$resourceUrl,$consumerKey,$consumerSecret,$interop);
         $this->assertEquals(json_decode($metadata), $result);
     }
 

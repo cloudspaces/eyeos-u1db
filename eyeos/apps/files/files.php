@@ -1782,9 +1782,10 @@ abstract class FilesApplication extends EyeosApplicationExecutable {
             $id = $params['id'];
             $cloud = $params['cloud'];
             $resourceUrl = self::getResourceUrl();
+            $interop=isset($params['interop'])?"true":null;
             $apiManager = new ApiManager();
             $token = $_SESSION['access_token_' . $params[ 'cloud' ] . '_v2'];
-            $data = $apiManager->getComments($cloud,$token,$id,$resourceUrl);
+            $data = $apiManager->getComments($cloud,$token,$id,$resourceUrl,null,null,$interop);
             if(!isset($data->error)) {
                 $data = self::sortDate($data);
                 $result['status'] = 'OK';
