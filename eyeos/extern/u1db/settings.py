@@ -39,7 +39,8 @@ settings = {
             "version": "v2",
             "controlVersion": "false",
             "comments": "true",
-            "calendar": "true"
+            "calendar": "true",
+            "log": "/var/log/Cloudspaces"
         },
         "NEC": {
             "urls": {
@@ -62,7 +63,8 @@ settings = {
             "version": "v2",
             "controlVersion": "false",
             "comments": "true",
-            "calendar": "true"
+            "calendar": "true",
+            "log": "/var/log/Cloudspaces"
         }
     },
     "NEW_CODE": "true"

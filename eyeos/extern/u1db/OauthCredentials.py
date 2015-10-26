@@ -7,14 +7,16 @@ from oauthlib.oauth1 import SIGNATURE_PLAINTEXT
 from OAuthRequest import OAuthRequest
 import urllib
 import types
+from Logger import Logger
 
 
 class OauthCredentials:
-    def __init__(self, requesttokenurl, accesstokenurl, resourceurl, version):
+    def __init__(self, requesttokenurl, accesstokenurl, resourceurl, version,logger=None):
         self.requesturl = requesttokenurl
         self.accessurl = accesstokenurl
         self.resourceurl = resourceurl
         self.version = version
+        self.logger = logger
 
     def getRequestToken(self, oauth):
         token = {}
@@ -43,12 +45,16 @@ class OauthCredentials:
 
     def getMetadata(self, oauth, file, id, contents=None):
         url = self.getUrl(file, id, contents)
+        self.writeLog("Function: ---> getMetadata")
+        self.writeLog("URL: " + url)
         self.createHeader(oauth)
         result = oauth.get(url)
         return self.createRequest(result)
 
     def updateMetadata(self, oauth, file, id, name=None, parent=None):
         url = self.getUrl(file, id)
+        self.writeLog("Function: ---> updateMetadata")
+        self.writeLog("URL: " + url)
         self.createHeader(oauth)
         self.createApplicationJson(oauth)
         data = {}
@@ -63,6 +69,8 @@ class OauthCredentials:
     def createMetadata(self, oauth, file, name, parent=None, path=None):
         dataFile = None
         url = self.getUrl(file)
+        self.writeLog("Function: ---> createMetadata")
+        self.writeLog("URL: " + url)
         self.createHeader(oauth)
         self.createApplicationJson(oauth)
 
@@ -90,6 +98,8 @@ class OauthCredentials:
         if self.file:
             self.createHeader(oauth)
             self.createApplicationJson(oauth)
+            self.writeLog("Function: ---> uploadFile")
+            self.writeLog("URL: " + self.resourceurl + "file/" + str(id) + "/data")
             result = oauth.put(self.resourceurl + "file/" + str(id) + "/data", self.file.read())
             if (not (isinstance(result, dict) and result.has_key('error'))):
                 metadata = 'true'
@@ -101,6 +111,8 @@ class OauthCredentials:
     def downloadFile(self, oauth, id, path):
         metadata = 'false'
         self.createHeader(oauth)
+        self.writeLog("Function: ---> downloadFile")
+        self.writeLog("URL: " + self.resourceurl + "file/" + str(id) + "/data")
         result = oauth.get(self.resourceurl + "file/" + str(id) + "/data")
         #if type(result) is str or type(result) is bin:
         if isinstance(result, types.StringTypes):
@@ -115,6 +127,8 @@ class OauthCredentials:
 
     def deleteMetadata(self, oauth, file, id):
         url = self.getUrl(file, id)
+        self.writeLog("Function: ---> deleteMetadata")
+        self.writeLog("URL: " + url)
         self.createHeader(oauth)
         result = oauth.delete(url)
         return self.createRequest(result)
@@ -122,6 +136,8 @@ class OauthCredentials:
     def getFileVersions(self, oauth, id):
         url = self.getUrl(True, id)
         url += "/versions"
+        self.writeLog("Function: ---> getFileVersions")
+        self.writeLog("URL: " + url)
         self.createHeader(oauth)
         result = oauth.get(url)
         return self.createRequest(result)
@@ -129,6 +145,8 @@ class OauthCredentials:
     def getFileVersionData(self, oauth, id, version, path):
         metadata = 'false'
         self.createHeader(oauth)
+        self.writeLog("Function: ---> getFileVersionData")
+        self.writeLog("URL: " + self.resourceurl + "file/" + str(id) + "/version/" + str(version) + "/data")
         result = oauth.get(self.resourceurl + "file/" + str(id) + "/version/" + str(version) + "/data")
         if isinstance(result, types.StringTypes):
             file = open(path, 'w')
@@ -143,6 +161,8 @@ class OauthCredentials:
     def getListUsersShare(self, oauth, id):
         url = self.getUrl(False, id)
         url += "/members"
+        self.writeLog("Function: ---> getListUsersShare")
+        self.writeLog("URL: " + url)
         self.createHeader(oauth)
         result = oauth.get(url)
         return self.createRequest(result)
@@ -153,6 +173,9 @@ class OauthCredentials:
             url += "/unshare"
         else:
             url += "/share"
+
+        self.writeLog("Function: ---> shareFolder")
+        self.writeLog("URL: " + url)
         self.createHeader(oauth)
         result = oauth.post(url, json.dumps(list))
         if len(result) == 0:
@@ -162,6 +185,8 @@ class OauthCredentials:
 
     def insertComment(self,oauth,id,user,text,cloud):
         url = self.resourceurl + 'comment'
+        self.writeLog("Function: ---> insertComment")
+        self.writeLog("URL: " + url)
         self.createApplicationJson(oauth)
         data = {}
         data['id'] = id;
@@ -173,6 +198,8 @@ class OauthCredentials:
 
     def deleteComment(self,oauth,id,user,cloud,time_created):
         url = self.resourceurl + 'comment/' + id + '/' + user + '/' + cloud + '/' + time_created
+        self.writeLog("Function: ---> deleteComment")
+        self.writeLog("URL: " + url)
         result = oauth.delete(url)
         return self.createRequest(result)
 
@@ -180,67 +207,92 @@ class OauthCredentials:
         url = self.resourceurl + 'comment/' + id + '/' + cloud
         if interop != None:
             url += '/' + interop
+
+        self.writeLog("Function: ---> getComments")
+        self.writeLog("URL: " + url)
         result = oauth.get(url)
         return self.createRequest(result)
 
     def insertEvent(self,oauth,user,calendar,cloud,isallday,timestart,timeend,repetition,finaltype,
                     finalvalue,subject,location,description,repeattype):
         url = self.resourceurl + 'event'
+        self.writeLog("Function: ---> insertEvent")
+        self.writeLog("URL: " + url)
         data = {"user":user,"calendar":calendar,"cloud":cloud,"isallday":isallday,"timestart":timestart,"timeend":timeend,"repetition":repetition,"finaltype":finaltype,"finalvalue":finalvalue,"subject":subject,"location":location,"description":description,"repeattype":repeattype}
         result = oauth.post(url,data)
         return self.createRequest(result)
 
     def deleteEvent(self,oauth,user,calendar,cloud,timestart,timeend,isallday):
         url = self.resourceurl + 'event/' + user + '/' + calendar + '/' + cloud + '/' + timestart + '/' + timeend + '/' + str(isallday)
+        self.writeLog("Function: ---> deleteEvent")
+        self.writeLog("URL: " + url)
         result = oauth.delete(url)
         return self.createRequest(result)
 
     def updateEvent(self,oauth,user,calendar,cloud,isallday,timestart,timeend,repetition,finaltype,
                     finalvalue,subject,location,description,repeattype):
         url = self.resourceurl + 'event'
+        self.writeLog("Function: ---> updateEvent")
+        self.writeLog("URL: " + url)
         data = {"user":user,"calendar":calendar,"cloud":cloud,"isallday":isallday,"timestart":timestart,"timeend":timeend,"repetition":repetition,"finaltype":finaltype,"finalvalue":finalvalue,"subject":subject,"location":location,"description":description,"repeattype":repeattype}
         result = oauth.put(url,data)
         return self.createRequest(result)
 
     def getEvents(self,oauth,user,calendar,cloud):
         url = self.resourceurl + 'event/' + user + '/' + calendar + '/' + cloud
+        self.writeLog("Function: ---> getEvents")
+        self.writeLog("URL: " + url)
         result = oauth.get(url)
         return self.createRequest(result)
 
     def insertCalendar(self,oauth,user,name,cloud,description,timezone):
         url = self.resourceurl + 'calendar'
+        self.writeLog("Function: ---> insertCalendar")
+        self.writeLog("URL: " + url)
         data = {"user":user,"name":name,"cloud":cloud,"description":description,"timezone":timezone}
         result = oauth.post(url,data)
         return self.createRequest(result)
 
     def deleteCalendar(self,oauth,user,name,cloud):
         url = self.resourceurl + 'calendar/' + user + '/' + name + '/' + cloud
+        self.writeLog("Function: ---> deleteCalendar")
+        self.writeLog("URL: " + url)
         result = oauth.delete(url)
         return self.createRequest(result)
 
     def updateCalendar(self,oauth,user,name,cloud,description,timezone):
         url = self.resourceurl + 'calendar'
+        self.writeLog("Function: ---> updateCalendar")
+        self.writeLog("URL: " + url)
         data = {"user":user,"name":name,"cloud":cloud,"description":description,"timezone":timezone}
         result = oauth.put(url,data)
         return self.createRequest(result)
 
     def getCalendars(self,oauth,user,cloud):
         url = self.resourceurl + 'calendar/' + user + '/' + cloud
+        self.writeLog("Function: ---> getCalendars")
+        self.writeLog("URL: " + url)
         result = oauth.get(url)
         return self.createRequest(result)
 
     def getCalendarsAndEvents(self,oauth,user,cloud):
         url = self.resourceurl + 'calEvents/' + user + '/' + cloud
+        self.writeLog("Function: ---> getCalendarsAndEvents")
+        self.writeLog("URL: " + url)
         result = oauth.get(url)
         return self.createRequest(result)
 
     def deleteCalendarsUser(self,oauth,user,cloud):
         url = self.resourceurl + 'calUser/' + user + '/' + cloud
+        self.writeLog("Function: ---> deleteCalendarsUser")
+        self.writeLog("URL: " + url)
         result = oauth.delete(url)
         return self.createRequest(result)
 
     def lockFile(self,oauth,id,cloud,user,ipserver,datetime,timelimit,interop=None):
         url = self.resourceurl + 'lockFile'
+        self.writeLog("Function: ---> lockFile")
+        self.writeLog("URL: " + url)
         self.createApplicationJson(oauth)
         data = {"id":id,"cloud":cloud,"user":user,"ipserver":ipserver,"datetime":datetime,"timelimit":timelimit}
         if interop != None:
@@ -250,6 +302,8 @@ class OauthCredentials:
 
     def updateDateTime(self,oauth,id,cloud,user,ipserver,datetime):
         url = self.resourceurl + 'updateTime'
+        self.writeLog("Function: ---> updateDateTime")
+        self.writeLog("URL: " + url)
         self.createApplicationJson(oauth)
         data = {"id":id,"cloud":cloud,"user":user,"ipserver":ipserver,"datetime":datetime}
         result = oauth.put(url,data)
@@ -257,6 +311,8 @@ class OauthCredentials:
 
     def unLockFile(self,oauth,id,cloud,user,ipserver,datetime):
         url = self.resourceurl + 'unLockFile'
+        self.writeLog("Function: ---> unLockFile")
+        self.writeLog("URL: " + url)
         self.createApplicationJson(oauth)
         data = {"id":id,"cloud":cloud,"user":user,"ipserver":ipserver,"datetime":datetime}
         result = oauth.put(url,data)
@@ -266,6 +322,8 @@ class OauthCredentials:
         url = self.resourceurl + 'lockFile/' + id + '/' + cloud
         if interop != None:
             url += '/' + interop
+        self.writeLog("Function: ---> getMetadataFile")
+        self.writeLog("URL: " + url)
         result = oauth.get(url)
         return self.createRequest(result)
 
@@ -329,6 +387,10 @@ class OauthCredentials:
 
         return metadata
 
+    def writeLog(self,message):
+        if self.logger != None:
+            logger.info(message)
+
 if __name__ == "__main__":
     if settings[ 'NEW_CODE' ] == "true":
         result = None
@@ -358,6 +420,9 @@ if __name__ == "__main__":
                         resource_url = settingsCloud[ 'urls' ][ 'RESOURCE_URL' ]
                         callbackUrl = settingsCloud[ 'urls' ][ 'CALLBACK_URL' ]
 
+                        logger = Logger()
+                        logger.openLog(cloud)
+
                         if params[ 'config' ].has_key( 'resource_url' ):
                             resource_url = params['config']['resource_url']
                             if params['config'].has_key('consumer_key') and params['config'].has_key('consumer_secret'):
@@ -371,13 +436,14 @@ if __name__ == "__main__":
                         oauthCredentials = OauthCredentials(settingsCloud[ 'urls' ][ 'REQUEST_TOKEN_URL' ],
                                                             settingsCloud[ 'urls' ][ 'ACCESS_TOKEN_URL' ],
                                                             resource_url,
-                                                            settingsCloud[ 'version' ])
+                                                            settingsCloud[ 'version' ],logger)
 
                         if params.has_key( 'verifier' ) and params.has_key( 'token' ):
                             token_key = params['token']['key']
                             token_secret = params['token']['secret']
                             verifier = params['verifier']
                             oauth = OAuthRequest(key, client_secret=secret, resource_owner_key=token_key, resource_owner_secret=token_secret, verifier=verifier, signature_method=SIGNATURE_PLAINTEXT)
+                            oauth.setLogger(logger)
                             result = oauthCredentials.getAccessToken(oauth)
 
                         elif params.has_key( 'metadata' ) and params.has_key('token'):
@@ -385,16 +451,18 @@ if __name__ == "__main__":
                             token_secret = params[ 'token' ][ 'secret' ]
                             metadata = params[ 'metadata' ]
                             type = metadata[ 'type' ]
+
                             interop = None
                             if metadata.has_key('interop'):
                                 interop = metadata['interop']
 
                             oauth = OAuthRequest(key, client_secret=secret, resource_owner_key=token_key, resource_owner_secret=token_secret)
-
-                            #print("access_token_key:" + token_key)
-                            #print("access_token_secret:" + token_secret)
-                            #print("consumer_key:" + key)
-                            #print("consumer_secret:" + secret)
+                            oauth.setLogger(logger)
+                            logger.info('Start call')
+                            logger.info("access_token_key:" + token_key)
+                            logger.info("access_token_secret:" + token_secret)
+                            logger.info("consumer_key:" + key)
+                            logger.info("consumer_secret:" + secret)
 
                             if type == 'get':
                                 result = oauthCredentials.getMetadata(oauth, metadata[ 'file' ], metadata[ 'id' ], metadata[ 'contents' ])
@@ -457,6 +525,7 @@ if __name__ == "__main__":
 
                         elif not(params.has_key( 'metadata' ) or params.has_key( 'verifier' ) or params.has_key( 'token' )):
                             oauth = OAuthRequest(key, client_secret=secret, callback_uri=callbackUrl, signature_method=SIGNATURE_PLAINTEXT)
+                            oauth.setLogger(logger)
                             result = oauthCredentials.getRequestToken(oauth)
 
             if params.has_key( 'config' ) and params[ 'config' ].has_key( 'type' ):
