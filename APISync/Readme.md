@@ -52,6 +52,13 @@ If installed in another independent machine the directories /var/www/eyeos/APISy
 
     ![](../img/Step7_VerifyStatusService.jpg)
 
+    In case of an error 111 Connection refused:
+
+    \# sudo rm /var/lib/mongodb/mongod.lock
+
+    \# sudo service mongod restart
+
+
 
 +   **PyMongo**
 

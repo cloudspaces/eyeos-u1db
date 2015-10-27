@@ -1326,6 +1326,10 @@ case “Stacksync” or “NEC”:
     <td>Activates or deactivates the option to synchronize calendars.</td>
   </tr>
   <tr>
+    <td>log</td>
+    <td>Log path. This folder must have permissions for the user www-data
+  </tr>
+  <tr>
     <td colspan="2" bgcolor="#C0C0C0">Urls</td>
   </tr>
   <tr>
@@ -1358,6 +1362,17 @@ case “Stacksync” or “NEC”:
   <tr>
     <td>secret</td>
     <td>Provided by the cloud to identify eyeOS</td>
+  </tr>
+  <tr>
+    <td colspan="2" bgcolor="#C0C0C0">Interop Consumer</td>
+  </tr>
+  <tr>
+    <td>key</td>
+    <td>Provided by the cloud to access resources from the external cloud</td>
+  </tr>
+  <tr>
+  <td>secret</td>
+  <td>Provided by the cloud to access resources from the external cloud</td>
   </tr>
 </table>
 
@@ -1524,7 +1539,7 @@ Request the Access token of the eyeOS consumer from the saved request token.
 
 #### ANNEX 4 Storage Manager
 
-<b>getMetadata</b>(cloud, token, id, path, user, resourceUrl)
+<b>getMetadata</b>(cloud, token, id, path, user, resourceUrl, consumerKey, consumerSecret)
 
 Obtain the metadata of the current element. Generate its structure from files and/or
 directories in eyeOS.
@@ -1539,7 +1554,9 @@ directories in eyeOS.
         <li><b>id</b> - Identifying number of the element in the specific cloud
         <li><b>path</b> - eyeOS route
         <li><b>user</b> - Identifier of the eyeOS user
-        <li><b>resourceUrl:</b> -  API to access the user's protected resources from the external cloud (Optional)
+        <li><b>resourceUrl</b> -  API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -1551,6 +1568,8 @@ directories in eyeOS.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”efgh”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -1602,7 +1621,7 @@ directories in eyeOS.
   </tr>
 </table>
 
-<p><b>getSkel</b>(cloud, token, file, id, metadatas, path, pathAbsolute, pathEyeos, resourceUrl)
+<p><b>getSkel</b>(cloud, token, file, id, metadatas, path, pathAbsolute, pathEyeos, resourceUrl, consumerKey, consumerSecret)
 
 Recursively obtain the metadata that depends on the current element. Used in the
 action of copying and moving in eyeOS.
@@ -1621,6 +1640,8 @@ action of copying and moving in eyeOS.
         <li><b>pathAbsolute</b> - eyeOS path
         <li><b>pathEyeos</b> - eyeOS path, only used when the destination of the action is outside the Personal Cloud.
         <li><b>resourceUrl</b> -  API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -1632,6 +1653,8 @@ action of copying and moving in eyeOS.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret":"efgh"</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -1692,7 +1715,7 @@ action of copying and moving in eyeOS.
 </table>
 
 <p><b>createMetadata</b>(cloud, token, user, file, name, parent_id, path, pathAbsolute,
-resourceUrl)
+resourceUrl, consumerKey, consumerSecret)
 
 Create a new file or directory.
 
@@ -1710,6 +1733,8 @@ Create a new file or directory.
         <li><b>path</b> -  Path of the current element.
         <li><b>pathAbsolute</b> -  Absolute path. Mandatory if the element is a file.
         <li><b>resourceUrl</b> - API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -1721,6 +1746,8 @@ Create a new file or directory.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:"abcd"</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”efgh”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -1750,7 +1777,7 @@ Create a new file or directory.
   </tr>
 </table>
 
-<p><b>downloadMetadata</b>(token, id, path, user, isTmp, cloud, resourceUrl)
+<p><b>downloadMetadata</b>(token, id, path, user, isTmp, cloud, resourceUrl, consumerKey, consumerSecret)
 
 Download the content of a file.
 
@@ -1766,6 +1793,8 @@ Download the content of a file.
         <li><b>isTmp</b> - False, updates the version table of the files. True, no update is carried out.
         <li><b>cloud</b> - Name of the cloud
         <li><b>resourceUrl</b> - API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -1777,6 +1806,8 @@ Download the content of a file.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”efgh”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -1803,7 +1834,7 @@ Download the content of a file.
   </tr>
 </table>
 
-<p><b>deleteMetadata</b>(cloud, token, file, id, user, path, resourceUrl)
+<p><b>deleteMetadata</b>(cloud, token, file, id, user, path, resourceUrl, consumerKey, consumerSecret)
 
 Delete an existing file or directory.
 
@@ -1819,6 +1850,8 @@ Delete an existing file or directory.
         <li><b>user</b> - Identifier of the eyeOS user.
         <li><b>path</b> - Absolute path.
         <li><b>resourceUrl</b> - API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -1830,6 +1863,8 @@ Delete an existing file or directory.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”efgh”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -1856,7 +1891,7 @@ Delete an existing file or directory.
   </tr>
 </table>
 
-<p><b>renameMetadata</b>(cloud, token, file, id, name, path, user, parent, resourceUrl)
+<p><b>renameMetadata</b>(cloud, token, file, id, name, path, user, parent, resourceUrl, consumerKey, consumerSecret)
 
 Rename a file or directory.
 
@@ -1874,6 +1909,8 @@ Rename a file or directory.
         <li><b>user</b> - Identifier of the eyeOS user.
         <li><b>parent</b> - Id of the destination directory. (Optional)
         <li><b>resourceUrl</b> - API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -1885,6 +1922,8 @@ Rename a file or directory.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”efgh”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -1914,7 +1953,7 @@ Rename a file or directory.
 </table>
 
 <p><b>moveMetadata</b>(cloud, token, file, id, pathOrig, pathDest, user, parent, filenameOld,
-filenameNew, resourceUrl)
+filenameNew, resourceUrl, consumerKey, consumerSecret)
 
 Move a file or directory.
 
@@ -1934,6 +1973,8 @@ Move a file or directory.
         <li><b>filenameOld</b> - Name of the element in the origin path.
         <li><b>filenameNew</b> - Name of the element in the destination path if different from the origin. (Optional).
         <li><b>resourceUrl</b> - API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -1945,6 +1986,8 @@ Move a file or directory.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”efgh”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -1973,7 +2016,7 @@ Move a file or directory.
   </tr>
 </table>
 
-<p><b>listVersions</b>(cloud, token, id, user, resourceUrl)
+<p><b>listVersions</b>(cloud, token, id, user, resourceUrl, consumerKey, consumerSecret)
 
 Obtain the list of versions of a specific file.
 
@@ -1987,6 +2030,8 @@ Obtain the list of versions of a specific file.
         <li><b>id</b> - Identifying number of the element in the specific cloud.
         <li><b>user</b> - Identifier of the eyeOS user.
         <li><b>resourceUrl</b> - API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -1998,6 +2043,8 @@ Obtain the list of versions of a specific file.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”efgh”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -2038,7 +2085,7 @@ Obtain the list of versions of a specific file.
   </tr>
 </table>
 
-<p><b>getFileVersionData</b>(cloud, token, id, version, path, user, resourceUrl)
+<p><b>getFileVersionData</b>(cloud, token, id, version, path, user, resourceUrl, consumerKey, consumerSecret)
 
 Download the content of a specific version of an existing file.
 
@@ -2054,6 +2101,8 @@ Download the content of a specific version of an existing file.
         <li><b>path</b> - Absolute path.
         <li><b>user</b> - Identifier of the eyeOS user.
         <li><b>resourceUrl</b> - API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -2065,6 +2114,8 @@ Download the content of a specific version of an existing file.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”efgh”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -2092,7 +2143,7 @@ Download the content of a specific version of an existing file.
   </tr>
 </table>
 
-<p><b>getListUsersShare</b>(cloud, token, id, resourceUrl)
+<p><b>getListUsersShare</b>(cloud, token, id, resourceUrl, consumerKey, consumerSecret)
 
 Obtain the list of users who share the directory.
 
@@ -2105,6 +2156,8 @@ Obtain the list of users who share the directory.
         <li><b>token</b> - Contains the key and secret of the access token.
         <li><b>id</b> - Identifying number of the element in the specific cloud.
         <li><b>resourceUrl</b> - API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -2116,6 +2169,8 @@ Obtain the list of users who share the directory.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”efgh”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -2141,7 +2196,7 @@ Obtain the list of users who share the directory.
   </tr>
 </table>
 
-<p><b>shareFolder</b>(cloud, token, id, list,shared, resourceUrl)
+<p><b>shareFolder</b>(cloud, token, id, list,shared, resourceUrl, consumerKey, consumerSecret)
 
 Share or stop sharing a directory with a list of users.
 
@@ -2156,6 +2211,8 @@ Share or stop sharing a directory with a list of users.
         <li><b>list</b> - List of users.
         <li><b>shared</b> - (true- unshare, false - share)
         <li><b>resourceUrl</b> - API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -2167,6 +2224,8 @@ Share or stop sharing a directory with a list of users.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”efgh”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -2195,7 +2254,7 @@ Share or stop sharing a directory with a list of users.
   </tr>
 </table>
 
-<p><b>insertComment</b>(cloud, token, id, user, text, resourceUrl)
+<p><b>insertComment</b>(cloud, token, id, user, text, resourceUrl, consumerKey, consumerSecret)
 
 Create a new comment associated to a file shared on the cloud.
 
@@ -2210,6 +2269,8 @@ Create a new comment associated to a file shared on the cloud.
         <li><b>user</b> - eyeOS user.
         <li><b>text</b> - Text of the comment.
         <li><b>resourceUrl</b> - API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -2221,6 +2282,8 @@ Create a new comment associated to a file shared on the cloud.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”efgh”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -2248,7 +2311,7 @@ Create a new comment associated to a file shared on the cloud.
   </tr>
 </table>
 
-<p><b>deleteComment</b>(cloud, token, id, user, timeCreated, resourceUrl)
+<p><b>deleteComment</b>(cloud, token, id, user, timeCreated, resourceUrl, consumerKey, consumerSecret)
 
 Delete a comment associated to a file shared on the cloud.
 
@@ -2263,6 +2326,8 @@ Delete a comment associated to a file shared on the cloud.
         <li><b>user</b> - eyeOS user.
         <li><b>timeCreated</b> - Time and date of creation.
         <li><b>resourceUrl</b> - API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -2274,6 +2339,8 @@ Delete a comment associated to a file shared on the cloud.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”efgh”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -2302,7 +2369,7 @@ Delete a comment associated to a file shared on the cloud.
   </tr>
 </table>
 
-<p><b>getComments</b>(cloud, token, id, resourceUrl)
+<p><b>getComments</b>(cloud, token, id, resourceUrl, consumerKey, consumerSecret, interop)
 
 Obtain a list of comments associated to a file shared on the cloud
 
@@ -2315,6 +2382,9 @@ Obtain a list of comments associated to a file shared on the cloud
         <li><b>token</b> - Contains the key and secret of the access token.
         <li><b>id</b> - Identifying number of the element in the specific cloud.
         <li><b>resourceUrl</b> - API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>interop</b> - "true": external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -2326,6 +2396,9 @@ Obtain a list of comments associated to a file shared on the cloud
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”efgh”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”interop”:”true”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -2353,7 +2426,7 @@ Obtain a list of comments associated to a file shared on the cloud
 </table>
 
 <p><b>insertEvent</b>(cloud, token, user, calendar, isallday, timestart, timeend, repetition,
-finaltype, finalvalue, subject, location, description, repeattype, resourceUrl)
+finaltype, finalvalue, subject, location, description, repeattype, resourceUrl, consumerKey, consumerSecret)
 
 Create a new event in the calendar.
 
@@ -2377,6 +2450,8 @@ Create a new event in the calendar.
         <li><b>description</b> - Complementary information of the event.
         <li><b>repeattype</b> - How the event is repeated.
         <li><b>resourceUrl</b> - API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -2388,6 +2463,8 @@ Create a new event in the calendar.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”abcd”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -2428,7 +2505,7 @@ Create a new event in the calendar.
   </tr>
 </table>
 
-<p><b>deleteEvent</b>(cloud, token, user, calendar, timestart, timeend, isallday, resourceUrl)
+<p><b>deleteEvent</b>(cloud, token, user, calendar, timestart, timeend, isallday, resourceUrl, consumerKey, consumerSecret)
 
 Delete an event from the calendar.
 
@@ -2445,6 +2522,8 @@ Delete an event from the calendar.
         <li><b>timeend</b> - End date and time of the event.
         <li><b>isallday</b> - Specifies if the event takes up the whole day.
         <li><b>resourceUrl</b> - API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -2456,6 +2535,8 @@ Delete an event from the calendar.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”efgh”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -2490,7 +2571,7 @@ Delete an event from the calendar.
 </table>
 
 <p><b>updateEvent</b>(cloud, token, user, calendar, isallday, timestart, timeend, repetition,
-finaltype, finalvalue, subject, location, description, repeattype, resourceUrl)
+finaltype, finalvalue, subject, location, description, repeattype, resourceUrl, consumerKey, consumerSecret)
 
 Update the event data in the calendar.
 
@@ -2514,6 +2595,8 @@ Update the event data in the calendar.
         <li><b>description</b> - Complementary information of the event.
         <li><b>repeattype</b> - How the event is repeated.
         <li><b>resourceUrl</b> - API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -2525,6 +2608,8 @@ Update the event data in the calendar.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”efgh”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -2565,7 +2650,7 @@ Update the event data in the calendar.
   </tr>
 </table>
 
-<p><b>getEvents</b>(cloud, token, user, calendar, resourceUrl)
+<p><b>getEvents</b>(cloud, token, user, calendar, resourceUrl, consumerKey, consumerSecret)
 
 Obtain all the events from a calendar.
 
@@ -2579,6 +2664,8 @@ Obtain all the events from a calendar.
         <li><b>user</b> - eyeOS user
         <li><b>calendar</b> - Calendar identifier.
         <li><b>resourceUrl</b> - API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -2590,6 +2677,8 @@ Obtain all the events from a calendar.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”efgh”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -2620,7 +2709,7 @@ Obtain all the events from a calendar.
   </tr>
 </table>
 
-<p><b>insertCalendar</b>(cloud, token, user, name, description, timezone, resourceUrl)
+<p><b>insertCalendar</b>(cloud, token, user, name, description, timezone, resourceUrl, consumerKey, consumerSecret)
 
 Create a new calendar.
 
@@ -2636,6 +2725,8 @@ Create a new calendar.
         <li><b>description</b> - Complementary information of the calendar.
         <li><b>timezone</b> - Timezone of the calendar.
         <li><b>resourceUrl</b> - API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -2647,6 +2738,8 @@ Create a new calendar.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”efgh”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -2677,7 +2770,7 @@ Create a new calendar.
   </tr>
 </table>
 
-<p><b>deleteCalendar</b>(cloud, token, user, name, resourceUrl)
+<p><b>deleteCalendar</b>(cloud, token, user, name, resourceUrl, consumerKey, consumerSecret)
 
 Delete a calendar.
 
@@ -2691,6 +2784,8 @@ Delete a calendar.
         <li><b>user</b> - eyeOS user
         <li><b>name</b> - Calendar identifier.
         <li><b>resourceUrl</b> - API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -2702,6 +2797,8 @@ Delete a calendar.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”efgh”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -2729,7 +2826,7 @@ Delete a calendar.
   </tr>
 </table>
 
-<p><b>updateCalendar</b>(cloud, token, user, name, description, timezone, resourceUrl)
+<p><b>updateCalendar</b>(cloud, token, user, name, description, timezone, resourceUrl, consumerKey, consumerSecret)
 
 Update calendar data.
 
@@ -2745,6 +2842,8 @@ Update calendar data.
         <li><b>description</b> - Complementary information of the calendar.
         <li><b>timezone</b> - Timezone of the calendar.
         <li><b>resourceUrl</b> - API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -2756,6 +2855,8 @@ Update calendar data.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”efgh”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -2785,7 +2886,7 @@ Update calendar data.
   </tr>
 </table>
 
-<p><b>getCalendars</b>(cloud, token, user, resourceUrl)
+<p><b>getCalendars</b>(cloud, token, user, resourceUrl, consumerKey, consumerSecret)
 
 Obtain a list with all of the user's calendars.
 
@@ -2798,6 +2899,8 @@ Obtain a list with all of the user's calendars.
         <li><b>token</b> - Contains the key and secret of the access token.
         <li><b>user</b> - eyeOS user
         <li><b>resourceUrl</b> - API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -2809,6 +2912,8 @@ Obtain a list with all of the user's calendars.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”efgh”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -2835,7 +2940,7 @@ Obtain a list with all of the user's calendars.
   </tr>
 </table>
 
-<p><b>getCalendarsAndEvents</b>(cloud, token, user, resourceUrl)
+<p><b>getCalendarsAndEvents</b>(cloud, token, user, resourceUrl, consumerKey, consumerSecret)
 
 Obtain a list with all of the user‟s calendars and events.
 
@@ -2848,6 +2953,8 @@ Obtain a list with all of the user‟s calendars and events.
         <li><b>token</b> - Contains the key and secret of the access token.
         <li><b>user</b> - eyeOS user
         <li><b>resourceUrl</b> - API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -2859,6 +2966,8 @@ Obtain a list with all of the user‟s calendars and events.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”efgh”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -2890,7 +2999,7 @@ Obtain a list with all of the user‟s calendars and events.
   </tr>
 </table>
 
-<p><b>deleteCalendarsUser</b>(cloud, token, user, resourceUrl)
+<p><b>deleteCalendarsUser</b>(cloud, token, user, resourceUrl, consumerKey, consumerSecret)
 
 Delete all the calendars and events of the user.
 
@@ -2903,6 +3012,8 @@ Delete all the calendars and events of the user.
         <li><b>token</b> - Contains the key and secret of the access token.
         <li><b>user</b> - eyeOS user
         <li><b>resourceUrl</b> - API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -2914,6 +3025,8 @@ Delete all the calendars and events of the user.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”efgh”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -2939,7 +3052,7 @@ Delete all the calendars and events of the user.
   </tr>
 </table>
 
-<p><b>unLockedFile</b>(cloud, token, id, user, ipserver, timeLimit, dt_now, resourceUrl)
+<p><b>unLockedFile</b>(cloud, token, id, user, ipserver, timeLimit, dt_now, resourceUrl, consumerKey, consumerSecret, interop)
 
 Check if the file is blocked by another user.
 
@@ -2956,6 +3069,9 @@ Check if the file is blocked by another user.
         <li><b>timeLimit</b> - Maximum time in minutes to block a file.
         <li><b>dt_now</b> - Current date and time
         <li><b>resourceUrl</b> - API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>interop</b> - "true": external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -2967,6 +3083,9 @@ Check if the file is blocked by another user.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”efgh”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”interop”:”true”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -2994,7 +3113,7 @@ Check if the file is blocked by another user.
   </tr>
 </table>
 
-<p><b>lockFile</b>(cloud, token, id, user, ipserver, timeLimit, dt_now, resourceUrl)
+<p><b>lockFile</b>(cloud, token, id, user, ipserver, timeLimit, dt_now, resourceUrl, consumerKey, consumerSecret, interop)
 
 Unblock an eyeDocs file.
 
@@ -3011,6 +3130,9 @@ Unblock an eyeDocs file.
         <li><b>timeLimit</b> - Maximum time in minutes to block a file.
         <li><b>dt_now</b> - Current date and time
         <li><b>resourceUrl</b> - API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>interop</b> - "true": external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -3022,6 +3144,9 @@ Unblock an eyeDocs file.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”efgh”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”interop”:”true”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -3051,7 +3176,7 @@ Unblock an eyeDocs file.
   </tr>
 </table>
 
-<p><b>updateDateTime</b>(cloud, token, id, user, ipserver, dt_now, resourceUrl)
+<p><b>updateDateTime</b>(cloud, token, id, user, ipserver, dt_now, resourceUrl, consumerKey, consumerSecret)
 
 Update the metadata with the date and time of the latest change.
 
@@ -3067,6 +3192,8 @@ Update the metadata with the date and time of the latest change.
         <li><b>ipserver</b> - IP address of the eyeOS server.
         <li><b>dt_now</b> - Current date and time
         <li><b>resourceUrl</b> - API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -3078,6 +3205,8 @@ Update the metadata with the date and time of the latest change.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”efgh”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -3106,7 +3235,7 @@ Update the metadata with the date and time of the latest change.
   </tr>
 </table>
 
-<p><b>unLockFile</b>(cloud, token, id, user, ipserver, dt_now, resourceUrl)
+<p><b>unLockFile</b>(cloud, token, id, user, ipserver, dt_now, resourceUrl, consumerKey, consumerSecret)
 
 Unblock an eyeDocs file.
 
@@ -3122,6 +3251,8 @@ Unblock an eyeDocs file.
         <li><b>ipserver</b> - IP address of the eyeOS server.
         <li><b>dt_now</b> - Current date and time
         <li><b>resourceUrl</b> - API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -3133,6 +3264,8 @@ Unblock an eyeDocs file.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”efgh”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -3161,7 +3294,7 @@ Unblock an eyeDocs file.
   </tr>
 </table>
 
-<p><b>getMetadataFolder</b>(cloud, token, id, resourceUrl)
+<p><b>getMetadataFolder</b>(cloud, token, id, resourceUrl, consumerKey, consumerSecret)
 
 Obtain the file structure of a file in the cloud.
 
@@ -3174,6 +3307,8 @@ Obtain the file structure of a file in the cloud.
         <li><b>token</b> - Contains the key and secret of the access token.
         <li><b>id</b> - Identifying number of the element in the specific cloud.
         <li><b>resourceUrl</b> - API to access the user's protected resources from the external cloud (Optional)
+        <li><b>consumerKey</b> - Provided by the cloud to access resources from the external cloud (Optional)
+        <li><b>consumerSecret</b> - Provided by the cloud to access resources from the external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -3185,6 +3320,8 @@ Obtain the file structure of a file in the cloud.
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“config”: { </span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“cloud”: “Stacksync”,</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”resource_url”:”http<bikubj>://ast3-deim.urv.cat/v1/”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_key”:”abcd”</span><br>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;”consumer_secret”:”efgh”</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;“token”: {</span><br>
       <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“key”: “token1234”,</span><br>
@@ -3957,7 +4094,7 @@ addition to the accesstoken.
   </tr>
 </table>
 
-<p><b>getComments</b>(oauth, id, cloud)
+<p><b>getComments</b>(oauth, id, cloud, interop)
 
 Obtain the list of comments of a file shared on the cloud
 
@@ -3983,6 +4120,7 @@ consumer key and secret of the configuration file. In
 addition to the accesstoken.
         <li><b>id</b> - Identifying number of the file
         <li><b>cloud</b> - Identifier of the cloud
+        <li><b>interop</b> - "true": external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -4006,9 +4144,9 @@ addition to the accesstoken.
   <tr>
     <td bgcolor="#C0C0C0">Url:</td>
     <td>
-      <span>RESOURCE_URL + comment/{id}/{cloud}</span><br>
+      <span>RESOURCE_URL + comment/{id}/{cloud}/{interop}</span><br>
       <span>Example:</span><br>
-      <span>http://demo.eyeos.com/comment/2401/Stacksync</span>
+      <span>http://demo.eyeos.com/comment/2401/Stacksync/true</span>
     </td>
   </tr>
   <tr>
@@ -4884,7 +5022,7 @@ addition to the accesstoken.
   </tr>
 </table>
 
-<p><b>lockFile</b>(oauth, id, cloud, user, ipserver, datetime, timelimit)
+<p><b>lockFile</b>(oauth, id, cloud, user, ipserver, datetime, timelimit, interop)
 
 Unblock an eyeDocs file.
 
@@ -4914,6 +5052,7 @@ addition to the accesstoken.
         <li><b>ipserver</b> - IP address of the eyeOS server.
         <li><b>timelimit</b> - Maximum time in minutes to block a file.
         <li><b>datetime</b> - Current date and time
+        <li><b>interop</b> - "true": external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -4955,6 +5094,7 @@ addition to the accesstoken.
         <span>&nbsp;&nbsp;&nbsp;&nbsp;"ipserver":”demo.eyeos.com”,</span><br>
         <span>&nbsp;&nbsp;&nbsp;&nbsp;"datetime":”201419170000”,</span><br>
         <span>&nbsp;&nbsp;&nbsp;&nbsp;"timelimit":10</span><br>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;"interop":"true"</span><br>
         <span>}</span>
     </td>
   </tr>
@@ -5141,7 +5281,7 @@ addition to the accesstoken.
   </tr>
 </table>
 
-<p><b>getMetadataFile</b>(oauth, id, cloud)
+<p><b>getMetadataFile</b>(oauth, id, cloud, interop)
 
 Obtain the metadata of the file.
 
@@ -5167,6 +5307,7 @@ consumer key and secret of the configuration file. In
 addition to the accesstoken.
         <li><b>id</b> - Identifying number of the element in the specific cloud.
         <li><b>cloud</b> - Identifier of the cloud where the calendar is saved.
+        <li><b>interop</b> - "true": external cloud (Optional)
       </ul>
     </td>
   </tr>
@@ -5191,9 +5332,9 @@ addition to the accesstoken.
   <tr>
     <td bgcolor="#C0C0C0">Url:</td>
     <td>
-      <span>RESOURCE_URL + lockFile/{id}/{cloud}</span><br>
+      <span>RESOURCE_URL + lockFile/{id}/{cloud}/{interop}</span><br>
       <span>Example:</span><br>
-      <span>http://demo.eyeos.com/lockFile/2401/Stacksync</span>
+      <span>http://demo.eyeos.com/lockFile/2401/Stacksync/true</span>
     </td>
   </tr>
   <tr>
