@@ -171,12 +171,14 @@ class OauthCredentials:
         url = self.getUrl(False, id)
         if isShared == True:
             url += "/unshare"
+            self.writeLog("Function: ---> unShareFolder")
         else:
             url += "/share"
+            self.writeLog("Function: ---> shareFolder")
 
-        self.writeLog("Function: ---> shareFolder")
         self.writeLog("URL: " + url)
         self.createHeader(oauth)
+        self.createApplicationJson(oauth)
         result = oauth.post(url, json.dumps(list))
         if len(result) == 0:
             return 'true'
