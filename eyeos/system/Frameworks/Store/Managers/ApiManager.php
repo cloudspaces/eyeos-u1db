@@ -118,10 +118,20 @@ class ApiManager
                     }
                     for($i = 0; $i < count($dataU1db); $i++) {
                         $id = substr($dataU1db[$i]->id,0,strpos($dataU1db[$i]->id,'_' . $cloud));
-                        if($this->search($files, "id", $dataU1db[$i]->id) === false
-                            && $metadata->id !== $dataU1db[$i]->id && $metadata->id !== $id){
-                            if($this->filesProvider->deleteFile($path . "/" . $this->fixValueFilename($dataU1db[$i]), $this->fixValueIsFolder($dataU1db[$i]))) {
-                                 $this->callProcessU1db('deleteFolder', $dataU1db[$i]);
+                        $delete = false;
+                        if(count($files) > 0) {
+                            if ($this->search($files, "id", $dataU1db[$i]->id) === false
+                                && $metadata->id !== $dataU1db[$i]->id && $metadata->id !== $id
+                            ) {
+                                $delete = true;
+                            }
+                        } else {
+                            $delete = true;
+                        }
+
+                        if($delete === true && $metadata->id !== $dataU1db[$i]->id && $metadata->id !== $id) {
+                            if ($this->filesProvider->deleteFile($path . "/" . $this->fixValueFilename($dataU1db[$i]), $this->fixValueIsFolder($dataU1db[$i]))) {
+                                $this->callProcessU1db('deleteFolder', $dataU1db[$i]);
                             }
                         }
                     }

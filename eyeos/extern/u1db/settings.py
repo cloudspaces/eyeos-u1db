@@ -47,7 +47,7 @@ settings = {
                 "REQUEST_TOKEN_URL": "http://csdev.neccloudhub.com:1080/oauth/request_token",
                 "ACCESS_TOKEN_URL": "http://csdev.neccloudhub.com:1080/oauth/access_token",
                 "CALLBACK_URL": "http://cloudspaces1.eyeosbcn.com",
-                "RESOURCE_URL": "http://csdev.neccloudhub.com:1080/api/cloudspaces/",
+                "RESOURCE_URL": "http://cs.neccloudhub.com:2080/api/cloudspaces/",
                 "OAUTH_URL": "http://csdev.neccloudhub.com:1080/oauth/Authorize.aspx?oauth_token="
             },
             "consumer": {
