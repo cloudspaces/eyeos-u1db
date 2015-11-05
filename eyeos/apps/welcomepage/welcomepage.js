@@ -53,12 +53,44 @@ qx.Class.define('eyeos.application.welcomepage', {
             var mainWindow = new eyeos.ui.Window(this, 'Welcome to eyeOS!');
             mainWindow.setWidth(this.__customWidth);
             mainWindow.setHeight(this.__customHeight)
-            mainWindow.setLayout(new qx.ui.layout.Grow());
+            mainWindow.setLayout(new qx.ui.layout.VBox());
             mainWindow.setAllowMaximize(false);
 			mainWindow.setResizable(false);
-            var iframe = new qx.ui.embed.Iframe(this.__url);
+            var labelWelcome = new qx.ui.basic.Label("Welcome to eyeOS 2.5").set({
+                font: new qx.bom.Font(24, ['Arial']).set({
+                    bold: true
+                }),
+                alignX: 'center',
+                marginTop: 30
+            });
+            mainWindow.add(labelWelcome);
+            
+
+            var logoStacksync = new qx.ui.basic.Image().set({
+                source:  "index.php?extern=images/Stacksync.png",
+                width: 100,
+                height: 100,
+                scale: true,
+                alignX: 'center',
+                marginTop: 40
+            });
+
+            var logoNEC = new qx.ui.basic.Image().set({
+                source:  "index.php?extern=images/NEC.png",
+                width: 100,
+                height: 100,
+                scale: true,
+                alignX: 'center',
+                marginTop: 20
+            });
+
+            mainWindow.add(logoStacksync);
+            mainWindow.add(logoNEC);
+
+
+            /*var iframe = new qx.ui.embed.Iframe(this.__url);
             iframe.set({decorator:null});
-            mainWindow.add(iframe);
+            mainWindow.add(iframe);*/
 
             mainWindow.open();
         }
