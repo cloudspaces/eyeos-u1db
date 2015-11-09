@@ -47,6 +47,7 @@ class OauthCredentials:
         url = self.getUrl(file, id, contents)
         self.writeLog("Function: ---> getMetadata")
         self.writeLog("URL: " + url)
+        self.writeLog("METHOD: GET")
         self.createHeader(oauth)
         result = oauth.get(url)
         return self.createRequest(result)
@@ -55,6 +56,7 @@ class OauthCredentials:
         url = self.getUrl(file, id)
         self.writeLog("Function: ---> updateMetadata")
         self.writeLog("URL: " + url)
+        self.writeLog("METHOD: PUT")
         self.createHeader(oauth)
         self.createApplicationJson(oauth)
         data = {}
@@ -71,6 +73,7 @@ class OauthCredentials:
         url = self.getUrl(file)
         self.writeLog("Function: ---> createMetadata")
         self.writeLog("URL: " + url)
+        self.writeLog("METHOD: POST")
         self.createHeader(oauth)
         self.createApplicationJson(oauth)
 
@@ -100,6 +103,7 @@ class OauthCredentials:
             self.createApplicationJson(oauth)
             self.writeLog("Function: ---> uploadFile")
             self.writeLog("URL: " + self.resourceurl + "file/" + str(id) + "/data")
+            self.writeLog("METHOD: PUT")
             result = oauth.put(self.resourceurl + "file/" + str(id) + "/data", self.file.read())
             if (not (isinstance(result, dict) and result.has_key('error'))):
                 metadata = 'true'
@@ -113,6 +117,7 @@ class OauthCredentials:
         self.createHeader(oauth)
         self.writeLog("Function: ---> downloadFile")
         self.writeLog("URL: " + self.resourceurl + "file/" + str(id) + "/data")
+        self.writeLog("METHOD: GET")
         result = oauth.get(self.resourceurl + "file/" + str(id) + "/data")
         #if type(result) is str or type(result) is bin:
         if isinstance(result, types.StringTypes):
@@ -129,6 +134,7 @@ class OauthCredentials:
         url = self.getUrl(file, id)
         self.writeLog("Function: ---> deleteMetadata")
         self.writeLog("URL: " + url)
+        self.writeLog("METHOD: DELETE")
         self.createHeader(oauth)
         result = oauth.delete(url)
         return self.createRequest(result)
@@ -138,6 +144,7 @@ class OauthCredentials:
         url += "/versions"
         self.writeLog("Function: ---> getFileVersions")
         self.writeLog("URL: " + url)
+        self.writeLog("METHOD: GET")
         self.createHeader(oauth)
         result = oauth.get(url)
         return self.createRequest(result)
@@ -147,6 +154,7 @@ class OauthCredentials:
         self.createHeader(oauth)
         self.writeLog("Function: ---> getFileVersionData")
         self.writeLog("URL: " + self.resourceurl + "file/" + str(id) + "/version/" + str(version) + "/data")
+        self.writeLog("METHOD: GET")
         result = oauth.get(self.resourceurl + "file/" + str(id) + "/version/" + str(version) + "/data")
         if isinstance(result, types.StringTypes):
             file = open(path, 'w')
@@ -163,6 +171,7 @@ class OauthCredentials:
         url += "/members"
         self.writeLog("Function: ---> getListUsersShare")
         self.writeLog("URL: " + url)
+        self.writeLog("METHOD: GET")
         self.createHeader(oauth)
         result = oauth.get(url)
         return self.createRequest(result)
@@ -177,6 +186,7 @@ class OauthCredentials:
             self.writeLog("Function: ---> shareFolder")
 
         self.writeLog("URL: " + url)
+        self.writeLog("METHOD: POST")
         self.createHeader(oauth)
         self.createApplicationJson(oauth)
         result = oauth.post(url, json.dumps(list))
@@ -189,6 +199,7 @@ class OauthCredentials:
         url = self.resourceurl + 'comment'
         self.writeLog("Function: ---> insertComment")
         self.writeLog("URL: " + url)
+        self.writeLog("METHOD: POST")
         self.createApplicationJson(oauth)
         data = {}
         data['id'] = id;
@@ -202,6 +213,7 @@ class OauthCredentials:
         url = self.resourceurl + 'comment/' + id + '/' + user + '/' + cloud + '/' + time_created
         self.writeLog("Function: ---> deleteComment")
         self.writeLog("URL: " + url)
+        self.writeLog("METHOD: DELETE")
         result = oauth.delete(url)
         return self.createRequest(result)
 
@@ -212,6 +224,7 @@ class OauthCredentials:
 
         self.writeLog("Function: ---> getComments")
         self.writeLog("URL: " + url)
+        self.writeLog("METHOD: GET")
         result = oauth.get(url)
         return self.createRequest(result)
 
@@ -220,6 +233,7 @@ class OauthCredentials:
         url = self.resourceurl + 'event'
         self.writeLog("Function: ---> insertEvent")
         self.writeLog("URL: " + url)
+        self.writeLog("METHOD: POST")
         data = {"user":user,"calendar":calendar,"cloud":cloud,"isallday":isallday,"timestart":timestart,"timeend":timeend,"repetition":repetition,"finaltype":finaltype,"finalvalue":finalvalue,"subject":subject,"location":location,"description":description,"repeattype":repeattype}
         result = oauth.post(url,data)
         return self.createRequest(result)
@@ -228,6 +242,7 @@ class OauthCredentials:
         url = self.resourceurl + 'event/' + user + '/' + calendar + '/' + cloud + '/' + timestart + '/' + timeend + '/' + str(isallday)
         self.writeLog("Function: ---> deleteEvent")
         self.writeLog("URL: " + url)
+        self.writeLog("METHOD: DELETE")
         result = oauth.delete(url)
         return self.createRequest(result)
 
@@ -236,6 +251,7 @@ class OauthCredentials:
         url = self.resourceurl + 'event'
         self.writeLog("Function: ---> updateEvent")
         self.writeLog("URL: " + url)
+        self.writeLog("METHOD: PUT")
         data = {"user":user,"calendar":calendar,"cloud":cloud,"isallday":isallday,"timestart":timestart,"timeend":timeend,"repetition":repetition,"finaltype":finaltype,"finalvalue":finalvalue,"subject":subject,"location":location,"description":description,"repeattype":repeattype}
         result = oauth.put(url,data)
         return self.createRequest(result)
@@ -244,6 +260,7 @@ class OauthCredentials:
         url = self.resourceurl + 'event/' + user + '/' + calendar + '/' + cloud
         self.writeLog("Function: ---> getEvents")
         self.writeLog("URL: " + url)
+        self.writeLog("METHOD: GET")
         result = oauth.get(url)
         return self.createRequest(result)
 
@@ -251,6 +268,7 @@ class OauthCredentials:
         url = self.resourceurl + 'calendar'
         self.writeLog("Function: ---> insertCalendar")
         self.writeLog("URL: " + url)
+        self.writeLog("METHOD: POST")
         data = {"user":user,"name":name,"cloud":cloud,"description":description,"timezone":timezone}
         result = oauth.post(url,data)
         return self.createRequest(result)
@@ -259,6 +277,7 @@ class OauthCredentials:
         url = self.resourceurl + 'calendar/' + user + '/' + name + '/' + cloud
         self.writeLog("Function: ---> deleteCalendar")
         self.writeLog("URL: " + url)
+        self.writeLog("METHOD: DELETE")
         result = oauth.delete(url)
         return self.createRequest(result)
 
@@ -266,6 +285,7 @@ class OauthCredentials:
         url = self.resourceurl + 'calendar'
         self.writeLog("Function: ---> updateCalendar")
         self.writeLog("URL: " + url)
+        self.writeLog("METHOD: PUT")
         data = {"user":user,"name":name,"cloud":cloud,"description":description,"timezone":timezone}
         result = oauth.put(url,data)
         return self.createRequest(result)
@@ -274,6 +294,7 @@ class OauthCredentials:
         url = self.resourceurl + 'calendar/' + user + '/' + cloud
         self.writeLog("Function: ---> getCalendars")
         self.writeLog("URL: " + url)
+        self.writeLog("METHOD: GET")
         result = oauth.get(url)
         return self.createRequest(result)
 
@@ -281,6 +302,7 @@ class OauthCredentials:
         url = self.resourceurl + 'calEvents/' + user + '/' + cloud
         self.writeLog("Function: ---> getCalendarsAndEvents")
         self.writeLog("URL: " + url)
+        self.writeLog("METHOD: GET")
         result = oauth.get(url)
         return self.createRequest(result)
 
@@ -288,6 +310,7 @@ class OauthCredentials:
         url = self.resourceurl + 'calUser/' + user + '/' + cloud
         self.writeLog("Function: ---> deleteCalendarsUser")
         self.writeLog("URL: " + url)
+        self.writeLog("METHOD: DELETE")
         result = oauth.delete(url)
         return self.createRequest(result)
 
@@ -295,6 +318,7 @@ class OauthCredentials:
         url = self.resourceurl + 'lockFile'
         self.writeLog("Function: ---> lockFile")
         self.writeLog("URL: " + url)
+        self.writeLog("METHOD: POST")
         self.createApplicationJson(oauth)
         data = {"id":id,"cloud":cloud,"user":user,"ipserver":ipserver,"datetime":datetime,"timelimit":timelimit}
         if interop != None:
@@ -306,6 +330,7 @@ class OauthCredentials:
         url = self.resourceurl + 'updateTime'
         self.writeLog("Function: ---> updateDateTime")
         self.writeLog("URL: " + url)
+        self.writeLog("METHOD: PUT")
         self.createApplicationJson(oauth)
         data = {"id":id,"cloud":cloud,"user":user,"ipserver":ipserver,"datetime":datetime}
         result = oauth.put(url,data)
@@ -315,6 +340,7 @@ class OauthCredentials:
         url = self.resourceurl + 'unLockFile'
         self.writeLog("Function: ---> unLockFile")
         self.writeLog("URL: " + url)
+        self.writeLog("METHOD: PUT")
         self.createApplicationJson(oauth)
         data = {"id":id,"cloud":cloud,"user":user,"ipserver":ipserver,"datetime":datetime}
         result = oauth.put(url,data)
@@ -326,6 +352,7 @@ class OauthCredentials:
             url += '/' + interop
         self.writeLog("Function: ---> getMetadataFile")
         self.writeLog("URL: " + url)
+        self.writeLog("METHOD: GET")
         result = oauth.get(url)
         return self.createRequest(result)
 

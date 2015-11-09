@@ -9,6 +9,7 @@ class OAuthRequest(OAuth1Session):
     def _fetch_token(self, url):
         self.writeLog("Function: ---> fetch_token")
         self.writeLog("URL: " + url)
+        self.writeLog("METHOD: GET")
         request = self.get(url)
         if(not(isinstance(request,dict) and request.has_key('error'))):
             token = dict(urldecode(request))
