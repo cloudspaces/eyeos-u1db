@@ -1083,7 +1083,7 @@ qx.Class.define('eyeos.application.Documents', {
             params.path = this.getMetadataFile().path;
             params.cloud = this.getMetadataFile().cloud;
             params.id = this.getMetadataFile().id;
-            var metadata = this.getMetadataFile().metadata;
+            var metadata = this.getMetadataFile();
             if (metadata.resource_url) {
                 params.resource_url = metadata.resource_url;
                 params.access_token_key = metadata.access_token_key;
