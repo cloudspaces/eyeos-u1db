@@ -1197,6 +1197,7 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
             $userName = $user->getName();
             $cloud = self::isCloud($path, $userName);
             $resourceUrl = null;
+            $is_shared = false;
             if($cloud->isCloud) {
                 $pathU1db = substr($path, strlen($cloud->path));
                 $lenfinal = strrpos($pathU1db, $file->getName());
@@ -1229,6 +1230,8 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
                             if ($parentId === 'null') {
                                 $parentId = 0;
                             }
+                        } else if (isset($u1db[0]->is_shared)) {
+                            $is_shared = $u1db[0]->is_shared;
                         }
                     }
                 } else {
@@ -1249,6 +1252,7 @@ abstract class DocumentsApplication extends EyeosApplicationExecutable {
                     $result['cloud'] = $cloud->name;
                     $result['path'] = $file->getParentPath();
                     $result['filename'] = $file->getName();
+                    $result['is_shared'] = $is_shared;
                     if($resourceUrl) {
                         $result['access_token_key'] = $resourceUrl->token->key;
                         $result['access_token_secret'] = $resourceUrl->token->secret;
