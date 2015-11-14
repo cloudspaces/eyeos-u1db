@@ -2802,7 +2802,7 @@ qx.Class.define('eyeos.files.Controller', {
                 params.cloud = cloud;
                 this.closeTimerComments();
 
-                if(metadata.resource_url) {
+                if(metadata.resource_url || shared == true) {
                     params.interop = true;
                     shared = true;
                 }
