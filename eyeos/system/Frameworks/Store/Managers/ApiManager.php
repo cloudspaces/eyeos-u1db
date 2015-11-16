@@ -88,7 +88,9 @@ class ApiManager
                                             if($this->filesProvider->renameFile($path . "/" . $filenameDb, $files[$i]->filename)) {
                                                 array_push($lista, json_decode('{"parent_old":"' . $files[$i]->parent_id . '"}'));
                                             }
-                                        }
+                                        } else if($updateShare) {
+						array_push($lista, json_decode('{"parent_old":"' . $files[$i]->parent_id . '"}'));
+					}
                                         array_push($lista, $this->setUserEyeos($files[$i], $user, $cloud));
                                         $this->callProcessU1db('update', $lista);
                                     }
